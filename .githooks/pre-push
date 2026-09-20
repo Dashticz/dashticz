@@ -1,5 +1,10 @@
 #!/bin/sh
 set -e
 
-npm run format:check
-npm test
+if [ "${OS:-}" = "Windows_NT" ]; then
+  npm.cmd run format:check
+  npm.cmd test
+else
+  npm run format:check
+  npm test
+fi

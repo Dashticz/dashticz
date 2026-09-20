@@ -1,6 +1,24 @@
 Release Notes
 =============
 
+v4.0.10 (20-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added the HP iLO widget (Widgets menu): clustered HPE server info read
+  from the iLO Redfish API through the same-origin PHP bridge
+  ``vendor/dashticz/hpilo/index.php``, based on the domoticz_HP_ilo plugin.
+  The rows (server name, model, power, health, uptime as days/hours/minutes,
+  fan speed, CPU and inlet temperature, power usage, storage health, SSD
+  lifetime, iLO firmware, network, serial number, minimum fan speed, thermal
+  configuration and power regulator) are picked and drag-reordered in the
+  widget config. iLO host, port, credentials, poll interval and font size are
+  widget settings.
+- The Widgets menu cards are now sorted alphabetically.
+- The Widgets menu now shows four cards per row (slightly smaller cards,
+  same menu width).
+
 v4.0.9 (14-9-2026)
 ----------------------
 

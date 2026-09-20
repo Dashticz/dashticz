@@ -41,6 +41,15 @@ var DashticzWidgetEditor = (function () {
       height: 160,
     },
     {
+      id: 'hpilo',
+      blockKey: 'widget_hpilo',
+      title: 'HP iLO',
+      description: 'HPE server status (power, fans, temperatures) via iLO.',
+      icon: 'fas fa-server',
+      width: 4,
+      height: 200,
+    },
+    {
       id: 'spotify',
       blockKey: 'widget_spotify',
       title: 'Spotify',
@@ -1088,6 +1097,18 @@ var DashticzWidgetEditor = (function () {
         postnl_fontsize: _s('postnl_fontsize', '14'),
         postnl_showdelivered: _n('postnl_showdelivered', 1),
       },
+      hpilo: {
+        hpilo_host: _s('hpilo_host'),
+        hpilo_port: _s('hpilo_port', '443'),
+        hpilo_username: _s('hpilo_username'),
+        hpilo_password: _s('hpilo_password'),
+        hpilo_pollseconds: _s('hpilo_pollseconds', '300'),
+        hpilo_fontsize: _s('hpilo_fontsize', '14'),
+        hpilo_rows: _s(
+          'hpilo_rows',
+          'power,health,uptime,fanspeed,cputemp,inlettemp'
+        ),
+      },
       spotify: {
         spot_clientid: _s('spot_clientid'),
       },
@@ -1692,6 +1713,7 @@ var DashticzWidgetEditor = (function () {
       wunderground: 'weather',
       garbage: 'garbage',
       postnl: 'postnl',
+      hpilo: 'hpilo',
       spotify: 'spotify',
       sonarr: 'sonarr',
       calendar: 'calendar',
@@ -2194,6 +2216,19 @@ var DashticzWidgetEditor = (function () {
       '</div></div></div></div>';
 
     $('body').append(html);
+    // Show the widget cards alphabetically (by the displayed, translated title).
+    $('#widgeteditorpopup .we-widget-grid').each(function () {
+      var $cards = $(this).children('.we-widget-card').get();
+      $cards.sort(function (a, b) {
+        return $(a)
+          .find('.we-widget-title')
+          .text()
+          .localeCompare($(b).find('.we-widget-title').text(), undefined, {
+            sensitivity: 'base',
+          });
+      });
+      $(this).append($cards);
+    });
     _attachHandlers();
     _wireBackButton('widgeteditorpopup');
     window.bootstrap.Modal.getOrCreateInstance(
@@ -2208,6 +2243,7 @@ var DashticzWidgetEditor = (function () {
       id === 'clock' ||
       id === 'garbage' ||
       id === 'postnl' ||
+      id === 'hpilo' ||
       id === 'sonarr' ||
       id === 'spotify' ||
       id === 'secpanel' ||
@@ -3069,6 +3105,129 @@ var DashticzWidgetEditor = (function () {
     return html;
   }
 
+  // HP iLO widget: the rows the tile shows, in order. Same add/remove picker
+  // as the devices of a Cluster block; the order of the list is the order on
+  // the tile. Stored as a comma-separated list in the hidden hpilo_rows field.
+  var HPILO_ROWS = {
+    name: 'Server name',
+    model: 'Model',
+    power: 'Server power',
+    health: 'Server health',
+    uptime: 'Server uptime',
+    fanspeed: 'Server fanspeed',
+    cputemp: 'CPU temperature',
+    inlettemp: 'Inlet temperature',
+    watts: 'Power usage',
+    storage: 'Storage health',
+    ssdlife: 'SSD lifetime',
+    firmware: 'iLO firmware',
+    network: 'Network',
+    serial: 'Serial number',
+    minfan: 'Minimum fan speed',
+    thermalconfig: 'Thermal configuration',
+    powerregulator: 'Power regulator',
+  };
+
+  function _hpiloRowLabel(key) {
+    var misc = (typeof language !== 'undefined' && language.misc) || {};
+    return misc['hpilo_' + key] || HPILO_ROWS[key];
+  }
+
+  function _hpiloRowKeys(value) {
+    var seen = {};
+    return String(value || '')
+      .split(',')
+      .map(function (key) {
+        return $.trim(key);
+      })
+      .filter(function (key) {
+        if (!HPILO_ROWS[key] || seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
+  }
+
+  function _hpiloRowsInnerHtml(keys) {
+    var lng =
+      typeof language !== 'undefined' && language.settings
+        ? language.settings
+        : {};
+    var lh = lng.hpilo || {};
+    var options =
+      '<option value="">— ' +
+      _esc(lh.hpilo_rows_select || 'Select a row') +
+      ' —</option>';
+    Object.keys(HPILO_ROWS).forEach(function (key) {
+      if (keys.indexOf(key) === -1) {
+        options +=
+          '<option value="' +
+          _esc(key) +
+          '">' +
+          _esc(_hpiloRowLabel(key)) +
+          '</option>';
+      }
+    });
+    var list = keys.length
+      ? keys
+          .map(function (key) {
+            return (
+              '<div class="de-device-item we-hpilo-item" data-key="' +
+              _esc(key) +
+              '" draggable="true">' +
+              '<span class="de-drag-handle" title="' +
+              _esc(lh.hpilo_rows_drag || 'Drag to reorder') +
+              '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>' +
+              '<span class="we-hpilo-name">' +
+              _esc(_hpiloRowLabel(key)) +
+              '</span>' +
+              '<button type="button" class="btn btn-outline-danger btn-sm we-hpilo-remove ms-auto"' +
+              ' title="' +
+              _esc(lh.hpilo_rows_remove || 'Remove') +
+              '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+              '</div>'
+            );
+          })
+          .join('')
+      : '<div class="de-empty">' +
+        _esc(lh.hpilo_rows_none || 'No rows added yet.') +
+        '</div>';
+    return { options: options, list: list };
+  }
+
+  function _hpiloRowsFieldHtml(value) {
+    var lng =
+      typeof language !== 'undefined' && language.settings
+        ? language.settings
+        : {};
+    var lh = lng.hpilo || {};
+    var keys = _hpiloRowKeys(value);
+    var inner = _hpiloRowsInnerHtml(keys);
+    return (
+      '<div class="mb-3" id="we-hpilo-rows">' +
+      '<label class="form-label we-field-label">' +
+      _esc(lh.hpilo_rows || 'Rows') +
+      '</label>' +
+      '<input type="hidden" class="we-widget-field" id="we-cfg-hpilo-rows" data-cfg-key="hpilo_rows" value="' +
+      _esc(keys.join(',')) +
+      '">' +
+      '<div class="d-flex gap-2">' +
+      '<select class="form-select form-select-sm" id="we-hpilo-select">' +
+      inner.options +
+      '</select>' +
+      '<button type="button" class="btn btn-outline-success btn-sm" id="we-hpilo-add"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+      '</div>' +
+      '<div class="form-text">' +
+      _esc(
+        lh.hpilo_rows_help ||
+          'Pick a row and click + to add it. The order below is the order on the tile.'
+      ) +
+      '</div>' +
+      '<div id="we-hpilo-list" class="mt-2">' +
+      inner.list +
+      '</div></div>'
+    );
+  }
+
   function _buildConfigModalHtml(item) {
     var fields = '';
     var lng =
@@ -3079,6 +3238,7 @@ var DashticzWidgetEditor = (function () {
     var ll = lng.localize || {};
     var lg = lng.garbage || {};
     var lp = lng.postnl || {};
+    var lh = lng.hpilo || {};
     var lm = lng.media || {};
     // Radio's Add station control docks next to the Display options
     // checkboxes rather than living on every station row.
@@ -3656,6 +3816,52 @@ var DashticzWidgetEditor = (function () {
         lp.postnl_fontsize_help ||
           'Font size of the shipment text. Default: 14.'
       );
+    } else if (item.id === 'hpilo') {
+      var hcfg = widgetConfigs.hpilo || {};
+      fields += _cfgField(
+        'hpilo_host',
+        lh.hpilo_host || 'iLO IP address / hostname',
+        'text',
+        hcfg.hpilo_host
+      );
+      fields += _cfgField(
+        'hpilo_port',
+        lh.hpilo_port || 'Port',
+        'number',
+        hcfg.hpilo_port || '443',
+        { min: 1, max: 65535, step: 1 },
+        lh.hpilo_port_help || 'HTTPS port of the iLO. Default: 443.'
+      );
+      fields += _cfgField(
+        'hpilo_username',
+        lh.hpilo_username || 'Username',
+        'text',
+        hcfg.hpilo_username
+      );
+      fields += _cfgField(
+        'hpilo_password',
+        lh.hpilo_password || 'Password',
+        'password',
+        hcfg.hpilo_password
+      );
+      fields += _cfgField(
+        'hpilo_pollseconds',
+        lh.hpilo_pollseconds || 'Poll interval (sec)',
+        'number',
+        hcfg.hpilo_pollseconds || '300',
+        { min: 30, max: 86400, step: 10 },
+        lh.hpilo_pollseconds_help ||
+          'Minimum 30 seconds; the iLO is a slow management processor. Default: 300.'
+      );
+      fields += _cfgField(
+        'hpilo_fontsize',
+        lh.hpilo_fontsize || 'Font size (px)',
+        'number',
+        hcfg.hpilo_fontsize || '14',
+        { min: 8, max: 60, step: 1 },
+        lh.hpilo_fontsize_help || 'Font size of the rows. Default: 14.'
+      );
+      fields += _hpiloRowsFieldHtml(hcfg.hpilo_rows);
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
       fields += _cfgField(
@@ -3723,6 +3929,7 @@ var DashticzWidgetEditor = (function () {
       // _readConfiguredWidgets()/_hydrateGridWidget() above).
       var tcfg = widgetConfigs.trafficinfo || {};
       var lwgt = lng.widgets || {};
+      fields += '<div class="we-switch-grid we-switch-grid-three">';
       fields += _cfgField(
         'trafficJams',
         lwgt.traffic_jams || 'Traffic jams',
@@ -3747,6 +3954,7 @@ var DashticzWidgetEditor = (function () {
         null,
         lwgt.traffic_radars_help || ''
       );
+      fields += '</div>';
       fields += _cfgField(
         'results',
         lwgt.traffic_results || 'Max results',
@@ -4422,6 +4630,90 @@ var DashticzWidgetEditor = (function () {
         .attr('src', _clockPreviewSrc(type));
     });
 
+    function hpiloSetRows(keys) {
+      var inner = _hpiloRowsInnerHtml(keys);
+      $cfgModal.find('#we-cfg-hpilo-rows').val(keys.join(','));
+      $cfgModal.find('#we-hpilo-select').html(inner.options);
+      $cfgModal.find('#we-hpilo-list').html(inner.list);
+    }
+
+    function hpiloRows() {
+      return _hpiloRowKeys($cfgModal.find('#we-cfg-hpilo-rows').val());
+    }
+
+    $cfgModal.on('click', '#we-hpilo-add', function () {
+      var key = $cfgModal.find('#we-hpilo-select').val();
+      if (!HPILO_ROWS[key]) return;
+      hpiloSetRows(hpiloRows().concat([key]));
+    });
+
+    $cfgModal.on('click', '.we-hpilo-remove', function () {
+      var key = String($(this).closest('.we-hpilo-item').data('key'));
+      hpiloSetRows(
+        hpiloRows().filter(function (row) {
+          return row !== key;
+        })
+      );
+    });
+
+    // Drag-and-drop reordering, same behaviour as the Device Editor's list.
+    var hpiloDragEl = null;
+    var hpiloDragClasses = 'de-drag-over-top de-drag-over-bottom';
+
+    $cfgModal.on('dragstart', '.we-hpilo-item', function (e) {
+      hpiloDragEl = this;
+      e.originalEvent.dataTransfer.effectAllowed = 'move';
+      e.originalEvent.dataTransfer.setData(
+        'text/plain',
+        String($(this).attr('data-key'))
+      );
+      $(this).addClass('de-drag-dragging');
+    });
+
+    $cfgModal.on('dragend', '.we-hpilo-item', function () {
+      hpiloDragEl = null;
+      $(this).removeClass('de-drag-dragging');
+      $cfgModal.find('.we-hpilo-item').removeClass(hpiloDragClasses);
+    });
+
+    $cfgModal.on('dragover', '.we-hpilo-item', function (e) {
+      if (!hpiloDragEl) return;
+      e.preventDefault();
+      e.originalEvent.dataTransfer.dropEffect = 'move';
+      if (this === hpiloDragEl) return;
+      var rect = this.getBoundingClientRect();
+      var above = e.originalEvent.clientY < rect.top + rect.height / 2;
+      $(this)
+        .toggleClass('de-drag-over-top', above)
+        .toggleClass('de-drag-over-bottom', !above);
+    });
+
+    $cfgModal.on('dragleave', '.we-hpilo-item', function (e) {
+      /* only clear when leaving the item itself, not a child */
+      if (!this.contains(e.originalEvent.relatedTarget)) {
+        $(this).removeClass(hpiloDragClasses);
+      }
+    });
+
+    $cfgModal.on('drop', '.we-hpilo-item', function (e) {
+      if (!hpiloDragEl) return;
+      e.preventDefault();
+      if (this === hpiloDragEl) return;
+      var rect = this.getBoundingClientRect();
+      var above = e.originalEvent.clientY < rect.top + rect.height / 2;
+      if (above) {
+        $(this).before(hpiloDragEl);
+      } else {
+        $(this).after(hpiloDragEl);
+      }
+      $(this).removeClass(hpiloDragClasses);
+      var keys = [];
+      $cfgModal.find('.we-hpilo-item').each(function () {
+        keys.push(String($(this).attr('data-key')));
+      });
+      $cfgModal.find('#we-cfg-hpilo-rows').val(keys.join(','));
+    });
+
     $cfgModal.on('click', '#we-calendar-add', function () {
       var index = $cfgModal.find('.we-calendar-row').length;
       $('#we-cfg-calendar-list').append(
@@ -4783,6 +5075,8 @@ var DashticzWidgetEditor = (function () {
         widgetConfigs.garbage = collected;
       } else if (widgetId === 'postnl') {
         widgetConfigs.postnl = collected;
+      } else if (widgetId === 'hpilo') {
+        widgetConfigs.hpilo = collected;
       } else if (widgetId === 'sonarr') {
         widgetConfigs.sonarr = collected;
       } else if (widgetId === 'spotify') {
@@ -5278,6 +5572,15 @@ var DashticzWidgetEditor = (function () {
         'postnl_pollminutes',
         'postnl_fontsize',
         'postnl_showdelivered',
+      ],
+      hpilo: [
+        'hpilo_host',
+        'hpilo_port',
+        'hpilo_username',
+        'hpilo_password',
+        'hpilo_pollseconds',
+        'hpilo_fontsize',
+        'hpilo_rows',
       ],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],
