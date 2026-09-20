@@ -6175,7 +6175,7 @@ canvas {
 
 .sec-frame .keypad-input .status:before {
   position: relative;
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 7 Free';
   mix-blend-mode: soft-light;
   font-weight: 900;
   font-size: 100%;
@@ -6204,7 +6204,7 @@ canvas {
 
 .sec-frame .keypad-input .key[data-id='cancel']:before {
   content: '\f104';
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 7 Free';
   font-weight: 900;
   font-size: 100%;
 }
