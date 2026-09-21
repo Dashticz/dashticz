@@ -76,7 +76,11 @@ var DT_f1 = (function () {
   return {
     name: 'f1',
     canHandle: function (block) {
-      return !!(block && typeof block.f1mode === 'string' && block.f1mode);
+      return !!(
+        block &&
+        ((typeof block.f1mode === 'string' && block.f1mode) ||
+          /^(?:f1|f1events)$/i.test(String(block.type || '')))
+      );
     },
     defaultCfg: {
       width: 4,
@@ -92,6 +96,41 @@ var DT_f1 = (function () {
 
   function misc() {
     return (typeof language !== 'undefined' && language.misc) || {};
+  }
+
+  // Compatibility for the original singleton F1 widgets. Their mode lived
+  // in block.type and all other options in global settings. Device Editor
+  // writes this normalized shape back as per-block fields on the next save.
+  function normaliseLegacyBlock(block) {
+    var type = String((block && block.type) || '').toLowerCase();
+    if (type !== 'f1' && type !== 'f1events') return block;
+
+    var normalised = $.extend({}, block);
+    if (!normalised.f1mode) {
+      normalised.f1mode = type === 'f1events' ? 'all' : 'next';
+    }
+    var legacySettings = {
+      f1language: 'f1_language',
+      f1urlen: 'f1_url_en',
+      f1urlnl: 'f1_url_nl',
+      f1utcoffset: 'f1_utcoffset',
+      f1pollminutes: 'f1_pollminutes',
+      f1sessions: 'f1_sessions',
+      f1visibility: 'f1_visibility',
+      f1emptytext: 'f1_emptytext',
+      hideimageonempty: 'f1_hideimageonempty',
+      f1fontsize: 'f1_fontsize',
+    };
+    Object.keys(legacySettings).forEach(function (blockField) {
+      var settingField = legacySettings[blockField];
+      if (
+        typeof normalised[blockField] === 'undefined' &&
+        typeof settings[settingField] !== 'undefined'
+      ) {
+        normalised[blockField] = settings[settingField];
+      }
+    });
+    return normalised;
   }
 
   function num(block, key, def, min, max) {
@@ -284,7 +323,7 @@ var DT_f1 = (function () {
   }
 
   function refresh(me) {
-    var block = me.block;
+    var block = normaliseLegacyBlock(me.block);
     // Set on every refresh; empty removes the override.
     var fontSize = parseInt(block.f1fontsize, 10);
     me.$mountPoint.css(
@@ -320,7 +359,12 @@ var DT_f1 = (function () {
           var event = nextEvent(block, events, now);
           html = event && eventHtml(block, event);
         }
-        if (!html) return showEmpty(me);
+        if (!html) {
+          // showEmpty reads me.block for the legacy hide-image/no-event
+          // options, so expose the normalized instance for this refresh.
+          me.block = block;
+          return showEmpty(me);
+        }
         me.$mountPoint.find('.dt_state').html(html);
         setImageVisible(me, true);
       },

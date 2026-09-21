@@ -880,6 +880,45 @@ var DashticzDeviceEditor = (function () {
     return 'v' + idx.slice(1);
   }
 
+  /* F1 originally shipped as the two singleton catalog widgets
+     widget_f1/type:'f1' and widget_f1events/type:'f1events', with their
+     options stored globally in settings. Keep those blocks editable and
+     migrate them to the repeatable per-block shape the next time the screen
+     is saved. Without this bridge, adding a second F1 block silently omitted
+     the existing legacy one from the rebuilt screen configuration. */
+  function _normaliseLegacyF1Definition(definition) {
+    var type = String((definition && definition.type) || '').toLowerCase();
+    if (type !== 'f1' && type !== 'f1events') return definition;
+
+    var normalised = $.extend({}, definition);
+    if (!normalised.f1mode) {
+      normalised.f1mode = type === 'f1events' ? 'all' : 'next';
+    }
+    var legacySettings = {
+      f1language: 'f1_language',
+      f1urlen: 'f1_url_en',
+      f1urlnl: 'f1_url_nl',
+      f1utcoffset: 'f1_utcoffset',
+      f1pollminutes: 'f1_pollminutes',
+      f1sessions: 'f1_sessions',
+      f1visibility: 'f1_visibility',
+      f1emptytext: 'f1_emptytext',
+      hideimageonempty: 'f1_hideimageonempty',
+      f1fontsize: 'f1_fontsize',
+    };
+    Object.keys(legacySettings).forEach(function (blockField) {
+      var settingField = legacySettings[blockField];
+      if (
+        typeof normalised[blockField] === 'undefined' &&
+        typeof settings !== 'undefined' &&
+        typeof settings[settingField] !== 'undefined'
+      ) {
+        normalised[blockField] = settings[settingField];
+      }
+    });
+    return normalised;
+  }
+
   /* Recognise editor-created dummy and title blocks without treating every
      hand-written block with hide_data as a dummy device. */
   function _specialFromReference(reference) {
@@ -1057,14 +1096,17 @@ var DashticzDeviceEditor = (function () {
       kind = 'camera';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
-      typeof definition.f1mode === 'string' &&
-      definition.f1mode !== ''
+      ((typeof definition.f1mode === 'string' && definition.f1mode !== '') ||
+        /^(?:f1|f1events)$/i.test(String(definition.type || '')))
     ) {
       // Repeatable F1 block, added via the Widgets menu's F1 card
       // (_showF1Popup()). Matches js/components/f1.js's own canHandle():
       // dispatched on a truthy f1mode ('next' or 'all'), no `type` of its
-      // own, same convention as news/graph.
+      // own, same convention as news/graph. The legacy type check keeps the
+      // original singleton widgets in the managed list until this save
+      // converts them to that new shape.
       kind = 'f1';
+      definition = _normaliseLegacyF1Definition(definition);
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       reference !== 'widget_news' &&
