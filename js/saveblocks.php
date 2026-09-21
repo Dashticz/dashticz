@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -206,8 +206,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
-            // Only Icon and Last update apply to these ten (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1') {
+            // Only Icon and Last update apply to these eleven (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -323,6 +323,24 @@ foreach ($data['devices'] as $entry) {
                     || strlen($customFields['feed']) > 2048
                 ) {
                     dashticz_json_error(400, 'Enter a valid news feed URL.');
+                }
+            } elseif ($kind === 'f1') {
+                // f1mode is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but
+                // js/components/f1.js dispatches on it, so it is required
+                // here. The URLs are fetched server-side by
+                // vendor/dashticz/f1/index.php, which only accepts public
+                // https addresses; reject anything else already here.
+                if (!isset($customFields['f1mode']) || !in_array($customFields['f1mode'], ['next', 'all'], true)) {
+                    dashticz_json_error(400, 'An F1 block requires a mode.');
+                }
+                foreach (['f1urlen', 'f1urlnl'] as $f1UrlField) {
+                    if (isset($customFields[$f1UrlField])
+                        && (!is_string($customFields[$f1UrlField])
+                            || !preg_match('#^https://\S+$#i', $customFields[$f1UrlField])
+                            || strlen($customFields[$f1UrlField]) > 2048)) {
+                        dashticz_json_error(400, 'Enter a valid F1 calendar URL.');
+                    }
                 }
             } elseif ($kind === 'graph') {
                 // devices is otherwise just another custom field (see

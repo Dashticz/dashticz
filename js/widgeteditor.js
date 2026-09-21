@@ -2205,6 +2205,7 @@ var DashticzWidgetEditor = (function () {
     html += _newsWidgetCardHtml();
     html += _lmsWidgetCardHtml();
     html += _graphWidgetCardHtml();
+    html += _f1WidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2655,6 +2656,39 @@ var DashticzWidgetEditor = (function () {
       _t('click_to_add', 'Click to add') +
       '</div></div>'
     );
+  }
+
+  /* F1 (docs/blocks/specials/f1.rst, js/components/f1.js) is, like Graph,
+     only ever a repeatable card: it opens the F1 quick-add popup
+     (DashticzDeviceEditor.openF1()), where the tile itself is set to show
+     the next event or all events. */
+  function _f1WidgetCardHtml() {
+    var itemTitle = _t('f1_title', 'F1');
+    return (
+      '<div class="we-widget-card we-widget-card-f1" data-special-widget="f1" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-flag-checkered" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'f1_description',
+        'Formula 1 race weekend: the next session, or all sessions (domoticz_F1 plugin).'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openF1FromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openF1();
+    });
   }
 
   function _openGraphFromWidgets() {
@@ -5649,6 +5683,10 @@ var DashticzWidgetEditor = (function () {
         _openGraphFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'f1') {
+        _openF1FromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5690,6 +5728,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'graph') {
         _openGraphFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'f1') {
+        _openF1FromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

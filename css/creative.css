@@ -8396,3 +8396,75 @@ canvas {
   line-height: 1;
   text-align: center;
 }
+
+/* F1 widgets (js/components/f1.js): next event (centered) and all events, painted
+   into .dt_state. */
+.f1-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  /* The cluster's font size option sets --font-device-title on the tile. */
+  font-size: var(--font-device-title);
+}
+
+.f1-rows {
+  padding: 4px 0;
+  text-align: center;
+}
+
+.f1-list {
+  text-align: left;
+}
+
+.f1-list .f1-heading {
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.f1-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.f1-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.f1-value {
+  flex: none;
+  text-align: right;
+}
+
+.f1-past {
+  opacity: 0.5;
+}
+
+.f1-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.f1-image {
+  flex: none;
+  width: auto;
+  max-width: 40%;
+  height: 3em;
+  object-fit: contain;
+}
+
+/* Grid screens: cap the F1 tile at its row's height and clip the excess, like
+   .frame/.waqi/.log above - min-height alone lets a tile with more rows than
+   fit grow past its row, and .dt-grid-item's own overflow: auto then shows a
+   scrollbar on the grid item. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1-block {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}

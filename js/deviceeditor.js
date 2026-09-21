@@ -38,6 +38,7 @@ var DashticzDeviceEditor = (function () {
     'camera',
     'news',
     'graph',
+    'f1',
   ];
 
   // Title is optional (blank is fine) rather than required.
@@ -55,6 +56,7 @@ var DashticzDeviceEditor = (function () {
     'camera',
     'news',
     'graph',
+    'f1',
   ];
 
   // Defaults to a 6-column width instead of the generic 3-column
@@ -85,6 +87,7 @@ var DashticzDeviceEditor = (function () {
     'camera',
     'news',
     'graph',
+    'f1',
   ];
 
   // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
@@ -106,6 +109,7 @@ var DashticzDeviceEditor = (function () {
     'camera',
     'news',
     'graph',
+    'f1',
   ];
   var deviceNames = {}; // composite key -> device name
   var deviceWidths = {}; // composite key -> block width (1..12)
@@ -555,6 +559,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showGraphPopup();
+  }
+
+  /** Open the dedicated F1 popup used by the Screen Editor add menu. */
+  function openF1() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showF1Popup();
   }
 
   /** Open the dedicated News popup used by the Screen Editor add menu. */
@@ -1042,6 +1055,16 @@ var DashticzDeviceEditor = (function () {
       // `cameras` array) keeps going through DashticzWidgetEditor's own
       // (unrelated) config path unchanged.
       kind = 'camera';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      typeof definition.f1mode === 'string' &&
+      definition.f1mode !== ''
+    ) {
+      // Repeatable F1 block, added via the Widgets menu's F1 card
+      // (_showF1Popup()). Matches js/components/f1.js's own canHandle():
+      // dispatched on a truthy f1mode ('next' or 'all'), no `type` of its
+      // own, same convention as news/graph.
+      kind = 'f1';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       reference !== 'widget_news' &&
@@ -1636,6 +1659,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'timegraph') return 'fas fa-chart-line';
       if (special.specialType === 'xmltvguide') return 'fas fa-tv';
       if (special.specialType === 'lms') return 'fas fa-music';
+      if (special.specialType === 'f1') return 'fas fa-flag-checkered';
     }
     return 'fas fa-question';
   }
@@ -6857,6 +6881,528 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  /* Repeatable F1 block (js/components/f1.js, docs/blocks/specials/f1.rst) -
+     same managedSpecials mechanism as Graph/News above (kind:'special',
+     specialType:'f1'), so any number of independently-configured F1 tiles can
+     be placed on one screen. The tile itself chooses what it shows: the next
+     session ('next') or every session of the next race weekend ('all'), via
+     the icon buttons of _f1FieldsHtml(). Like Graph, it has no `type` of its
+     own: js/components/f1.js dispatches on a truthy f1mode, and every F1
+     setting rides through custom_fields (see _f1CustomRows()). */
+  var F1_URL_EN =
+    'https://files-f1.motorsportcalendars.com/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
+  var F1_URL_NL =
+    'https://files-f1.motorsportcalendars.com/nl/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
+  // Custom field name (lower case) -> value, kept in one place so the popup,
+  // the config popup and the generic Custom fields list agree on which
+  // fields the dedicated F1 section owns.
+  var F1_FIELDS = {
+    f1mode: true,
+    f1language: true,
+    f1urlen: true,
+    f1urlnl: true,
+    f1utcoffset: true,
+    f1pollminutes: true,
+    f1sessions: true,
+    f1visibility: true,
+    f1emptytext: true,
+    hideimageonempty: true,
+    f1fontsize: true,
+    f1image: true,
+  };
+
+  // Stored custom-field rows -> the values shown in the F1 section.
+  function _f1ValuesFromRows(rows) {
+    var values = {};
+    (rows || []).forEach(function (row) {
+      var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+      if (F1_FIELDS[field]) values[field] = row.value;
+    });
+    return {
+      mode: values.f1mode === 'all' ? 'all' : 'next',
+      language: values.f1language === 'nl' ? 'nl' : 'en',
+      urlEn: String(values.f1urlen || ''),
+      urlNl: String(values.f1urlnl || ''),
+      utcOffset: values.f1utcoffset !== undefined ? values.f1utcoffset : 1,
+      pollMinutes:
+        values.f1pollminutes !== undefined ? values.f1pollminutes : 60,
+      sessions: /^(sprint_race|race)$/.test(values.f1sessions)
+        ? values.f1sessions
+        : 'all',
+      visibility: values.f1visibility !== undefined ? values.f1visibility : 3,
+      emptyText: String(values.f1emptytext || ''),
+      hideImage:
+        values.hideimageonempty === true || values.hideimageonempty === 'true',
+      fontSize: values.f1fontsize !== undefined ? values.f1fontsize : '',
+      image: String(values.f1image || ''),
+    };
+  }
+
+  function _f1FieldHtml(prefix, key, label, inputHtml, help, full) {
+    return (
+      '<div class="' +
+      (full ? 'col-12' : 'col-md-6') +
+      '"><div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-f1-' +
+      key +
+      '">' +
+      _esc(label) +
+      '</label>' +
+      inputHtml +
+      (help ? '<div class="form-text">' + _esc(help) + '</div>' : '') +
+      '</div></div>'
+    );
+  }
+
+  function _f1InputHtml(prefix, key, type, value, attrs) {
+    return (
+      '<input type="' +
+      type +
+      '" class="form-control" id="' +
+      _esc(prefix) +
+      '-f1-' +
+      key +
+      '" value="' +
+      _esc(String(value)) +
+      '"' +
+      (attrs || '') +
+      ' autocomplete="off">'
+    );
+  }
+
+  function _f1SelectHtml(prefix, key, value, options) {
+    var html =
+      '<select class="form-select" id="' + _esc(prefix) + '-f1-' + key + '">';
+    options.forEach(function (option) {
+      html +=
+        '<option value="' +
+        _esc(option[0]) +
+        '"' +
+        (String(value) === option[0] ? ' selected' : '') +
+        '>' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    return html + '</select>';
+  }
+
+  /* The F1 section shared by the quick-add popup and the config popup. Two
+     columns (one on a narrow screen); the mode is picked with the two icon
+     buttons at the top. */
+  function _f1FieldsHtml(prefix, values) {
+    var t = _translations();
+    var v = _f1ValuesFromRows([]);
+    v = $.extend(v, values || {});
+    var html =
+      '<div class="de-f1-fields" data-f1-prefix="' + _esc(prefix) + '">';
+    html += '<h6 class="de-section-title">' + _esc(t.f1_block) + '</h6>';
+    html +=
+      '<div class="mb-3"><label class="form-label">' +
+      _esc(t.f1_block_mode) +
+      '</label><div class="btn-group d-flex de-f1-modes" role="group" id="' +
+      _esc(prefix) +
+      '-f1-mode" data-value="' +
+      _esc(v.mode) +
+      '">';
+    [
+      ['next', 'fas fa-flag-checkered', t.f1_block_mode_next],
+      ['all', 'fas fa-list-ul', t.f1_block_mode_all],
+    ].forEach(function (mode) {
+      html +=
+        '<button type="button" class="btn btn-outline-primary flex-fill de-f1-mode' +
+        (v.mode === mode[0] ? ' active' : '') +
+        '" data-mode="' +
+        mode[0] +
+        '" aria-pressed="' +
+        (v.mode === mode[0] ? 'true' : 'false') +
+        '"><i class="' +
+        mode[1] +
+        ' me-1" aria-hidden="true"></i>' +
+        _esc(mode[2]) +
+        '</button>';
+    });
+    html += '</div></div>';
+    html += '<div class="row">';
+    html += _f1FieldHtml(
+      prefix,
+      'language',
+      t.f1_block_language,
+      _f1SelectHtml(prefix, 'language', v.language, [
+        ['en', 'English'],
+        ['nl', 'Nederlands'],
+      ])
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'utcoffset',
+      t.f1_block_utcoffset,
+      _f1InputHtml(
+        prefix,
+        'utcoffset',
+        'number',
+        v.utcOffset,
+        ' min="-24" max="24" step="1"'
+      ),
+      t.f1_block_utcoffset_help
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'pollminutes',
+      t.f1_block_pollminutes,
+      _f1InputHtml(
+        prefix,
+        'pollminutes',
+        'number',
+        v.pollMinutes,
+        ' min="5" max="1440" step="5"'
+      ),
+      t.f1_block_pollminutes_help
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'sessions',
+      t.f1_block_sessions,
+      _f1SelectHtml(prefix, 'sessions', v.sessions, [
+        ['all', t.f1_block_sessions_all],
+        ['sprint_race', t.f1_block_sessions_sprint_race],
+        ['race', t.f1_block_sessions_race],
+      ])
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'visibility',
+      t.f1_block_visibility,
+      _f1InputHtml(
+        prefix,
+        'visibility',
+        'number',
+        v.visibility,
+        ' min="0" max="365" step="1"'
+      ),
+      t.f1_block_visibility_help
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'emptytext',
+      t.f1_block_emptytext,
+      _f1InputHtml(prefix, 'emptytext', 'text', v.emptyText),
+      t.f1_block_emptytext_help
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'fontsize',
+      t.f1_block_fontsize,
+      _f1InputHtml(
+        prefix,
+        'fontsize',
+        'number',
+        v.fontSize,
+        ' min="8" max="60" step="1"'
+      ),
+      t.f1_block_fontsize_help
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'hideimage',
+      t.f1_block_hideimage,
+      '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+        _esc(prefix) +
+        '-f1-hideimage"' +
+        (v.hideImage ? ' checked' : '') +
+        '></div>'
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'image',
+      t.f1_block_image,
+      '<div class="input-group input-group-sm de-f1-image-row" style="position:relative;">' +
+        '<input type="text" class="form-control de-f1-image-input" id="' +
+        _esc(prefix) +
+        '-f1-image" placeholder="custom/icon.png" value="' +
+        _esc(v.image) +
+        '" autocomplete="off">' +
+        '<button type="button" class="btn btn-outline-danger de-f1-image-clear" title="' +
+        _esc(t.remove_field) +
+        '"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
+        '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
+        _esc(t.custom_images) +
+        '"><div class="dt-custom-image-status"></div>' +
+        '<div class="dt-custom-image-grid"></div></div></div>',
+      t.f1_block_image_help,
+      true
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'urlen',
+      t.f1_block_url_en,
+      _f1InputHtml(prefix, 'urlen', 'text', v.urlEn || F1_URL_EN),
+      t.f1_block_url_help,
+      true
+    );
+    html += _f1FieldHtml(
+      prefix,
+      'urlnl',
+      t.f1_block_url_nl,
+      _f1InputHtml(prefix, 'urlnl', 'text', v.urlNl || F1_URL_NL),
+      '',
+      true
+    );
+    html += '</div></div>';
+    return html;
+  }
+
+  /* Call once after appending markup built with _f1FieldsHtml() above. */
+  function _wireF1Fields(prefix, $popup) {
+    $popup.on('click', '#' + prefix + '-f1-mode .de-f1-mode', function () {
+      var $group = $(this).closest('.de-f1-modes');
+      $group.attr('data-value', String($(this).attr('data-mode')));
+      $group
+        .find('.de-f1-mode')
+        .removeClass('active')
+        .attr('aria-pressed', 'false');
+      $(this).addClass('active').attr('aria-pressed', 'true');
+    });
+
+    // Own image picker (same custom-image grid as the Icon/Image field). The
+    // image is shown next to the text of the Next event tile, in addition to
+    // the tile icon, so it is not the block's own icon/image field. Handlers
+    // stop propagation: the config popup closes every picker on a click
+    // outside its own icon rows.
+    var t = _translations();
+    function closePicker() {
+      $popup
+        .find('.de-f1-image-row .dt-custom-image-picker')
+        .removeClass('show');
+    }
+    $popup.on('click focus', '.de-f1-image-input', function (event) {
+      event.stopImmediatePropagation();
+      var $picker = $(this)
+        .closest('.de-f1-image-row')
+        .find('.dt-custom-image-picker');
+      var selected = String($(this).val() || '');
+      closePicker();
+      $picker.addClass('show');
+      $picker.find('.dt-custom-image-status').show().text(t.loading_images);
+      $picker.find('.dt-custom-image-grid').empty();
+      _loadCustomImages()
+        .done(function (images) {
+          _renderCustomImageGrid($picker, images, selected, t.no_custom_images);
+        })
+        .fail(function () {
+          $picker.find('.dt-custom-image-grid').empty();
+          $picker
+            .find('.dt-custom-image-status')
+            .show()
+            .text(t.custom_images_error);
+        });
+    });
+    $popup.on(
+      'click',
+      '.de-f1-image-row .dt-custom-image-option',
+      function (event) {
+        event.stopImmediatePropagation();
+        $(this)
+          .closest('.de-f1-image-row')
+          .find('.de-f1-image-input')
+          .val(String($(this).attr('data-image-path') || ''));
+        closePicker();
+      }
+    );
+    $popup.on('click', '.de-f1-image-clear', function (event) {
+      event.stopImmediatePropagation();
+      $(this).closest('.de-f1-image-row').find('.de-f1-image-input').val('');
+      closePicker();
+    });
+    $popup.on('click', function (event) {
+      if (!$(event.target).closest('.de-f1-image-row').length) closePicker();
+    });
+  }
+
+  function _readF1Fields(prefix) {
+    function num(key, def, min, max) {
+      var value = parseFloat($('#' + prefix + '-f1-' + key).val());
+      return isNaN(value)
+        ? def
+        : Math.min(max, Math.max(min, Math.round(value)));
+    }
+    function text(key) {
+      return $.trim(String($('#' + prefix + '-f1-' + key).val() || ''));
+    }
+    var urlEn = text('urlen');
+    var urlNl = text('urlnl');
+    return {
+      mode:
+        $('#' + prefix + '-f1-mode').attr('data-value') === 'all'
+          ? 'all'
+          : 'next',
+      language: text('language') === 'nl' ? 'nl' : 'en',
+      urlEn: urlEn || F1_URL_EN,
+      urlNl: urlNl || F1_URL_NL,
+      validUrls:
+        /^https:\/\/\S+$/i.test(urlEn || F1_URL_EN) &&
+        /^https:\/\/\S+$/i.test(urlNl || F1_URL_NL),
+      utcOffset: num('utcoffset', 1, -24, 24),
+      pollMinutes: num('pollminutes', 60, 5, 1440),
+      sessions: /^(sprint_race|race)$/.test(text('sessions'))
+        ? text('sessions')
+        : 'all',
+      visibility: num('visibility', 3, 0, 365),
+      emptyText: text('emptytext').slice(0, 200),
+      hideImage: $('#' + prefix + '-f1-hideimage').is(':checked'),
+      fontSize:
+        parseInt(text('fontsize'), 10) > 0
+          ? Math.min(60, Math.max(8, parseInt(text('fontsize'), 10)))
+          : null,
+      image:
+        /^[A-Za-z0-9 _.\/-]{0,100}$/.test(text('image')) &&
+        text('image').indexOf('..') < 0
+          ? text('image')
+          : '',
+    };
+  }
+
+  // F1 section values -> custom_fields rows. Defaults are left out so the
+  // saved block stays short; js/components/f1.js applies the same defaults.
+  function _f1CustomRows(f1) {
+    var rows = [{ field: 'f1mode', setting: f1.mode, value: f1.mode }];
+    function add(field, value, def) {
+      if (value === def) return;
+      rows.push({ field: field, setting: String(value), value: value });
+    }
+    add('f1language', f1.language, 'en');
+    add('f1urlen', f1.urlEn, F1_URL_EN);
+    add('f1urlnl', f1.urlNl, F1_URL_NL);
+    add('f1utcoffset', f1.utcOffset, 1);
+    add('f1pollminutes', f1.pollMinutes, 60);
+    add('f1sessions', f1.sessions, 'all');
+    add('f1visibility', f1.visibility, 3);
+    add('f1emptytext', f1.emptyText, '');
+    add('hideimageonempty', f1.hideImage, false);
+    add('f1fontsize', f1.fontSize, null);
+    add('f1image', f1.image, '');
+    return rows;
+  }
+
+  function _showF1Popup() {
+    var t = _translations();
+    $('#f1blockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="f1blockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-flag-checkered me-2" aria-hidden="true"></i>' +
+      _esc(t.f1_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('f1', {
+      icon: true,
+      iconValue: 'fas fa-flag-checkered',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="f1-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="f1-device-title" autocomplete="off"></div>';
+    html += _f1FieldsHtml('f1', {});
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="f1-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#f1blockpopup');
+    _wireQuickOptions('f1', $popup);
+    _wireF1Fields('f1', $popup);
+    _wireBackButton('f1blockpopup');
+
+    $('#f1-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#f1-device-title').val() || ''));
+      var f1 = _readF1Fields('f1');
+      if (!f1.validUrls) {
+        $message.addClass('text-danger').text(t.invalid_f1_block_url);
+        $('#f1-f1-urlen').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('f1');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows = customRows.concat(_f1CustomRows(f1));
+
+      var reference = _nextSpecialReference('f1');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'f1',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 4,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('f1blockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('f1blockpopup')
+    ).show();
+  }
+
   function _showSlideButtonPopup() {
     var t = _translations();
     $('#slidebuttonpopup').remove();
@@ -7186,6 +7732,7 @@ var DashticzDeviceEditor = (function () {
     var isClusterBlock = special && special.specialType === 'cluster';
     var isLmsBlock = special && special.specialType === 'lms';
     var isGraphBlock = special && special.specialType === 'graph';
+    var isF1Block = special && special.specialType === 'f1';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
     var isNoDialSpecial = !!(
@@ -7240,6 +7787,17 @@ var DashticzDeviceEditor = (function () {
     // Widget Config -> Graph flow. Keep every advanced Graph option in the
     // generic Custom fields list, but remove the five fields managed by the
     // shared Graph section so they are never shown or saved twice.
+    var f1Values = null;
+    if (isF1Block) {
+      // The F1 section owns these fields, so keep them out of the generic
+      // Custom fields list (they would otherwise be shown and saved twice).
+      f1Values = _f1ValuesFromRows(customRows);
+      customRows = customRows.filter(function (row) {
+        return !F1_FIELDS[
+          _normaliseCustomFieldName(row && row.field).toLowerCase()
+        ];
+      });
+    }
     var graphFields = null;
     if (isGraphBlock) {
       var graphValues = {};
@@ -7397,7 +7955,9 @@ var DashticzDeviceEditor = (function () {
       (hasLiveDevice ? 'device' : 'special') +
       '" tabindex="-1" aria-hidden="true">';
     html +=
-      '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
+      '<div class="modal-dialog modal-dialog-centered de-config-dialog' +
+      (isF1Block ? ' modal-lg' : '') +
+      '"><div class="modal-content">';
     html +=
       '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
       _esc(t.device_config) +
@@ -7821,6 +8381,8 @@ var DashticzDeviceEditor = (function () {
       html += '</div></div>';
     }
     html += '</div>';
+    // After the (Title/Icon/Image) custom fields, so those stay at the top.
+    if (isF1Block) html += _f1FieldsHtml('de-config', f1Values);
     html +=
       '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
     html +=
@@ -7847,6 +8409,7 @@ var DashticzDeviceEditor = (function () {
     // choice, even one that matches the suggestion by coincidence).
     var iconFieldTouched = false;
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
+    if (isF1Block) _wireF1Fields('de-config', $popup);
     if (isClusterBlock) {
       function clusterEditPendingListHtml() {
         return _clusterPendingListHtml(
@@ -8249,6 +8812,11 @@ var DashticzDeviceEditor = (function () {
         customKeys.switchscale = true;
         customKeys.fontsize = true;
       }
+      if (isF1Block) {
+        Object.keys(F1_FIELDS).forEach(function (key) {
+          customKeys[key] = true;
+        });
+      }
       if (isGraphBlock) {
         customKeys.graph = true;
         customKeys.legend = true;
@@ -8322,6 +8890,18 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_lms_player);
           $('#de-config-lms-player').trigger('focus');
+        }
+      }
+      var pendingF1 = null;
+      if (isF1Block) {
+        pendingF1 = _readF1Fields('de-config');
+        if (!pendingF1.validUrls) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_f1_block_url);
+          $('#de-config-f1-urlen').trigger('focus');
         }
       }
       var pendingGraph = null;
@@ -8592,6 +9172,7 @@ var DashticzDeviceEditor = (function () {
         });
       }
       storedRows = storedRows.concat(pendingCustomFields);
+      if (pendingF1) storedRows = storedRows.concat(_f1CustomRows(pendingF1));
       if (pendingGraph) {
         storedRows.push({
           field: 'devices',
@@ -8977,6 +9558,7 @@ var DashticzDeviceEditor = (function () {
     else if (isTimegraphBlock) label = t.timegraph_block;
     else if (isXmltvguideBlock) label = t.xmltvguide_block;
     else if (isLmsBlock) label = t.lms_block;
+    else if (special.specialType === 'f1') label = t.f1_block;
     var htmlFileRow =
       isHtmlBlock && special.customFields
         ? special.customFields.find(function (row) {
@@ -9064,6 +9646,8 @@ var DashticzDeviceEditor = (function () {
     else if (isTimegraphBlock) specialIconClass = 'fa-chart-line';
     else if (isXmltvguideBlock) specialIconClass = 'fa-tv';
     else if (isLmsBlock) specialIconClass = 'fa-music';
+    else if (special.specialType === 'f1')
+      specialIconClass = 'fa-flag-checkered';
     var html =
       '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) +
@@ -9216,6 +9800,7 @@ var DashticzDeviceEditor = (function () {
     xmltvguide: 'xmltvguide_',
     camera: 'camera_',
     news: 'news_',
+    f1: 'f1_',
     // Matches the legacy hand-written 'graph_<idx>' convention (see
     // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
     // key-prefix check), so a repeatable instance's auto-generated key
@@ -10604,6 +11189,7 @@ var DashticzDeviceEditor = (function () {
     openXmltvguide: openXmltvguide,
     openCamera: openCamera,
     openNews: openNews,
+    openF1: openF1,
     openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,

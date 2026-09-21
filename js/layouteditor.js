@@ -40,6 +40,7 @@ var DashticzLayoutEditor = (function () {
     'camera',
     'news',
     'graph',
+    'f1',
   ];
   var active = false;
   var items = [];
@@ -1346,6 +1347,21 @@ var DashticzLayoutEditor = (function () {
       return {
         definition: definition,
         kind: 'camera',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && typeof definition.f1mode === 'string' && definition.f1mode) {
+      // Repeatable F1 block (js/deviceeditor.js's _showF1Popup()),
+      // dispatched purely on a truthy f1mode (js/components/f1.js's
+      // canHandle()), no `type` of its own - like the news/graph checks.
+      return {
+        definition: definition,
+        kind: 'f1',
         reference: key,
         widgetId: null,
         idx: null,

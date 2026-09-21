@@ -1,0 +1,80 @@
+.. _f1 :
+
+F1
+==
+
+The F1 widget shows the Formula 1 race weekend. It is standalone (no Domoticz
+device needed) and based on the
+`domoticz_F1 <https://github.com/MadPatrick/domoticz_F1>`_ plugin, with the
+same calendar feeds and options. The calendar is downloaded server-side
+(``vendor/dashticz/f1/index.php``) and cached for the poll interval.
+
+You can place it several times on one screen. Add it via the Screen Editor:
+"Add items" -> Widgets -> F1 (in the "Widgets (multiple per screen)" section),
+and choose with the two icon buttons what the tile shows:
+
+* **Next event** (``f1mode: 'next'``): the Grand Prix name, centered, and below
+  it the next session, for example::
+
+    Grand Prix van Azerbeidzjan
+    Do 24 Sep 10:30 : Vrije Training 1
+
+* **All events** (``f1mode: 'all'``): one row per session of that race
+  weekend (session name left, date and time right). Sessions that are over are
+  dimmed. The location of the race is added to the tile title (for example
+  ``F1 agenda - Baku``); a tile without a title shows the Grand Prix name above
+  the rows instead.
+
+Use the tile ``image`` option to show the F1 logo next to it. Change the
+settings of a placed tile with the cog icon.
+
+Settings
+--------
+
+These are block properties. The Screen Editor writes only the ones that differ
+from the default.
+
+.. list-table::
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
+
+  * - Setting
+    - Description
+  * - f1mode
+    - ``'next'`` or ``'all'``, see above. Required: this property makes the
+      block an F1 widget
+  * - f1language
+    - ``'en'`` (default) or ``'nl'``: language of the weekday/month names and
+      which calendar URL is used
+  * - f1urlen
+    - ICS feed for English. Default:
+      ``https://files-f1.motorsportcalendars.com/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics``
+  * - f1urlnl
+    - ICS feed for Dutch. Default:
+      ``https://files-f1.motorsportcalendars.com/nl/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics``
+  * - f1utcoffset
+    - Hours added to the (UTC) session times. Default: 1
+  * - f1pollminutes
+    - How often the calendar is downloaded, in minutes. Minimum 5. Default: 60
+  * - f1sessions
+    - ``'all'`` (training, sprint and race; default), ``'sprint_race'`` or
+      ``'race'``
+  * - f1visibility
+    - The next session is shown this many days before it starts (and while it
+      is running). Default: 3
+  * - f1emptytext
+    - Text shown when there is no event within the visibility window. Default:
+      empty
+  * - hideimageonempty
+    - ``true``: hide the tile ``image`` while there is no event (same as the
+      ``hideimageonempty`` option of Domoticz blocks). Default: false
+  * - f1fontsize
+    - Optional: font size of the tile in pixels (``8``-``60``), same as the
+      font size of the cluster widget. Default: the size of the theme
+  * - f1image
+    - Image from the ``img/`` folder (for example ``custom/f1.png``, chosen in
+      the config) that is shown in front of the text of a ``'next'`` tile. The
+      tile icon (``icon``) stays as it is. Default: none
+
+The calendar URLs must be public ``https`` addresses.
