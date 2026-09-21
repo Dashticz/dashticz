@@ -734,6 +734,12 @@
       "postnl_pollminutes": "Ophaalinterval (minuten)",
       "postnl_fontsize": "Lettergrootte (px)",
       "postnl_fontsize_help": "Lettergrootte van de pakkettekst. Standaard: 14.",
+      "postnl_date_color": "Kleur datum",
+      "postnl_time_color": "Kleur tijd",
+      "postnl_text_color": "Kleur tekst",
+      "postnl_iconstyle": "Icoonstijl",
+      "postnl_iconstyle_fa": "Font Awesome",
+      "postnl_iconstyle_emoji": "Emoji (kleurrijk)",
       "postnl_pollminutes_help": "Minimaal 15 minuten, om te voorkomen dat je PostNL-account wordt geblokkeerd. Standaard: 60."
     },
     "hpilo": {

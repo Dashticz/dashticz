@@ -1096,6 +1096,10 @@ var DashticzWidgetEditor = (function () {
         postnl_pollminutes: _s('postnl_pollminutes', '60'),
         postnl_fontsize: _s('postnl_fontsize', '14'),
         postnl_showdelivered: _n('postnl_showdelivered', 1),
+        postnl_iconstyle: _s('postnl_iconstyle', 'fa'),
+        postnl_date_color: _s('postnl_date_color'),
+        postnl_time_color: _s('postnl_time_color'),
+        postnl_text_color: _s('postnl_text_color'),
       },
       hpilo: {
         hpilo_host: _s('hpilo_host'),
@@ -3895,6 +3899,7 @@ var DashticzWidgetEditor = (function () {
       );
     } else if (item.id === 'postnl') {
       var pncfg = widgetConfigs.postnl || {};
+      var pnStart = fields.length;
       fields += _cfgField(
         'postnl_username',
         lp.postnl_username || 'PostNL e-mail address',
@@ -3940,6 +3945,42 @@ var DashticzWidgetEditor = (function () {
         lp.postnl_fontsize_help ||
           'Font size of the shipment text. Default: 14.'
       );
+      fields += _cfgField(
+        'postnl_iconstyle',
+        lp.postnl_iconstyle || 'Icon style',
+        'select',
+        pncfg.postnl_iconstyle || 'fa',
+        {
+          fa: lp.postnl_iconstyle_fa || 'Font Awesome',
+          emoji: lp.postnl_iconstyle_emoji || 'Emoji (colorful)',
+        }
+      );
+      fields += _cfgField(
+        'postnl_date_color',
+        lp.postnl_date_color || 'Date color',
+        'color',
+        pncfg.postnl_date_color,
+        { default: '#ffffff' }
+      );
+      fields += _cfgField(
+        'postnl_time_color',
+        lp.postnl_time_color || 'Time color',
+        'color',
+        pncfg.postnl_time_color,
+        { default: '#ffff00' }
+      );
+      fields += _cfgField(
+        'postnl_text_color',
+        lp.postnl_text_color || 'Text color',
+        'color',
+        pncfg.postnl_text_color,
+        { default: '#2e9e5b' }
+      );
+      fields =
+        fields.slice(0, pnStart) +
+        '<div class="we-cfg-cols">' +
+        fields.slice(pnStart) +
+        '</div>';
     } else if (item.id === 'hpilo') {
       var hcfg = widgetConfigs.hpilo || {};
       fields += _cfgField(
@@ -4547,7 +4588,9 @@ var DashticzWidgetEditor = (function () {
 
     return (
       '<div class="modal fade" id="we-config-popup" tabindex="-1" aria-labelledby="we-cfg-title" aria-hidden="true" data-bs-backdrop="static">' +
-      '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">' +
+      '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable' +
+      (item.id === 'postnl' ? ' modal-lg' : '') +
+      '">' +
       '<div class="modal-content">' +
       '<div class="modal-header">' +
       '<h5 class="modal-title" id="we-cfg-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
@@ -5730,6 +5773,10 @@ var DashticzWidgetEditor = (function () {
         'postnl_pollminutes',
         'postnl_fontsize',
         'postnl_showdelivered',
+        'postnl_iconstyle',
+        'postnl_date_color',
+        'postnl_time_color',
+        'postnl_text_color',
       ],
       hpilo: [
         'hpilo_host',

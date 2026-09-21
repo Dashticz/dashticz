@@ -847,6 +847,12 @@
       "postnl_pollminutes": "Poll interval (minutes)",
       "postnl_fontsize": "Font size (px)",
       "postnl_fontsize_help": "Font size of the shipment text. Default: 14.",
+      "postnl_date_color": "Date color",
+      "postnl_time_color": "Time color",
+      "postnl_text_color": "Text color",
+      "postnl_iconstyle": "Icon style",
+      "postnl_iconstyle_fa": "Font Awesome",
+      "postnl_iconstyle_emoji": "Emoji (colorful)",
       "postnl_pollminutes_help": "Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60."
     },
     "hpilo": {
