@@ -1355,10 +1355,16 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
-    if (key && typeof definition.f1mode === 'string' && definition.f1mode) {
+    if (
+      key &&
+      ((typeof definition.f1mode === 'string' && definition.f1mode) ||
+        /^(?:f1|f1events)$/i.test(String(definition.type || '')))
+    ) {
       // Repeatable F1 block (js/deviceeditor.js's _showF1Popup()),
       // dispatched purely on a truthy f1mode (js/components/f1.js's
       // canHandle()), no `type` of its own - like the news/graph checks.
+      // Legacy singleton type:'f1'/'f1events' blocks are recognized too, so
+      // their config cog remains available until Device Editor migrates them.
       return {
         definition: definition,
         kind: 'f1',
