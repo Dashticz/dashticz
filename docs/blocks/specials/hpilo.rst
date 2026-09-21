@@ -17,7 +17,9 @@ connection.
 
 Add the widget via the Screen Editor: "Add items" -> Widgets -> HP iLO, and
 fill in the settings with the cog icon. Icon, title and background are set
-like for any other widget.
+like for any other widget. The icon and title sit in their own header row
+above the metrics by default (``template: 1``); set ``template: 0`` on the
+block to go back to the icon beside the rows for the whole tile height.
 
 Settings
 --------
@@ -48,6 +50,12 @@ Settings
       ``ssdlife``, ``firmware``, ``network``, ``serial``, ``minfan``,
       ``thermalconfig``, ``powerregulator``. Default:
       ``power,health,uptime,fanspeed,cputemp,inlettemp``
+  * - hpilo_icons
+    - JSON map of a row to the icon shown in front of it, chosen per row in
+      the widget config (the pull-down in each row). A Font Awesome class,
+      or ``none`` to hide the icon; rows without an entry keep their own
+      icon. Example: ``{"power":"fas fa-bolt","serial":"none"}``. Default:
+      ``{}``
 
 Server uptime is shown as days, hours and minutes.
 

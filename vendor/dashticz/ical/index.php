@@ -94,7 +94,11 @@ set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcont
 ini_set('user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0');
 
 try {
-	$remoteCalendar = dashticz_fetch_remote($ICS, 2097152);
+	// A calendar is very often hosted on the same LAN as Domoticz itself (a
+	// NAS, a local web server, etc.) - like xmltv.php and lms/index.php, the
+	// private/reserved-IP block dashticz_fetch_remote() applies by default
+	// is explicitly lifted here via allowPrivate=true.
+	$remoteCalendar = dashticz_fetch_remote($ICS, 2097152, 3, true);
 	$calendarContent = $remoteCalendar['body'];
 	if ( $METHOD==0) {
 		$res = ical5($calendarContent, $MAXITEMS);

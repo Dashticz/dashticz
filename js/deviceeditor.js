@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock DashticzLayoutEditor DashticzDeviceRules */
+/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock DashticzLayoutEditor DashticzDeviceRules b64_to_utf8 */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -190,6 +190,12 @@ var DashticzDeviceEditor = (function () {
         dial_barsteps_help:
           'Number of segments the Bar is divided into (default 10).',
         invalid_barsteps: 'Enter a positive number of steps.',
+        compact_selector: 'Compact',
+        compact_icons: 'Icon per level',
+        compact_icon_auto: 'Automatic',
+        compact_icon_custom: 'Custom Font Awesome class...',
+        compact_selector_help:
+          'Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -260,6 +266,8 @@ var DashticzDeviceEditor = (function () {
           'Pick a device and click + to add it to the cluster. Each device gets its own on/off toggle.',
         cluster_devices_help_temperature:
           'Pick a device and click + to add it to the cluster. Each device shows its own temperature reading.',
+        cluster_devices_help_other:
+          "Pick a device and click + to add it to the cluster. Only devices that are neither a switch nor a temperature sensor are listed; each row shows the device's own value.",
         cluster_no_devices: 'No devices added yet.',
         cluster_row_name:
           'Custom name for this row (leave empty to use the device name).',
@@ -268,11 +276,18 @@ var DashticzDeviceEditor = (function () {
         cluster_mode: 'Row type',
         cluster_mode_switch: 'Switch',
         cluster_mode_temperature: 'Temperature',
+        cluster_mode_other: 'Other',
         cluster_mode_locked_help:
           "Row type can't be changed after the cluster has been saved.",
         cluster_switch_scale: 'Switch size',
         cluster_switch_scale_help:
           'Scale factor for the on/off toggle (e.g. 1.5 for 150%). Leave empty for the default size.',
+        cluster_font_size: 'Font size (px)',
+        cluster_font_size_help:
+          'Font size of the whole cluster in pixels (8-60). Leave empty for the default size.',
+        cluster_icon: 'Icon for this row',
+        cluster_icon_none: 'None',
+        cluster_icon_auto: 'Automatic',
         invalid_cluster_name: 'Enter a valid unique cluster name.',
         invalid_cluster_devices: 'Add at least one device.',
         html_block: 'HTML Block',
@@ -1176,6 +1191,12 @@ var DashticzDeviceEditor = (function () {
         dial: definition.type === 'dial' && !barMode,
         bar: barMode,
         needle: definition.needle === true,
+        // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
+        compactSelector: definition.compactSelector === true,
+        compactIcons:
+          definition.compactIcons && typeof definition.compactIcons === 'object'
+            ? $.extend({}, definition.compactIcons)
+            : {},
         // Preserved as a real tri-state (true/false/undefined), not coerced
         // to a boolean: undefined means "not explicitly set yet", so the
         // popup can fall back to auto-detecting from the live device's
@@ -2233,6 +2254,12 @@ var DashticzDeviceEditor = (function () {
         dial: configured.type === 'dial' && !barMode,
         bar: barMode,
         needle: configured.needle === true,
+        // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
+        compactSelector: configured.compactSelector === true,
+        compactIcons:
+          configured.compactIcons && typeof configured.compactIcons === 'object'
+            ? $.extend({}, configured.compactIcons)
+            : {},
         // See the analogous comment in _specialFromReference() - kept as a
         // tri-state, not coerced to a boolean.
         inverse: configured.inverse,
@@ -3463,6 +3490,96 @@ var DashticzDeviceEditor = (function () {
     return html;
   }
 
+  // Icons a Cluster row can show in front of its name (Font Awesome, free
+  // set) - the same look as the HP iLO widget's rows. A row's icon setting
+  // is '' (none, the default for existing clusters), 'auto' (chosen by
+  // js/components/cluster.js from the device's own type) or one of these.
+  var CLUSTER_ICON_PRESETS = [
+    ['fas fa-lightbulb', 'Light'],
+    ['fas fa-plug', 'Plug'],
+    ['fas fa-power-off', 'Power'],
+    ['fas fa-toggle-on', 'Toggle'],
+    ['fas fa-thermometer-half', 'Temperature'],
+    ['fas fa-droplet', 'Humidity'],
+    ['fas fa-wind', 'Wind'],
+    ['fas fa-cloud-rain', 'Rain'],
+    ['fas fa-sun', 'Sun / lux'],
+    ['fas fa-bolt', 'Energy'],
+    ['fas fa-gauge-high', 'Gauge'],
+    ['fas fa-fan', 'Fan'],
+    ['fas fa-fire', 'Heating'],
+    ['fas fa-snowflake', 'Cooling'],
+    ['fas fa-clock', 'Clock'],
+    ['fas fa-heart-pulse', 'Health'],
+    ['fas fa-server', 'Server'],
+    ['fas fa-hard-drive', 'Storage'],
+    ['fas fa-microchip', 'Chip'],
+    ['fas fa-wifi', 'Network'],
+    ['fas fa-battery-full', 'Battery'],
+    ['fas fa-door-open', 'Door'],
+    ['fas fa-lock', 'Lock'],
+    ['fas fa-bell', 'Bell'],
+    ['fas fa-person-walking', 'Motion'],
+    ['fas fa-car', 'Car'],
+    ['fas fa-house', 'House'],
+    ['fas fa-circle-info', 'Info'],
+  ];
+
+  // The icon pull-down of one pending row: a button with the current icon
+  // and a panel of icon-only choices (names as tooltip), like the compact
+  // selector's per-level icon picker.
+  function _clusterIconPickerHtml(t, d) {
+    var current = String(d.icon || '');
+    var button =
+      current === ''
+        ? _esc(t.cluster_icon_none)
+        : current === 'auto'
+          ? _esc(t.cluster_icon_auto)
+          : '<i class="' + _esc(current) + '" aria-hidden="true"></i>';
+    var html =
+      '<span class="cl-icon-wrap" style="position:relative;flex:0 0 auto;">' +
+      '<button type="button" class="btn btn-outline-secondary btn-sm cl-icon-toggle" data-idx="' +
+      _esc(d.idx) +
+      '" aria-haspopup="true" title="' +
+      _esc(t.cluster_icon) +
+      '" style="min-width:3.5em;">' +
+      button +
+      ' <span aria-hidden="true">&#9662;</span></button>' +
+      '<span class="cl-icon-panel d-none" style="position:absolute;top:100%;right:0;z-index:1060;width:max-content;min-width:4em;max-height:260px;overflow-x:hidden;overflow-y:auto;padding:4px;margin-top:2px;border:1px solid rgba(128,128,128,.5);border-radius:6px;background:var(--bs-body-bg,#fff);box-shadow:0 4px 12px rgba(0,0,0,.35);">';
+    [
+      ['', t.cluster_icon_none],
+      ['auto', t.cluster_icon_auto],
+    ].forEach(function (choice) {
+      html +=
+        '<button type="button" class="btn btn-sm d-block w-100 text-center cl-icon-choice' +
+        (current === choice[0] ? ' active' : '') +
+        '" data-idx="' +
+        _esc(d.idx) +
+        '" data-icon="' +
+        choice[0] +
+        '">' +
+        _esc(choice[1]) +
+        '</button>';
+    });
+    CLUSTER_ICON_PRESETS.forEach(function (p) {
+      html +=
+        '<button type="button" class="btn btn-sm d-block w-100 text-center cl-icon-choice' +
+        (current === p[0] ? ' active' : '') +
+        '" data-idx="' +
+        _esc(d.idx) +
+        '" data-icon="' +
+        _esc(p[0]) +
+        '" title="' +
+        _esc(p[1]) +
+        '" aria-label="' +
+        _esc(p[1]) +
+        '"><i class="' +
+        _esc(p[0]) +
+        '" aria-hidden="true"></i></button>';
+    });
+    return html + '</span></span>';
+  }
+
   function _clusterPendingListHtml(t, pendingDevices, usageList) {
     if (!pendingDevices.length) {
       return '<div class="de-empty">' + _esc(t.cluster_no_devices) + '</div>';
@@ -3502,6 +3619,7 @@ var DashticzDeviceEditor = (function () {
           d.idx +
           '</span>' +
           '</span>' +
+          _clusterIconPickerHtml(t, d) +
           usageSelect +
           '<button type="button" class="btn btn-danger btn-sm cl-remove-btn ms-auto" data-idx="' +
           _esc(d.idx) +
@@ -3642,7 +3760,58 @@ var DashticzDeviceEditor = (function () {
     return list;
   }
 
-  // Switch vs Temperature mode buttons, shared between the quick-add popup
+  // Candidate list for Other ("Overige") mode: every device that is neither
+  // a switch (Domoticz reports a SwitchType for all of those: On/Off,
+  // Dimmer, Blinds, Selector, Security, ...) nor a temperature reading
+  // (see _clusterTemperatureDeviceList()) - humidity, wind, rain, lux,
+  // energy meters, text/alert devices, thermostat setpoints, and so on.
+  // Each row shows the device's own Data value. Like the temperature list
+  // it is picked by base idx, without _getAvailableDevices()'s sub-value
+  // expansion.
+  function _clusterOtherDeviceList() {
+    var allDevices = Domoticz.getAllDevices();
+    var temperatureIdx = {};
+    _clusterTemperatureDeviceList().forEach(function (d) {
+      temperatureIdx[d.idx] = true;
+    });
+    var list = [];
+    Object.keys(allDevices).forEach(function (key) {
+      if (!key || key[0] === '_') return;
+      var idx = parseInt(key, 10);
+      if (!(idx > 0 && String(idx) === key)) return;
+      var d = allDevices[key];
+      if (d.SwitchType || temperatureIdx[idx]) return;
+      list.push({ idx: idx, name: d.Name || 'Device ' + idx });
+    });
+    return list;
+  }
+
+  // Row type -> candidate device list / help text. Switch is the default
+  // (mode '' or absent); Temperature and Other are the two sensor-style
+  // rows without a toggle.
+  function _clusterDeviceListForMode(mode) {
+    return mode === 'temperature'
+      ? _clusterTemperatureDeviceList()
+      : mode === 'other'
+        ? _clusterOtherDeviceList()
+        : _clusterAvailableDeviceList();
+  }
+
+  function _clusterHelpTextForMode(t, mode) {
+    return mode === 'temperature'
+      ? t.cluster_devices_help_temperature
+      : mode === 'other'
+        ? t.cluster_devices_help_other
+        : t.cluster_devices_help;
+  }
+
+  // Only Switch rows have a toggle (and with it a consumption companion
+  // device and a switch size).
+  function _clusterUsesSwitchRows(mode) {
+    return mode !== 'temperature' && mode !== 'other';
+  }
+
+  // Switch vs Temperature vs Other mode buttons, shared between the quick-add popup
   // and the Device Config popup's own Cluster section, plus (Switch mode
   // only) the switch-size field inline next to them - see
   // _clusterSwitchScaleFieldHtml. A Cluster's rows are either all switches
@@ -3660,7 +3829,8 @@ var DashticzDeviceEditor = (function () {
     t,
     mode,
     locked,
-    switchScaleValue
+    switchScaleValue,
+    fontSizeValue
   ) {
     var html =
       '<div class="mb-3"><label class="form-label">' +
@@ -3681,6 +3851,11 @@ var DashticzDeviceEditor = (function () {
         mode: 'temperature',
         label: t.cluster_mode_temperature,
         icon: 'fas fa-thermometer-half',
+      },
+      {
+        mode: 'other',
+        label: t.cluster_mode_other,
+        icon: 'fas fa-ellipsis',
       },
     ].forEach(function (item) {
       var active = (mode || '') === item.mode;
@@ -3710,6 +3885,7 @@ var DashticzDeviceEditor = (function () {
       '-switch-scale-slot">' +
       _clusterSwitchScaleFieldHtml(idPrefix, t, mode, switchScaleValue) +
       '</span>';
+    html += _clusterFontSizeFieldHtml(idPrefix, t, fontSizeValue);
     html += '</div>';
     if (locked) {
       html +=
@@ -3727,7 +3903,7 @@ var DashticzDeviceEditor = (function () {
   // .cluster-row-switch scales itself with it) - value is the field's
   // current text (empty string means "use the default size").
   function _clusterSwitchScaleFieldHtml(idPrefix, t, mode, value) {
-    if (mode === 'temperature') return '';
+    if (!_clusterUsesSwitchRows(mode)) return '';
     // Compact inline label+input (not a stacked mb-3 block like most
     // fields here) meant to sit right next to the Switch/Temperature
     // buttons this sizes - see _clusterModeButtonsHtml. 10 characters wide
@@ -3751,6 +3927,38 @@ var DashticzDeviceEditor = (function () {
       '" autocomplete="off">' +
       '</span>'
     );
+  }
+
+  // Cluster's font-size field (like HP iLO's font size, but per block):
+  // applies to every mode, so unlike the switch size it is never re-rendered
+  // on a mode change. Stored as the block's optional fontSize custom field
+  // (js/components/cluster.js sets --font-device-title from it).
+  function _clusterFontSizeFieldHtml(idPrefix, t, value) {
+    return (
+      '<span class="d-flex align-items-center gap-2">' +
+      '<label class="form-label mb-0 small" for="' +
+      _esc(idPrefix) +
+      '-font-size">' +
+      _esc(t.cluster_font_size) +
+      '</label>' +
+      '<input type="number" class="form-control form-control-sm" id="' +
+      _esc(idPrefix) +
+      '-font-size" style="width:10ch;flex:0 0 auto;" min="8" max="60" step="1" placeholder="18" value="' +
+      _esc(value || '') +
+      '" title="' +
+      _esc(t.cluster_font_size_help) +
+      '" autocomplete="off">' +
+      '</span>'
+    );
+  }
+
+  // Parses/clamps the font-size field's raw text into a whole number of
+  // pixels saveblocks.php will accept (8-60), or null when it should be
+  // left unset (empty or non-numeric - meaning "use the default size").
+  function _readClusterFontSize(rawValue) {
+    var num = parseInt($.trim(String(rawValue || '')), 10);
+    if (!(num > 0)) return null;
+    return Math.min(60, Math.max(8, num));
   }
 
   // Parses/clamps the switch-size field's raw text into a number saveblocks
@@ -3777,6 +3985,7 @@ var DashticzDeviceEditor = (function () {
 
     var clusterMode = '';
     var clusterSwitchScaleValue = '';
+    var clusterFontSizeValue = '';
     var deviceList = _clusterAvailableDeviceList();
     var usageList = _clusterUsageDeviceList();
     var pendingDevices = [];
@@ -3789,14 +3998,12 @@ var DashticzDeviceEditor = (function () {
       return _clusterPendingListHtml(
         t,
         pendingDevices,
-        clusterMode === 'temperature' ? null : usageList
+        _clusterUsesSwitchRows(clusterMode) ? usageList : null
       );
     }
 
     function devicesHelpText() {
-      return clusterMode === 'temperature'
-        ? t.cluster_devices_help_temperature
-        : t.cluster_devices_help;
+      return _clusterHelpTextForMode(t, clusterMode);
     }
 
     var html =
@@ -3837,7 +4044,8 @@ var DashticzDeviceEditor = (function () {
       t,
       clusterMode,
       false,
-      clusterSwitchScaleValue
+      clusterSwitchScaleValue,
+      clusterFontSizeValue
     );
     html +=
       '<div class="mb-3"><label class="form-label" for="cl-device-select">' +
@@ -3885,9 +4093,29 @@ var DashticzDeviceEditor = (function () {
       if (!(idx > 0)) return;
       var selectedOption = $select.find('option:selected');
       var name = selectedOption.attr('data-name') || String(idx);
-      pendingDevices.push({ idx: idx, name: name });
+      pendingDevices.push({ idx: idx, name: name, icon: 'auto' });
       $select.html(deviceOptionsHtml());
       $('#cl-device-pending').html(pendingListHtml());
+    });
+
+    $('#cl-device-pending').on('click', '.cl-icon-toggle', function () {
+      var $panel = $(this).siblings('.cl-icon-panel');
+      $popup.find('.cl-icon-panel').not($panel).addClass('d-none');
+      $panel.toggleClass('d-none');
+    });
+
+    $('#cl-device-pending').on('click', '.cl-icon-choice', function () {
+      var idx = parseInt($(this).attr('data-idx'), 10);
+      var target = pendingDevices.find(function (d) {
+        return d.idx === idx;
+      });
+      if (target) target.icon = String($(this).attr('data-icon') || '');
+      $('#cl-device-pending').html(pendingListHtml());
+    });
+
+    $popup.on('click', function (event) {
+      if (!$(event.target).closest('.cl-icon-toggle, .cl-icon-panel').length)
+        $popup.find('.cl-icon-panel').addClass('d-none');
     });
 
     $('#cl-device-pending').on('click', '.cl-remove-btn', function () {
@@ -3921,6 +4149,10 @@ var DashticzDeviceEditor = (function () {
       clusterSwitchScaleValue = String($(this).val() || '');
     });
 
+    $popup.on('input', '#cl-font-size', function () {
+      clusterFontSizeValue = String($(this).val() || '');
+    });
+
     $popup.on('click', '.cl-mode-button', function () {
       var mode = String($(this).attr('data-cluster-mode') || '');
       if (mode === clusterMode) return;
@@ -3938,7 +4170,9 @@ var DashticzDeviceEditor = (function () {
       deviceList =
         clusterMode === 'temperature'
           ? _clusterTemperatureDeviceList()
-          : _clusterAvailableDeviceList();
+          : clusterMode === 'other'
+            ? _clusterOtherDeviceList()
+            : _clusterAvailableDeviceList();
       $('#cl-device-select').html(deviceOptionsHtml());
       $('#cl-device-pending').html(pendingListHtml());
       $('#cl-device-help').text(devicesHelpText());
@@ -4014,7 +4248,26 @@ var DashticzDeviceEditor = (function () {
           value: titlesMap,
         });
       }
-      if (clusterMode !== 'temperature') {
+      var iconsMap = {};
+      pendingDevices.forEach(function (d) {
+        if (d.icon) iconsMap[d.idx] = d.icon;
+      });
+      if (Object.keys(iconsMap).length) {
+        customRows.push({
+          field: 'icons',
+          setting: JSON.stringify(iconsMap),
+          value: iconsMap,
+        });
+      }
+      var fontSize = _readClusterFontSize($('#cl-font-size').val());
+      if (fontSize !== null) {
+        customRows.push({
+          field: 'fontSize',
+          setting: String(fontSize),
+          value: fontSize,
+        });
+      }
+      if (_clusterUsesSwitchRows(clusterMode)) {
         var switchScale = _readClusterSwitchScale($('#cl-switch-scale').val());
         if (switchScale !== null) {
           customRows.push({
@@ -4030,6 +4283,8 @@ var DashticzDeviceEditor = (function () {
           setting: 'temperature',
           value: 'temperature',
         });
+      } else if (clusterMode === 'other') {
+        customRows.push({ field: 'mode', setting: 'other', value: 'other' });
       } else {
         var usageMap = {};
         pendingDevices.forEach(function (d) {
@@ -6426,11 +6681,7 @@ var DashticzDeviceEditor = (function () {
       '<div class="form-text" id="' +
       _esc(prefix) +
       '-cluster-help">' +
-      _esc(
-        mode === 'temperature'
-          ? t.cluster_devices_help_temperature
-          : t.cluster_devices_help
-      ) +
+      _esc(_clusterHelpTextForMode(t, mode)) +
       '</div>';
     html +=
       '<div id="' +
@@ -7029,16 +7280,24 @@ var DashticzDeviceEditor = (function () {
     var clusterPendingDevices = [];
     var clusterMode = '';
     var clusterSwitchScaleValue = '';
+    var clusterFontSizeValue = '';
     if (isClusterBlock) {
       var clusterValues = {};
       customRows.forEach(function (row) {
         var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
         if (field) clusterValues[field] = row.value;
       });
-      clusterMode = clusterValues.mode === 'temperature' ? 'temperature' : '';
+      clusterMode =
+        clusterValues.mode === 'temperature' || clusterValues.mode === 'other'
+          ? clusterValues.mode
+          : '';
       clusterSwitchScaleValue =
         typeof clusterValues.switchscale === 'number'
           ? String(clusterValues.switchscale)
+          : '';
+      clusterFontSizeValue =
+        typeof clusterValues.fontsize === 'number'
+          ? String(clusterValues.fontsize)
           : '';
       var clusterDeviceIdxList = Array.isArray(clusterValues.devices)
         ? clusterValues.devices
@@ -7051,6 +7310,10 @@ var DashticzDeviceEditor = (function () {
         clusterValues.titles && typeof clusterValues.titles === 'object'
           ? clusterValues.titles
           : {};
+      var clusterIconsMap =
+        clusterValues.icons && typeof clusterValues.icons === 'object'
+          ? clusterValues.icons
+          : {};
       var allDevicesForCluster = Domoticz.getAllDevices();
       clusterPendingDevices = clusterDeviceIdxList.map(function (idx) {
         var live = allDevicesForCluster ? allDevicesForCluster[idx] : null;
@@ -7061,12 +7324,15 @@ var DashticzDeviceEditor = (function () {
           name: (live && live.Name) || String(idx),
           usageIdx: usageIdx,
           title: customTitle,
+          icon: String(clusterIconsMap[idx] || ''),
         };
       });
       clusterDeviceList =
         clusterMode === 'temperature'
           ? _clusterTemperatureDeviceList()
-          : _clusterAvailableDeviceList();
+          : clusterMode === 'other'
+            ? _clusterOtherDeviceList()
+            : _clusterAvailableDeviceList();
       clusterUsageList = _clusterUsageDeviceList();
       customRows = customRows.filter(function (row) {
         var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
@@ -7075,7 +7341,9 @@ var DashticzDeviceEditor = (function () {
           field !== 'usage' &&
           field !== 'mode' &&
           field !== 'titles' &&
-          field !== 'switchscale'
+          field !== 'switchscale' &&
+          field !== 'fontsize' &&
+          field !== 'icons'
         );
       });
     }
@@ -7211,6 +7479,29 @@ var DashticzDeviceEditor = (function () {
       return String(row.field || '').toLowerCase() === 'inverse';
     });
     if (inverseRowIndex > -1) customRows.splice(inverseRowIndex, 1);
+
+    // Compact layout is a plain per-device switch for Selector Switches that
+    // render as buttons (SelectorStyle 0), stored as the compactSelector
+    // custom field. Like needle above it is shown here instead of in Custom
+    // fields. An already-saved value stays editable even when the live device
+    // is temporarily unavailable.
+    var supportsCompactSelector =
+      (!isSpecial || (isCustom && !!special.idx)) &&
+      hasDial &&
+      ((!!barLiveDevice &&
+        barLiveDevice.SwitchType === 'Selector' &&
+        barLiveDevice.SelectorStyle != 1) ||
+        options.compactSelector === true);
+    if (supportsCompactSelector) {
+      var compactRowIndex = customRows.findIndex(function (row) {
+        return String(row.field || '').toLowerCase() === 'compactselector';
+      });
+      if (compactRowIndex > -1) customRows.splice(compactRowIndex, 1);
+      var compactIconsRowIndex = customRows.findIndex(function (row) {
+        return String(row.field || '').toLowerCase() === 'compacticons';
+      });
+      if (compactIconsRowIndex > -1) customRows.splice(compactIconsRowIndex, 1);
+    }
 
     var visualMode =
       options.needle === true
@@ -7392,6 +7683,31 @@ var DashticzDeviceEditor = (function () {
         '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
     }
 
+    if (supportsCompactSelector) {
+      html += '<div class="mb-3 de-compact-selector-row">';
+      html +=
+        '<label class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="de-config-compact-selector"' +
+        (options.compactSelector === true ? ' checked' : '') +
+        '>' +
+        '<span class="form-check-label">' +
+        _esc(t.compact_selector) +
+        '</span></label>';
+      html +=
+        '<div class="form-text">' + _esc(t.compact_selector_help) + '</div>';
+      var compactLevels = _selectorLevels(barLiveDevice);
+      if (compactLevels.length) {
+        html +=
+          '<div class="mt-2 de-compact-icons' +
+          (options.compactSelector === true ? '' : ' d-none') +
+          '"><div class="form-label small">' +
+          _esc(t.compact_icons) +
+          '</div>' +
+          _compactIconRowsHtml(compactLevels, options.compactIcons, t) +
+          '</div>';
+      }
+      html += '</div>';
+    }
+
     if (!isTitle) {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
@@ -7467,14 +7783,15 @@ var DashticzDeviceEditor = (function () {
         t,
         clusterMode,
         true,
-        clusterSwitchScaleValue
+        clusterSwitchScaleValue,
+        clusterFontSizeValue
       );
       html += _clusterFieldsHtml(
         'de-config',
         t,
         clusterDeviceList,
         clusterPendingDevices,
-        clusterMode === 'temperature' ? null : clusterUsageList,
+        _clusterUsesSwitchRows(clusterMode) ? clusterUsageList : null,
         clusterMode
       );
     }
@@ -7520,13 +7837,22 @@ var DashticzDeviceEditor = (function () {
     $('body').append(html);
 
     var $popup = $('#de-config-popup');
+    // Whether the user actually interacted with the icon controls this time
+    // the popup is open - see the generatedIcon skip-check in the save
+    // handler below, which relies on this to tell "the pre-filled Icon
+    // field still shows its untouched suggestion" (never persist, so
+    // opening/saving any *other* field on a block without an icon does not
+    // silently give it one) apart from "the user enabled Icon or typed a
+    // value that happens to match the suggestion" (persist - a deliberate
+    // choice, even one that matches the suggestion by coincidence).
+    var iconFieldTouched = false;
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     if (isClusterBlock) {
       function clusterEditPendingListHtml() {
         return _clusterPendingListHtml(
           t,
           clusterPendingDevices,
-          clusterMode === 'temperature' ? null : clusterUsageList
+          _clusterUsesSwitchRows(clusterMode) ? clusterUsageList : null
         );
       }
       $popup.on('click', '#de-config-cluster-add-btn', function () {
@@ -7535,13 +7861,40 @@ var DashticzDeviceEditor = (function () {
         if (!(idx > 0)) return;
         var selectedOption = $select.find('option:selected');
         var name = selectedOption.attr('data-name') || String(idx);
-        clusterPendingDevices.push({ idx: idx, name: name });
+        clusterPendingDevices.push({ idx: idx, name: name, icon: 'auto' });
         $select.html(
           _clusterDeviceOptionsHtml(t, clusterDeviceList, clusterPendingDevices)
         );
         $popup
           .find('#de-config-cluster-pending')
           .html(clusterEditPendingListHtml());
+      });
+      $popup.on(
+        'click',
+        '#de-config-cluster-pending .cl-icon-toggle',
+        function () {
+          var $panel = $(this).siblings('.cl-icon-panel');
+          $popup.find('.cl-icon-panel').not($panel).addClass('d-none');
+          $panel.toggleClass('d-none');
+        }
+      );
+      $popup.on(
+        'click',
+        '#de-config-cluster-pending .cl-icon-choice',
+        function () {
+          var idx = parseInt($(this).attr('data-idx'), 10);
+          var target = clusterPendingDevices.find(function (d) {
+            return d.idx === idx;
+          });
+          if (target) target.icon = String($(this).attr('data-icon') || '');
+          $popup
+            .find('#de-config-cluster-pending')
+            .html(clusterEditPendingListHtml());
+        }
+      );
+      $popup.on('click', function (event) {
+        if (!$(event.target).closest('.cl-icon-toggle, .cl-icon-panel').length)
+          $popup.find('.cl-icon-panel').addClass('d-none');
       });
       $popup.on(
         'click',
@@ -7609,7 +7962,9 @@ var DashticzDeviceEditor = (function () {
         clusterDeviceList =
           clusterMode === 'temperature'
             ? _clusterTemperatureDeviceList()
-            : _clusterAvailableDeviceList();
+            : clusterMode === 'other'
+              ? _clusterOtherDeviceList()
+              : _clusterAvailableDeviceList();
         $popup
           .find('#de-config-cluster-select')
           .html(
@@ -7624,11 +7979,7 @@ var DashticzDeviceEditor = (function () {
           .html(clusterEditPendingListHtml());
         $popup
           .find('#de-config-cluster-help')
-          .text(
-            clusterMode === 'temperature'
-              ? t.cluster_devices_help_temperature
-              : t.cluster_devices_help
-          );
+          .text(_clusterHelpTextForMode(t, clusterMode));
       });
     }
     function refreshCustomFieldButtons() {
@@ -7762,12 +8113,14 @@ var DashticzDeviceEditor = (function () {
         .toggleClass('active', active)
         .attr('aria-pressed', active ? 'true' : 'false');
       if (String($(this).attr('data-option')) === 'icon') {
+        iconFieldTouched = true;
         if (active) ensureIconFieldRow();
         refreshCustomFieldButtons();
         refreshIconFieldVisibility();
       }
     });
     $popup.on('change', '.de-icon-source', function () {
+      iconFieldTouched = true;
       var $row = $(this).closest('.de-icon-field-row');
       var useImage = $(this).val() === 'image';
       var $setting = $row.find('.de-custom-field-setting');
@@ -7780,6 +8133,13 @@ var DashticzDeviceEditor = (function () {
       closeCustomImagePickers();
     });
     $popup.on(
+      'input change',
+      '.de-icon-field-row .de-custom-field-setting',
+      function () {
+        iconFieldTouched = true;
+      }
+    );
+    $popup.on(
       'click focus',
       '.de-icon-field-row .de-custom-field-setting',
       function () {
@@ -7787,6 +8147,7 @@ var DashticzDeviceEditor = (function () {
       }
     );
     $popup.on('click', '.dt-custom-image-option', function () {
+      iconFieldTouched = true;
       var $row = $(this).closest('.de-icon-field-row');
       $row
         .find('.de-custom-field-setting')
@@ -7801,6 +8162,41 @@ var DashticzDeviceEditor = (function () {
       )
         return;
       closeCustomImagePickers();
+    });
+    $popup.on('change', '#de-config-compact-selector', function () {
+      $popup
+        .find('.de-compact-icons')
+        .toggleClass('d-none', !$(this).prop('checked'));
+    });
+    $popup.on('click', '.de-compact-icon-toggle', function () {
+      var $panel = $(this)
+        .closest('.de-compact-icon-row')
+        .find('.de-compact-icon-panel');
+      $popup.find('.de-compact-icon-panel').not($panel).addClass('d-none');
+      $panel.toggleClass('d-none');
+    });
+    $popup.on('click', function (event) {
+      if (
+        !$(event.target).closest(
+          '.de-compact-icon-toggle, .de-compact-icon-panel'
+        ).length
+      )
+        $popup.find('.de-compact-icon-panel').addClass('d-none');
+    });
+    $popup.on('click', '.de-compact-icon-choice', function () {
+      var $row = $(this).closest('.de-compact-icon-row');
+      var icon = String($(this).attr('data-icon') || '');
+      $row.find('.de-compact-icon-value').val(icon);
+      $row.find('.de-compact-icon-choice').removeClass('active');
+      $(this).addClass('active');
+      _refreshCompactIconRow($row, t);
+      // A custom class still needs typing; every other choice is final.
+      if (icon === '__custom__')
+        $row.find('.de-compact-icon-custom').trigger('focus');
+      else $row.find('.de-compact-icon-panel').addClass('d-none');
+    });
+    $popup.on('input', '.de-compact-icon-custom', function () {
+      _refreshCompactIconRow($(this).closest('.de-compact-icon-row'), t);
     });
     $popup.on('click', '.de-visual-mode-button', function () {
       if ($(this).prop('disabled')) return;
@@ -7849,7 +8245,9 @@ var DashticzDeviceEditor = (function () {
         customKeys.usage = true;
         customKeys.mode = true;
         customKeys.titles = true;
+        customKeys.icons = true;
         customKeys.switchscale = true;
+        customKeys.fontsize = true;
       }
       if (isGraphBlock) {
         customKeys.graph = true;
@@ -7954,6 +8352,19 @@ var DashticzDeviceEditor = (function () {
         var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
+      if (supportsCompactSelector) {
+        updated.compactSelector = $('#de-config-compact-selector').prop(
+          'checked'
+        );
+        if ($popup.find('.de-compact-icon-row').length) {
+          var pendingCompactIcons = {};
+          $popup.find('.de-compact-icon-row').each(function () {
+            var icon = _compactIconValue($(this));
+            if (icon) pendingCompactIcons[$(this).attr('data-level')] = icon;
+          });
+          updated.compactIcons = pendingCompactIcons;
+        }
+      }
       if (hasDial) {
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
@@ -8064,7 +8475,19 @@ var DashticzDeviceEditor = (function () {
           }
           var generatedIcon = $(this).attr('data-generated-icon') === 'true';
           var initialIcon = String($(this).attr('data-initial-setting') || '');
-          if (generatedIcon && rawSetting === initialIcon && !options.iconValue)
+          // Only skip an unchanged, still-generated suggestion when the user
+          // never actually interacted with the icon controls this time the
+          // popup was open (iconFieldTouched) - otherwise deliberately
+          // enabling Icon or typing a value that happens to match the
+          // suggested default (e.g. Cluster's 'fas fa-list-check') silently
+          // saved nothing at all, even though picking Image instead always
+          // worked.
+          if (
+            generatedIcon &&
+            rawSetting === initialIcon &&
+            !options.iconValue &&
+            !iconFieldTouched
+          )
             return;
           hasIconField = true;
           pendingIconValue = rawSetting;
@@ -8209,7 +8632,28 @@ var DashticzDeviceEditor = (function () {
             value: clusterTitlesOut,
           });
         }
-        if (clusterMode !== 'temperature') {
+        var clusterIconsOut = {};
+        clusterPendingDevices.forEach(function (d) {
+          if (d.icon) clusterIconsOut[d.idx] = d.icon;
+        });
+        if (Object.keys(clusterIconsOut).length) {
+          storedRows.push({
+            field: 'icons',
+            setting: JSON.stringify(clusterIconsOut),
+            value: clusterIconsOut,
+          });
+        }
+        var editFontSize = _readClusterFontSize(
+          $('#de-config-font-size').val()
+        );
+        if (editFontSize !== null) {
+          storedRows.push({
+            field: 'fontSize',
+            setting: String(editFontSize),
+            value: editFontSize,
+          });
+        }
+        if (_clusterUsesSwitchRows(clusterMode)) {
           var editSwitchScale = _readClusterSwitchScale(
             $('#de-config-switch-scale').val()
           );
@@ -8227,6 +8671,8 @@ var DashticzDeviceEditor = (function () {
             setting: 'temperature',
             value: 'temperature',
           });
+        } else if (clusterMode === 'other') {
+          storedRows.push({ field: 'mode', setting: 'other', value: 'other' });
         } else {
           var clusterUsageOut = {};
           clusterPendingDevices.forEach(function (d) {
@@ -9298,6 +9744,20 @@ var DashticzDeviceEditor = (function () {
             }
             specialEntry.custom_fields = specialCustomFields;
           }
+          // Selector Switch Compact layout, same as for a plain device below.
+          delete specialCustomFields.compactSelector;
+          delete specialCustomFields.compactIcons;
+          if (specialOptions.compactSelector === true) {
+            specialCustomFields.compactSelector = true;
+            if (
+              specialOptions.compactIcons &&
+              Object.keys(specialOptions.compactIcons).length
+            )
+              specialCustomFields.compactIcons = specialOptions.compactIcons;
+          }
+          if (Object.keys(specialCustomFields).length)
+            specialEntry.custom_fields = specialCustomFields;
+          else delete specialEntry.custom_fields;
         } else if (
           SIMPLE_ICON_PAYLOAD_KINDS.indexOf(special.specialType) > -1
         ) {
@@ -9450,6 +9910,16 @@ var DashticzDeviceEditor = (function () {
         if (typeof options.inverse === 'boolean') {
           customFields.inverse = options.inverse;
         }
+      }
+      // Selector Switch Compact layout: rides through custom_fields like
+      // needle above (saveblocks.php only knows a fixed set of top-level
+      // props). Written only when on; unchecking removes it.
+      delete customFields.compactSelector;
+      delete customFields.compactIcons;
+      if (options.compactSelector === true) {
+        customFields.compactSelector = true;
+        if (options.compactIcons && Object.keys(options.compactIcons).length)
+          customFields.compactIcons = options.compactIcons;
       }
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
@@ -9864,6 +10334,148 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── HTML-escape helper ─────────────────────────────────────── */
+  // Icons offered per level for a compact Selector Switch (Font Awesome
+  // classes, all in the free set). '' = automatic, '__custom__' = own class.
+  var COMPACT_ICON_PRESETS = [
+    ['fas fa-chevron-up', 'Chevron up'],
+    ['fas fa-chevron-down', 'Chevron down'],
+    ['fas fa-minus', 'Minus'],
+    ['fas fa-arrow-up', 'Arrow up'],
+    ['fas fa-arrow-down', 'Arrow down'],
+    ['fas fa-power-off', 'Power'],
+    ['fas fa-toggle-on', 'Toggle on'],
+    ['fas fa-toggle-off', 'Toggle off'],
+    ['fas fa-lightbulb', 'Light on'],
+    ['far fa-lightbulb', 'Light off'],
+    ['fas fa-check', 'Check'],
+    ['fas fa-xmark', 'Cross'],
+    ['fas fa-sun', 'Sun'],
+    ['fas fa-moon', 'Moon'],
+    ['fas fa-lock', 'Locked'],
+    ['fas fa-lock-open', 'Unlocked'],
+    ['fas fa-play', 'Play'],
+    ['fas fa-pause', 'Pause'],
+    ['fas fa-stop', 'Stop'],
+  ];
+
+  // The levels a Selector Switch shows as buttons, same rules as
+  // js/blocks.js getSelectorSwitch(): [{value: level index, name}].
+  function _selectorLevels(device) {
+    if (!device || typeof device.LevelNames !== 'string' || !device.LevelNames)
+      return [];
+    var names = device.LevelNames;
+    if (
+      typeof Domoticz !== 'undefined' &&
+      Domoticz.info &&
+      Domoticz.info.levelNamesEncoded &&
+      typeof b64_to_utf8 === 'function'
+    )
+      names = b64_to_utf8(names);
+    return names
+      .split('|')
+      .map(function (name, index) {
+        return { value: index, name: name };
+      })
+      .filter(function (level) {
+        return (
+          level.value > 0 ||
+          typeof device.LevelOffHidden === 'undefined' ||
+          device.LevelOffHidden === false
+        );
+      });
+  }
+
+  // Toggle button content: the chosen icon (or "Automatic") plus a caret.
+  function _compactIconLabel(icon, t) {
+    return (
+      (icon
+        ? '<i class="' + _esc(icon) + '" aria-hidden="true"></i>'
+        : _esc(t.compact_icon_auto)) +
+      ' <span aria-hidden="true">&#9662;</span>'
+    );
+  }
+
+  // One row per level: the level name and a pull-down whose entries are the
+  // icons themselves (names only as tooltip).
+  function _compactIconRowsHtml(levels, saved, t) {
+    var html = '';
+    levels.forEach(function (level) {
+      var current = String((saved && saved[level.value]) || '');
+      var preset = COMPACT_ICON_PRESETS.some(function (p) {
+        return p[0] === current;
+      });
+      var selected = !current ? '' : preset ? current : '__custom__';
+      html +=
+        '<div class="mb-2 de-compact-icon-row" data-level="' +
+        level.value +
+        '"><div class="d-flex align-items-center gap-2" style="position:relative;">' +
+        '<span class="flex-grow-1">' +
+        _esc(level.name) +
+        '</span><button type="button" class="btn btn-outline-secondary btn-sm de-compact-icon-toggle" aria-haspopup="true" style="min-width:4em;">' +
+        _compactIconLabel(current, t) +
+        '</button>' +
+        '<div class="de-compact-icon-panel d-none" style="position:absolute;top:100%;right:0;z-index:1060;min-width:4em;width:max-content;max-height:260px;overflow-x:hidden;overflow-y:auto;padding:4px;margin-top:2px;border:1px solid rgba(128,128,128,.5);border-radius:6px;background:var(--bs-body-bg,#fff);box-shadow:0 4px 12px rgba(0,0,0,.35);">' +
+        '<button type="button" class="btn btn-sm d-block w-100 text-center de-compact-icon-choice' +
+        (selected === '' ? ' active' : '') +
+        '" data-icon="">' +
+        _esc(t.compact_icon_auto) +
+        '</button>';
+      COMPACT_ICON_PRESETS.forEach(function (p) {
+        html +=
+          '<button type="button" class="btn btn-sm d-block w-100 text-center de-compact-icon-choice' +
+          (selected === p[0] ? ' active' : '') +
+          '" data-icon="' +
+          _esc(p[0]) +
+          '" title="' +
+          _esc(p[1]) +
+          '" aria-label="' +
+          _esc(p[1]) +
+          '"><i class="' +
+          _esc(p[0]) +
+          '" aria-hidden="true"></i></button>';
+      });
+      html +=
+        '<button type="button" class="btn btn-sm d-block w-100 text-center de-compact-icon-choice' +
+        (selected === '__custom__' ? ' active' : '') +
+        '" data-icon="__custom__" title="' +
+        _esc(t.compact_icon_custom) +
+        '" aria-label="' +
+        _esc(t.compact_icon_custom) +
+        '">&hellip;</button></div></div>' +
+        '<input type="text" class="form-control form-control-sm mt-1 de-compact-icon-custom' +
+        (selected === '__custom__' ? '' : ' d-none') +
+        '" placeholder="fas fa-star" aria-label="' +
+        _esc(t.compact_icon_custom) +
+        '" value="' +
+        (selected === '__custom__' ? _esc(current) : '') +
+        '"><input type="hidden" class="de-compact-icon-value" value="' +
+        _esc(selected) +
+        '"></div>';
+    });
+    return html;
+  }
+
+  // Value chosen in one level row: a safe Font Awesome class string or ''.
+  function _compactIconValue($row) {
+    var value = String($row.find('.de-compact-icon-value').val() || '');
+    if (value === '__custom__')
+      value = String($row.find('.de-compact-icon-custom').val() || '').trim();
+    return /^[A-Za-z0-9 _-]+$/.test(value) ? value : '';
+  }
+
+  // Sync the toggle button and the custom input of one level row.
+  function _refreshCompactIconRow($row, t) {
+    $row
+      .find('.de-compact-icon-toggle')
+      .html(_compactIconLabel(_compactIconValue($row), t));
+    $row
+      .find('.de-compact-icon-custom')
+      .toggleClass(
+        'd-none',
+        String($row.find('.de-compact-icon-value').val()) !== '__custom__'
+      );
+  }
+
   function _esc(str) {
     return String(str)
       .replace(/&/g, '&amp;')

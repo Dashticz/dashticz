@@ -14,7 +14,11 @@ if ($ICS === '') {
 }
 $ICS = str_replace('#','%23',$ICS);
 try {
-	$remoteCalendar = dashticz_fetch_remote($ICS, 2097152);
+	// A calendar is very often hosted on the same LAN as Domoticz itself (a
+	// NAS, a local web server, etc.) - like xmltv.php and lms/index.php, the
+	// private/reserved-IP block dashticz_fetch_remote() applies by default
+	// is explicitly lifted here via allowPrivate=true.
+	$remoteCalendar = dashticz_fetch_remote($ICS, 2097152, 3, true);
 } catch (RuntimeException $error) {
 	dashticz_json_error(400, $error->getMessage());
 }

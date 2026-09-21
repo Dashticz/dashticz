@@ -582,3 +582,123 @@
   border: 1px solid rgba(255, 255, 255, 0.75) !important;
   background: #1c3450 !important;
 }
+
+/* Compact Selector Switch (Device Config -> Compact, block.compactSelector).
+   js/blocks.js getSelectorSwitch() adds .dt-selector-compact to the block.
+   The layout stays the theme's own: icon and title (not restyled) where
+   every other block has them, the level buttons below the title - only
+   smaller. A level with an icon (Device Config -> Icon per level) gets the
+   class .dt-sc-icon and shows just its <i> icon; the level name stays in the
+   DOM (title/aria-label) and is hidden with font-size 0. Levels without an
+   icon keep their name as small text button. The buttons scale with the
+   block height (Layout Editor / configured height), 24px in the default
+   block. The theme forces border/background/padding/font-size (and the
+   colour and size of .fas icons) with !important, so those properties repeat
+   !important on this more specific selector; everything else wins on
+   specificity. */
+.transbg.mh.dt-selector-compact {
+  --sc-block-h: 76px;
+  --sc-block-radius: 12px;
+  --sc-btn-w: 29px;
+  --sc-btn-h: 24px;
+  --sc-btn-radius: 6px;
+  --sc-gap: 4px;
+  --sc-icon-size: 11px;
+  --sc-text-size: 12px;
+  --sc-btn-bg: var(--button-bg);
+  --sc-btn-bg-hover: var(--button-hover);
+  --sc-btn-border: var(--border-color-inactive);
+  --sc-btn-icon: rgb(150, 160, 175);
+  --sc-btn-bg-on: var(--button-active);
+  --sc-btn-border-on: var(--border-color-active);
+  --sc-btn-icon-on: #fff;
+  height: var(--sc-block-h) !important;
+  min-height: 0;
+  border-radius: var(--sc-block-radius) !important;
+}
+
+@supports (height: 1cqh) {
+  .transbg.mh.dt-selector-compact {
+    container-type: size;
+    --sc-btn-h: clamp(18px, 39cqh, 56px);
+    --sc-btn-w: calc(var(--sc-btn-h) * 1.2);
+    --sc-btn-radius: calc(var(--sc-btn-h) * 0.27);
+    --sc-icon-size: clamp(10px, 18cqh, 26px);
+    --sc-text-size: clamp(11px, 20cqh, 20px);
+  }
+}
+
+/* Icon, padding, title and the column layout (title on top, buttons
+   centred in the space below it) are the theme's own and stay untouched;
+   the buttons only move to the right edge. */
+.transbg.mh.dt-selector-compact > .col-data {
+  align-items: flex-end;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  gap: var(--sc-gap);
+  justify-content: flex-end;
+  width: auto;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: var(--sc-btn-w);
+  height: var(--sc-btn-h);
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px !important;
+  border: 1px solid var(--sc-btn-border) !important;
+  border-radius: var(--sc-btn-radius) !important;
+  background-color: var(--sc-btn-bg) !important;
+  box-shadow: none;
+  color: var(--sc-btn-icon);
+  font-size: var(--sc-text-size) !important;
+  line-height: 1;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn.dt-sc-icon {
+  flex: 0 1 var(--sc-btn-w);
+  width: var(--sc-btn-w);
+  min-width: 18px;
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn > i {
+  margin: 0 !important;
+  color: var(--sc-btn-icon) !important;
+  font-size: var(--sc-icon-size) !important;
+  line-height: 1;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn:hover,
+.transbg.mh.dt-selector-compact .selector-buttons .btn:focus {
+  background-color: var(--sc-btn-bg-hover) !important;
+}
+
+.transbg.mh.dt-selector-compact
+  .selector-buttons
+  .btn:has(input:focus-visible) {
+  outline: 2px solid var(--sc-btn-border-on);
+  outline-offset: 1px;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn.active,
+.transbg.mh.dt-selector-compact .selector-buttons .btn:active {
+  border-color: var(--sc-btn-border-on) !important;
+  background-color: var(--sc-btn-bg-on) !important;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn.active > i,
+.transbg.mh.dt-selector-compact .selector-buttons .btn:active > i {
+  color: var(--sc-btn-icon-on) !important;
+}
