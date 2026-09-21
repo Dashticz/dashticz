@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+v4.0.11 (20-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added a **Compact** option to the Device Config of Selector Switches
+  (buttons style) with exactly three levels. The block keeps its icon and
+  title where every other block has them; the three level buttons (for
+  example Open/Half/Dicht) become small icon buttons (chevron up, minus,
+  chevron down) below the title. The buttons scale with the block height
+  (Layout Editor / configured height), and the level names stay available as
+  tooltip and accessible name. The option is stored as ``compactSelector`` in
+  ``CONFIG.js`` and is styled in the Modern Dark theme.
+
 v4.0.10 (20-9-2026)
 ----------------------
 

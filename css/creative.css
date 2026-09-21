@@ -422,6 +422,25 @@
   margin: 0px 0px;
 }
 
+/* .dt_column (template: 1, js/dashticz.js's getSpecialBlock()) renders
+   .dt_state as a sibling of .dt_content instead of nested inside it, so it
+   becomes a flex item of .dt_block directly. .dt_block's align-items:
+   flex-start (needed so .col-icon/.dt_content top-align in the normal row
+   layout) then also governs .dt_column's cross axis, which is horizontal in
+   column mode - so without an override, .dt_state shrinks to its content's
+   own width instead of filling the block like .dt_content already does
+   above, and any right-aligned content inside it (e.g. Cluster's
+   switchRowHtml, css/creative.css's .cluster-row) sits against that
+   shrunk-to-fit edge rather than the block's true right edge.
+   align-self: stretch, not width: 100% - .dt_state already carries its own
+   margin: 5px 5px (below), and a stretched flex item's margin box (not its
+   border box) is what fills the line, so stretch keeps that 5px margin on
+   both sides. width: 100% would ignore the margin and add it on top,
+   overflowing the block by 5px on the right. */
+.dt_column > .dt_state {
+  align-self: stretch;
+}
+
 .fixedheight:not(.dt_column) .dt_content {
   display: flex;
   flex-direction: column;
@@ -4496,6 +4515,25 @@ img.icon {
   font-weight: normal;
 }
 
+/* Optional row icon (block.icons), the HP iLO look (.hpilo-icon). The size,
+   colour and margin repeat !important because themes size/colour some .fas
+   icons globally, and this file has per-icon margin offsets of its own
+   (.fas.fa-lightbulb, .fas.fa-bolt, .fas.fa-thermometer-half, .fas.fa-plug,
+   .fas.fa-microchip, ...) meant for the big tile icon - autoIcon()
+   (js/components/cluster.js) or a manually picked icon can easily reuse one
+   of those exact classes, and without this override a row using one of them
+   "jumps" a few px out of line with every other row's icon in the same
+   cluster. */
+.cluster-block .dt_state .cluster-row-icon {
+  flex: none;
+  width: 1.4em;
+  margin: 0 !important;
+  color: #3a86d8 !important;
+  font-size: var(--font-device-title, 1em) !important;
+  line-height: 1;
+  text-align: center;
+}
+
 .cluster-row-usage {
   flex: 0 0 auto;
   white-space: nowrap;
@@ -4503,7 +4541,7 @@ img.icon {
   color: var(--text-muted);
 }
 
-/* Temperature mode's own row value (js/components/cluster.js) - unlike
+/* Temperature and Other mode's own row value (js/components/cluster.js) - unlike
    the usage span, this is the row's primary value (there is no toggle
    next to it), so it keeps its own status color instead of the muted one
    .cluster-row-usage uses for its secondary annotation. */
@@ -4707,9 +4745,15 @@ img.icon {
   min-width: 0;
 }
 
+/* margin: 0 !important - same reasoning as .cluster-row-icon above: legacy
+   per-icon rules further up this file (.fas.fa-plug, .fas.fa-microchip, ...)
+   would otherwise add a stray margin to the exact Font Awesome classes some
+   METRICS entries use (js/components/hpilo.js), making that row's icon
+   jump out of line with the others. */
 .hpilo-block .dt_state .hpilo-icon {
   flex: none;
   width: 1.4em;
+  margin: 0 !important;
   font-size: 1em;
   line-height: 1;
   text-align: center;
@@ -6175,7 +6219,7 @@ canvas {
 
 .sec-frame .keypad-input .status:before {
   position: relative;
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 7 Free';
   mix-blend-mode: soft-light;
   font-weight: 900;
   font-size: 100%;
@@ -6204,7 +6248,7 @@ canvas {
 
 .sec-frame .keypad-input .key[data-id='cancel']:before {
   content: '\f104';
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 7 Free';
   font-weight: 900;
   font-size: 100%;
 }
@@ -8300,4 +8344,48 @@ canvas {
   .lms-block .dt_state {
     min-height: 72px;
   }
+}
+
+/* Compact Selector Switch icon picker (Device Config): every icon in the
+   toggle and in the pull-down has the same size and the same single colour. The theme's global .fas.fa-* rules (colour and size !important)
+   would otherwise make each icon look different. */
+.de-config-popup .de-compact-icon-row .de-compact-icon-toggle > i,
+.de-config-popup .de-compact-icon-row .de-compact-icon-choice > i {
+  display: inline-block;
+  width: 1.25em;
+  margin: 0 !important;
+  color: var(--bs-body-color, #212529) !important;
+  font-size: 13px !important;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Cluster row icon picker (Device Config / Cluster popup): same uniform size
+   and single colour for every icon as the compact selector's picker above -
+   the theme's global .fas.fa-* rules (size and colour !important) would
+   otherwise make each icon look different. */
+.cl-icon-wrap .cl-icon-toggle > i,
+.cl-icon-wrap .cl-icon-panel .cl-icon-choice > i {
+  display: inline-block;
+  width: 1.25em;
+  margin: 0 !important;
+  color: var(--bs-body-color, #212529) !important;
+  font-size: 13px !important;
+  line-height: 1;
+  text-align: center;
+}
+
+/* HP iLO row icon picker (Widget Config): same uniform size and single colour
+   for every icon as the other icon pickers - the theme's global .fas.fa-*
+   rules (size and colour !important) would otherwise make each look
+   different. */
+.we-hpilo-icon-wrap .we-hpilo-icon-toggle > i,
+.we-hpilo-icon-wrap .we-hpilo-icon-panel .we-hpilo-icon-choice > i {
+  display: inline-block;
+  width: 1.25em;
+  margin: 0 !important;
+  color: var(--bs-body-color, #212529) !important;
+  font-size: 13px !important;
+  line-height: 1;
+  text-align: center;
 }

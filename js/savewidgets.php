@@ -97,6 +97,7 @@ $allowedSettings = [
     'hpilo_pollseconds'      => 'number',
     'hpilo_fontsize'         => 'number',
     'hpilo_rows'             => 'hpilo_rows',
+    'hpilo_icons'            => 'hpilo_icons',
     // spotify
     'spot_clientid'          => 'string',
     // calendar
@@ -198,6 +199,22 @@ if (isset($data['settings']) && is_array($data['settings'])) {
                 }
             }
             $configSettings[$key] = implode(',', $rows);
+        } elseif ($type === 'hpilo_icons') {
+            // JSON map of known HP iLO row keys to a Font Awesome class
+            // string ('none' hides the icon); anything else is dropped.
+            $decodedIcons = json_decode((string)$value, true);
+            $icons = [];
+            if (is_array($decodedIcons)) {
+                foreach ($decodedIcons as $iconRow => $iconClass) {
+                    if (in_array($iconRow, $allowedHpiloRows, true)
+                        && is_string($iconClass)
+                        && preg_match('/^[A-Za-z0-9 _-]{1,60}$/', $iconClass)
+                    ) {
+                        $icons[$iconRow] = $iconClass;
+                    }
+                }
+            }
+            $configSettings[$key] = json_encode((object)$icons);
         } elseif ($type === 'security_panel_lock') {
             if (in_array($value, [0, 1, 2, '0', '1', '2'], true)) {
                 $configSettings[$key] = (int)$value;

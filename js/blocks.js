@@ -1603,6 +1603,7 @@ function getSelectorSwitch(block) {
       typeof device['SelectorStyle'] !== 'undefined' &&
       device['SelectorStyle'] == 1
     ) {
+      block.$mountPoint.find('.mh').removeClass('dt-selector-compact');
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
@@ -1641,6 +1642,27 @@ function getSelectorSwitch(block) {
           slideDevice(block, $(this).val());
         });
     } else {
+      var visibleLevels = nameValues.filter(function (nv) {
+        return (
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
+            (typeof device['LevelOffHidden'] == 'undefined' ||
+              device['LevelOffHidden'] === false))
+        );
+      });
+      // Device Config "Compact" option (block.compactSelector): compact
+      // block with small buttons (themes/modern-dark .dt-selector-compact).
+      // A level with an icon (block.compactIcons[level], chosen in Device
+      // Config) shows only that icon; a selector with exactly three levels
+      // and no icon chosen gets up/minus/down by position. Any other level
+      // keeps its name as button text.
+      var compact = block.compactSelector === true;
+      var defaultIcons = [
+        'fas fa-chevron-up',
+        'fas fa-minus',
+        'fas fa-chevron-down',
+      ];
+      block.$mountPoint.find('.mh').toggleClass('dt-selector-compact', compact);
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
@@ -1656,14 +1678,38 @@ function getSelectorSwitch(block) {
           var st = '';
           if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
           var checked = st ? ' checked' : '';
-          html += '<label class="btn btn-default ' + st + '">';
+          var levelIcon = '';
+          if (compact) {
+            levelIcon = String(
+              (block.compactIcons && block.compactIcons[nv.value]) ||
+                (visibleLevels.length === 3
+                  ? defaultIcons[visibleLevels.indexOf(nv)] || ''
+                  : '')
+            );
+            if (!/^[A-Za-z0-9 _-]+$/.test(levelIcon)) levelIcon = '';
+          }
+          html +=
+            '<label class="btn btn-default ' +
+            st +
+            (levelIcon ? ' dt-sc-icon' : '') +
+            '"';
+          // The level name is hidden visually behind an icon; keep it
+          // available as tooltip and accessible name.
+          if (levelIcon) {
+            var levelLabel = String(nv.name).replace(/"/g, '&quot;');
+            html +=
+              ' title="' + levelLabel + '" aria-label="' + levelLabel + '"';
+          }
+          html += '>';
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
             nv.value * 10 +
             '"' +
             checked +
-            '>' +
-            nv.name;
+            '>';
+          if (levelIcon)
+            html += '<i class="' + levelIcon + '" aria-hidden="true"></i>';
+          html += nv.name;
           html += '</label>';
         }
       }
