@@ -4677,6 +4677,7 @@ img.icon {
 .postnl-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -4686,6 +4687,10 @@ img.icon {
   line-height: 1;
   width: 1.4em;
   text-align: center;
+}
+
+.postnl-icon-emoji {
+  font-size: 24px;
 }
 
 .postnl-icon-in {
@@ -4707,9 +4712,11 @@ img.icon {
 .postnl-row-text {
   font-size: inherit;
   min-width: 0;
+  text-align: center;
 }
 
 .postnl-error {
+  text-align: center;
   font-size: inherit;
   color: var(--text-muted);
 }
