@@ -32,6 +32,10 @@ Settings
     - Your PostNL password
   * - postnl_showdelivered
     - ``1``/``0``: Show delivered packages (on) or hide them (off). Default: 1
+  * - postnl_iconstyle
+    - ``fa``/``emoji``: Show Font Awesome icons or colorful emoji icons. Default: fa
+  * - postnl_date_color, postnl_time_color, postnl_text_color
+    - Hex color (e.g. ``#ffff00``) of the date, time and text part of each line. Default: theme color
   * - postnl_days
     - ``1..30``: Number of days a package (incoming or sent) stays visible after delivery. Default: 2
   * - postnl_pollminutes

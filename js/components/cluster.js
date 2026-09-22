@@ -3,9 +3,9 @@
 /* Cluster: a Dashticz-only block that renders a fixed list of Domoticz
  * devices as individual rows inside one tile, added via the Screen
  * Editor's "Add items" -> Cluster quick-add popup (js/deviceeditor.js's
- * _showClusterPopup()). Two mutually exclusive row types (block.mode,
+ * _showClusterPopup()). Three mutually exclusive row types (block.mode,
  * chosen once per cluster in that popup - a cluster is never a mix of
- * both):
+ * the others):
  *
  * - Switch (block.mode absent/'switch', the default): name plus its own
  *   on/off toggle. Unlike Group (js/components/group.js), which shows one
@@ -18,6 +18,9 @@
  *   optional block.usage map (switch idx -> companion device idx).
  * - Temperature (block.mode === 'temperature'): name plus that device's
  *   own .Temp reading, no toggle - these are plain sensors, not switches.
+ * - Other (block.mode === 'other'): name plus that device's own Data value,
+ *   no toggle - for every device that is neither a switch nor a
+ *   temperature reading (humidity, wind, lux, energy meters, ...).
  *
  * Either mode's row name defaults to the device's own Domoticz Name, but
  * can be overridden per row via the optional block.titles map (device idx
@@ -34,13 +37,26 @@ var DT_cluster = (function () {
         width: 4,
         refresh: 3600,
         containerClass: 'cluster-block',
+        // template: 1 (js/dashticz.js's getSpecialBlock()) puts the block's
+        // own icon/title in their own row and renders .dt_state - the rows -
+        // as a sibling spanning the block's full width, instead of the
+        // framework default that reserves a .col-icon-wide column beside the
+        // rows for the whole block height. A row list has no use for that
+        // reserved column past the header, so the default layout left rows
+        // indented with dead space to their left; explicit template: 0 in a
+        // block definition still opts back into the old side-by-side layout.
+        template: 1,
       };
     },
     run: function (me) {
-      me.mode = me.block.mode === 'temperature' ? 'temperature' : 'switch';
+      me.mode =
+        me.block.mode === 'temperature' || me.block.mode === 'other'
+          ? me.block.mode
+          : 'switch';
       me.devices = me.block.devices || [];
       me.usageMap = me.mode === 'switch' ? me.block.usage || {} : {};
       me.titlesMap = me.block.titles || {};
+      me.iconsMap = me.block.icons || {};
       me.devices.forEach(function (idx) {
         Dashticz.subscribeDevice(me, idx, false, function () {
           return refresh(me);
@@ -89,7 +105,52 @@ var DT_cluster = (function () {
     return String(raw).replace(/\bWatt\b/, 'W');
   }
 
-  function temperatureRowHtml(idx, device, title) {
+  // Row icons (block.icons: device idx -> 'auto' or a Font Awesome class
+  // string, chosen per row in the Cluster popups): the HP iLO look, a small
+  // blue icon in front of the name. 'auto' derives one from the device's own
+  // Domoticz type; absent means no icon, as before.
+  function autoIcon(device) {
+    var type = String(device.Type || '');
+    var subType = String(device.SubType || '');
+    if (device.SwitchType) {
+      return String(device.SwitchType).indexOf('Blinds') === 0
+        ? 'fas fa-window-maximize'
+        : 'fas fa-lightbulb';
+    }
+    if (/^Temp/.test(type)) return 'fas fa-thermometer-half';
+    if (/Humidity/.test(type)) return 'fas fa-droplet';
+    if (/Wind/.test(type)) return 'fas fa-wind';
+    if (/Rain/.test(type)) return 'fas fa-cloud-rain';
+    if (type === 'Lux' || subType === 'Lux') return 'fas fa-sun';
+    if (/Usage|Energy|P1|kWh|Current|Power/.test(type + ' ' + subType))
+      return 'fas fa-bolt';
+    if (/Baro/.test(type + ' ' + subType)) return 'fas fa-gauge-high';
+    return 'fas fa-circle-info';
+  }
+
+  // anyIcon (true once any row in the cluster has an icon configured, see
+  // doRefresh()) keeps every row's own .cluster-row-icon slot reserved, even
+  // a row with no icon of its own - otherwise that row's title started
+  // 1.4em further left than its icon-having neighbours, i.e. the row
+  // "jumps" against the rest of the list. A cluster with no icons
+  // configured anywhere renders no spacer at all, same as before this.
+  function iconHtml(me, idx, device, anyIcon) {
+    var setting = me.iconsMap[idx];
+    var icon = setting
+      ? setting === 'auto'
+        ? autoIcon(device)
+        : String(setting)
+      : '';
+    if (icon && !/^[A-Za-z0-9 _-]+$/.test(icon)) icon = '';
+    if (!icon && !anyIcon) return '';
+    return (
+      '<i class="' +
+      (icon ? icon + ' ' : '') +
+      'cluster-row-icon" aria-hidden="true"></i>'
+    );
+  }
+
+  function temperatureRowHtml(idx, device, title, icon) {
     var reading =
       typeof device.Temp === 'number'
         ? device.Temp.toFixed(1) + _TEMP_SYMBOL
@@ -98,6 +159,7 @@ var DT_cluster = (function () {
       '<div class="cluster-row" data-idx="' +
       idx +
       '">' +
+      icon +
       '<span class="cluster-row-title">' +
       title +
       '</span>' +
@@ -106,7 +168,26 @@ var DT_cluster = (function () {
     );
   }
 
-  function switchRowHtml(idx, device, usage, title) {
+  // Other mode: the device's own Data string ("54 %", "3.2 m/s", ...).
+  function otherRowHtml(idx, device, title, icon) {
+    var reading =
+      typeof device.Data === 'string' || typeof device.Data === 'number'
+        ? String(device.Data)
+        : '';
+    return (
+      '<div class="cluster-row" data-idx="' +
+      idx +
+      '">' +
+      icon +
+      '<span class="cluster-row-title">' +
+      title +
+      '</span>' +
+      (reading ? '<span class="cluster-row-temp">' + reading + '</span>' : '') +
+      '</div>'
+    );
+  }
+
+  function switchRowHtml(idx, device, usage, title, icon) {
     var status = getIconStatusClass(device.Status);
     return (
       '<div class="cluster-row ' +
@@ -114,6 +195,7 @@ var DT_cluster = (function () {
       '" data-idx="' +
       idx +
       '">' +
+      icon +
       '<span class="cluster-row-title">' +
       title +
       '</span>' +
@@ -138,16 +220,37 @@ var DT_cluster = (function () {
     // .dt_state - the framework's own content slot, same as e.g. OWM/Weather
     // - instead of replacing .dt_block wholesale keeps that icon/title
     // intact instead of wiping it every refresh.
+    var anyIcon = me.devices.some(function (idx) {
+      return !!me.iconsMap[idx];
+    });
     var html = '<div class="cluster-rows">';
     me.devices.forEach(function (idx) {
       var device = allDevices[idx];
       if (!device) return;
       var title = me.titlesMap[idx] || device.Name || idx;
       if (me.mode === 'temperature') {
-        html += temperatureRowHtml(idx, device, title);
+        html += temperatureRowHtml(
+          idx,
+          device,
+          title,
+          iconHtml(me, idx, device, anyIcon)
+        );
+      } else if (me.mode === 'other') {
+        html += otherRowHtml(
+          idx,
+          device,
+          title,
+          iconHtml(me, idx, device, anyIcon)
+        );
       } else {
         var usage = usageText(allDevices[me.usageMap[idx]]);
-        html += switchRowHtml(idx, device, usage, title);
+        html += switchRowHtml(
+          idx,
+          device,
+          usage,
+          title,
+          iconHtml(me, idx, device, anyIcon)
+        );
       }
     });
     html += '</div>';
@@ -164,7 +267,17 @@ var DT_cluster = (function () {
       switchScale > 0 ? switchScale : ''
     );
 
-    if (me.mode === 'temperature') return;
+    // Optional block.fontSize (px, 8-60) sizes the whole cluster: the row
+    // title/usage/value spans read --font-device-title (css/creative.css),
+    // so setting it on the block also covers the block's own title. Set on
+    // every refresh, like switchScale above; empty removes the override.
+    var fontSize = parseInt(me.block.fontSize, 10);
+    me.$mountPoint.css(
+      '--font-device-title',
+      fontSize >= 8 && fontSize <= 60 ? fontSize + 'px' : ''
+    );
+
+    if (me.mode !== 'switch') return;
 
     me.$mountPoint
       .find('.cluster-row-switch')

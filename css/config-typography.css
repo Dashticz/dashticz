@@ -349,3 +349,15 @@
 #codeToCopy {
   font-family: monospace;
 }
+
+.we-cfg-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+}
+
+@media (max-width: 575px) {
+  .we-cfg-cols {
+    grid-template-columns: 1fr;
+  }
+}

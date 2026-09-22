@@ -1,6 +1,49 @@
 Release Notes
 =============
 
+v4.0.12 (21-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added the **F1** widget (Widgets menu, in the "multiple per screen"
+  section), based on the `domoticz_F1 <https://github.com/MadPatrick/domoticz_F1>`_
+  plugin. It downloads the F1 calendar itself through the same-origin PHP
+  bridge ``vendor/dashticz/f1/index.php``, so no Domoticz device is needed.
+  Choose per tile with two icon buttons what it shows: the **next session**,
+  or **all sessions** of the race weekend (with the race location added to
+  the tile title). Options per tile: language, calendar URL per language
+  (defaults to the plugin's feeds), UTC offset, poll interval, session filter,
+  next-event visibility in days, no-event text, ``hideimageonempty``, an
+  optional image before the Next event text and a font size that works like
+  the one of the cluster widget. The F1 settings are shown below the
+  Title/Icon fields in the Device Config, in two columns. See
+  :ref:`f1 <f1>`.
+
+* **Fixes**
+
+- The version is bumped so browsers no longer serve cached editor scripts
+  (``deviceeditor.js``, ``widgeteditor.js`` and others are loaded as
+  ``file.js?v=<version>``): a stale copy could make saving a second F1 widget
+  fail without an error message.
+- Saving a second F1 widget no longer drops an early singleton F1 block
+  (``type: 'f1'``/``'f1events'``) from the screen: it is kept and converted to
+  the per-block F1 settings on the next save.
+
+v4.0.11 (20-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added a **Compact** option to the Device Config of Selector Switches
+  (buttons style) with exactly three levels. The block keeps its icon and
+  title where every other block has them; the three level buttons (for
+  example Open/Half/Dicht) become small icon buttons (chevron up, minus,
+  chevron down) below the title. The buttons scale with the block height
+  (Layout Editor / configured height), and the level names stay available as
+  tooltip and accessible name. The option is stored as ``compactSelector`` in
+  ``CONFIG.js`` and is styled in the Modern Dark theme.
+
 v4.0.10 (20-9-2026)
 ----------------------
 
