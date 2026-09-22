@@ -461,7 +461,17 @@
       "configure_widget": "Widget configureren",
       "pending_new": "Nieuw – nog niet opgeslagen",
       "added_pending": "Item toegevoegd. Kies Opslaan om te bewaren, of Annuleren om te verwijderen.",
-      "discard_pending_confirm": "Zojuist toegevoegde item(s) verwijderen? Deze zijn nog niet opgeslagen."
+      "discard_pending_confirm": "Zojuist toegevoegde item(s) verwijderen? Deze zijn nog niet opgeslagen.",
+      "calendar_source": "Kalender",
+      "calendar_source_plural": "kalenders",
+      "calendar_default_name": "Kalender",
+      "calendar_name": "Naam",
+      "calendar_color": "Kleur",
+      "calendar_add": "Kalender toevoegen",
+      "calendar_remove": "Kalender verwijderen",
+      "calendar_name_required": "Vul voor iedere kalender een naam in.",
+      "calendar_duplicate_name": "Kalendernamen moeten uniek zijn.",
+      "ics_url": "ICS-URL"
     },
     "widgeteditor": {
       "title": "Widgets",

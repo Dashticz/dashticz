@@ -1013,19 +1013,26 @@ var DashticzDeviceEditor = (function () {
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       reference !== 'widget_calendar' &&
       String(definition.type || '').toLowerCase() !== 'calendar' &&
-      typeof definition.icalurl === 'string' &&
-      definition.icalurl !== ''
+      ((typeof definition.icalurl === 'string' && definition.icalurl !== '') ||
+        (definition.icalurl &&
+          typeof definition.icalurl === 'object' &&
+          !Array.isArray(definition.icalurl) &&
+          Object.keys(definition.icalurl).length > 0))
     ) {
       // Repeatable Calendar block, added via the Screen Editor's own "Add
       // items" -> Calendar quick-add popup (_showCalendarPopup() above)
       // rather than the Widgets catalog's singleton 'calendar' entry.
       // Matches js/components/calendar.js's own canHandle(): dispatched on
       // a truthy icalurl (this popup never writes an explicit type, same
-      // convention as html/iframe above). The fixed 'widget_calendar' key,
-      // and any block with an explicit type: 'calendar' (the legacy
-      // multi-source `calendars` array shape the singleton widget itself
-      // writes), are excluded so those keep going through
-      // DashticzWidgetEditor's own (unrelated) config path unchanged.
+      // convention as html/iframe above) - a single calendar keeps icalurl
+      // as a plain string, and the popup's "+" button turns it into the
+      // name -> {ics, color} object shape once a second calendar is added,
+      // so both must be recognized here. The fixed 'widget_calendar' key,
+      // and any block with an explicit type: 'calendar' (the Widgets
+      // catalog's own singleton entry, which also stores icalurl as that
+      // same object shape but always carries this type), are excluded so
+      // those keep going through DashticzWidgetEditor's own (unrelated)
+      // config path unchanged.
       kind = 'calendar';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
@@ -5290,6 +5297,278 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  /* Calendar's icalurl field, shared by the quick-add popup
+     (_showCalendarPopup) and the generic Device Config popup
+     (_showConfigPopup's isCalendarBlock branch), same reasoning as
+     _graphFieldsHtml/_clusterFieldsHtml above: one row builder used from
+     both places via a `prefix`-scoped id/class so the two popups never
+     collide. Starts as a single plain-string icalurl (unchanged from
+     before); once a second row is added, icalurl becomes the
+     name -> {ics, color} object shape js/components/calendar.js already
+     accepts for any block regardless of key (see the Widgets catalog's
+     own multi-source editor, js/widgeteditor.js's #we-calendar-add, for
+     the same shape). */
+  function _calendarSourcesFromIcalurl(icalurl) {
+    if (typeof icalurl === 'string') {
+      return [{ name: '', ics: icalurl, color: 'white' }];
+    }
+    if (icalurl && typeof icalurl === 'object' && !Array.isArray(icalurl)) {
+      var out = [];
+      Object.keys(icalurl).forEach(function (name) {
+        var source = icalurl[name] || {};
+        out.push({
+          name: name,
+          ics: typeof source.ics === 'string' ? source.ics : '',
+          color: typeof source.color === 'string' ? source.color : 'blue',
+        });
+      });
+      if (out.length) return out;
+    }
+    return [{ name: '', ics: '', color: 'white' }];
+  }
+
+  function _calendarPickerColor(color) {
+    var named = {
+      black: '#000000',
+      blue: '#0000ff',
+      green: '#008000',
+      lightblue: '#add8e6',
+      lightgreen: '#90ee90',
+      orange: '#ffa500',
+      purple: '#800080',
+      red: '#ff0000',
+      white: '#ffffff',
+      yellow: '#ffff00',
+    };
+    var value = String(color || '').toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(value)) return value;
+    if (/^#[0-9a-f]{3}$/.test(value)) {
+      return (
+        '#' +
+        value.charAt(1) +
+        value.charAt(1) +
+        value.charAt(2) +
+        value.charAt(2) +
+        value.charAt(3) +
+        value.charAt(3)
+      );
+    }
+    return named[value] || '#0000ff';
+  }
+
+  function _calendarDefaultSource(index, t) {
+    return {
+      name: (t.calendar_default_name || 'Calendar') + ' ' + (index + 1),
+      ics: '',
+      color: index === 0 ? 'white' : 'blue',
+    };
+  }
+
+  function _calendarSourceRowHtml(prefix, source, index, multi, t) {
+    if (!multi) {
+      return (
+        '<div class="mb-2 de-calendar-row" data-calendar-index="0">' +
+        '<label class="form-label" for="' +
+        _esc(prefix) +
+        '-calendar-url-0">' +
+        _esc(t.calendar_block_icalurl) +
+        '</label>' +
+        '<input type="text" class="form-control de-calendar-url" id="' +
+        _esc(prefix) +
+        '-calendar-url-0" placeholder="https://..." autocomplete="off" value="' +
+        _esc(source.ics || '') +
+        '">' +
+        '<div class="form-text">' +
+        _esc(t.calendar_block_icalurl_help) +
+        '</div></div>'
+      );
+    }
+    var color = source.color || 'blue';
+    return (
+      '<div class="border rounded p-2 mb-2 de-calendar-row" data-calendar-index="' +
+      index +
+      '">' +
+      '<div class="d-flex align-items-center justify-content-between mb-2">' +
+      '<strong>' +
+      _esc(t.calendar_source || 'Calendar') +
+      ' ' +
+      (index + 1) +
+      '</strong>' +
+      '<button type="button" class="btn btn-sm btn-outline-danger de-calendar-remove" aria-label="' +
+      _esc(t.calendar_remove || 'Remove calendar') +
+      '"><i class="fas fa-minus" aria-hidden="true"></i></button></div>' +
+      '<div class="mb-2"><label class="form-label">' +
+      _esc(t.calendar_name || 'Name') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm de-calendar-name" maxlength="100" value="' +
+      _esc(source.name || '') +
+      '"></div>' +
+      '<div class="mb-2"><label class="form-label">' +
+      _esc(t.ics_url || 'ICS URL') +
+      '</label>' +
+      '<input type="url" class="form-control form-control-sm de-calendar-url" maxlength="2048" placeholder="https://…/calendar.ics" value="' +
+      _esc(source.ics || '') +
+      '"></div>' +
+      '<div><label class="form-label">' +
+      _esc(t.calendar_color || 'Color') +
+      '</label>' +
+      '<input type="color" class="form-control form-control-color de-calendar-color" value="' +
+      _calendarPickerColor(color) +
+      '" data-calendar-color-value="' +
+      _esc(color) +
+      '"></div></div>'
+    );
+  }
+
+  function _calendarFieldsHtml(prefix, sources, t) {
+    var multi = sources.length > 1;
+    var html =
+      '<div class="de-calendar-fields" data-calendar-prefix="' +
+      _esc(prefix) +
+      '">';
+    html += '<div id="' + _esc(prefix) + '-calendar-list">';
+    sources.forEach(function (source, index) {
+      html += _calendarSourceRowHtml(prefix, source, index, multi, t);
+    });
+    html += '</div>';
+    html +=
+      '<button type="button" class="btn btn-sm btn-outline-success mb-3" id="' +
+      _esc(prefix) +
+      '-calendar-add"><i class="fas fa-plus me-1" aria-hidden="true"></i>' +
+      _esc(t.calendar_add || 'Add calendar') +
+      '</button>';
+    html += '</div>';
+    return html;
+  }
+
+  /* Reads every row's current input values back into `sources` (a mutable
+     array shared with the caller, same pattern as clusterPendingDevices
+     above) so a value typed but not yet blurred is never lost on
+     add/remove/Save. */
+  function _captureCalendarFields(prefix, $popup, sources) {
+    var multi = sources.length > 1;
+    $popup
+      .find('[data-calendar-prefix="' + prefix + '"] .de-calendar-row')
+      .each(function () {
+        var index = parseInt($(this).attr('data-calendar-index'), 10);
+        if (!sources[index]) return;
+        sources[index].ics = $.trim(
+          String($(this).find('.de-calendar-url').val() || '')
+        );
+        if (multi) {
+          sources[index].name = $.trim(
+            String($(this).find('.de-calendar-name').val() || '')
+          );
+          sources[index].color =
+            $(this)
+              .find('.de-calendar-color')
+              .attr('data-calendar-color-value') ||
+            $(this).find('.de-calendar-color').val() ||
+            'blue';
+        }
+      });
+  }
+
+  function _wireCalendarFields(prefix, $popup, sources, t) {
+    function render() {
+      $popup.find('#' + prefix + '-calendar-list').html(
+        sources
+          .map(function (source, index) {
+            return _calendarSourceRowHtml(
+              prefix,
+              source,
+              index,
+              sources.length > 1,
+              t
+            );
+          })
+          .join('')
+      );
+    }
+    $popup.on('click', '#' + prefix + '-calendar-add', function () {
+      _captureCalendarFields(prefix, $popup, sources);
+      sources.push(_calendarDefaultSource(sources.length, t));
+      render();
+    });
+    $popup.on(
+      'click',
+      '[data-calendar-prefix="' + prefix + '"] .de-calendar-remove',
+      function () {
+        _captureCalendarFields(prefix, $popup, sources);
+        var index = parseInt(
+          $(this).closest('.de-calendar-row').attr('data-calendar-index'),
+          10
+        );
+        sources.splice(index, 1);
+        if (!sources.length) sources.push(_calendarDefaultSource(0, t));
+        render();
+      }
+    );
+    $popup.on(
+      'input change',
+      '[data-calendar-prefix="' + prefix + '"] .de-calendar-color',
+      function () {
+        $(this).attr('data-calendar-color-value', $(this).val());
+      }
+    );
+  }
+
+  /* Validates and reads back the final icalurl value: a single row stays a
+     plain string (unchanged save shape), two or more rows become the
+     name -> {ics, color} object js/components/calendar.js accepts. */
+  function _readCalendarFields(prefix, $popup, sources, t) {
+    _captureCalendarFields(prefix, $popup, sources);
+    if (sources.length <= 1) {
+      var single = $.trim((sources[0] && sources[0].ics) || '');
+      if (!single || single.length > 2048) {
+        return { valid: false, reason: 'url' };
+      }
+      return { valid: true, icalurl: single };
+    }
+    var names = {};
+    var result = {};
+    for (var i = 0; i < sources.length; i++) {
+      var name = $.trim(sources[i].name || '');
+      var ics = $.trim(sources[i].ics || '');
+      if (!name) return { valid: false, reason: 'name' };
+      if (names[name]) return { valid: false, reason: 'duplicate' };
+      if (!ics || ics.length > 2048) return { valid: false, reason: 'url' };
+      names[name] = true;
+      result[name] = { ics: ics, color: sources[i].color || 'blue' };
+    }
+    return { valid: true, icalurl: result };
+  }
+
+  /* Managed-items list subtitle for a Calendar block (see _specialItemHtml
+     below) - a single-source block still shows its ICS URL like before;
+     a multi-source block shows its calendar names instead of the raw
+     saved JSON string. */
+  function _calendarBlockDetailText(icalurlRow, fallback, t) {
+    var value = icalurlRow && icalurlRow.value;
+    if (typeof value === 'string' && value) return value;
+    if (value && typeof value === 'object') {
+      var names = Object.keys(value);
+      if (names.length) {
+        return (
+          names.length +
+          ' ' +
+          (t.calendar_source_plural || 'calendars') +
+          ': ' +
+          names.join(', ')
+        );
+      }
+    }
+    return fallback;
+  }
+
+  function _calendarFieldsErrorText(t, reason) {
+    if (reason === 'name')
+      return t.calendar_name_required || 'Enter a name for every calendar.';
+    if (reason === 'duplicate')
+      return t.calendar_duplicate_name || 'Calendar names must be unique.';
+    return t.invalid_calendar_block_icalurl;
+  }
+
   /* Repeatable Calendar block - same managedSpecials mechanism as iFrame/
      HTML Block above (kind:'special', specialType:'calendar'), so any
      number of independently-configured calendars can be placed, unlike
@@ -5298,12 +5577,10 @@ var DashticzDeviceEditor = (function () {
      truthy icalurl (or an explicit type:'calendar'/legacy calendars
      array) - see _specialFromReference()'s matching 'calendar' branch,
      which excludes the legacy 'widget_calendar' key so that singleton
-     stays on its own Widget Editor path unchanged. Scoped to a single
-     ICS source per block (title/icalurl/holidayurl/layout/maxitems/
-     weeks/lastweek/isoweek/startonly) - the existing singleton widget's
-     richer multi-source-with-color picker stays available there for
-     anyone who needs it, same as hand-editing custom/CONFIG.js already
-     supports every calendar.js field regardless. */
+     stays on its own Widget Editor path unchanged. Starts as a single
+     ICS URL field, same as before; the "+" button (_calendarFieldsHtml)
+     appends further calendars and Save converts to the multi-source
+     icalurl object once two or more rows exist - see the helpers above. */
   function _showCalendarPopup() {
     var t = _translations();
     $('#calendarblockpopup').remove();
@@ -5335,16 +5612,9 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
-    html +=
-      '<div class="mb-3"><label class="form-label" for="cal-device-icalurl">' +
-      _esc(t.calendar_block_icalurl) +
-      '</label>';
-    html +=
-      '<input type="text" class="form-control" id="cal-device-icalurl" placeholder="https://..." autocomplete="off">';
-    html +=
-      '<div class="form-text">' +
-      _esc(t.calendar_block_icalurl_help) +
-      '</div></div>';
+    var calendarSources = [_calendarDefaultSource(0, t)];
+    calendarSources[0].name = '';
+    html += _calendarFieldsHtml('cal-device', calendarSources, t);
     html +=
       '<div class="mb-3"><label class="form-label" for="cal-device-title">' +
       _esc(t.html_block_title) +
@@ -5418,6 +5688,7 @@ var DashticzDeviceEditor = (function () {
     var $popup = $('#calendarblockpopup');
     _wireQuickOptions('cal', $popup);
     _wireBackButton('calendarblockpopup');
+    _wireCalendarFields('cal-device', $popup, calendarSources, t);
 
     $('#cal-save-btn').on('click', function () {
       var $message = $popup
@@ -5425,12 +5696,19 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = $.trim(String($('#cal-device-title').val() || ''));
-      var icalurl = $.trim(String($('#cal-device-icalurl').val() || ''));
-      if (!icalurl || icalurl.length > 2048) {
-        $message.addClass('text-danger').text(t.invalid_calendar_block_icalurl);
-        $('#cal-device-icalurl').trigger('focus');
+      var calendarResult = _readCalendarFields(
+        'cal-device',
+        $popup,
+        calendarSources,
+        t
+      );
+      if (!calendarResult.valid) {
+        $message
+          .addClass('text-danger')
+          .text(_calendarFieldsErrorText(t, calendarResult.reason));
         return;
       }
+      var icalurl = calendarResult.icalurl;
 
       var quickOptions = _readQuickOptions('cal');
       var iconIsImage =
@@ -5458,7 +5736,12 @@ var DashticzDeviceEditor = (function () {
           value: quickOptions.iconValue,
         });
       }
-      customRows.push({ field: 'icalurl', setting: icalurl, value: icalurl });
+      customRows.push({
+        field: 'icalurl',
+        setting:
+          typeof icalurl === 'string' ? icalurl : JSON.stringify(icalurl),
+        value: icalurl,
+      });
       if (holidayurl) {
         customRows.push({
           field: 'holidayurl',
@@ -7775,6 +8058,7 @@ var DashticzDeviceEditor = (function () {
     var isLmsBlock = special && special.specialType === 'lms';
     var isGraphBlock = special && special.specialType === 'graph';
     var isF1Block = special && special.specialType === 'f1';
+    var isCalendarBlock = special && special.specialType === 'calendar';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
     var isNoDialSpecial = !!(
@@ -7838,6 +8122,29 @@ var DashticzDeviceEditor = (function () {
         return !F1_FIELDS[
           _normaliseCustomFieldName(row && row.field).toLowerCase()
         ];
+      });
+    }
+    // Calendar's icalurl gets the same dedicated add/remove row builder as
+    // the quick-add popup (_showCalendarPopup), instead of showing the raw
+    // string-or-object value as a generic custom field - besides being a
+    // poor editing experience, the object shape doesn't round-trip through
+    // the generic field's plain text input. See _calendarFieldsHtml above.
+    var calendarSources = null;
+    if (isCalendarBlock) {
+      var icalurlValue = '';
+      customRows.forEach(function (row) {
+        if (
+          _normaliseCustomFieldName(row && row.field).toLowerCase() ===
+          'icalurl'
+        )
+          icalurlValue = row.value;
+      });
+      calendarSources = _calendarSourcesFromIcalurl(icalurlValue);
+      customRows = customRows.filter(function (row) {
+        return (
+          _normaliseCustomFieldName(row && row.field).toLowerCase() !==
+          'icalurl'
+        );
       });
     }
     var graphFields = null;
@@ -8375,6 +8682,8 @@ var DashticzDeviceEditor = (function () {
       });
     } else if (isGraphBlock) {
       html += _graphFieldsHtml('de-config', graphFields);
+    } else if (isCalendarBlock) {
+      html += _calendarFieldsHtml('de-config', calendarSources, t);
     } else if (isClusterBlock) {
       // Unlike the quick-add popup, mode is locked here (see the 'locked'
       // arg below) and never changes, so the switch-size field it embeds
@@ -8452,6 +8761,8 @@ var DashticzDeviceEditor = (function () {
     var iconFieldTouched = false;
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     if (isF1Block) _wireF1Fields('de-config', $popup);
+    if (isCalendarBlock)
+      _wireCalendarFields('de-config', $popup, calendarSources, t);
     if (isClusterBlock) {
       function clusterEditPendingListHtml() {
         return _clusterPendingListHtml(
@@ -8864,6 +9175,9 @@ var DashticzDeviceEditor = (function () {
         customKeys.legend = true;
         customKeys.groupby = true;
       }
+      if (isCalendarBlock) {
+        customKeys.icalurl = true;
+      }
       var pendingTitle = isSpecial
         ? String(special.title || '')
         : String(deviceTitles[ck] || '');
@@ -8964,6 +9278,22 @@ var DashticzDeviceEditor = (function () {
           .find('.de-config-message')
           .addClass('text-danger')
           .text(t.invalid_cluster_devices);
+      }
+      var pendingCalendar = null;
+      if (isCalendarBlock) {
+        pendingCalendar = _readCalendarFields(
+          'de-config',
+          $popup,
+          calendarSources,
+          t
+        );
+        if (!pendingCalendar.valid) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(_calendarFieldsErrorText(t, pendingCalendar.reason));
+        }
       }
       // [data-option]: excludes button.js's injected Background toggle,
       // which reuses .de-config-option purely for its click-to-toggle
@@ -9234,6 +9564,16 @@ var DashticzDeviceEditor = (function () {
             value: pendingGraph.groupBy,
           });
         }
+      }
+      if (pendingCalendar) {
+        storedRows.push({
+          field: 'icalurl',
+          setting:
+            typeof pendingCalendar.icalurl === 'string'
+              ? pendingCalendar.icalurl
+              : JSON.stringify(pendingCalendar.icalurl),
+          value: pendingCalendar.icalurl,
+        });
       }
       if (isClusterBlock) {
         var clusterDeviceIdxOut = clusterPendingDevices.map(function (d) {
@@ -9657,7 +9997,7 @@ var DashticzDeviceEditor = (function () {
               : isIframeBlock
                 ? (frameurlRow && frameurlRow.setting) || special.reference
                 : isCalendarBlock
-                  ? (icalurlRow && icalurlRow.setting) || special.reference
+                  ? _calendarBlockDetailText(icalurlRow, special.reference, t)
                   : isPublicTransportBlock
                     ? (stationRow && stationRow.setting) || special.reference
                     : isTimegraphBlock
