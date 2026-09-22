@@ -1862,6 +1862,21 @@ function configwriter_special_block_props($block)
         // check, which only ever suppresses the global default when this
         // property is present and explicitly false.
         $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'f1') {
+        // js/components/f1.js dispatches on a truthy f1mode alone - no
+        // `type` of its own, same convention as news/graph below. f1mode and
+        // every other F1 setting are carried through custom_fields
+        // (saveblocks.php validates the mode and the calendar URLs).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'news') {
         // js/components/news.js dispatches on a truthy feed alone - no
         // `type` of its own, same convention as html/iframe/calendar/

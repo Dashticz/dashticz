@@ -45,6 +45,26 @@ var DT_postnl = (function () {
     return parseInt(settings['postnl_showdelivered'], 10) !== 0;
   }
 
+  // Optional per-part colors (Settings -> Widgets -> PostNL); empty = theme default.
+  function colorStyle(key) {
+    var c = settings['postnl_' + key + '_color'];
+    return c && /^#[0-9a-f]{3,8}$/i.test(String(c))
+      ? ' style="color:' + c + ' !important"'
+      : '';
+  }
+
+  function part(cls, text) {
+    return (
+      '<span class="postnl-' +
+      cls +
+      '"' +
+      colorStyle(cls) +
+      '>' +
+      text +
+      '</span>'
+    );
+  }
+
   function statusLabel(status) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
     return misc['postnl_status_' + String(status).toLowerCase()] || status;
@@ -65,16 +85,36 @@ var DT_postnl = (function () {
       var timeTo = entry.to ? moment(entry.to).format('HH:mm') : '';
       time = timeFrom && timeTo ? timeFrom + '-' + timeTo : timeFrom || timeTo;
     }
-    var prefix = date ? '[' + date + '] ' : '';
-    var suffix = time ? ' ' + time : '';
-    return prefix + who + ': ' + label + suffix;
+    var prefix = date ? part('date', '[' + date + ']') + ' ' : '';
+    var suffix = time ? ' ' + part('time', time) : '';
+    return prefix + part('text', who + ': ' + label) + suffix;
   }
 
-  // Delivered: open box; otherwise a delivery truck (incoming) or a paper
-  // plane (sent).
+  function useEmoji() {
+    return settings['postnl_iconstyle'] === 'emoji';
+  }
+
+  // Delivered: open box / package; otherwise a delivery truck (incoming) or a
+  // paper plane / outbox (sent). Emoji style keeps its own colors; Font Awesome icons are the
+  // text size + 2px.
   function icon(item) {
-    if (item.entry.status === 'Delivered') return 'fa-box-open';
-    return item.role === 'in' ? 'fa-truck' : 'fa-paper-plane';
+    var delivered = item.entry.status === 'Delivered';
+    if (useEmoji()) {
+      if (delivered) return '📦';
+      return item.role === 'in' ? '🚚' : '📤';
+    }
+    var cls = delivered
+      ? 'fa-box-open'
+      : item.role === 'in'
+        ? 'fa-truck'
+        : 'fa-paper-plane';
+    return (
+      '<i class="fas ' +
+      cls +
+      '" style="font-size:' +
+      (fontSize() + 2) +
+      'px" aria-hidden="true"></i>'
+    );
   }
 
   function sortKey(entry) {
@@ -106,11 +146,12 @@ var DT_postnl = (function () {
           '<div class="postnl-row' +
           (item.entry.status === 'Delivered' ? ' postnl-row-delivered' : '') +
           '">' +
-          '<i class="fas ' +
-          icon(item) +
-          ' postnl-icon postnl-icon-' +
+          '<span class="postnl-icon postnl-icon-' +
           item.role +
-          '" aria-hidden="true"></i>' +
+          (useEmoji() ? ' postnl-icon-emoji' : '') +
+          '" aria-hidden="true">' +
+          icon(item) +
+          '</span>' +
           '<span class="postnl-row-text">' +
           formatLine(item.entry) +
           '</span>' +

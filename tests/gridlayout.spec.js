@@ -748,6 +748,87 @@ screens[2] = {
     expect(news.custom_fields.feed).toBe('https://example.invalid/feed.xml');
   });
 
+  test('F1 quick-add migrates an existing legacy F1 widget when a second one is saved', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['widget_f1'] = {
+  width: 4,
+  title: 'Next session',
+  type: 'f1'
+};
+config['f1_language'] = 'nl';
+columns = {1: {blocks: ['widget_f1'], width: 12}};
+screens[1] = {background: 'bg2.jpg', columns: [1]};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'f1-repeatable-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: blocksRequest.devices.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="f1"]').click();
+    await expect(page.locator('#f1blockpopup')).toBeVisible();
+    await page.locator('#f1-f1-mode [data-mode="all"]').click();
+    await page.locator('#f1-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const f1Blocks = blocksRequest.devices.filter(
+      (entry) => entry.kind === 'f1'
+    );
+    expect(f1Blocks).toHaveLength(2);
+    expect(f1Blocks.map((entry) => entry.key)).toEqual(['widget_f1', 'f1_1']);
+    expect(f1Blocks.map((entry) => entry.custom_fields.f1mode)).toEqual([
+      'next',
+      'all',
+    ]);
+    expect(f1Blocks[0].custom_fields.f1language).toBe('nl');
+  });
+
   test('Widget Config hides legacy globals and keeps current widget controls', async ({
     page,
   }) => {
