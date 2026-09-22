@@ -89,6 +89,10 @@ $allowedSettings = [
     'postnl_pollminutes'     => 'number',
     'postnl_fontsize'        => 'number',
     'postnl_showdelivered'   => 'bool',
+    'postnl_iconstyle'       => 'string',
+    'postnl_date_color'      => 'hex_color',
+    'postnl_time_color'      => 'hex_color',
+    'postnl_text_color'      => 'hex_color',
     // hp ilo
     'hpilo_host'             => 'string',
     'hpilo_port'             => 'number',

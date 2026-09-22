@@ -39,6 +39,7 @@ var Dashticz = (function () {
     'map',
     'postnl',
     'hpilo',
+    'f1',
     'group',
     'cluster',
     'waqi',
