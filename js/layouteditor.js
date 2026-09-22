@@ -1225,20 +1225,25 @@ var DashticzLayoutEditor = (function () {
       key &&
       key !== 'widget_calendar' &&
       String(definition.type || '').toLowerCase() !== 'calendar' &&
-      typeof definition.icalurl === 'string' &&
-      definition.icalurl !== ''
+      ((typeof definition.icalurl === 'string' && definition.icalurl !== '') ||
+        (definition.icalurl &&
+          typeof definition.icalurl === 'object' &&
+          !Array.isArray(definition.icalurl) &&
+          Object.keys(definition.icalurl).length > 0))
     ) {
       // Repeatable Calendar block, added via the Screen Editor's "Add
       // items" -> Calendar quick-add popup (js/deviceeditor.js's
       // _showCalendarPopup()), mirroring the iframe check above and
       // deviceeditor.js's own _specialFromReference(): dispatched purely
-      // on a truthy icalurl string (js/components/calendar.js's
-      // canHandle()), no `type` of its own. The fixed 'widget_calendar'
-      // key, and any block with an explicit type: 'calendar' (the legacy
-      // multi-source `calendars` array shape the Widgets catalog's own
-      // singleton entry writes, where icalurl is an object rather than a
-      // string), are excluded so those keep going through the generic
-      // widget path below unchanged.
+      // on a truthy icalurl (js/components/calendar.js's canHandle()), no
+      // `type` of its own - a single calendar keeps icalurl as a plain
+      // string, and the "+" button in that popup turns it into the
+      // name -> {ics, color} object shape once a second calendar is
+      // added, so both must be recognized here. The fixed 'widget_calendar'
+      // key, and any block with an explicit type: 'calendar' (the Widgets
+      // catalog's own singleton entry, which also stores icalurl as that
+      // same object shape but always carries this type), are excluded so
+      // those keep going through the generic widget path below unchanged.
       return {
         definition: definition,
         kind: 'calendar',

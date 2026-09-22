@@ -259,13 +259,43 @@ foreach ($data['devices'] as $entry) {
                 // icalurl is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
                 // renders nothing at all without one, so it is required here -
-                // same reasoning as html's htmlfile requirement above.
-                if (
-                    !isset($customFields['icalurl'])
-                    || !is_string($customFields['icalurl'])
-                    || trim($customFields['icalurl']) === ''
-                    || strlen($customFields['icalurl']) > 2048
-                ) {
+                // same reasoning as html's htmlfile requirement above. A
+                // single calendar keeps icalurl as a plain URL string
+                // (unchanged); the quick-add popup's "+" button
+                // (js/deviceeditor.js) turns it into a name -> {ics, color}
+                // object once a second calendar is added - same shape and
+                // validation as the Widgets catalog's own multi-source
+                // 'calendar' widget (js/savewidgets.php), reused here.
+                $icalurl = isset($customFields['icalurl']) ? $customFields['icalurl'] : null;
+                if (is_string($icalurl)) {
+                    if (trim($icalurl) === '' || strlen($icalurl) > 2048) {
+                        dashticz_json_error(400, 'Enter a valid calendar (ICS) URL.');
+                    }
+                } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
+                    foreach ($icalurl as $calName => $source) {
+                        if (!is_string($calName) || $calName === '' || strlen($calName) > 100 ||
+                            preg_match('/[\x00-\x1F]/', $calName) ||
+                            in_array(strtolower($calName), ['__proto__', 'prototype', 'constructor'], true)) {
+                            dashticz_json_error(400, 'Each calendar requires a valid unique name.');
+                        }
+                        if (!is_array($source)) {
+                            dashticz_json_error(400, 'Each calendar requires valid settings.');
+                        }
+                        $ics = isset($source['ics']) && is_string($source['ics'])
+                            ? trim($source['ics'])
+                            : '';
+                        if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                            dashticz_json_error(400, 'Calendar ' . $calName . ' requires a valid http(s) ICS URL.');
+                        }
+                        $color = isset($source['color']) && is_string($source['color'])
+                            ? trim($source['color'])
+                            : 'white';
+                        if ($color === '' || strlen($color) > 64 ||
+                            !preg_match('/^(?:#[0-9A-Fa-f]{3,8}|[A-Za-z][A-Za-z0-9-]{0,31}|rgba?\([0-9.,%\s]+\)|hsla?\([0-9.,%\s]+\))$/', $color)) {
+                            dashticz_json_error(400, 'Calendar ' . $calName . ' requires a valid color.');
+                        }
+                    }
+                } else {
                     dashticz_json_error(400, 'Enter a valid calendar (ICS) URL.');
                 }
             } elseif ($kind === 'publictransport') {
