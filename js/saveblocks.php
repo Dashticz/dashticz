@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -206,8 +206,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
-            // Only Icon and Last update apply to these ten (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1') {
+            // Only Icon and Last update apply to these eleven (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -259,13 +259,43 @@ foreach ($data['devices'] as $entry) {
                 // icalurl is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
                 // renders nothing at all without one, so it is required here -
-                // same reasoning as html's htmlfile requirement above.
-                if (
-                    !isset($customFields['icalurl'])
-                    || !is_string($customFields['icalurl'])
-                    || trim($customFields['icalurl']) === ''
-                    || strlen($customFields['icalurl']) > 2048
-                ) {
+                // same reasoning as html's htmlfile requirement above. A
+                // single calendar keeps icalurl as a plain URL string
+                // (unchanged); the quick-add popup's "+" button
+                // (js/deviceeditor.js) turns it into a name -> {ics, color}
+                // object once a second calendar is added - same shape and
+                // validation as the Widgets catalog's own multi-source
+                // 'calendar' widget (js/savewidgets.php), reused here.
+                $icalurl = isset($customFields['icalurl']) ? $customFields['icalurl'] : null;
+                if (is_string($icalurl)) {
+                    if (trim($icalurl) === '' || strlen($icalurl) > 2048) {
+                        dashticz_json_error(400, 'Enter a valid calendar (ICS) URL.');
+                    }
+                } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
+                    foreach ($icalurl as $calName => $source) {
+                        if (!is_string($calName) || $calName === '' || strlen($calName) > 100 ||
+                            preg_match('/[\x00-\x1F]/', $calName) ||
+                            in_array(strtolower($calName), ['__proto__', 'prototype', 'constructor'], true)) {
+                            dashticz_json_error(400, 'Each calendar requires a valid unique name.');
+                        }
+                        if (!is_array($source)) {
+                            dashticz_json_error(400, 'Each calendar requires valid settings.');
+                        }
+                        $ics = isset($source['ics']) && is_string($source['ics'])
+                            ? trim($source['ics'])
+                            : '';
+                        if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                            dashticz_json_error(400, 'Calendar ' . $calName . ' requires a valid http(s) ICS URL.');
+                        }
+                        $color = isset($source['color']) && is_string($source['color'])
+                            ? trim($source['color'])
+                            : 'white';
+                        if ($color === '' || strlen($color) > 64 ||
+                            !preg_match('/^(?:#[0-9A-Fa-f]{3,8}|[A-Za-z][A-Za-z0-9-]{0,31}|rgba?\([0-9.,%\s]+\)|hsla?\([0-9.,%\s]+\))$/', $color)) {
+                            dashticz_json_error(400, 'Calendar ' . $calName . ' requires a valid color.');
+                        }
+                    }
+                } else {
                     dashticz_json_error(400, 'Enter a valid calendar (ICS) URL.');
                 }
             } elseif ($kind === 'publictransport') {
@@ -324,6 +354,24 @@ foreach ($data['devices'] as $entry) {
                 ) {
                     dashticz_json_error(400, 'Enter a valid news feed URL.');
                 }
+            } elseif ($kind === 'f1') {
+                // f1mode is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but
+                // js/components/f1.js dispatches on it, so it is required
+                // here. The URLs are fetched server-side by
+                // vendor/dashticz/f1/index.php, which only accepts public
+                // https addresses; reject anything else already here.
+                if (!isset($customFields['f1mode']) || !in_array($customFields['f1mode'], ['next', 'all'], true)) {
+                    dashticz_json_error(400, 'An F1 block requires a mode.');
+                }
+                foreach (['f1urlen', 'f1urlnl'] as $f1UrlField) {
+                    if (isset($customFields[$f1UrlField])
+                        && (!is_string($customFields[$f1UrlField])
+                            || !preg_match('#^https://\S+$#i', $customFields[$f1UrlField])
+                            || strlen($customFields[$f1UrlField]) > 2048)) {
+                        dashticz_json_error(400, 'Enter a valid F1 calendar URL.');
+                    }
+                }
             } elseif ($kind === 'graph') {
                 // devices is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
@@ -381,11 +429,12 @@ foreach ($data['devices'] as $entry) {
                     }
                 }
                 // mode (optional): 'temperature' switches every row from a
-                // toggle to a plain .Temp reading (js/components/cluster.js);
-                // absent/anything else means the default switch rows. The
-                // only value js/deviceeditor.js's Cluster popups ever send.
-                if (isset($customFields['mode']) && $customFields['mode'] !== 'temperature') {
-                    dashticz_json_error(400, 'A cluster block\'s mode must be \'temperature\' if set.');
+                // toggle to a plain .Temp reading, 'other' to the device's
+                // own Data value (js/components/cluster.js); absent means
+                // the default switch rows. The only values
+                // js/deviceeditor.js's Cluster popups ever send.
+                if (isset($customFields['mode']) && $customFields['mode'] !== 'temperature' && $customFields['mode'] !== 'other') {
+                    dashticz_json_error(400, 'A cluster block\'s mode must be \'temperature\' or \'other\' if set.');
                 }
                 // titles (optional): overrides a row's displayed name
                 // (js/components/cluster.js falls back to the device's own
@@ -423,6 +472,40 @@ foreach ($data['devices'] as $entry) {
                     }
                     if ($clusterSwitchScale < 0.3 || $clusterSwitchScale > 3) {
                         dashticz_json_error(400, 'A cluster block\'s switchScale must be between 0.3 and 3.');
+                    }
+                }
+                // icons (optional): per-row icon shown in front of the name
+                // (js/components/cluster.js). Same shape as titles: a map
+                // from one of the cluster's own device idx values to 'auto'
+                // or a Font Awesome class string.
+                if (isset($customFields['icons'])) {
+                    $clusterIcons = $customFields['icons'];
+                    if (is_object($clusterIcons)) {
+                        $clusterIcons = get_object_vars($clusterIcons);
+                    }
+                    if (!is_array($clusterIcons)) {
+                        dashticz_json_error(400, 'A cluster block\'s icons map must be an object.');
+                    }
+                    $clusterDeviceIdxSet = array_flip(array_map('strval', $clusterDevices));
+                    foreach ($clusterIcons as $clusterIconKey => $clusterIconValue) {
+                        if (!isset($clusterDeviceIdxSet[(string)$clusterIconKey])) {
+                            dashticz_json_error(400, 'A cluster block\'s icons map key must be one of its own devices.');
+                        }
+                        if (!is_string($clusterIconValue) || !preg_match('/^[A-Za-z0-9 _-]{1,60}$/', $clusterIconValue)) {
+                            dashticz_json_error(400, 'A cluster block\'s icons map values must be Font Awesome class names.');
+                        }
+                    }
+                }
+                // fontSize (optional): font size of the whole cluster in pixels
+                // (js/components/cluster.js sets --font-device-title from it).
+                // Absent means the default size.
+                if (isset($customFields['fontSize'])) {
+                    $clusterFontSize = $customFields['fontSize'];
+                    if (!is_int($clusterFontSize)) {
+                        dashticz_json_error(400, 'A cluster block\'s fontSize must be a whole number.');
+                    }
+                    if ($clusterFontSize < 8 || $clusterFontSize > 60) {
+                        dashticz_json_error(400, 'A cluster block\'s fontSize must be between 8 and 60.');
                     }
                 }
             }

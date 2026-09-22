@@ -5496,6 +5496,46 @@ test('LMS text style fields are protected from the generic Custom fields grid, s
   );
 });
 
+test('Device/Widget Config: picking an icon that matches the suggested default actually saves it', () => {
+  // Regression: a special block with no icon/image yet (e.g. a freshly
+  // added Cluster) gets a pre-filled Icon field showing a per-kind
+  // suggestion (_effectiveDeviceConfigIcon(), e.g. 'fas fa-list-check' for
+  // Cluster) that is NOT actually shown on the tile - defaultCfg never
+  // injects a runtime default icon for these kinds (#169 precedent). The
+  // save handler's own generatedIcon check silently skipped persisting that
+  // suggestion whenever the saved text still equalled it, so enabling Icon
+  // and leaving (or retyping) that exact suggested value - a deliberate
+  // choice - saved nothing at all, while picking Image instead always
+  // worked. iconFieldTouched (set from genuine interaction with the icon
+  // controls: the Icon/Image toggle, the source dropdown, typing the
+  // setting, or picking a custom image) must bypass that skip.
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  assert.match(deviceEditor, /var iconFieldTouched = false;/);
+  assert.match(
+    deviceEditor,
+    /if \(String\(\$\(this\)\.attr\('data-option'\)\) === 'icon'\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /\$popup\.on\('change', '\.de-icon-source', function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /'input change',\s*\n\s*'\.de-icon-field-row \.de-custom-field-setting',\s*\n\s*function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /\$popup\.on\('click', '\.dt-custom-image-option', function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /generatedIcon &&\s*\n\s*rawSetting === initialIcon &&\s*\n\s*!options\.iconValue &&\s*\n\s*!iconFieldTouched\s*\n\s*\)\s*\n\s*return;/
+  );
+});
+
 test('openConfig() preserves already-edited special-block state across repeated opens, like openLayoutConfig()', () => {
   const deviceEditor = fs.readFileSync(
     path.join(root, 'js/deviceeditor.js'),
@@ -5749,7 +5789,7 @@ test('a saved Cluster block can actually be re-opened and saved from the Layout 
   // saved Cluster block impossible to edit.
   assert.match(
     deviceEditor,
-    /if \(isClusterBlock\) \{[\s\S]{0,2200}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
+    /if \(isClusterBlock\) \{[\s\S]{0,2200}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
   );
 
   // A dedicated add/remove device picker (mirroring _showClusterPopup's own)
@@ -5897,7 +5937,7 @@ test("Cluster rows can show a companion device's power consumption", () => {
   );
   assert.match(
     deviceEditor,
-    /return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale'\s*\);/
+    /return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);/
   );
 
   // js/components/cluster.js: subscribes to each referenced companion
@@ -5975,11 +6015,27 @@ test('Cluster rows can be Switch or Temperature, never mixed', () => {
   // and never wire a switch click handler.
   assert.match(
     cluster,
-    /me\.mode = me\.block\.mode === 'temperature' \? 'temperature' : 'switch';/
+    /me\.mode =\s*me\.block\.mode === 'temperature' \|\| me\.block\.mode === 'other'\s*\? me\.block\.mode\s*: 'switch';/
   );
   assert.match(cluster, /function temperatureRowHtml\(/);
   assert.match(cluster, /device\.Temp\.toFixed\(1\) \+ _TEMP_SYMBOL/);
-  assert.match(cluster, /if \(me\.mode === 'temperature'\) return;/);
+  assert.match(cluster, /if \(me\.mode !== 'switch'\) return;/);
+
+  // Other ("Overige") rows show the device's own Data value, for every
+  // device that is neither a switch nor a temperature reading.
+  assert.match(cluster, /function otherRowHtml\(/);
+  assert.match(cluster, /me\.mode === 'other'/);
+  assert.match(deviceEditor, /function _clusterOtherDeviceList\(\) \{/);
+  assert.match(
+    deviceEditor,
+    /if \(d\.SwitchType \|\| temperatureIdx\[idx\]\) return;/
+  );
+  assert.match(
+    deviceEditor,
+    /mode: 'other',\s*\n\s*label: t\.cluster_mode_other,/
+  );
+  assert.match(deviceEditor, /field: 'mode', setting: 'other', value: 'other'/);
+  assert.match(saveblocks, /\$customFields\['mode'\] !== 'other'/);
   assert.match(css, /\.cluster-row-temp \{/);
 
   // Server-side: only 'temperature' (or absent) is a valid mode.
@@ -6001,12 +6057,12 @@ test('Cluster row type is locked once the cluster has been saved', () => {
   // guards against it defensively.
   assert.match(
     deviceEditor,
-    /function _clusterModeButtonsHtml\(\s*idPrefix,\s*t,\s*mode,\s*locked,\s*switchScaleValue\s*\)\s*\{/
+    /function _clusterModeButtonsHtml\(\s*idPrefix,\s*t,\s*mode,\s*locked,\s*switchScaleValue,\s*fontSizeValue\s*\)\s*\{/
   );
   assert.match(deviceEditor, /\(locked \? ' disabled' : ''\)/);
   assert.match(
     deviceEditor,
-    /_clusterModeButtonsHtml\(\s*'de-config',\s*t,\s*clusterMode,\s*true,\s*clusterSwitchScaleValue\s*\);/
+    /_clusterModeButtonsHtml\(\s*'de-config',\s*t,\s*clusterMode,\s*true,\s*clusterSwitchScaleValue,\s*clusterFontSizeValue\s*\);/
   );
   assert.match(
     deviceEditor,
@@ -6017,7 +6073,7 @@ test('Cluster row type is locked once the cluster has been saved', () => {
   // unlocked (nothing is saved yet there).
   assert.match(
     deviceEditor,
-    /html \+= _clusterModeButtonsHtml\(\s*'cl',\s*t,\s*clusterMode,\s*false,\s*clusterSwitchScaleValue\s*\);/
+    /html \+= _clusterModeButtonsHtml\(\s*'cl',\s*t,\s*clusterMode,\s*false,\s*clusterSwitchScaleValue,\s*clusterFontSizeValue\s*\);/
   );
 });
 
@@ -6098,7 +6154,10 @@ test('Cluster switch can be resized via a switchScale field next to the Row type
   // it as a separate field below, and it's hidden entirely in Temperature
   // mode (no switches there to size).
   assert.match(deviceEditor, /function _clusterSwitchScaleFieldHtml\(/);
-  assert.match(deviceEditor, /if \(mode === 'temperature'\) return '';/);
+  assert.match(
+    deviceEditor,
+    /if \(!_clusterUsesSwitchRows\(mode\)\) return '';/
+  );
   assert.match(deviceEditor, /width:10ch/);
   assert.match(
     deviceEditor,
@@ -6110,6 +6169,44 @@ test('Cluster switch can be resized via a switchScale field next to the Row type
   // reserved so a hand-typed 'switchScale' custom field can't collide.
   assert.match(deviceEditor, /function _readClusterSwitchScale\(/);
   assert.match(deviceEditor, /customKeys\.switchscale = true;/);
+
+  // Font size of the whole cluster (like HP iLO's font size): a per-block
+  // fontSize custom field (8-60px) next to the row type buttons, applied by
+  // cluster.js through --font-device-title and validated in saveblocks.php.
+  assert.match(deviceEditor, /function _clusterFontSizeFieldHtml\(/);
+  assert.match(deviceEditor, /function _readClusterFontSize\(/);
+  assert.match(deviceEditor, /customKeys\.fontsize = true;/);
+
+  // Per-row icons (the HP iLO look): an icons map (idx -> 'auto' or a Font
+  // Awesome class) picked from a pull-down in every pending row, rendered
+  // by cluster.js in front of the name, validated in saveblocks.php.
+  assert.match(deviceEditor, /function _clusterIconPickerHtml\(/);
+  // creative.css has per-icon margin offsets of its own (.fas.fa-lightbulb,
+  // .fas.fa-plug, ...) for the big tile icon; row icons reset them so every
+  // icon lines up in the same column.
+  assert.match(
+    fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8'),
+    /\.cluster-block \.dt_state \.cluster-row-icon \{[^}]*margin: 0 !important;/
+  );
+  assert.match(deviceEditor, /customKeys\.icons = true;/);
+  assert.match(deviceEditor, /field: 'icons',/);
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/components/cluster.js'), 'utf8'),
+    /cluster-row-icon/
+  );
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8'),
+    /icons map values must be Font Awesome class names/
+  );
+  assert.match(deviceEditor, /field: 'fontSize',/);
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/components/cluster.js'), 'utf8'),
+    /'--font-device-title',/
+  );
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8'),
+    /fontSize must be between 8 and 60\./
+  );
   assert.match(deviceEditor, /field !== 'switchscale'/);
   assert.match(
     deviceEditor,
@@ -7441,4 +7538,25 @@ test('Selector Switch dropdown shows only its own levels, no generic placeholder
     dropdownBranch[0],
     /parseFloat\(nv\.value\) > 0 \|\|\s*\n\s*\(nv\.value == 0 &&\s*\n\s*\(typeof device\['LevelOffHidden'\] == 'undefined' \|\|\s*\n\s*device\['LevelOffHidden'\] === false\)\)/
   );
+});
+
+test('HP iLO rows can each get their own icon, chosen in the widget config', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const hpilo = fs.readFileSync(
+    path.join(root, 'js/components/hpilo.js'),
+    'utf8'
+  );
+  const save = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  // A pull-down per row, stored as JSON in the hidden hpilo_icons field and
+  // saved together with the other HP iLO settings.
+  assert.match(editor, /function _hpiloIconPickerHtml\(/);
+  assert.match(editor, /data-cfg-key="hpilo_icons"/);
+  assert.match(editor, /'hpilo_rows',\s*'hpilo_icons',/);
+  // The renderer falls back to each row's own icon; 'none' hides it.
+  assert.match(hpilo, /settings\['hpilo_icons'\]/);
+  assert.match(hpilo, /if \(icon === 'none'\) return '';/);
+  // Server side: known rows and Font Awesome class names only.
+  assert.match(save, /'hpilo_icons'\s*=> 'hpilo_icons',/);
+  assert.match(save, /\$type === 'hpilo_icons'/);
 });

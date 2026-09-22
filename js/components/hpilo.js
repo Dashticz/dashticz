@@ -72,6 +72,12 @@ var DT_hpilo = (function () {
       icon: 'fas fa-server',
       refresh: pollSeconds(),
       containerClass: 'hpilo-block',
+      // Same reasoning as Cluster's own defaultCfg (js/components/cluster.js):
+      // template: 1 puts the icon/title in their own header row and lets the
+      // rows below use the block's full width, instead of the framework
+      // default that reserves a .col-icon-wide column beside the rows for
+      // the whole block height.
+      template: 1,
     },
     run: function (me) {
       refresh(me);
@@ -150,7 +156,30 @@ var DT_hpilo = (function () {
     return value + (metric.unit || '');
   }
 
+  // hpilo_icons: JSON map of row key -> icon chosen per row in the widget
+  // config ('none' hides the icon); rows without an entry keep their own
+  // default icon (METRICS).
+  function iconOverrides() {
+    var raw = settings['hpilo_icons'];
+    try {
+      return typeof raw === 'object' && raw
+        ? raw
+        : JSON.parse(raw || '{}') || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function iconHtml(metric, overrides) {
+    var icon = overrides[metric.key];
+    if (icon === 'none') return '';
+    if (typeof icon !== 'string' || !/^[A-Za-z0-9 _-]{1,60}$/.test(icon))
+      icon = 'fas ' + metric.icon;
+    return '<i class="' + icon + ' hpilo-icon" aria-hidden="true"></i>';
+  }
+
   function rowsHtml(res, metrics) {
+    var overrides = iconOverrides();
     return metrics
       .filter(function (metric) {
         return res[metric.key] !== null && res[metric.key] !== undefined;
@@ -168,9 +197,7 @@ var DT_hpilo = (function () {
           '<div class="hpilo-row' +
           state +
           '">' +
-          '<i class="fas ' +
-          metric.icon +
-          ' hpilo-icon" aria-hidden="true"></i>' +
+          iconHtml(metric, overrides) +
           '<span class="hpilo-label">' +
           esc(label(metric.key)) +
           '</span>' +
