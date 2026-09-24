@@ -14,8 +14,6 @@ Node.js or a local build.
 
 ## Installation
 
-Full instructions: https://dashticz.readthedocs.io/en/master/gettingstarted/
-
 Run the installer from the directory in which you want to create the default
 `dashticz` directory:
 
