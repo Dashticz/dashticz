@@ -34,18 +34,18 @@
     "swiper": "^14.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.1",
-    "@babel/preset-env": "^8.0.2",
-    "@playwright/test": "^1.62.1",
-    "@types/node": "^26.4.1",
+    "@babel/core": "^8.0.6",
+    "@babel/preset-env": "^8.0.6",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.3",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.5",
     "mini-css-extract-plugin": "^2.10.2",
-    "prettier": "^3.9.6",
-    "sass": "1.103.1",
+    "prettier": "^3.9.9",
+    "sass": "1.105.0",
     "sass-loader": "^17.0.1",
     "terser-webpack-plugin": "^5.6.1",
-    "webpack": "^5.110.3",
+    "webpack": "^5.111.1",
     "webpack-cli": "^7.2.3"
   },
   "engines": {
