@@ -1,6 +1,23 @@
 Release Notes
 =============
 
+v4.0.13 (26-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added a **Text** section to the Device Config of Domoticz devices and
+  idx-backed Custom devices (widgets are not affected). Per block you can set
+  the **title size** and the **value size** in pixels (6-100) and the text
+  **alignment** (Theme default, left, center or right). By default a block
+  keeps the font sizes and alignment of the selected theme, or of the base
+  style (``css/creative.css``) when no theme is selected; a value set here
+  overrides that theme/base setting for this block only. Leaving a size empty
+  or choosing Theme default falls back to the theme again. The settings are
+  stored in ``CONFIG.js`` as ``fontsize_title``, ``fontsize_value`` and
+  ``textalign`` and applied by ``applyBlockTextStyle()`` in ``js/blocks.js``;
+  the last-update text keeps its own theme size.
+
 v4.0.12 (21-9-2026)
 ----------------------
 

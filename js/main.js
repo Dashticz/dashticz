@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters _DASHTICZ_VERSION*/
+/* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters _DASHTICZ_VERSION _LOADER_CACHE_BUST*/
 /* global sessionValid MobileDetect moment getBlock DT_function*/
 /* global Swiper Debug*/
 
@@ -76,10 +76,18 @@ function createErrorHandler() {
 }
 
 function loadStyling() {
+  // Bust on js/loader.js's per-page-load timestamp, like the scripts: the
+  // static _DASHTICZ_VERSION only changes on a bundle rebuild, so a browser
+  // kept serving a stale cached creative.css/config-typography.css after
+  // every CSS change in between.
+  var cssCacheBust =
+    typeof _LOADER_CACHE_BUST !== 'undefined'
+      ? _LOADER_CACHE_BUST
+      : _DASHTICZ_VERSION;
   $(
     '<link href="' +
       'css/creative.css?_=' +
-      _DASHTICZ_VERSION +
+      cssCacheBust +
       '" rel="stylesheet">'
   ).appendTo('head');
   // Loaded after creative.css so the config/editor typography rules in it
@@ -88,7 +96,7 @@ function loadStyling() {
   $(
     '<link href="' +
       'css/config-typography.css?_=' +
-      _DASHTICZ_VERSION +
+      cssCacheBust +
       '" rel="stylesheet">'
   ).appendTo('head');
 }

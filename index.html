@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Dashticz 4.0.12 - a customizable dashboard for Domoticz"
+      content="Dashticz 4.0.13 - a customizable dashboard for Domoticz"
     />
     <meta name="author" content="Dashticz" />
     <meta name="theme-color" content="#090b12" />
@@ -40,7 +40,6 @@
       type="image/png"
     />
     <link rel="stylesheet" type="text/css" href="./dist/bundle.css?v=189" />
-    <link rel="stylesheet" type="text/css" href="./css/garbageconfig.css?t=1" />
     <title>Dashticz</title>
   </head>
 
@@ -81,7 +80,7 @@
         >
           Retry
         </button>
-        <div class="loaderVersion">Version 4.0.12</div>
+        <div class="loaderVersion">Version 4.0.13</div>
       </div>
     </div>
     <div id="hide" style="display: none">
@@ -96,7 +95,23 @@
     </div>
 
     <script src="js/loader.js?t=159"></script>
-    <script src="js/lmsconfig.js?t=1"></script>
-    <script src="js/garbageconfig.js?t=7"></script>
+    <script>
+      // Config-popup helpers, cache-busted per page load like js/loader.js
+      // does for the other scripts: a fixed ?t= number kept serving a stale
+      // cached copy after every change until someone remembered to bump it.
+      (function () {
+        var bust = Date.now();
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'css/garbageconfig.css?t=' + bust;
+        document.head.appendChild(link);
+        ['js/lmsconfig.js', 'js/garbageconfig.js'].forEach(function (src) {
+          var script = document.createElement('script');
+          script.src = src + '?t=' + bust;
+          script.async = false;
+          document.body.appendChild(script);
+        });
+      })();
+    </script>
   </body>
 </html>

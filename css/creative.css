@@ -2159,13 +2159,27 @@ body.dle-active {
 }
 
 /* -- Device Editor modal --------------------------------------- */
-.de-section-title {
+/* Group heading above a set of fields, in Device Config, Widget Config
+   (js/widgeteditor.js _cfgHeading()) and their helpers (Garbage, LMS,
+   Automation): one uniform style - bold on a light grey band, with a bit
+   more room above it than between the fields themselves. h6 + !important
+   so it also wins over the mt-3 some of these headings still carry. */
+h6.de-section-title {
+  margin: 22px 0 8px !important;
+  padding: 5px 8px;
   font-weight: 600;
   font-size: 14px;
   color: #343a40;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #dee2e6;
-  margin-bottom: 8px;
+  background: var(--bs-secondary-bg, #e9ecef);
+  border: 0;
+  border-radius: var(--bs-border-radius, 0.375rem);
+}
+
+/* Only the popup's very first heading sits flush at the top; a heading
+   that merely opens its own sub-section (e.g. Garbage's Text styling)
+   keeps the extra room above it. */
+.modal-body > h6.de-section-title:first-child {
+  margin-top: 0 !important;
 }
 
 .de-device-list {
@@ -2379,6 +2393,181 @@ body.dle-active {
   line-height: 1;
 }
 
+/* Device Config -> Text: the size inputs and the alignment buttons share
+   one height; the buttons are square and their icons scale with them
+   (instead of the global 30px .fas size). */
+.de-text-style-row .form-control-sm {
+  height: 2.125rem;
+}
+
+.de-text-align-group .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  padding: 0;
+}
+
+.de-text-align-group .fas {
+  margin: 0 !important;
+  font-size: 1.05rem !important;
+  line-height: 1;
+}
+
+/* Automation (js/devicerules.js switchBlockHtml()): the input fields sit
+   next to their switch. Drop the switch by one small label line so it lines
+   up with the inputs instead of their labels, unless the fields are hidden
+   because the switch is off. */
+/* Green action buttons (Automation "Add automation", LMS "Test
+   connection"): semi-transparent so they also fit dark mode. The icon is
+   kept at text size (the global .fas rule makes it 30px) and centered with
+   the label. */
+.btn.dt-btn-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--bs-success-text-emphasis, #0a3622);
+  background-color: rgba(25, 135, 84, 0.3);
+  border-color: rgba(25, 135, 84, 0.55);
+}
+
+.btn.dt-btn-green:hover,
+.btn.dt-btn-green:focus-visible {
+  color: var(--bs-success-text-emphasis, #0a3622);
+  background-color: rgba(25, 135, 84, 0.45);
+  border-color: rgba(25, 135, 84, 0.7);
+}
+
+.btn.dt-btn-green .fas {
+  margin: 0 !important;
+  font-size: 1em !important;
+  line-height: 1;
+}
+
+/* LMS Device Config: Server/IP + Port and Username + Password pairs, two
+   equal-width fields 10px apart, stacked on a narrow popup. Own flex row
+   instead of Bootstrap's .row/.col grid, which Dashticz's own grid CSS
+   changes. */
+.de-lms-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.de-lms-pair > * {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+/* LMS Device Config: Hide-when-off and Player controls (js/lmsconfig.js)
+   switches side by side, wrapping on a narrow popup. */
+.de-lms-switches {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.5rem;
+  row-gap: 0.5rem;
+}
+
+.de-lms-switches > .form-switch {
+  margin-bottom: 0;
+}
+
+.de-lms-switches .form-check-label {
+  margin-left: 5px;
+}
+
+/* Automation rule/action card title line (js/devicerules.js): a grey band
+   across the full card width so the title stands out from the fields.
+   The negative margins cancel the card's p-2 padding. */
+.dr-card-header {
+  margin: -0.5rem -0.5rem 0.5rem;
+  padding: 0.3rem 0.5rem;
+  min-height: 2rem;
+  background: rgba(128, 128, 128, 0.18);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+}
+
+/* Automation field rows (js/devicerules.js fieldHtml()): fields sit side
+   by side and wrap where the popup is too narrow. Fields without a size
+   class stay as narrow as their content (short selects, colors, numbers);
+   text fields grow into the remaining space. */
+.dr-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* One control height for every input, select and color swatch in a row,
+   so all labels and all controls line up. */
+.dr-fields .form-control-sm,
+.dr-fields .form-select-sm,
+.dr-fields .form-control-color {
+  height: 2.125rem;
+}
+
+.dr-fields .form-control-color {
+  width: 2.75rem;
+  padding: 0.2rem;
+}
+
+.dr-fields.dr-style-groups {
+  column-gap: 1.25rem;
+}
+
+.dr-field {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.dr-field.dr-field-grow {
+  flex: 1 1 8rem;
+}
+
+.dr-field.dr-field-wide {
+  flex: 1 1 12rem;
+}
+
+.dr-field.dr-field-full {
+  flex: 1 1 100%;
+}
+
+.dr-contents {
+  display: contents;
+}
+
+.dr-fields .dr-input-num {
+  width: 9ch;
+}
+
+/* Content-sized selects: keep room for the value next to the arrow, so a
+   short value such as "2 px" is never cut off. */
+.dr-fields .form-select.w-auto {
+  min-width: 5.5rem;
+}
+
+.dr-switch-row {
+  column-gap: calc(0.5rem + 10px);
+}
+
+.dr-switch-row > .min-w-0 {
+  min-width: 0;
+}
+
+.dr-switch-cell {
+  margin: 2rem 0 0;
+}
+
+.dr-switch-cell.dr-switch-cell-deep {
+  margin-top: 3.5625rem;
+}
+
+.dr-switch-row:has(> .d-none) .dr-switch-cell.dr-switch-cell {
+  margin-top: 0;
+}
+
 .de-config-popup {
   z-index: 1070;
 }
@@ -2453,6 +2642,52 @@ body.dle-active {
 .de-custom-field-row .form-control,
 .we-custom-field-row .form-control {
   min-width: 0;
+}
+
+/* Field column has one fixed share of the row, whether it is a text input
+   or the Icon/Image pulldown - a select otherwise claims its own content
+   width (plus its arrow padding) and pushes its Setting column out of line
+   with the rows around it. Setting fills the rest; nowrap keeps the +/-
+   buttons on the row (the phone-width media query below turns wrapping
+   back on). */
+.de-custom-field-row,
+.we-custom-field-row {
+  flex-wrap: nowrap;
+}
+
+.de-custom-field-row .de-custom-field-name,
+.we-custom-field-row .we-custom-field-name {
+  flex: 0 0 45%;
+  width: auto;
+  min-width: 0;
+}
+
+.de-custom-field-row .de-custom-field-setting,
+.we-custom-field-row .we-custom-field-setting {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+/* +/- buttons: text-sized icons instead of the global 30px .fas size, so
+   the rows stay as compact as the -sm inputs next to them. */
+.de-custom-field-row .btn .fas,
+.we-custom-field-row .btn .fas {
+  margin: 0 !important;
+  font-size: 1em !important;
+  line-height: 1;
+}
+
+/* Stretch the Icon/Image pulldown to the row's height, like the text
+   inputs next to it already do - a fixed height left it shorter than rows
+   made taller by the +/- button icons. */
+.de-custom-field-row .de-icon-source,
+.we-custom-field-row .we-icon-source {
+  height: auto;
+  align-self: stretch;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.2;
 }
 
 .de-icon-field-row,
@@ -2846,8 +3081,92 @@ body.dle-active {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.we-switch-grid .mb-3 {
-  margin-bottom: 0.75rem;
+/* Widget Config -> Settings (js/widgeteditor.js _buildConfigModalHtml()):
+   one shared two-column grid for every widget's own fields, one column on a
+   phone. Headings, help paragraphs, lists, add buttons and the existing
+   multi-column rows (.we-cfg-cols, switch grids, .we-cfg-inline) span the
+   full width; a section wrapper (e.g. Weather's per-provider group) spans
+   the full width and repeats the same two columns inside. */
+.we-settings-grid,
+.we-settings-grid > .we-weather-group,
+.we-settings-grid > .we-clock-group,
+.we-settings-grid > .we-clock-size-group,
+.we-row-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.we-settings-grid > :not(.we-cfg-field),
+.we-settings-grid > div > h6,
+.we-settings-grid > div > p {
+  grid-column: 1 / -1;
+}
+
+/* Every Widget Config popup is one fixed width (modal-lg), instead of
+   shrinking to its content - a widget with few or short fields was
+   narrower than the others. */
+#we-config-popup .modal-dialog {
+  width: 100%;
+}
+
+.we-settings-grid > #we-hpilo-rows {
+  grid-column: 1 / -1;
+}
+
+/* Selects as wide as the inputs next to them, instead of the global
+   select { max-width: 90% } rule further down this file. */
+#we-config-popup .modal-body .form-select,
+#de-config-popup .modal-body .form-select {
+  max-width: 100%;
+}
+
+.we-settings-grid > .we-list-add {
+  justify-self: start;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 575px) {
+  .we-settings-grid,
+  .we-settings-grid > .we-weather-group,
+  .we-settings-grid > .we-clock-group,
+  .we-settings-grid > .we-clock-size-group,
+  .we-row-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Color swatches: the same height as the -sm inputs and selects next to
+   them (31px), in every Widget Config. */
+#we-config-popup .modal-body .form-control-color {
+  width: 3rem;
+  height: calc(0.875rem * 1.5 + 0.5rem + 2px);
+  padding: 0.2rem;
+}
+
+/* Repeatable-list buttons (Calendar, Camera, Radio, Timegraph, HP iLO):
+   text-sized icons instead of the global 30px .fas size, like the green
+   Add buttons and the Custom fields +/- buttons. */
+#we-config-popup .modal-body .btn:not(.we-block-option) .fas {
+  margin: 0 !important;
+  font-size: 1em !important;
+  line-height: 1;
+}
+
+/* One uniform, compact spacing between Widget Config fields
+   (js/widgeteditor.js _cfgField()), in every widget and layout (single
+   column, .we-cfg-cols, switch rows): 6px between fields, a tighter label
+   without the generic .we-field-label's own 10px top margin.
+   Beats the field's own Bootstrap mb-3 (!important), which is kept for
+   code that looks fields up by that class. */
+.we-cfg-field.mb-3 {
+  margin-bottom: 6px !important;
+}
+
+.we-cfg-field > .we-field-label {
+  margin-top: 0;
+  margin-bottom: 0.2rem;
 }
 
 .we-clock-preview {
@@ -8467,4 +8786,34 @@ canvas {
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
+}
+
+/* Device Config -> Text: per-device font size and alignment, set by
+   js/blocks.js applyBlockTextStyle(). Specific enough (and !important) to
+   win over the default and theme .title/.state/.value/.mh rules. */
+.mh.dt-fs-title .col-data .title {
+  font-size: var(--dt-fs-title) !important;
+}
+
+.mh.dt-fs-value .col-data .state,
+.mh.dt-fs-value .col-data .value {
+  font-size: var(--dt-fs-value) !important;
+}
+
+.mh.dt-align-left,
+.mh.dt-align-left .col-data,
+.mh.dt-align-left .col-data > * {
+  text-align: left !important;
+}
+
+.mh.dt-align-center,
+.mh.dt-align-center .col-data,
+.mh.dt-align-center .col-data > * {
+  text-align: center !important;
+}
+
+.mh.dt-align-right,
+.mh.dt-align-right .col-data,
+.mh.dt-align-right .col-data > * {
+  text-align: right !important;
 }

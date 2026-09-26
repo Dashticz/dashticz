@@ -1,3 +1,4 @@
+/* global language */
 /* LMS-specific Device Config enhancement.
  *
  * Adds a Player controls switch to an LMS Device Config popup and restores
@@ -151,9 +152,21 @@
     });
   }
 
+  // Translated via lang/*.json (settings.deviceeditor.lms_player_controls),
+  // like the rest of the LMS Device Config fields.
+  function playerControlsLabel() {
+    var t =
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.deviceeditor
+        ? language.settings.deviceeditor
+        : {};
+    return t.lms_player_controls || 'Player controls';
+  }
+
   function createPlayerControlsOption(enabled) {
     var option = document.createElement('label');
-    option.className = 'form-check form-switch mb-3 lms-player-controls-option';
+    option.className = 'form-check form-switch lms-player-controls-option';
 
     var toggle = document.createElement('input');
     toggle.className = 'form-check-input de-lms-switch';
@@ -164,7 +177,7 @@
 
     var text = document.createElement('span');
     text.className = 'form-check-label';
-    text.textContent = 'Player controls';
+    text.textContent = playerControlsLabel();
     option.appendChild(text);
 
     return option;
@@ -352,6 +365,10 @@
   } else {
     tick();
   }
+  // Add the Player controls switch as soon as Bootstrap starts showing the
+  // Device Config popup, instead of up to POLL_MS after it is visible (which
+  // made the layout jump). The poll stays as a fallback.
+  document.addEventListener('show.bs.modal', tick);
   window.setInterval(tick, POLL_MS);
 })();
 
