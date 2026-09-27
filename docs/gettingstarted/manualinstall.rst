@@ -40,6 +40,8 @@ For debian/stretch:
 
 Functionality that is lost without PHP:
 
+- the setup wizard, the Wizard mode editors and the Settings menu (they save
+  their changes via PHP)
 - calendar
 - garbage
 - savings settings from Dashticz
@@ -83,7 +85,14 @@ If you prefer the development branch (might be less stable, but latest and great
 
     git clone https://github.com/Dashticz/dashticz --branch beta
 
-After the installation is finished, go to the ``/home/pi/Dashticz/custom/`` folder, copy the CONFIG_DEFAULT.js file to CONFIG.js (mind the CAPITALS!), and edit it with the basics:
+You don't have to create a configuration file yourself: when ``custom/CONFIG.js``
+doesn't exist, Dashticz starts a setup wizard the first time you open it in the
+browser (see :ref:`FirstRun`). Continue with the symbolic link and the
+permissions below.
+
+If you prefer to write the configuration by hand (Custom mode), go to the
+``/home/pi/dashticz/custom/`` folder, copy the CONFIG_DEFAULT.js file to
+CONFIG.js (mind the CAPITALS!), and edit it with the basics:
 
 .. code-block:: bash
 
@@ -111,22 +120,32 @@ Set the correct permissions to the files and folders::
 
   chmod -R a+rX /home/pi/dashticz
 
-If you want to be able to save the settings via Dashticz to CONFIG.js then you have to give write permission to CONFIG.js for root::
+The setup wizard, the Wizard mode editors and the Settings menu save their
+changes to ``CONFIG.js``, ``custom.css`` and ``custom.js`` in the ``custom/``
+folder, so the web server needs write access to that folder. For Apache on a
+Raspberry Pi (web server account ``www-data``)::
 
-  chmod a+w /home/pi/dashticz/custom/CONFIG.js
+  sudo chgrp -R www-data /home/pi/dashticz/custom
+  sudo chmod -R g+w /home/pi/dashticz/custom
+
+Dashticz checks this when it starts, and shows a message if it can't write to
+``custom/``.
 
 Now you can browse to the dashboard: http://192.168.1.3/dashticz/index.html
 Replace 192.168.1.3 with the IP Address (and Port number) for your web server, NOT your Domoticz IP!
 
-By default, Dashticz will show all your Domoticz favorites on the dashboard.
+The first time, the setup wizard starts. With a hand-written ``CONFIG.js``
+without blocks, Dashticz shows all your Domoticz favorites on the dashboard.
 
 
 Updating
 --------
 
-Option 1 - From terminal you can add the following command in Dashticz folder:
+Option 1 - From a terminal in the Dashticz folder, run ``sh update.sh`` (stable)
+or ``sh updatebeta.sh`` (beta), or simply ``git pull``.
 
-``git pull``
+You can also update from the **Info** category of the Settings menu (see
+:ref:`SettingsMenu`).
 
 Option 2 - Download zip file from GitHub, copy and extract in your Dashticz folder. Create backup of your custom folder(s) first.
 

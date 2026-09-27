@@ -1,6 +1,10 @@
 Columns
 =======
 
+Columns are used in Custom mode, for screens with the classic column layout.
+Screens built in Wizard mode use a free-positioned grid instead (see
+:ref:`gridlayout`).
+
 The various examples in the documentation show how to add blocks to columns,
 and how to add columns to screens.
 

@@ -100,7 +100,7 @@ logs:
  
 .PHONY: login
 login:
-	sudo docker exec -it $(APP) bash
+	sudo docker exec -it $(APP) sh
  
 .PHONY: status
 status:

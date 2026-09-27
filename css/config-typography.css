@@ -356,6 +356,36 @@
   column-gap: 1rem;
 }
 
+/* A row of fields spanning both .we-cfg-cols columns (e.g. PostNL's icon
+   style + colors): side by side where the width allows, wrapping otherwise.
+   Selects/text inputs grow; color swatches stay as narrow as their label. */
+.we-cfg-inline {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 1rem;
+}
+
+.we-cfg-inline > * {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.we-cfg-inline > :has(> .form-control-color) {
+  flex: 0 0 auto;
+}
+
+.we-cfg-inline .we-field-label {
+  white-space: nowrap;
+}
+
+.we-cfg-inline .form-control-color {
+  width: 3rem;
+  height: calc(0.875rem * 1.5 + 0.5rem + 2px);
+  padding: 0.2rem;
+}
+
 @media (max-width: 575px) {
   .we-cfg-cols {
     grid-template-columns: 1fr;

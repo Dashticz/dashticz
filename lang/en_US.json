@@ -210,7 +210,7 @@
       "wizard_mode_desc": "Build and adjust the dashboard visually with the Screen Editor.",
       "save_failed": "Could not save configuration mode.",
       "warning_title": "Change configuration mode?",
-      "confirm_wizard": "Switching to Wizard removes the current dashboard configuration, clears all Blocks, Columns and Screens from CONFIG.js, and creates a clean page. Your config settings are kept.",
+      "confirm_wizard": "Switching to Wizard converts the screen that is shown now to a grid layout and opens the Screen Editor. Your blocks, columns, other screens and config settings stay in CONFIG.js; other screens are converted when you open them in the Screen Editor. Make a copy of CONFIG.js first if you want to keep your hand-written version.",
       "confirm_custom": "Switching to Custom keeps the current dashboard configuration, but hides the Screen Editor controls. You can continue managing the dashboard manually in CONFIG.js.",
       "cancel": "Cancel",
       "continue": "Continue"
@@ -285,6 +285,15 @@
       "compact_icons": "Icon per level",
       "compact_icon_auto": "Automatic",
       "compact_icon_custom": "Custom Font Awesome class...",
+      "text_style": "Text",
+      "text_fontsize_title": "Title size",
+      "text_fontsize_value": "Value size",
+      "text_align": "Alignment",
+      "text_align_default": "Theme default",
+      "text_align_left": "Left",
+      "text_align_center": "Center",
+      "text_align_right": "Right",
+      "text_style_help": "Font sizes in pixels. Empty fields and Theme default use the selected theme (or the base style); values set here override it for this block only.",
       "show_title": "Title",
       "device_config": "Device Config",
       "widget_config": "Widget Config",
@@ -540,7 +549,12 @@
       "invalid_lms_server": "Enter the Lyrion Music Server address.",
       "invalid_lms_port": "Enter a valid port (1-65535).",
       "invalid_lms_player": "Test the connection and select a player.",
-      "seconds": "seconds"
+      "seconds": "seconds",
+      "lms_player_controls": "Player controls",
+      "background": "Background",
+      "image": "Image",
+      "custom_device_idx": "IDX",
+      "custom_device_idx_help": "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3)."
     },
     "layouteditor": {
       "title": "Layout Editor",
@@ -847,7 +861,10 @@
       "timegraph_add_value": "Add value",
       "timegraph_remove_value": "Remove value",
       "timegraph_value_required": "Enter a value (e.g. Temp or NettUsage) for value",
-      "devices": "Devices"
+      "devices": "Devices",
+      "log_maxitems": "Maximum lines",
+      "log_maxitems_help": "Limit the number of log lines shown, so no scrollbar is needed. Leave empty for no limit.",
+      "image": "Image"
     },
     "garbage": {
       "garbage_calendar_id": "Google Calendar ID",

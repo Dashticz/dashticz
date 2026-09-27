@@ -6,6 +6,10 @@ Dashticz configuration
 Dashticz can be configured by editing the ``CONFIG.js`` file.
 This file you can find in the subfolder ``[dashticz]/custom``.
 
+Most of the parameters below can also be changed from the browser, in the
+Settings menu (see :ref:`SettingsMenu`). The Settings menu writes them to
+``CONFIG.js`` for you.
+
 .. note:: TIP! If CUSTOM POSITIONING is not working check if you have uncomment all lines from the blocks/colums/screens you want.
 
 In the following part, the ``CONFIG.js`` is divided in sections. For each section there will be an explanation how to use.
@@ -21,7 +25,7 @@ Below the basic configuration to make the connection with Domoticz work.
 .. code-block:: bash
 
     var config = {}
-    config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SE
+    config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, ... (see the lang folder)
     config['domoticz_ip'] = 'http://192.168.1.3:8084';
     config['domoticz_refresh'] = '5';
     config['dashticz_refresh'] = '60';
@@ -30,7 +34,7 @@ Below the basic configuration to make the connection with Domoticz work.
 ==========================        =============
 Parameter                         Description
 ==========================        =============
-config['language']                can be used to select the language, Dutch (nl_NL), English (en_US), German (de_DE),French (fr_FR), Hungarian (hu_HU), Italian (it_IT), Portuguese (pt_PT), or Swedish (sv_SV)
+config['language']                selects the language, for example Dutch (nl_NL), English (en_US), German (de_DE) or French (fr_FR). See the ``lang`` folder for all languages
 
 config['domoticz_ip']             is the URL to your Domoticz installation (with the correct PORT address)
 config['domoticz_refresh']        the refresh rate of Dashticz to get information from Domoticz
@@ -74,6 +78,16 @@ Config parameters
   * - domoticz_timeout
     - | Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.
       | ``2000`` = Time in <value> milliseconds (default=2000).
+  * - config_mode
+    - | How the dashboard is managed. See :ref:`WizardMode` and :ref:`SwitchingModes`.
+      | ``'wizard'`` = Build the dashboard from the browser with the Screen Editor
+      | ``'custom'`` = Manage the dashboard by hand in ``CONFIG.js`` (used when the parameter is missing)
+  * - client_id
+    - | OAuth client ID of the Dashticz application in Domoticz. See :ref:`oauth2`.
+      | ``'Dashticz'``
+  * - client_secret
+    - | OAuth client secret of the Dashticz application in Domoticz. See :ref:`oauth2`.
+      | ``'DashticzPassword'``
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
@@ -200,6 +214,24 @@ Config parameters
   * - topbar_timeout
     - | Number of seconds after which the topbar is automatically hidden (0 = always visible)
       | The topbar reappears when the mouse moves to the top of the screen.
+      | ``5`` = default
+  * - topbar_use_png_icons
+    - | Use the PNG images from ``img/icons`` instead of Font Awesome icons in the topbar
+      | ``0`` = Font Awesome icons (default)
+      | ``1`` = PNG images
+  * - theme
+    - | Theme of the dashboard. Can also be chosen in the Settings menu (**Theme**).
+      | ``'default'`` = default
+      | ``'modern-dark'``, ``'liquid-glass-blue'``, ``'liquid-glass-grey'``, ``'white'``
+  * - background_image
+    - | Default background image of the screens, relative to the Dashticz folder, or a URL
+      | ``'img/custom/BG_Dashticz_bw.png'`` = default
+  * - gridColumns
+    - | Default number of columns of screens with a grid layout (see :ref:`gridlayout`)
+      | ``24`` = default
+  * - rowHeight
+    - | Default row height in pixels of screens with a grid layout (see :ref:`gridlayout`)
+      | ``20`` = default
   * - hide_seconds
     - | 0 / 1
       | Show the seconds of the clock

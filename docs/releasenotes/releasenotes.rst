@@ -1,6 +1,65 @@
 Release Notes
 =============
 
+v4.1.0 (27-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Rewrote the documentation for Dashticz 4. New pages: **First start** (the
+  setup wizard, the write-access check and the Wizard/Custom mode picker), a
+  **Wizard mode** section (the topbar, the Screen/Layout Editor and screens,
+  the Add items menu, the Device Editor and every Device Config option,
+  widgets and Widget Config, the special blocks and Automation) with
+  screenshots, and **The Settings menu**. The introduction, installation,
+  configuration, screens, columns and troubleshooting pages were updated for
+  Dashticz 4, the hand-written configuration guide is now the Custom mode
+  guide, and the configuration reference lists ``config_mode``,
+  ``client_id``/``client_secret``, ``theme``, ``background_image``,
+  ``gridColumns``, ``rowHeight`` and ``topbar_use_png_icons``.
+- Widget Config and Device Config (merged in #313, after the 4.0.13 notes):
+  every Widget Config uses the same section order (Display options, Settings,
+  Custom fields) and one shared two-column layout, including the repeatable
+  Calendar/Camera/Radio/Timegraph entries. Fields, headings, buttons and
+  controls have one uniform spacing, height and style; add buttons are green
+  and labelled, numeric fields use number inputs, and the LMS, PostNL and
+  Garbage settings use compact layouts. The Dutch translation is complete and
+  the French translation was added for all editor, widget and status texts.
+
+* **Fixes**
+
+- The confirmation shown when switching from Custom to Wizard mode said that
+  all blocks, columns and screens are removed from ``CONFIG.js``. Only the
+  screen that is shown is converted to a grid layout; the text now says so
+  and suggests making a copy of ``CONFIG.js`` first.
+- A plain device that the grid Device Editor stored under a named key showed
+  the Multi Device **Main IDX** label and its value-row help in Device Config.
+  It now shows **IDX** with the device/variable help; a real Multi Device keeps
+  **Main IDX**.
+- The bolt icon in the Automation heading and the remove (trash) button of an
+  automation rule were shown at the global 30px icon size; they are
+  text-sized again.
+- Stylesheets and the LMS/Garbage config helpers are cache-busted on every
+  page load (merged in #313), so browsers no longer keep an outdated copy
+  after an update.
+
+v4.0.13 (26-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Added a **Text** section to the Device Config of Domoticz devices and
+  idx-backed Custom devices (widgets are not affected). Per block you can set
+  the **title size** and the **value size** in pixels (6-100) and the text
+  **alignment** (Theme default, left, center or right). By default a block
+  keeps the font sizes and alignment of the selected theme, or of the base
+  style (``css/creative.css``) when no theme is selected; a value set here
+  overrides that theme/base setting for this block only. Leaving a size empty
+  or choosing Theme default falls back to the theme again. The settings are
+  stored in ``CONFIG.js`` as ``fontsize_title``, ``fontsize_value`` and
+  ``textalign`` and applied by ``applyBlockTextStyle()`` in ``js/blocks.js``;
+  the last-update text keeps its own theme size.
+
 v4.0.12 (21-9-2026)
 ----------------------
 

@@ -175,6 +175,33 @@ function getCustomFunction(functionname, block, afterupdate) {
   }
 }
 
+/* Device Config -> Text: per-block title/value font size (px) and text
+   alignment, saved as fontsize_title/fontsize_value/textalign. The sizes are
+   passed as CSS variables; css/creative.css's .dt-fs-title/.dt-fs-value/
+   .dt-align-* rules apply them over the theme's own (!important) sizes. */
+function applyBlockTextStyle($div, block) {
+  var titleSize = parseInt(block.fontsize_title, 10);
+  var valueSize = parseInt(block.fontsize_value, 10);
+  var align = String(block.textalign || '').toLowerCase();
+  $div.each(function () {
+    this.style.setProperty(
+      '--dt-fs-title',
+      titleSize > 0 ? titleSize + 'px' : ''
+    );
+    this.style.setProperty(
+      '--dt-fs-value',
+      valueSize > 0 ? valueSize + 'px' : ''
+    );
+  });
+  $div
+    .toggleClass('dt-fs-title', titleSize > 0)
+    .toggleClass('dt-fs-value', valueSize > 0)
+    .removeClass('dt-align-left dt-align-center dt-align-right');
+  if (['left', 'center', 'right'].indexOf(align) > -1) {
+    $div.addClass('dt-align-' + align);
+  }
+}
+
 // eslint-disable-next-line no-unused-vars
 function deviceUpdateHandler(block) {
   var selector = block.mountPoint;
@@ -323,6 +350,7 @@ function deviceUpdateHandler(block) {
   if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
 
+  applyBlockTextStyle($div, block);
   addBatteryLevel($div, block);
   addAutomationIndicator($div, block);
   triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely

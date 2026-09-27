@@ -1,7 +1,11 @@
 .. _BasicDashboard :
 
-Configuring a basic Dashticz Dashboard
---------------------------------------
+Configuring a dashboard by hand (Custom mode)
+---------------------------------------------
+
+This section describes how to build a dashboard by editing ``custom/CONFIG.js``
+yourself. This is called **Custom mode**. If you prefer to build the dashboard
+from the browser, use **Wizard mode** instead (see :ref:`WizardMode`).
 
 If you followed the steps as described in :ref:`Installation` 
 then you are prepared for creating your own Dashboard.
@@ -9,11 +13,14 @@ then you are prepared for creating your own Dashboard.
 Step 1: Default Dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let's start with a minimal config. Create the config file ``custom/CONFIG.js``
-with the following content::
+Let's start with a minimal config. If you used the setup wizard (see
+:ref:`FirstRun`) and chose Custom mode, ``custom/CONFIG.js`` already contains
+these settings. Otherwise create the config file ``custom/CONFIG.js`` with the
+following content::
 
     var config = {}
-    config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SV
+    config['config_mode'] = 'custom';
+    config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SE, ...
     config['domoticz_ip'] = 'http://192.168.1.3:8084';
     config['domoticz_refresh'] = '5';
     config['dashticz_refresh'] = '60';
@@ -114,7 +121,8 @@ Just to be sure, add the following CONFIG settings as well::
 Your complete CONFIG.js now should look as follows::
 
   var config = {}
-  config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SV
+  config['config_mode'] = 'custom';
+  config['language'] = 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SE, ...
   config['domoticz_ip'] = 'http://192.168.178.18:8080';
   config['domoticz_refresh'] = '5';
   config['dashticz_refresh'] = '60';
@@ -153,6 +161,10 @@ Your complete CONFIG.js now should look as follows::
 This should give the following result:
 
 .. image :: guide_step_2.png
+
+Instead of columns, a screen can also use a free-positioned grid, on which
+every block gets its own position and size. That is the layout Wizard mode
+uses; see :ref:`gridlayout`.
 
 
 Retrieve status of a device
@@ -212,11 +224,14 @@ In Domoticz - Setup - More Options - Application, create a new application. Exam
 
 In Dashticz CONFIG.js:
 
-  * Remove CONFIG['user_name'] and CONFIG['pass_word']
-  * Add the following
+  * Remove ``config['user_name']`` and ``config['pass_word']``
+  * Add the following::
 
-  CONFIG['client_id'] = 'Dashticz';
-  CONFIG['client_secret'] = 'DashticzPassword';
+      config['client_id'] = 'Dashticz';
+      config['client_secret'] = 'DashticzPassword';
+
+The setup wizard (see :ref:`FirstRun`) writes these two settings for you when
+you enable **Login required**.
 
 If you have configured Domoticz and Dashticz as described above, then when you open Dashticz the Domoticz authentication window will be shown, where you can fill in a Domoticz username and password.
 After verifying the user credentials a token will be generated which will be used by Dashticz to get data from Domoticz.

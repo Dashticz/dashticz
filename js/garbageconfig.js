@@ -153,7 +153,7 @@
 
   function createTextStyleColumn(options) {
     var column = document.createElement('div');
-    column.className = 'col-12 col-md-6';
+    column.className = 'garbage-text-style-column';
 
     var title = document.createElement('div');
     title.className = 'small fw-semibold mb-1';
@@ -161,7 +161,7 @@
     column.appendChild(title);
 
     var row = document.createElement('div');
-    row.className = 'd-flex gap-2 align-items-end';
+    row.className = 'garbage-text-style-fields';
 
     var sizeWrap = document.createElement('div');
     sizeWrap.className = 'flex-grow-1';
@@ -211,7 +211,7 @@
     section.appendChild(heading);
 
     var row = document.createElement('div');
-    row.className = 'row g-2 mb-3';
+    row.className = 'garbage-text-style-row mb-3';
     row.appendChild(
       createTextStyleColumn({
         title: garbageUiText('first_pickup_row', 'First pickup row'),
@@ -236,7 +236,7 @@
 
   function createScaleField(value) {
     var group = document.createElement('div');
-    group.className = 'mb-3';
+    group.className = 'mb-3 we-cfg-field';
 
     var label = document.createElement('label');
     label.className = 'form-label we-field-label';
@@ -349,15 +349,22 @@
     var scaleWrapper = document.createElement('div');
     scaleWrapper.className = 'garbage-kliko-scale-fields';
     var scaleHeading = document.createElement('h6');
-    scaleHeading.className = 'mt-3 mb-2';
-    scaleHeading.style.cssText = 'font-size:14px;font-weight:600;color:#495057';
+    scaleHeading.className = 'de-section-title';
     scaleHeading.textContent = garbageUiText('kliko_image', 'Bin image');
     scaleWrapper.appendChild(scaleHeading);
     scaleWrapper.appendChild(createScaleField(scaleValue));
 
+    // Widget Config's .garbage-icon-row (js/widgeteditor.js) holds the Hide
+    // icon and Icon colors switches: the scale heading and text styling go
+    // above that row, the scale field itself becomes its first column.
     var hideIcon = popup.querySelector('#we-cfg-garbage-hideicon');
-    var anchor = hideIcon && hideIcon.closest('.mb-3');
+    var iconRow = hideIcon && hideIcon.closest('.garbage-icon-row');
+    var anchor = iconRow || (hideIcon && hideIcon.closest('.mb-3'));
     if (anchor && anchor.parentNode) {
+      if (iconRow) {
+        iconRow.insertBefore(createScaleField(scaleValue), iconRow.firstChild);
+        scaleWrapper.removeChild(scaleWrapper.lastChild);
+      }
       anchor.parentNode.insertBefore(scaleWrapper, anchor);
       anchor.parentNode.insertBefore(textSection, scaleWrapper);
     } else {
@@ -378,7 +385,7 @@
       });
     }
 
-    var scaleInput = scaleWrapper.querySelector('.garbage-kliko-scale-input');
+    var scaleInput = popup.querySelector('.garbage-kliko-scale-input');
     if (scaleInput) {
       scaleInput.addEventListener('input', function () {
         syncScaleInput(popup);
@@ -552,6 +559,11 @@
   }
 
   refreshGarbageEnhancements();
+  // Enhance the Widget Config popup as soon as Bootstrap starts showing it
+  // (its markup is complete by then), so it never appears for a moment
+  // without the Text styling/Bin scale fields and then jumps once the poll
+  // below catches up. The poll stays as a fallback.
+  document.addEventListener('show.bs.modal', refreshGarbageEnhancements);
   window.setInterval(refreshGarbageEnhancements, POLL_MS);
 })();
 
