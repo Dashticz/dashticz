@@ -27,8 +27,8 @@ test('Garbage text styling uses the same compact LMS-style layout', () => {
   assert.match(helper, /heading\.textContent = garbageUiText\('text_styling'/);
   assert.match(helper, /title: garbageUiText\('first_pickup_row'/);
   assert.match(helper, /title: garbageUiText\('pickup_rows_other'/);
-  assert.match(helper, /className = 'row g-2 mb-3'/);
-  assert.match(helper, /className = 'col-12 col-md-6'/);
+  assert.match(helper, /className = 'garbage-text-style-row mb-3'/);
+  assert.match(helper, /className = 'garbage-text-style-column'/);
   assert.match(helper, /form-control form-control-sm garbage-row-size-input/);
   assert.match(
     helper,

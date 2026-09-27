@@ -182,6 +182,7 @@ var DashticzDeviceEditor = (function () {
         title: 'Title',
         display_options: 'Display options',
         icon: 'Icon',
+        image: 'Image',
         hide_data: 'Hide data',
         last_update: 'Last update',
         switch: 'Switch',
@@ -200,6 +201,16 @@ var DashticzDeviceEditor = (function () {
         compact_icon_custom: 'Custom Font Awesome class...',
         compact_selector_help:
           'Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.',
+        text_style: 'Text',
+        text_fontsize_title: 'Title size',
+        text_fontsize_value: 'Value size',
+        text_align: 'Alignment',
+        text_align_default: 'Theme default',
+        text_align_left: 'Left',
+        text_align_center: 'Center',
+        text_align_right: 'Right',
+        text_style_help:
+          'Font sizes in pixels. Empty fields and Theme default use the selected theme (or the base style); values set here override it for this block only.',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -225,6 +236,7 @@ var DashticzDeviceEditor = (function () {
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        custom_device_idx: 'IDX',
         custom_device_idx_help:
           "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3).",
         custom_device_title: 'Title',
@@ -324,6 +336,7 @@ var DashticzDeviceEditor = (function () {
         lms_player_placeholder: 'Test the connection to list players',
         lms_refresh_interval: 'Refresh interval',
         lms_hide_when_off: 'Hide block when player is off',
+        lms_player_controls: 'Player controls',
         invalid_lms_server: 'Enter the Lyrion Music Server address.',
         invalid_lms_port: 'Enter a valid port (1-65535).',
         invalid_lms_player: 'Test the connection and select a player.',
@@ -1265,6 +1278,9 @@ var DashticzDeviceEditor = (function () {
         needle: definition.needle === true,
         // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
         compactSelector: definition.compactSelector === true,
+        fontsizeTitle: _parseTextFontSize(definition.fontsize_title),
+        fontsizeValue: _parseTextFontSize(definition.fontsize_value),
+        textalign: _parseTextAlign(definition.textalign),
         compactIcons:
           definition.compactIcons && typeof definition.compactIcons === 'object'
             ? $.extend({}, definition.compactIcons)
@@ -1517,6 +1533,11 @@ var DashticzDeviceEditor = (function () {
     artist_color: true,
     station_size: true,
     station_color: true,
+    // Per-device text style - managed by the dedicated Text section of
+    // Device Config (see _applyTextStyleFields()).
+    fontsize_title: true,
+    fontsize_value: true,
+    textalign: true,
     __proto__: true,
     prototype: true,
     constructor: true,
@@ -1748,6 +1769,33 @@ var DashticzDeviceEditor = (function () {
         .appendTo($button);
       $grid.append($button);
     });
+  }
+
+  // Per-device text style (Device Config -> Text): title/value font size in
+  // px and text alignment, applied at runtime by js/blocks.js
+  // applyBlockTextStyle(). Stored as fontsize_title/fontsize_value/textalign
+  // custom fields, like compactSelector.
+  var TEXT_ALIGN_VALUES = ['left', 'center', 'right'];
+
+  function _parseTextFontSize(value) {
+    var size = parseInt(value, 10);
+    return size > 0 ? Math.min(100, Math.max(6, size)) : null;
+  }
+
+  function _parseTextAlign(value) {
+    value = String(value || '').toLowerCase();
+    return TEXT_ALIGN_VALUES.indexOf(value) > -1 ? value : '';
+  }
+
+  function _applyTextStyleFields(customFields, options) {
+    delete customFields.fontsize_title;
+    delete customFields.fontsize_value;
+    delete customFields.textalign;
+    if (options.fontsizeTitle)
+      customFields.fontsize_title = options.fontsizeTitle;
+    if (options.fontsizeValue)
+      customFields.fontsize_value = options.fontsizeValue;
+    if (options.textalign) customFields.textalign = options.textalign;
   }
 
   function _devicePreservedFieldValues(definition) {
@@ -2329,6 +2377,9 @@ var DashticzDeviceEditor = (function () {
         needle: configured.needle === true,
         // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
         compactSelector: configured.compactSelector === true,
+        fontsizeTitle: _parseTextFontSize(configured.fontsize_title),
+        fontsizeValue: _parseTextFontSize(configured.fontsize_value),
+        textalign: _parseTextAlign(configured.textalign),
         compactIcons:
           configured.compactIcons && typeof configured.compactIcons === 'object'
             ? $.extend({}, configured.compactIcons)
@@ -2520,9 +2571,13 @@ var DashticzDeviceEditor = (function () {
           _esc(t.field) +
           '"><option value="icon"' +
           (lowerField === 'icon' ? ' selected' : '') +
-          '>Icon</option><option value="image"' +
+          '>' +
+          _esc(t.icon) +
+          '</option><option value="image"' +
           (lowerField === 'image' ? ' selected' : '') +
-          '>Image</option></select>'
+          '>' +
+          _esc(t.image) +
+          '</option></select>'
         : '<input type="text" class="form-control de-custom-field-name" placeholder="' +
           _esc(t.field) +
           '" value="' +
@@ -2620,7 +2675,9 @@ var DashticzDeviceEditor = (function () {
       _esc(t.custom_device_name_help) +
       '</div></div>';
     html +=
-      '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
+      '<div class="mb-3"><label class="form-label" for="cd-device-idx">' +
+      _esc(t.custom_device_idx) +
+      '</label>';
     html +=
       '<input type="text" inputmode="numeric" class="form-control" ' +
       'id="cd-device-idx" placeholder="123, or v3 for a variable">';
@@ -4437,8 +4494,9 @@ var DashticzDeviceEditor = (function () {
   function _lmsFieldsHtml(prefix, values) {
     var t = _translations();
     values = values || {};
+    // Server/IP + Port and Username + Password each share one row.
     var html =
-      '<div class="mb-3"><label class="form-label" for="' +
+      '<div class="de-lms-pair mb-3"><div><label class="form-label" for="' +
       prefix +
       '-lms-server">' +
       _esc(t.lms_server) +
@@ -4450,7 +4508,7 @@ var DashticzDeviceEditor = (function () {
       _esc(values.server || '') +
       '"></div>';
     html +=
-      '<div class="mb-3"><label class="form-label" for="' +
+      '<div><label class="form-label" for="' +
       prefix +
       '-lms-port">' +
       _esc(t.lms_port) +
@@ -4460,9 +4518,9 @@ var DashticzDeviceEditor = (function () {
       prefix +
       '-lms-port" value="' +
       _esc(values.port || 9000) +
-      '"></div>';
+      '"></div></div>';
     html +=
-      '<div class="mb-3"><label class="form-label" for="' +
+      '<div class="mb-3"><div class="de-lms-pair"><div><label class="form-label" for="' +
       prefix +
       '-lms-username">' +
       _esc(t.lms_username) +
@@ -4474,7 +4532,7 @@ var DashticzDeviceEditor = (function () {
       _esc(values.username || '') +
       '"></div>';
     html +=
-      '<div class="mb-3"><label class="form-label" for="' +
+      '<div><label class="form-label" for="' +
       prefix +
       '-lms-password">' +
       _esc(t.lms_password) +
@@ -4484,12 +4542,12 @@ var DashticzDeviceEditor = (function () {
       prefix +
       '-lms-password" autocomplete="off" value="' +
       _esc(values.password || '') +
-      '">';
+      '"></div></div>';
     html +=
       '<div class="form-text">' + _esc(t.lms_credentials_help) + '</div></div>';
     html += '<div class="mb-3">';
     html +=
-      '<button type="button" class="btn btn-outline-secondary btn-sm de-lms-test" id="' +
+      '<button type="button" class="btn btn-sm dt-btn-green de-lms-test" id="' +
       prefix +
       '-lms-test"><i class="fas fa-plug me-1" aria-hidden="true"></i>' +
       _esc(t.lms_test_connection) +
@@ -4539,15 +4597,18 @@ var DashticzDeviceEditor = (function () {
         '</option>';
     });
     html += '</select></div>';
+    // js/lmsconfig.js adds its Player controls switch right after this one,
+    // inside the same .de-lms-switches row, so the two sit side by side.
     html +=
-      '<label class="form-check form-switch mb-3"><input class="form-check-input de-lms-switch" type="checkbox" id="' +
+      '<div class="de-lms-switches mb-3">' +
+      '<label class="form-check form-switch"><input class="form-check-input de-lms-switch" type="checkbox" id="' +
       prefix +
       '-lms-hide-when-off"' +
       (values.hideWhenOff ? ' checked' : '') +
       '>' +
       '<span class="form-check-label">' +
       _esc(t.lms_hide_when_off) +
-      '</span></label>';
+      '</span></label></div>';
     html += '<h6 class="de-section-title">' + _esc(t.lms_text_style) + '</h6>';
     html += '<div class="row g-2 mb-3">';
     [
@@ -8045,6 +8106,77 @@ var DashticzDeviceEditor = (function () {
   /* Build the Device Config popup. Switch visibility is not exposed as a
      checkbox here; title text remains available as a typed field, and its
      visibility is exposed via the Title checkbox below. */
+  function _textStyleHtml(options, t) {
+    var fontSizeInput = function (id, label, value) {
+      return (
+        '<span class="d-flex align-items-center gap-2">' +
+        '<label class="mb-0" for="' +
+        id +
+        '">' +
+        _esc(label) +
+        '</label>' +
+        '<input type="number" class="form-control form-control-sm" id="' +
+        id +
+        '" style="width:10ch;flex:0 0 auto;" min="6" max="100" step="1" value="' +
+        _esc(value || '') +
+        '"><span>px</span></span>'
+      );
+    };
+    var align = _parseTextAlign(options.textalign);
+    var alignButtons = [
+      { value: '', icon: 'fa-ban', label: t.text_align_default },
+      { value: 'left', icon: 'fa-align-left', label: t.text_align_left },
+      { value: 'center', icon: 'fa-align-center', label: t.text_align_center },
+      { value: 'right', icon: 'fa-align-right', label: t.text_align_right },
+    ]
+      .map(function (button) {
+        var id = 'de-config-textalign-' + (button.value || 'default');
+        return (
+          '<input type="radio" class="btn-check" name="de-config-textalign" id="' +
+          id +
+          '" value="' +
+          button.value +
+          '" autocomplete="off"' +
+          (align === button.value ? ' checked' : '') +
+          '><label class="btn btn-outline-secondary btn-sm" for="' +
+          id +
+          '" title="' +
+          _esc(button.label) +
+          '" aria-label="' +
+          _esc(button.label) +
+          '"><i class="fas ' +
+          button.icon +
+          '"></i></label>'
+        );
+      })
+      .join('');
+    return (
+      '<div class="mb-3 de-text-style-row">' +
+      '<div class="form-label">' +
+      _esc(t.text_style) +
+      '</div>' +
+      '<div class="d-flex align-items-center gap-3 flex-wrap">' +
+      fontSizeInput(
+        'de-config-fontsize-title',
+        t.text_fontsize_title,
+        options.fontsizeTitle
+      ) +
+      fontSizeInput(
+        'de-config-fontsize-value',
+        t.text_fontsize_value,
+        options.fontsizeValue
+      ) +
+      '<span class="d-flex align-items-center gap-2"><span>' +
+      _esc(t.text_align) +
+      '</span><span class="btn-group de-text-align-group" role="group">' +
+      alignButtons +
+      '</span></span></div>' +
+      '<div class="form-text">' +
+      _esc(t.text_style_help) +
+      '</div></div>'
+    );
+  }
+
   function _showConfigPopup(orderKey, editor, opts) {
     var t = _translations();
     var persistOnly = !!(opts && opts.persistOnly);
@@ -8394,6 +8526,11 @@ var DashticzDeviceEditor = (function () {
     // custom field. Like needle above it is shown here instead of in Custom
     // fields. An already-saved value stays editable even when the live device
     // is temporarily unavailable.
+    // Text size/alignment (Device Config -> Text) - only for blocks that
+    // render through js/blocks.js deviceUpdateHandler(): plain Domoticz
+    // devices and idx-backed Custom devices. The three fields are protected
+    // custom-field names, so they never show up in Custom fields as well.
+    var supportsTextStyle = !isSpecial || (isCustom && !!special.idx);
     var supportsCompactSelector =
       (!isSpecial || (isCustom && !!special.idx)) &&
       hasDial &&
@@ -8617,6 +8754,10 @@ var DashticzDeviceEditor = (function () {
       html += '</div>';
     }
 
+    if (supportsTextStyle) {
+      html += _textStyleHtml(options, t);
+    }
+
     if (!isTitle) {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
@@ -8635,9 +8776,13 @@ var DashticzDeviceEditor = (function () {
       // placeholder forever, since the device data subscription for the old
       // idx never resolves, which also means the icon/title never render
       // (both are only painted once real device data arrives).
+      // Only a real Multi Device (with value rows) has a "main" IDX that
+      // other rows fall back to; any other custom-keyed block - including a
+      // plain device the grid Device Editor stored under a named key - just
+      // has the IDX of its own Domoticz device (or variable).
       html +=
         '<div class="mb-3"><label class="form-label" for="de-config-idx">' +
-        _esc(t.multi_device_idx) +
+        _esc(multiDeviceValues ? t.multi_device_idx : t.custom_device_idx) +
         '</label>';
       html +=
         '<input type="text" inputmode="numeric" class="form-control" ' +
@@ -8646,7 +8791,9 @@ var DashticzDeviceEditor = (function () {
         '">';
       html +=
         '<div class="form-text">' +
-        _esc(t.multi_device_idx_help) +
+        _esc(
+          multiDeviceValues ? t.multi_device_idx_help : t.custom_device_idx_help
+        ) +
         '</div></div>';
     } else if (isGroupBlock) {
       html +=
@@ -9304,6 +9451,17 @@ var DashticzDeviceEditor = (function () {
         var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
+      if (supportsTextStyle) {
+        updated.fontsizeTitle = _parseTextFontSize(
+          $('#de-config-fontsize-title').val()
+        );
+        updated.fontsizeValue = _parseTextFontSize(
+          $('#de-config-fontsize-value').val()
+        );
+        updated.textalign = _parseTextAlign(
+          $popup.find('input[name="de-config-textalign"]:checked').val()
+        );
+      }
       if (supportsCompactSelector) {
         updated.compactSelector = $('#de-config-compact-selector').prop(
           'checked'
@@ -10722,6 +10880,7 @@ var DashticzDeviceEditor = (function () {
             )
               specialCustomFields.compactIcons = specialOptions.compactIcons;
           }
+          _applyTextStyleFields(specialCustomFields, specialOptions);
           if (Object.keys(specialCustomFields).length)
             specialEntry.custom_fields = specialCustomFields;
           else delete specialEntry.custom_fields;
@@ -10888,6 +11047,7 @@ var DashticzDeviceEditor = (function () {
         if (options.compactIcons && Object.keys(options.compactIcons).length)
           customFields.compactIcons = options.compactIcons;
       }
+      _applyTextStyleFields(customFields, options);
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.

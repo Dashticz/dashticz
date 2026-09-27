@@ -13,5 +13,5 @@ test('Garbage Kliko settings are forced below the text styling section', () => {
   assert.match(css, /grid-column:\s*1\s*\/\s*-1/);
   assert.match(css, /flex:\s*0 0 100%/);
   assert.match(css, /width:\s*100%/);
-  assert.match(index, /css\/garbageconfig\.css\?t=1/);
+  assert.match(index, /'css\/garbageconfig\.css\?t=' \+ bust/);
 });

@@ -1911,6 +1911,208 @@
     );
   }
 
+  // One compact switch block: the title above, the switch with its input
+  // fields next to it, and the explanation below. bodyClass marks the parts
+  // that updateActionState() hides while the switch is off - the fields next
+  // to the switch and the extra content below the explanation share it.
+  // deepFields: the fields start with a group heading (Background/Border)
+  // above their labels, so the switch drops one line further.
+  function switchBlockHtml(opts) {
+    return (
+      (opts.title
+        ? '<div class="fw-semibold small dr-card-header">' +
+          escapeHtml(opts.title) +
+          '</div>'
+        : '') +
+      '<div class="d-flex align-items-start dr-switch-row">' +
+      '<span class="form-check form-switch p-0 flex-shrink-0 dr-switch-cell' +
+      (opts.deepFields ? ' dr-switch-cell-deep' : '') +
+      '">' +
+      '<input type="checkbox" role="switch" class="form-check-input de-switch m-0 ' +
+      opts.switchClass +
+      '" aria-label="' +
+      escapeHtml(opts.title || opts.ariaLabel || '') +
+      '"' +
+      (opts.checked ? ' checked' : '') +
+      '></span>' +
+      '<div class="flex-grow-1 min-w-0' +
+      (opts.bodyClass ? ' ' + opts.bodyClass : '') +
+      '">' +
+      opts.fields +
+      '</div></div>' +
+      (opts.help
+        ? '<div class="form-text mt-1 mb-0">' + escapeHtml(opts.help) + '</div>'
+        : '') +
+      (opts.extra
+        ? '<div class="' + (opts.bodyClass || '') + '">' + opts.extra + '</div>'
+        : '')
+    );
+  }
+
+  // One labelled field inside a .dr-fields row. Rows wrap where the popup
+  // is too narrow; sizeClass lets text fields grow (dr-field-grow/-wide/
+  // -full), while fields without one stay as narrow as their content (e.g.
+  // a w-auto select holding "35%" or "2 px").
+  function fieldHtml(label, control, sizeClass) {
+    return (
+      '<div class="dr-field' +
+      (sizeClass ? ' ' + sizeClass : '') +
+      '">' +
+      (label
+        ? '<label class="form-label small mb-1 text-nowrap">' +
+          escapeHtml(label) +
+          '</label>'
+        : '') +
+      control +
+      '</div>'
+    );
+  }
+
+  function colorInputHtml(className, value, label) {
+    return (
+      '<input type="color" class="form-control form-control-color ' +
+      className +
+      '" value="' +
+      escapeHtml(value) +
+      '" title="' +
+      escapeHtml(label) +
+      '">'
+    );
+  }
+
+  // Background/Border controls of a CSS action. prefix is 'dr-' for the
+  // current device and 'dr-text-css-' for the text action's target device.
+  function styleControlsHtml(prefix, style) {
+    var t = text();
+    return (
+      '<div class="' +
+      prefix +
+      'generated-style-controls dr-fields dr-style-groups">' +
+      '<div class="' +
+      prefix +
+      'background-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.background) +
+      '</div><div class="dr-fields">' +
+      fieldHtml(
+        t.backgroundColor,
+        colorInputHtml(
+          prefix + 'background-color',
+          style.backgroundColor,
+          t.backgroundColor
+        )
+      ) +
+      fieldHtml(
+        t.opacity,
+        '<select class="form-select form-select-sm w-auto ' +
+          prefix +
+          'background-opacity">' +
+          opacityOptions(style.backgroundOpacity) +
+          '</select>'
+      ) +
+      '</div></div>' +
+      '<div class="' +
+      prefix +
+      'border-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.border) +
+      '</div><div class="dr-fields">' +
+      fieldHtml(
+        t.borderColor,
+        colorInputHtml(
+          prefix + 'border-color',
+          style.borderColor,
+          t.borderColor
+        )
+      ) +
+      fieldHtml(
+        t.borderWidth,
+        '<select class="form-select form-select-sm w-auto ' +
+          prefix +
+          'border-width">' +
+          borderWidthOptions(style.borderWidth) +
+          '</select>'
+      ) +
+      fieldHtml(
+        t.borderStyle,
+        '<select class="form-select form-select-sm w-auto ' +
+          prefix +
+          'border-style">' +
+          borderStyleOptions(style.borderStyle) +
+          '</select>'
+      ) +
+      '</div></div></div>'
+    );
+  }
+
+  // "Advanced CSS options" of a CSS action; same prefix as above. The mode
+  // select is the one class name that does not follow the prefix pattern.
+  function advancedCssHtml(prefix, modeClass, action, extraFields) {
+    var t = text();
+    var style = action.style;
+    return (
+      '<details class="mt-2 ' +
+      prefix +
+      (prefix === 'dr-' ? 'css-advanced' : 'advanced') +
+      '"><summary class="small">' +
+      escapeHtml(t.advancedCss) +
+      '</summary><div class="dr-fields mt-1">' +
+      fieldHtml(
+        t.styling,
+        '<select class="form-select form-select-sm w-auto ' +
+          modeClass +
+          '">' +
+          styleModeOptions(style.mode) +
+          '</select>'
+      ) +
+      fieldHtml(
+        t.cssClass,
+        '<input type="text" class="form-control form-control-sm ' +
+          prefix +
+          'class" value="' +
+          escapeHtml(action.className) +
+          '">',
+        'dr-field-grow'
+      ) +
+      fieldHtml(
+        t.textColor,
+        colorInputHtml(prefix + 'text-color', style.textColor, t.textColor),
+        prefix + 'text-controls'
+      ) +
+      '<div class="dr-contents ' +
+      prefix +
+      'banner-controls">' +
+      fieldHtml(
+        t.bannerText,
+        '<input type="text" class="form-control form-control-sm ' +
+          prefix +
+          'banner-text" value="' +
+          escapeHtml(style.bannerText) +
+          '">',
+        'dr-field-wide'
+      ) +
+      fieldHtml(
+        t.bannerTop,
+        '<input type="number" min="0" max="2000" class="form-control form-control-sm dr-input-num ' +
+          prefix +
+          'banner-top" value="' +
+          escapeHtml(style.bannerTop) +
+          '">'
+      ) +
+      fieldHtml(
+        t.fontSize,
+        '<input type="number" min="10" max="60" class="form-control form-control-sm dr-input-num ' +
+          prefix +
+          'banner-fontsize" value="' +
+          escapeHtml(style.fontSize) +
+          '">'
+      ) +
+      '</div>' +
+      (extraFields || '') +
+      '</div></details>'
+    );
+  }
+
   function ruleRowHtml(rule, source) {
     var t = text();
     rule = rule || defaultRule(source);
@@ -1926,252 +2128,122 @@
       '<div class="dt-device-rule border rounded p-2 mb-3" data-rule-id="' +
       escapeHtml(rule.id) +
       '">' +
-      '<div class="d-flex justify-content-between align-items-center mb-2">' +
-      '<label class="d-flex align-items-center gap-2 mb-0">' +
-      '<span class="form-check form-switch m-0 p-0">' +
-      '<input class="form-check-input dr-enabled de-switch m-0" type="checkbox" role="switch"' +
-      (rule.enabled !== false ? ' checked' : '') +
-      '></span><span class="form-check-label fw-semibold">' +
+      '<div class="d-flex justify-content-between align-items-center dr-card-header">' +
+      '<span class="fw-semibold small">' +
       escapeHtml(t.automation) +
-      '</span></label>' +
+      ' \u00b7 ' +
+      escapeHtml(t.trigger) +
+      '</span>' +
       '<button type="button" class="btn btn-outline-danger btn-sm dr-remove" title="' +
       escapeHtml(t.remove) +
       '"><i class="fas fa-trash" aria-hidden="true"></i></button>' +
       '</div>' +
-      '<div class="small fw-semibold text-uppercase opacity-75 mb-1">' +
-      escapeHtml(t.trigger) +
+      '<div class="mb-2">' +
+      switchBlockHtml({
+        ariaLabel: t.automation,
+        switchClass: 'dr-enabled',
+        checked: rule.enabled !== false,
+        fields:
+          '<div class="dr-fields">' +
+          fieldHtml(
+            t.property,
+            '<input type="text" class="form-control form-control-sm dr-property" list="dt-device-rule-properties" value="' +
+              escapeHtml(rule.trigger.property) +
+              '">',
+            'dr-field-grow'
+          ) +
+          fieldHtml(
+            t.condition,
+            '<select class="form-select form-select-sm w-auto dr-operator">' +
+              operatorOptions(rule.trigger.operator) +
+              '</select>'
+          ) +
+          fieldHtml(
+            t.value,
+            '<input type="text" class="form-control form-control-sm dr-value" value="' +
+              escapeHtml(rule.trigger.value) +
+              '"' +
+              (noValue ? ' disabled' : '') +
+              '>',
+            'dr-field-grow'
+          ) +
+          '</div>',
+      }) +
       '</div>' +
-      '<div class="row g-2 mb-3">' +
-      '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
-      escapeHtml(t.property) +
-      '</label><input type="text" class="form-control form-control-sm dr-property" list="dt-device-rule-properties" value="' +
-      escapeHtml(rule.trigger.property) +
-      '"></div>' +
-      '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
-      escapeHtml(t.condition) +
-      '</label><select class="form-select form-select-sm dr-operator">' +
-      operatorOptions(rule.trigger.operator) +
-      '</select></div>' +
-      '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
-      escapeHtml(t.value) +
-      '</label><input type="text" class="form-control form-control-sm dr-value" value="' +
-      escapeHtml(rule.trigger.value) +
-      '"' +
-      (noValue ? ' disabled' : '') +
-      '></div></div>' +
       '<div class="small fw-semibold text-uppercase opacity-75 mb-1">' +
       escapeHtml(t.actions) +
       '</div>' +
       '<div class="border rounded p-2 mb-2 dr-css-action-card">' +
-      '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<span class="form-check form-switch m-0 p-0">' +
-      '<input type="checkbox" class="form-check-input dr-css-enabled de-switch m-0"' +
-      (cssAction.enabled ? ' checked' : '') +
-      '></span><span class="fw-semibold">' +
-      escapeHtml(t.cssAction) +
-      '</span></label>' +
-      '<div class="form-text mb-2">' +
-      escapeHtml(t.cssActionHelp) +
+      switchBlockHtml({
+        title: t.cssAction,
+        switchClass: 'dr-css-enabled',
+        deepFields: true,
+        checked: cssAction.enabled,
+        bodyClass: 'dr-css-body',
+        help:
+          t.cssActionHelp + ' ' + t.currentDevice + ': ' + sourceLabel + '.',
+        fields: styleControlsHtml('dr-', cssAction.style),
+        extra: advancedCssHtml(
+          'dr-',
+          'dr-style-mode',
+          cssAction,
+          cssAction.legacyTarget
+            ? fieldHtml('', cssTargetControl(cssAction), 'dr-field-full')
+            : cssTargetControl(cssAction)
+        ),
+      }) +
       '</div>' +
-      '<div class="dr-css-body">' +
-      '<div class="small text-muted mb-2"><strong>' +
-      escapeHtml(t.currentDevice) +
-      ':</strong> ' +
-      escapeHtml(sourceLabel) +
-      '</div>' +
-      '<div class="dr-generated-style-controls">' +
-      '<div class="row g-2">' +
-      '<div class="col-12 col-lg-4 dr-background-controls">' +
-      '<div class="small fw-semibold mb-1">' +
-      escapeHtml(t.background) +
-      '</div><div class="d-flex gap-2 align-items-end">' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.backgroundColor) +
-      '</label><input type="color" class="form-control form-control-color dr-background-color" value="' +
-      escapeHtml(cssAction.style.backgroundColor) +
-      '" title="' +
-      escapeHtml(t.backgroundColor) +
-      '"></div>' +
-      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
-      escapeHtml(t.opacity) +
-      '</label><select class="form-select form-select-sm dr-background-opacity">' +
-      opacityOptions(cssAction.style.backgroundOpacity) +
-      '</select></div></div></div>' +
-      '<div class="col-12 col-lg-8 dr-border-controls">' +
-      '<div class="small fw-semibold mb-1">' +
-      escapeHtml(t.border) +
-      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.borderColor) +
-      '</label><input type="color" class="form-control form-control-color dr-border-color" value="' +
-      escapeHtml(cssAction.style.borderColor) +
-      '" title="' +
-      escapeHtml(t.borderColor) +
-      '"></div>' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.borderWidth) +
-      '</label><select class="form-select form-select-sm dr-border-width">' +
-      borderWidthOptions(cssAction.style.borderWidth) +
-      '</select></div>' +
-      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
-      escapeHtml(t.borderStyle) +
-      '</label><select class="form-select form-select-sm dr-border-style">' +
-      borderStyleOptions(cssAction.style.borderStyle) +
-      '</select></div></div></div>' +
-      '</div></div>' +
-      '<details class="mt-2 dr-css-advanced"><summary class="small">' +
-      escapeHtml(t.advancedCss) +
-      '</summary><div class="row g-2 mt-1">' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.styling) +
-      '</label><select class="form-select form-select-sm dr-style-mode">' +
-      styleModeOptions(cssAction.style.mode) +
-      '</select></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.cssClass) +
-      '</label><input type="text" class="form-control form-control-sm dr-class" value="' +
-      escapeHtml(cssAction.className) +
-      '"></div>' +
-      '<div class="col-12 col-md-4 dr-text-controls"><label class="form-label small mb-1">' +
-      escapeHtml(t.textColor) +
-      '</label><input type="color" class="form-control form-control-color dr-text-color" value="' +
-      escapeHtml(cssAction.style.textColor) +
-      '"></div>' +
-      '<div class="col-12 dr-banner-controls"><div class="row g-2">' +
-      '<div class="col-12"><label class="form-label small mb-1">' +
-      escapeHtml(t.bannerText) +
-      '</label><input type="text" class="form-control form-control-sm dr-banner-text" value="' +
-      escapeHtml(cssAction.style.bannerText) +
-      '"></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.bannerTop) +
-      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-banner-top" value="' +
-      escapeHtml(cssAction.style.bannerTop) +
-      '"></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.fontSize) +
-      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-banner-fontsize" value="' +
-      escapeHtml(cssAction.style.fontSize) +
-      '"></div></div></div>' +
-      '<div class="col-12">' +
-      cssTargetControl(cssAction) +
-      '</div></div></details>' +
-      '</div></div>' +
       '<div class="border rounded p-2 dr-text-action-card">' +
-      '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<span class="form-check form-switch m-0 p-0">' +
-      '<input type="checkbox" class="form-check-input dr-text-enabled de-switch m-0"' +
-      (textAction.enabled ? ' checked' : '') +
-      '></span><span class="fw-semibold">' +
-      escapeHtml(t.textAction) +
-      '</span></label>' +
-      '<div class="dr-text-body"><div class="row g-2">' +
-      '<div class="col-12"><label class="form-label small mb-1">' +
-      escapeHtml(t.textTarget) +
-      '</label><select class="form-select form-select-sm dr-text-target">' +
-      targetOptions(textAction.target, false) +
-      '</select><div class="form-text">' +
-      escapeHtml(t.targetHelp) +
-      '</div></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.textOn) +
-      '</label><input type="text" class="form-control form-control-sm dr-text-on" value="' +
-      escapeHtml(textAction.textOn) +
-      '"></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.textOff) +
-      '</label><input type="text" class="form-control form-control-sm dr-text-off" value="' +
-      escapeHtml(textAction.textOff) +
-      '"></div></div>' +
-      '<div class="mt-2 border rounded p-2 dr-text-css-card">' +
-      '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<span class="form-check form-switch m-0 p-0">' +
-      '<input type="checkbox" class="form-check-input dr-text-css-enabled de-switch m-0"' +
-      (textCssAction.enabled ? ' checked' : '') +
-      '></span><span class="fw-semibold">' +
-      escapeHtml(t.textCssAction) +
-      '</span></label>' +
-      '<div class="form-text mb-2">' +
-      escapeHtml(t.textCssActionHelp) +
+      switchBlockHtml({
+        title: t.textAction,
+        switchClass: 'dr-text-enabled',
+        checked: textAction.enabled,
+        bodyClass: 'dr-text-body',
+        help: t.targetHelp,
+        fields:
+          '<div class="dr-fields">' +
+          fieldHtml(
+            t.textTarget,
+            '<select class="form-select form-select-sm dr-text-target">' +
+              targetOptions(textAction.target, false) +
+              '</select>',
+            'dr-field-wide'
+          ) +
+          fieldHtml(
+            t.textOn,
+            '<input type="text" class="form-control form-control-sm dr-text-on" value="' +
+              escapeHtml(textAction.textOn) +
+              '">',
+            'dr-field-grow'
+          ) +
+          fieldHtml(
+            t.textOff,
+            '<input type="text" class="form-control form-control-sm dr-text-off" value="' +
+              escapeHtml(textAction.textOff) +
+              '">',
+            'dr-field-grow'
+          ) +
+          '</div>',
+        extra:
+          '<div class="mt-2 border rounded p-2 dr-text-css-card">' +
+          switchBlockHtml({
+            title: t.textCssAction,
+            switchClass: 'dr-text-css-enabled',
+            deepFields: true,
+            checked: textCssAction.enabled,
+            bodyClass: 'dr-text-css-body',
+            help: t.textCssActionHelp,
+            fields: styleControlsHtml('dr-text-css-', textCssAction.style),
+            extra: advancedCssHtml(
+              'dr-text-css-',
+              'dr-text-css-mode',
+              textCssAction,
+              ''
+            ),
+          }) +
+          '</div>',
+      }) +
       '</div>' +
-      '<div class="dr-text-css-body">' +
-      '<div class="dr-text-css-generated-style-controls">' +
-      '<div class="row g-2">' +
-      '<div class="col-12 col-lg-4 dr-text-css-background-controls">' +
-      '<div class="small fw-semibold mb-1">' +
-      escapeHtml(t.background) +
-      '</div><div class="d-flex gap-2 align-items-end">' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.backgroundColor) +
-      '</label><input type="color" class="form-control form-control-color dr-text-css-background-color" value="' +
-      escapeHtml(textCssAction.style.backgroundColor) +
-      '" title="' +
-      escapeHtml(t.backgroundColor) +
-      '"></div>' +
-      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
-      escapeHtml(t.opacity) +
-      '</label><select class="form-select form-select-sm dr-text-css-background-opacity">' +
-      opacityOptions(textCssAction.style.backgroundOpacity) +
-      '</select></div></div></div>' +
-      '<div class="col-12 col-lg-8 dr-text-css-border-controls">' +
-      '<div class="small fw-semibold mb-1">' +
-      escapeHtml(t.border) +
-      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.borderColor) +
-      '</label><input type="color" class="form-control form-control-color dr-text-css-border-color" value="' +
-      escapeHtml(textCssAction.style.borderColor) +
-      '" title="' +
-      escapeHtml(t.borderColor) +
-      '"></div>' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.borderWidth) +
-      '</label><select class="form-select form-select-sm dr-text-css-border-width">' +
-      borderWidthOptions(textCssAction.style.borderWidth) +
-      '</select></div>' +
-      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
-      escapeHtml(t.borderStyle) +
-      '</label><select class="form-select form-select-sm dr-text-css-border-style">' +
-      borderStyleOptions(textCssAction.style.borderStyle) +
-      '</select></div></div></div>' +
-      '</div></div>' +
-      '<details class="mt-2 dr-text-css-advanced"><summary class="small">' +
-      escapeHtml(t.advancedCss) +
-      '</summary><div class="row g-2 mt-1">' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.styling) +
-      '</label><select class="form-select form-select-sm dr-text-css-mode">' +
-      styleModeOptions(textCssAction.style.mode) +
-      '</select></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.cssClass) +
-      '</label><input type="text" class="form-control form-control-sm dr-text-css-class" value="' +
-      escapeHtml(textCssAction.className) +
-      '"></div>' +
-      '<div class="col-12 col-md-4 dr-text-css-text-controls"><label class="form-label small mb-1">' +
-      escapeHtml(t.textColor) +
-      '</label><input type="color" class="form-control form-control-color dr-text-css-text-color" value="' +
-      escapeHtml(textCssAction.style.textColor) +
-      '"></div>' +
-      '<div class="col-12 dr-text-css-banner-controls"><div class="row g-2">' +
-      '<div class="col-12"><label class="form-label small mb-1">' +
-      escapeHtml(t.bannerText) +
-      '</label><input type="text" class="form-control form-control-sm dr-text-css-banner-text" value="' +
-      escapeHtml(textCssAction.style.bannerText) +
-      '"></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.bannerTop) +
-      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-text-css-banner-top" value="' +
-      escapeHtml(textCssAction.style.bannerTop) +
-      '"></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.fontSize) +
-      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-text-css-banner-fontsize" value="' +
-      escapeHtml(textCssAction.style.fontSize) +
-      '"></div></div></div>' +
-      '</div></details>' +
-      '</div></div>' +
-      '</div></div>' +
       '</div>'
     );
   }
@@ -2881,7 +2953,7 @@
       buildDatalist() +
       '<div class="dr-rules"></div>' +
       '<div class="dr-empty form-text mb-2"></div>' +
-      '<button type="button" class="btn btn-outline-secondary btn-sm dr-add mb-3">' +
+      '<button type="button" class="btn btn-sm dt-btn-green dr-add mb-3">' +
       '<i class="fas fa-plus me-1" aria-hidden="true"></i>' +
       escapeHtml(t.addRule) +
       '</button>' +
