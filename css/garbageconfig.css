@@ -4,3 +4,38 @@
   flex: 0 0 100%;
   width: 100%;
 }
+
+/* Text styling: two columns (first row / rows 2+) with the same 16px gap
+   as the other two-column Widget Config fields, stacked on a phone. Own
+   grid instead of Bootstrap's .row/.col, which Dashticz's grid CSS
+   changes. Size and color fields top-aligned with equal-height controls,
+   so their labels line up. */
+#we-config-popup .garbage-text-style-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 6px;
+}
+
+@media (max-width: 575px) {
+  #we-config-popup .garbage-text-style-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+#we-config-popup .garbage-text-style-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+#we-config-popup .garbage-text-style-fields > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#we-config-popup .garbage-row-color-input {
+  width: 3rem;
+  height: calc(0.875rem * 1.5 + 0.5rem + 2px);
+  padding: 0.2rem;
+}
