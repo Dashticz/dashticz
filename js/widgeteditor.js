@@ -4718,6 +4718,27 @@ var DashticzWidgetEditor = (function () {
 
     var $cfgModal = $('#we-config-popup');
 
+    // Bootstrap's Modal.hide() is silently ignored while the modal is still
+    // fading in, so an OK click right after the popup opened applied the
+    // settings but left the popup open. Hide it once it is fully shown.
+    var cfgModalShown = false;
+    $cfgModal.one('shown.bs.modal', function () {
+      cfgModalShown = true;
+    });
+    function hideCfgModal() {
+      var modal = window.bootstrap.Modal.getInstance(
+        document.getElementById('we-config-popup')
+      );
+      if (!modal) return;
+      if (cfgModalShown) {
+        modal.hide();
+      } else {
+        $cfgModal.one('shown.bs.modal', function () {
+          modal.hide();
+        });
+      }
+    }
+
     function refreshCustomFieldButtons() {
       var removable = $cfgModal.find(
         '.we-custom-field-row:not(.we-system-field-row)'
@@ -5609,11 +5630,7 @@ var DashticzWidgetEditor = (function () {
             .removeClass('text-danger')
             .text(_t('saving', 'Saving…'));
           $.when(applyResult)
-            .done(function () {
-              window.bootstrap.Modal.getInstance(
-                document.getElementById('we-config-popup')
-              ).hide();
-            })
+            .done(hideCfgModal)
             .fail(function (xhr) {
               var message =
                 xhr && xhr.responseJSON && xhr.responseJSON.error
@@ -5624,9 +5641,7 @@ var DashticzWidgetEditor = (function () {
             });
           return;
         }
-        window.bootstrap.Modal.getInstance(
-          document.getElementById('we-config-popup')
-        ).hide();
+        hideCfgModal();
       }
     });
 

@@ -985,6 +985,31 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     await expect(page.locator('#we-cfg-secondhand')).toBeVisible();
   });
 
+  test('Widget Config closes when OK is clicked while it is still opening', async ({
+    page,
+  }) => {
+    // Bootstrap's Modal.hide() is a no-op while the modal is still fading
+    // in, so an early OK click applied the settings but left the popup open
+    // (the intermittent "Calendar Widget Config reloads a legacy single
+    // icalurl safely" failure).
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.evaluate(() => {
+      document.querySelector('.we-config-btn[data-widget-id="clock"]').click();
+      // The popup is built and shown synchronously, so it is still fading
+      // in here: the earliest possible OK click.
+      document.getElementById('we-cfg-ok-btn').click();
+    });
+    await expect(page.locator('#we-config-popup')).toHaveCount(0);
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+  });
+
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
     page,
   }) => {
@@ -2137,6 +2162,7 @@ screens[1] = {
       'white'
     );
     await page.locator('#we-cfg-ok-btn').click();
+    await expect(page.locator('#we-config-popup')).toHaveCount(0);
     await expect(page.locator('#widgeteditorpopup')).toBeVisible();
     await page.locator('#we-save-btn').click();
 
