@@ -893,6 +893,22 @@ var DashticzDeviceEditor = (function () {
     return 'v' + idx.slice(1);
   }
 
+  /* A block under a hand-picked key may also reference one sub-device of a
+     multi-value Domoticz device as '<idx>_<subidx>' (e.g. '274_1' for the
+     current usage of a P1 Smart Meter). savegridlayout.php writes exactly
+     that shape when a sub-device from the Device Editor list is placed on a
+     grid screen, under a key named after its "Power (1)" label, so it is
+     classified as a Custom device below. Keep the full string: parseInt()
+     would silently drop the sub-index on the next save and the tile would
+     show every value of the base device instead (#1309). Live Domoticz
+     lookups still need the base device, see _customSubdevice(). */
+  function _isCustomSubdeviceIdx(idx) {
+    return typeof idx === 'string' && /^[1-9][0-9]*_[1-9][0-9]*$/.test(idx);
+  }
+  function _customSubdevice(idx) {
+    return _isCustomSubdeviceIdx(idx) ? _parseCk(idx) : null;
+  }
+
   /* F1 originally shipped as the two singleton catalog widgets
      widget_f1/type:'f1' and widget_f1events/type:'f1events', with their
      options stored globally in settings. Keep those blocks editable and
@@ -1193,7 +1209,9 @@ var DashticzDeviceEditor = (function () {
               : null
             : kind === 'custom' && _isCustomVariableIdx(definition.idx)
               ? _normalizeCustomVariableIdx(definition.idx)
-              : parseInt(definition.idx, 10),
+              : kind === 'custom' && _isCustomSubdeviceIdx(definition.idx)
+                ? definition.idx
+                : parseInt(definition.idx, 10),
       title:
         TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(kind) > -1
           ? String(definition.title || '')
@@ -1710,9 +1728,9 @@ var DashticzDeviceEditor = (function () {
     var renderedIcon = _renderedIconForReference(reference);
     if (renderedIcon) return renderedIcon;
 
-    var parsed = special ? null : _parseCk(ck);
-    var idx = special ? special.idx : parsed.idx;
-    var subidx = special ? 0 : parsed.subidx;
+    var parsed = special ? _customSubdevice(special.idx) : _parseCk(ck);
+    var idx = parsed ? parsed.idx : special.idx;
+    var subidx = parsed ? parsed.subidx : 0;
     var devices = Domoticz.getAllDevices();
     var device = devices && (devices[String(idx)] || devices[idx]);
     if (device) return _defaultDomoticzIcon(device, subidx, idx);
@@ -2880,9 +2898,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('customdevicepopup')
-      ).hide();
+      _hideModal(document.getElementById('customdevicepopup'));
       _save();
     });
 
@@ -3151,7 +3167,7 @@ var DashticzDeviceEditor = (function () {
     var backRequested = false;
     $popup.on('click', '.de-back-btn', function () {
       backRequested = true;
-      window.bootstrap.Modal.getInstance(popup).hide();
+      _hideModal(popup);
     });
     $popup.one('hidden.bs.modal', function () {
       if (
@@ -3382,9 +3398,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('multidevicepopup')
-      ).hide();
+      _hideModal(document.getElementById('multidevicepopup'));
       _save();
     });
 
@@ -3580,9 +3594,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('groupblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('groupblockpopup'));
       _save();
     });
 
@@ -4450,9 +4462,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('clusterblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('clusterblockpopup'));
       _save();
     });
 
@@ -4939,9 +4949,7 @@ var DashticzDeviceEditor = (function () {
         lmsStationColor: lms.stationColor,
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('lmsblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('lmsblockpopup'));
       _save();
     });
 
@@ -5107,9 +5115,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('htmlblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('htmlblockpopup'));
       _save();
     });
 
@@ -5344,9 +5350,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('iframeblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('iframeblockpopup'));
       _save();
     });
 
@@ -5869,9 +5873,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('calendarblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('calendarblockpopup'));
       _save();
     });
 
@@ -6096,9 +6098,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('publictransportblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('publictransportblockpopup'));
       _save();
     });
 
@@ -6315,9 +6315,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('timegraphblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('timegraphblockpopup'));
       _save();
     });
 
@@ -6546,9 +6544,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('xmltvguideblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('xmltvguideblockpopup'));
       _save();
     });
 
@@ -6762,9 +6758,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('camerablockpopup')
-      ).hide();
+      _hideModal(document.getElementById('camerablockpopup'));
       _save();
     });
 
@@ -6931,9 +6925,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('newsblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('newsblockpopup'));
       _save();
     });
 
@@ -7253,9 +7245,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('graphblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('graphblockpopup'));
       _save();
     });
 
@@ -7775,9 +7765,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('f1blockpopup')
-      ).hide();
+      _hideModal(document.getElementById('f1blockpopup'));
       _save();
     });
 
@@ -7987,9 +7975,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('slidebuttonpopup')
-      ).hide();
+      _hideModal(document.getElementById('slidebuttonpopup'));
       _save();
     });
 
@@ -8027,7 +8013,7 @@ var DashticzDeviceEditor = (function () {
     if (editor && editorModal && $(editor).hasClass('show')) {
       $(editor).data('de-config-transition', true);
       $(editor).one('hidden.bs.modal', showChild);
-      editorModal.hide();
+      _hideModal(editor);
       return;
     }
     showChild();
@@ -8097,7 +8083,7 @@ var DashticzDeviceEditor = (function () {
     if (editor && editorModal && $(editor).hasClass('show')) {
       $(editor).data('de-config-transition', true);
       $(editor).one('hidden.bs.modal', openFullWidgetConfig);
-      editorModal.hide();
+      _hideModal(editor);
       return;
     }
     openFullWidgetConfig();
@@ -8464,7 +8450,8 @@ var DashticzDeviceEditor = (function () {
       if (!isSpecial && ck) {
         barDeviceIdx = _parseCk(ck).idx;
       } else if (isSpecial && isCustom && special.idx) {
-        barDeviceIdx = special.idx;
+        var customSubdevice = _customSubdevice(special.idx);
+        barDeviceIdx = customSubdevice ? customSubdevice.idx : special.idx;
       }
     }
     var barLiveDevice = barDeviceIdx
@@ -8762,7 +8749,9 @@ var DashticzDeviceEditor = (function () {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
       html +=
-        '<a href="https://dashticz.readthedocs.io/en/master/blocks/specials/dial.html" target="_blank" rel="noopener">' +
+        '<a href="' +
+        DT_function.docsUrl('blocks/specials/dial.html') +
+        '" target="_blank" rel="noopener">' +
         _esc(t.dial_hint_link) +
         '</a>';
       html += '</div>';
@@ -9336,6 +9325,8 @@ var DashticzDeviceEditor = (function () {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
         if (_isCustomVariableIdx(rawIdx)) {
           pendingIdx = _normalizeCustomVariableIdx(rawIdx);
+        } else if (_isCustomSubdeviceIdx(rawIdx)) {
+          pendingIdx = rawIdx;
         } else {
           var parsedIdx = parseInt(rawIdx, 10);
           if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
@@ -9875,9 +9866,7 @@ var DashticzDeviceEditor = (function () {
           .text(t.saving);
         _saveDeviceConfigOnly()
           .done(function () {
-            window.bootstrap.Modal.getInstance(
-              document.getElementById('de-config-popup')
-            ).hide();
+            _hideModal(document.getElementById('de-config-popup'));
           })
           .fail(function (xhr) {
             var msg =
@@ -9892,9 +9881,7 @@ var DashticzDeviceEditor = (function () {
           });
         return;
       }
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('de-config-popup')
-      ).hide();
+      _hideModal(document.getElementById('de-config-popup'));
     });
 
     var popup = document.getElementById('de-config-popup');
@@ -11161,10 +11148,31 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _closeModalWithoutSaving() {
-    var el = document.getElementById('deviceeditorpopup');
-    var instance =
-      el && window.bootstrap && window.bootstrap.Modal.getInstance(el);
-    if (instance) instance.hide();
+    _hideModal(document.getElementById('deviceeditorpopup'));
+  }
+
+  /* Close a popup after one of its own actions (OK, Save, Back, ...).
+     Bootstrap's Modal.hide() is silently ignored while a modal is still
+     opening (its fade-in), so an action handled right after a popup opened
+     did its work but left the popup open, and anything waiting for its
+     'hidden.bs.modal' (the parent editor, a child popup) never ran. Such a
+     modal is now hidden as soon as it has finished opening; at any other
+     moment this is exactly Modal.hide(). Bootstrap's own close paths
+     (Cancel/X, Escape, backdrop) are left unchanged. Kept per file, like
+     widgeteditor.js's copy, so no editor depends on another cached script. */
+  function _hideModal(element) {
+    var modal =
+      element &&
+      window.bootstrap &&
+      window.bootstrap.Modal.getInstance(element);
+    if (!modal) return;
+    if (modal._isShown === true && modal._isTransitioning === true) {
+      $(element).one('shown.bs.modal', function () {
+        modal.hide();
+      });
+      return;
+    }
+    modal.hide();
   }
 
   // Devices in openDeviceEntries no longer in managedOrder were toggled off
@@ -11408,10 +11416,7 @@ var DashticzDeviceEditor = (function () {
       .done(function () {
         $btn.removeClass('btn-primary').addClass('btn-success').text(t.saved);
         setTimeout(function () {
-          var el = document.getElementById('deviceeditorpopup');
-          if (el && window.bootstrap) {
-            window.bootstrap.Modal.getInstance(el).hide();
-          }
+          _hideModal(document.getElementById('deviceeditorpopup'));
           // eslint-disable-next-line no-self-assign
           window.location.href = window.location.href;
         }, 900);

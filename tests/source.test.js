@@ -3970,6 +3970,142 @@ test('Dial sizing falls back sanely instead of silently rendering oversized', ()
   );
 });
 
+// Sphinx derives section ids from heading text and explicit labels with
+// docutils' make_id(): ASCII, lower case, runs of other characters -> '-'.
+function docsSectionId(text) {
+  return text
+    .normalize('NFKD')
+    .replace(/[^\x00-\x7f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^[-0-9]+|-+$/g, '');
+}
+
+function docsAnchorIds(rst) {
+  const ids = new Set();
+  const lines = rst.split(/\r?\n/);
+  const adornment = /^([!-/:-@[-`{-~])\1{2,}\s*$/;
+  lines.forEach((line, index) => {
+    const label = line.match(/^\.\.\s+_([^:]+?)\s*:\s*$/);
+    if (label) ids.add(docsSectionId(label[1]));
+    if (
+      line.trim() &&
+      !/^\s/.test(line) &&
+      !adornment.test(line) &&
+      adornment.test(lines[index + 1] || '')
+    )
+      ids.add(docsSectionId(line.trim()));
+  });
+  return ids;
+}
+
+test('in-app documentation links point at existing docs pages and anchors', () => {
+  const sources = filesBelow(path.join(root, 'js'), '.js');
+  const links = [];
+  for (const file of sources) {
+    const source = fs.readFileSync(file, 'utf8');
+    const relative = path.relative(root, file);
+    for (const call of source.matchAll(
+      /DT_function\.docsUrl\(\s*'([^']*)'\s*\)/g
+    ))
+      links.push({ file: relative, page: call[1] });
+    // Deep links go through DT_function.docsUrl() so the docs version is
+    // set in one place.
+    if (relative !== path.join('js', 'dt_function.js'))
+      assert.ok(
+        !/dashticz\.readthedocs\.io\/en\//.test(source),
+        relative + ' hardcodes a versioned docs URL'
+      );
+  }
+  for (const file of filesBelow(path.join(root, 'tpl'), '.tpl'))
+    assert.ok(
+      !/dashticz\.readthedocs\.io\/en\//.test(fs.readFileSync(file, 'utf8')),
+      path.relative(root, file) + ' hardcodes a versioned docs URL'
+    );
+
+  const pages = links.map((link) => link.page).sort();
+  for (const expected of [
+    'blocks/specials/calendar.html#usage',
+    'blocks/specials/dial.html',
+    'blocks/specials/googlemaps.html#getting-a-google-maps-api-key',
+    'blocks/specials/publictransport.html',
+  ])
+    assert.ok(pages.includes(expected), 'missing docs link ' + expected);
+
+  for (const link of links) {
+    const [page, anchor] = link.page.split('#');
+    const where = link.file + ': ' + link.page;
+    assert.ok(page.endsWith('.html'), where + ' is not an .html page');
+    const rstPath = path.join(root, 'docs', page.replace(/\.html$/, '.rst'));
+    assert.ok(fs.existsSync(rstPath), where + ' has no docs page');
+    if (anchor !== undefined)
+      assert.ok(
+        docsAnchorIds(fs.readFileSync(rstPath, 'utf8')).has(anchor),
+        where + ' has no matching heading or label'
+      );
+  }
+
+  const dtFunction = fs.readFileSync(
+    path.join(root, 'js/dt_function.js'),
+    'utf8'
+  );
+  assert.match(
+    dtFunction,
+    /var DOCS_BASE_URL = 'https:\/\/dashticz\.readthedocs\.io\/en\/master\/';/
+  );
+  assert.match(dtFunction, /docsUrl: docsUrl,/);
+});
+
+test('calendar event popup links the calendar docs, encodes the location and closes cleanly', () => {
+  const calendar = fs.readFileSync(
+    path.join(root, 'js/components/calendar.js'),
+    'utf8'
+  );
+  const modal = fs.readFileSync(
+    path.join(root, 'tpl/calendar_2_modal.tpl'),
+    'utf8'
+  );
+  const showInfo = calendar.slice(
+    calendar.indexOf('function showInfo(pop) {'),
+    calendar.indexOf('function createCalObject(')
+  );
+  assert.ok(showInfo.length > 0);
+
+  // No calendar link: a translated hint that opens the calendar block docs.
+  assert.match(showInfo, /: language\.misc\.calendar_url_missing,/);
+  assert.match(
+    showInfo,
+    /: DT_function\.docsUrl\('blocks\/specials\/calendar\.html#usage'\),/
+  );
+  assert.doesNotMatch(showInfo, /config\.js/);
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const strings = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', locale + '.json'), 'utf8')
+    );
+    assert.equal(typeof strings.misc.calendar_url_missing, 'string', locale);
+  }
+
+  // '#', '?' and '/' in a location must stay part of the Maps query.
+  assert.match(
+    showInfo,
+    /locurl: 'https:\/\/www\.google\.com\/maps\/search\/' \+ encodeURIComponent\(loc\),/
+  );
+  // The location link is only rendered when there is a location.
+  assert.doesNotMatch(showInfo, /lochide/);
+  assert.match(
+    modal,
+    /\{\{#if loc\}\}<a class="pull-right" href="\{\{locurl\}\}"[^>]*>\{\{loc\}\}<\/a>\{\{\/if\}\}/
+  );
+
+  // The close handler lives on the popup, so it is removed with it instead of
+  // adding one more document.body handler per opened event.
+  assert.match(
+    showInfo,
+    /\$\('\.cal-modal'\)\.on\('click', '\.cal-close', function \(\) \{/
+  );
+  assert.doesNotMatch(showInfo, /\$\(document\.body\)\.on\(/);
+});
+
 test('Dial visual mode shows an inline hint pointing to the dial docs and Custom fields', () => {
   // Selecting Dial only sets type:'dial'; every other dial parameter (color,
   // min/max, subtype, values, ...) still has to be added by hand via Custom
@@ -3984,7 +4120,7 @@ test('Dial visual mode shows an inline hint pointing to the dial docs and Custom
   assert.match(deviceEditor, /class="alert alert-info de-dial-hint d-none"/);
   assert.match(
     deviceEditor,
-    /href="https:\/\/dashticz\.readthedocs\.io\/en\/master\/blocks\/specials\/dial\.html"/
+    /'<a href="' \+ DT_function\.docsUrl\('blocks\/specials\/dial\.html'\) \+/
   );
   assert.match(deviceEditor, /function refreshDialHint\(\) \{/);
   assert.match(
@@ -4685,7 +4821,7 @@ test("Device Config popup lets a Custom/Multi device's main idx be corrected aft
   );
   assert.match(
     deviceEditor,
-    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
+    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else if \(_isCustomSubdeviceIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = rawIdx;[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
   );
   assert.match(
     deviceEditor,

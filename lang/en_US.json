@@ -116,6 +116,7 @@
     "alert_feed_error": "Error loading the Alarmeringen.nl feed.",
     "news_error": "Error loading news.",
     "launch_full_calendar": "Launch full calendar",
+    "calendar_url_missing": "Add a full calendar link",
     "map_api_invalid": "Invalid Google Maps API key.",
     "see_documentation_prefix": "See",
     "map_documentation": "Dashticz Google Maps documentation",

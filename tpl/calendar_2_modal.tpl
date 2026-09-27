@@ -3,5 +3,6 @@
  <div class="cal-info"><span>There are no details for this event.</span></div>
  <div class="cal-footer">
   <a href="{{calurl}}" target="_blank" rel="noopener noreferrer">{{caltext}}</a>
-  <a class="pull-right" href="{{locurl}}" target="_blank" rel="noopener noreferrer">{{loc}}</a>
+  {{#if loc}}<a class="pull-right" href="{{locurl}}" target="_blank" rel="noopener noreferrer">{{loc}}</a>{{/if}}
+ </div>
 </div>

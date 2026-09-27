@@ -1,4 +1,4 @@
-/* global language, Dashticz, settings*/
+/* global language, Dashticz, settings, DT_function*/
 //# sourceURL=js/components/map.js
 
 // The Google Maps script needs a callback function after loading the Google maps script
@@ -14,7 +14,11 @@ function gm_authFailure() {
     language.misc.map_api_invalid +
       '<br>' +
       language.misc.see_documentation_prefix +
-      ' <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">' +
+      ' <a href="' +
+      DT_function.docsUrl(
+        'blocks/specials/googlemaps.html#getting-a-google-maps-api-key'
+      ) +
+      '">' +
       language.misc.map_documentation +
       '</a>'
   );
