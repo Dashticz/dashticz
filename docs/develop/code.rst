@@ -172,6 +172,12 @@ We use a PR (Pull Request) based workflow, with preferably one new/changing feat
 All work is derived from the beta branch.
 If the beta branch is stable, a master branch will be derived from the beta branch.
 
+The documentation site (https://dashticz.readthedocs.io/en/master/) is built from the master branch only,
+so the documentation of a new feature goes live when the feature reaches master.
+Until then an in-app help link to a new documentation page returns a 404 on beta.
+In-app links to the documentation are built with ``DT_function.docsUrl()`` (``js/dt_function.js``),
+and ``npm test`` checks that every linked page and anchor exists in ``docs/``.
+
 For big changes a temporary branch will be created to test the new functionality by a bigger audience.
 
 Basic workflow
