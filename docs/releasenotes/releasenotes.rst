@@ -1,6 +1,39 @@
 Release Notes
 =============
 
+v4.1.1 (27-9-2026)
+----------------------
+
+* **Fixes**
+
+- A sub-device that the grid Device Editor stored under a named key, for
+  example the current usage of a P1 Smart Meter as
+  ``blocks['Stroom_1'] = {idx: '274_1', ...}``, lost its sub-index on the next
+  save of that screen: ``idx`` became ``274`` and the tile showed every value
+  of the meter instead of the one sub-device (#1309). The ``<idx>_<subidx>``
+  form is now kept. A block that already lost its sub-index can be corrected
+  by entering, for example, ``274_1`` in the **IDX** field of its Device
+  Config.
+- An action in a popup that was still opening got lost. Bootstrap ignores
+  closing a popup during its fade-in, so an early click on OK, Save or Back, a
+  tile picked in the Add items menu, or Continue in the mode-switch warning
+  applied its action but left the popup open, and what should follow (for
+  example Device Config opening from the Device Editor) never happened. These
+  popups now close as soon as they have finished opening. Cancel, the close
+  button, Escape and clicks on the background behave as before.
+
+* **Code**
+
+- Custom devices accept an ``<idx>_<subidx>`` idx in ``js/deviceeditor.js``,
+  ``js/saveblocks.php`` and ``js/configwriter.php``; live lookups (default
+  icon, Dial/Bar support) keep using the base device.
+- New ``_hideModal()`` helper in ``js/deviceeditor.js``,
+  ``js/widgeteditor.js`` and ``js/components/simpleblock.js`` for popups that
+  close after their own actions. This also fixes the intermittent Playwright
+  failure of "Calendar Widget Config reloads a legacy single icalurl safely".
+- ``_DASHTICZ_VERSION`` (and ``bundle.css?v=``) raised to 191, so browsers
+  load the fixed editor scripts instead of a cached copy.
+
 v4.1.0 (27-9-2026)
 ----------------------
 

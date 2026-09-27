@@ -293,7 +293,7 @@ var DashticzWidgetEditor = (function () {
     var backRequested = false;
     $popup.on('click', '.we-back-btn', function () {
       backRequested = true;
-      window.bootstrap.Modal.getInstance(popup).hide();
+      _hideModal(popup);
     });
     $popup.one('hidden.bs.modal', function () {
       if (
@@ -4718,6 +4718,10 @@ var DashticzWidgetEditor = (function () {
 
     var $cfgModal = $('#we-config-popup');
 
+    function hideCfgModal() {
+      _hideModal(document.getElementById('we-config-popup'));
+    }
+
     function refreshCustomFieldButtons() {
       var removable = $cfgModal.find(
         '.we-custom-field-row:not(.we-system-field-row)'
@@ -5609,11 +5613,7 @@ var DashticzWidgetEditor = (function () {
             .removeClass('text-danger')
             .text(_t('saving', 'Saving…'));
           $.when(applyResult)
-            .done(function () {
-              window.bootstrap.Modal.getInstance(
-                document.getElementById('we-config-popup')
-              ).hide();
-            })
+            .done(hideCfgModal)
             .fail(function (xhr) {
               var message =
                 xhr && xhr.responseJSON && xhr.responseJSON.error
@@ -5624,9 +5624,7 @@ var DashticzWidgetEditor = (function () {
             });
           return;
         }
-        window.bootstrap.Modal.getInstance(
-          document.getElementById('we-config-popup')
-        ).hide();
+        hideCfgModal();
       }
     });
 
@@ -6266,10 +6264,31 @@ var DashticzWidgetEditor = (function () {
   }
 
   function _closeModalWithoutSaving() {
-    var el = document.getElementById('widgeteditorpopup');
-    var instance =
-      el && window.bootstrap && window.bootstrap.Modal.getInstance(el);
-    if (instance) instance.hide();
+    _hideModal(document.getElementById('widgeteditorpopup'));
+  }
+
+  /* Close a popup after one of its own actions (OK, Save, Back, ...).
+     Bootstrap's Modal.hide() is silently ignored while a modal is still
+     opening (its fade-in), so an action handled right after a popup opened
+     did its work but left the popup open, and anything waiting for its
+     'hidden.bs.modal' (the parent editor, a child popup) never ran. Such a
+     modal is now hidden as soon as it has finished opening; at any other
+     moment this is exactly Modal.hide(). Bootstrap's own close paths
+     (Cancel/X, Escape, backdrop) are left unchanged. Kept per file, like
+     deviceeditor.js's copy, so no editor depends on another cached script. */
+  function _hideModal(element) {
+    var modal =
+      element &&
+      window.bootstrap &&
+      window.bootstrap.Modal.getInstance(element);
+    if (!modal) return;
+    if (modal._isShown === true && modal._isTransitioning === true) {
+      $(element).one('shown.bs.modal', function () {
+        modal.hide();
+      });
+      return;
+    }
+    modal.hide();
   }
 
   function _save() {
