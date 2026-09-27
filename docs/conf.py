@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Dashticz'
-copyright = '2020, Dashticz'
+copyright = '2020-2026, Dashticz'
 author = 'Dashticz'
 
 # The short X.Y version
-version = ''
+version = '4.1'
 # The full version, including alpha/beta/rc tags
-release = 'beta'
+release = '4.1.0'
 
 
 # -- General configuration ---------------------------------------------------

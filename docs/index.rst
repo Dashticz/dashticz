@@ -5,7 +5,12 @@
 
 Welcome to Dashticz's documentation!
 ====================================
-This documentation describes how to install and configure Dashticz.
+This documentation describes how to install and configure Dashticz 4.
+
+Dashticz 4 can be configured in two ways: visually from the browser in
+**Wizard mode** (see :ref:`WizardMode`), or by hand in ``CONFIG.js`` in
+**Custom mode**. New users are guided through a short setup the first time
+they open Dashticz (see :ref:`FirstRun`).
 
 For Dashticz's **beta** version documentation go to: https://dashticz.readthedocs.io/en/beta/
 
@@ -19,6 +24,8 @@ For Dashticz's **master** version documentation go to: https://dashticz.readthed
 
    introduction
    gettingstarted/index
+   wizard/index
+   settingsmenu
    configuration
    customization
    tipsandtricks

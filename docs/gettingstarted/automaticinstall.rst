@@ -60,4 +60,10 @@ installation, run:
    cd dashticz
    sh update.sh
 
-After installation, edit ``custom/CONFIG.js`` to configure the dashboard.
+After installation, open Dashticz in your browser, for example
+``http://<your web server>/dashticz/``. Because ``custom/CONFIG.js`` is still
+empty, Dashticz starts the setup wizard (see :ref:`FirstRun`).
+
+To update an installation to the latest beta version, run ``sh updatebeta.sh``
+instead of ``sh update.sh``. Both versions can also be updated from the
+**Info** category of the Settings menu (see :ref:`SettingsMenu`).

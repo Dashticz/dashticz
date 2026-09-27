@@ -60,6 +60,8 @@ Screen parameters
     - | Redefines the audo slide time as set in config['auto_slide_pages'] for this screen.
       | ``3``: The time before auto slide to the next page is 3 seconds.
 
+.. _gridlayout :
+
 Free-positioned grid layout
 ---------------------------
 
@@ -92,7 +94,7 @@ The grid screen parameters are:
     - Below 768 pixels, show blocks full-width in ``screens[x].blocks`` order.
 
 The ``gridColumns``/``rowHeight`` defaults above can also be changed dashboard-wide
-from Settings > Weergave (screen), for every grid screen that doesn't set its own
+from Settings > Screen, for every grid screen that doesn't set its own
 ``gridColumns``/``rowHeight``. This doesn't affect the classic column layout, and
 leaving both settings untouched keeps existing installs exactly as they were.
 Changing either after blocks were already placed on a grid screen will typically
