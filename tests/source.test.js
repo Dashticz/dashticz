@@ -3984,7 +3984,7 @@ test('Dial visual mode shows an inline hint pointing to the dial docs and Custom
   assert.match(deviceEditor, /class="alert alert-info de-dial-hint d-none"/);
   assert.match(
     deviceEditor,
-    /href="https:\/\/dashticz\.readthedocs\.io\/en\/beta\/blocks\/specials\/dial\.html"/
+    /href="https:\/\/dashticz\.readthedocs\.io\/en\/master\/blocks\/specials\/dial\.html"/
   );
   assert.match(deviceEditor, /function refreshDialHint\(\) \{/);
   assert.match(

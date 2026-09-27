@@ -8762,7 +8762,7 @@ var DashticzDeviceEditor = (function () {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
       html +=
-        '<a href="https://dashticz.readthedocs.io/en/beta/blocks/specials/dial.html" target="_blank" rel="noopener">' +
+        '<a href="https://dashticz.readthedocs.io/en/master/blocks/specials/dial.html" target="_blank" rel="noopener">' +
         _esc(t.dial_hint_link) +
         '</a>';
       html += '</div>';

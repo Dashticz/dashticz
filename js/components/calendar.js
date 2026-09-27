@@ -450,7 +450,7 @@ function showInfo(pop) {
       calurl:
         calurl.length > 0
           ? calurl
-          : 'https://dashticz.readthedocs.io/en/beta/dashticzconfiguration.html#config-parameters',
+          : 'https://dashticz.readthedocs.io/en/master/dashticzconfiguration.html#config-parameters',
       loc: loc,
       lochide: loc.length === 0 ? 'loc-hide' : '',
       locurl: 'https://www.google.com/maps/search/' + loc,
