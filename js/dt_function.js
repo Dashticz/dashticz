@@ -240,6 +240,19 @@ var DT_function = (function () {
     return loadScript(filename + '?v=' + _DASHTICZ_VERSION);
   }
 
+  // Published documentation version that in-app help links point to. Keep
+  // every deep link to the docs on docsUrl() so a change of docs version is
+  // a one-line edit here.
+  var DOCS_BASE_URL = 'https://dashticz.readthedocs.io/en/master/';
+
+  /** Link to a page of the Dashticz documentation
+   * @param {string} page Page relative to the docs root, e.g. 'blocks/specials/dial.html'
+   * @returns {string} Absolute documentation URL
+   */
+  function docsUrl(page) {
+    return DOCS_BASE_URL + (page || '');
+  }
+
   /** Prompt for password
    * @function
    * @param {string} password Password
@@ -395,6 +408,7 @@ var DT_function = (function () {
     loadCSS: loadCSS,
     loadScript: loadScript,
     loadDTScript: loadDTScript,
+    docsUrl: docsUrl,
     blockLoadFrame: blockLoadFrame,
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,

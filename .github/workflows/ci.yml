@@ -69,6 +69,18 @@ jobs:
       - run: php -m | grep -qi '^curl$'
       - run: node --test tests/php-security.test.js
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # Same Python and packages as .readthedocs.yaml.
+          python-version: '3.12'
+      - run: pip install -r docs/requirements.txt
+      - run: sphinx-build -b html docs docs/_build/html
+
   browsers:
     name: Playwright ${{ matrix.browser }}
     runs-on: ubuntu-latest

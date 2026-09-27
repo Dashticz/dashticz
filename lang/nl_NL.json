@@ -112,6 +112,7 @@
     "alert_feed_error": "Fout bij het laden van de Alarmeringen.nl-feed.",
     "news_error": "Fout bij het laden van nieuws.",
     "launch_full_calendar": "Volledige kalender openen",
+    "calendar_url_missing": "Link naar volledige kalender toevoegen",
     "map_api_invalid": "Ongeldige Google Maps API-sleutel.",
     "see_documentation_prefix": "Zie",
     "map_documentation": "de Google Maps-documentatie van Dashticz",

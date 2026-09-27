@@ -1,4 +1,4 @@
-/* global language, _CORS_PATH, moment, Dashticz, TemplateEngine*/
+/* global language, _CORS_PATH, moment, Dashticz, TemplateEngine, DT_function*/
 // eslint-disable-next-line no-unused-vars
 //find ovapi tpc codes via https://ovzoeker.nl
 //of: https://ovzoeker.nl/api/search?lat=0&lon=0&query=Amsterdam,%20ij
@@ -26,8 +26,9 @@
         icon: 'fas fa-train',
       };
       if (!block || !block.station) {
-        result.url =
-          'https://dashticz.readthedocs.io/en/master/blocks/specials/publictransport.html';
+        result.url = DT_function.docsUrl(
+          'blocks/specials/publictransport.html'
+        );
         result.title = 'Example: Utrecht CS';
       }
       var languages = ['ne', 'en', 'fr', 'de'];

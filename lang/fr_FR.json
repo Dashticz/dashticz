@@ -112,6 +112,7 @@
     "alert_feed_error": "Erreur lors du chargement du flux Alarmeringen.nl.",
     "news_error": "Erreur lors du chargement des actualités.",
     "launch_full_calendar": "Ouvrir le calendrier complet",
+    "calendar_url_missing": "Ajouter un lien vers le calendrier complet",
     "map_api_invalid": "Clé API Google Maps non valide.",
     "see_documentation_prefix": "Voir",
     "map_documentation": "la documentation Google Maps de Dashticz",
