@@ -1,4 +1,4 @@
-/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined isObject setHeight TemplateEngine */
+/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined isObject setHeight TemplateEngine DT_function */
 var cal = [];
 var templateEngine = TemplateEngine();
 
@@ -446,21 +446,22 @@ function showInfo(pop) {
       caltext:
         calurl.length > 0
           ? language.misc.launch_full_calendar
-          : 'Add your "[calendarurl]" in config.js',
+          : language.misc.calendar_url_missing,
       calurl:
         calurl.length > 0
           ? calurl
-          : 'https://dashticz.readthedocs.io/en/master/dashticzconfiguration.html#config-parameters',
+          : DT_function.docsUrl('blocks/specials/calendar.html#usage'),
       loc: loc,
-      lochide: loc.length === 0 ? 'loc-hide' : '',
-      locurl: 'https://www.google.com/maps/search/' + loc,
+      locurl: 'https://www.google.com/maps/search/' + encodeURIComponent(loc),
     };
     $(document.body).append(template(data_object));
     // Calendar descriptions originate in remote ICS feeds. Rebuild a small
     // formatting allowlist instead of inserting their HTML into our origin.
     if (info.length > 0) appendSafeCalendarInfo($('.cal-info'), info);
     if (color !== 'transparent') $('.cal-modal').css('borderColor', color);
-    $(document.body).on('click', '.cal-close', function () {
+    // Bind on the popup itself: the handler goes away with it instead of
+    // piling up on document.body with every opened event.
+    $('.cal-modal').on('click', '.cal-close', function () {
       $('.cal-modal').remove();
     });
   });
