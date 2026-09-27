@@ -893,6 +893,22 @@ var DashticzDeviceEditor = (function () {
     return 'v' + idx.slice(1);
   }
 
+  /* A block under a hand-picked key may also reference one sub-device of a
+     multi-value Domoticz device as '<idx>_<subidx>' (e.g. '274_1' for the
+     current usage of a P1 Smart Meter). savegridlayout.php writes exactly
+     that shape when a sub-device from the Device Editor list is placed on a
+     grid screen, under a key named after its "Power (1)" label, so it is
+     classified as a Custom device below. Keep the full string: parseInt()
+     would silently drop the sub-index on the next save and the tile would
+     show every value of the base device instead (#1309). Live Domoticz
+     lookups still need the base device, see _customSubdevice(). */
+  function _isCustomSubdeviceIdx(idx) {
+    return typeof idx === 'string' && /^[1-9][0-9]*_[1-9][0-9]*$/.test(idx);
+  }
+  function _customSubdevice(idx) {
+    return _isCustomSubdeviceIdx(idx) ? _parseCk(idx) : null;
+  }
+
   /* F1 originally shipped as the two singleton catalog widgets
      widget_f1/type:'f1' and widget_f1events/type:'f1events', with their
      options stored globally in settings. Keep those blocks editable and
@@ -1193,7 +1209,9 @@ var DashticzDeviceEditor = (function () {
               : null
             : kind === 'custom' && _isCustomVariableIdx(definition.idx)
               ? _normalizeCustomVariableIdx(definition.idx)
-              : parseInt(definition.idx, 10),
+              : kind === 'custom' && _isCustomSubdeviceIdx(definition.idx)
+                ? definition.idx
+                : parseInt(definition.idx, 10),
       title:
         TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(kind) > -1
           ? String(definition.title || '')
@@ -1710,9 +1728,9 @@ var DashticzDeviceEditor = (function () {
     var renderedIcon = _renderedIconForReference(reference);
     if (renderedIcon) return renderedIcon;
 
-    var parsed = special ? null : _parseCk(ck);
-    var idx = special ? special.idx : parsed.idx;
-    var subidx = special ? 0 : parsed.subidx;
+    var parsed = special ? _customSubdevice(special.idx) : _parseCk(ck);
+    var idx = parsed ? parsed.idx : special.idx;
+    var subidx = parsed ? parsed.subidx : 0;
     var devices = Domoticz.getAllDevices();
     var device = devices && (devices[String(idx)] || devices[idx]);
     if (device) return _defaultDomoticzIcon(device, subidx, idx);
@@ -8464,7 +8482,8 @@ var DashticzDeviceEditor = (function () {
       if (!isSpecial && ck) {
         barDeviceIdx = _parseCk(ck).idx;
       } else if (isSpecial && isCustom && special.idx) {
-        barDeviceIdx = special.idx;
+        var customSubdevice = _customSubdevice(special.idx);
+        barDeviceIdx = customSubdevice ? customSubdevice.idx : special.idx;
       }
     }
     var barLiveDevice = barDeviceIdx
@@ -9338,6 +9357,8 @@ var DashticzDeviceEditor = (function () {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
         if (_isCustomVariableIdx(rawIdx)) {
           pendingIdx = _normalizeCustomVariableIdx(rawIdx);
+        } else if (_isCustomSubdeviceIdx(rawIdx)) {
+          pendingIdx = rawIdx;
         } else {
           var parsedIdx = parseInt(rawIdx, 10);
           if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {

@@ -482,6 +482,105 @@ screens[2] = {
     expect(editedDevice.icon).toBe('');
   });
 
+  test('keeps the sub-index of a named sub-device block when its Device Config is saved (#1309)', async ({
+    page,
+  }) => {
+    // savegridlayout.php stores a sub-device picked from the Device Editor
+    // list under a key named after its "Power (1)" label, which the Device
+    // Editor then treats as a Custom device. Saving its Device Config used to
+    // parseInt() '43_1' down to 43, so the tile showed every value of the P1
+    // meter instead of the one sub-device.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['Power_1'] = {idx: '43_1', width: 3, title: 'Power (1)', last_update: false};
+blocks['Power_2'] = {idx: '43_2', width: 3, title: 'Power (2)', last_update: false};
+blocks['device_43'] = {idx: 43, width: 3};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [
+    {key: 'Power_1', grid: {x: 1, y: 1, w: 6, h: 5}},
+    {key: 'Power_2', grid: {x: 7, y: 1, w: 6, h: 5}},
+    {key: 'device_43', grid: {x: 13, y: 1, w: 6, h: 5}}
+  ]
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'subdevice-idx-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: ['Power_1', 'Power_2', 'device_43'],
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openDeviceEditorFromScreenEditor(page);
+
+    await page
+      .locator('[data-order-key="special:Power_1"] .de-config-btn')
+      .click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('.de-config-idx-label')).toHaveText('[43_1]');
+    await expect(page.locator('#de-config-idx')).toHaveValue('43_1');
+    const iconToggle = page.locator('[data-option="icon"]');
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'true');
+    await iconToggle.click();
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('#de-config-ok').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const byKey = (key) =>
+      blocksRequest.devices.find((device) => device.key === key);
+    expect(byKey('Power_1')).toMatchObject({
+      kind: 'custom',
+      idx: '43_1',
+      icon: '',
+    });
+    // Untouched siblings keep their own shape: the other sub-device its
+    // sub-index, the plain full device its integer idx.
+    expect(byKey('Power_2')).toMatchObject({ kind: 'custom', idx: '43_2' });
+    expect(byKey('device_43')).toMatchObject({ idx: 43 });
+  });
+
   test('persists a default icon for a newly added Sunrise widget', async ({
     page,
   }) => {

@@ -1626,11 +1626,13 @@ function configwriter_special_block_props($block)
     } elseif ($kind === 'custom') {
         // A Custom device's idx is usually a plain Domoticz device id, but it
         // may also be a 'v<idx>' string referencing a Domoticz user variable
-        // (js/saveblocks.php already validated the shape) - that string must
-        // survive unchanged, not be cast down to (int) 0.
-        $isVariableIdx = is_string($block['idx']) && preg_match('/^v\d+$/', $block['idx']);
+        // or an '<idx>_<subidx>' sub-device reference (js/saveblocks.php
+        // already validated the shape) - that string must survive unchanged,
+        // not be cast down to (int) 0 or lose its sub-index (#1309).
+        $isStringIdx = is_string($block['idx'])
+            && preg_match('/^(?:v\d+|[1-9]\d*_[1-9]\d*)$/', $block['idx']);
         $props = [
-            'idx' => $isVariableIdx ? $block['idx'] : (int)$block['idx'],
+            'idx' => $isStringIdx ? $block['idx'] : (int)$block['idx'],
             'width' => $width,
         ];
         if (trim($title) !== '') {
