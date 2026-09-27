@@ -210,7 +210,7 @@
       "wizard_mode_desc": "Bouw en wijzig het dashboard visueel met de Screen Editor.",
       "save_failed": "De configuratiemodus kon niet worden opgeslagen.",
       "warning_title": "Configuratiemodus wijzigen?",
-      "confirm_wizard": "Overschakelen naar Wizard verwijdert de huidige dashboardconfiguratie, maakt alle Blocks, Columns en Screens leeg in CONFIG.js en maakt een schone pagina. Je config-instellingen blijven bewaard.",
+      "confirm_wizard": "Overschakelen naar Wizard zet het scherm dat nu getoond wordt om naar een grid-indeling en opent de Screen Editor. Je blocks, columns, andere schermen en config-instellingen blijven in CONFIG.js staan; andere schermen worden omgezet zodra je ze in de Screen Editor opent. Maak eerst een kopie van CONFIG.js als je je handgeschreven versie wilt bewaren.",
       "confirm_custom": "Overschakelen naar Custom behoudt de huidige dashboardconfiguratie, maar verbergt de bediening van de Screen Editor. Je kunt het dashboard handmatig blijven beheren in CONFIG.js.",
       "cancel": "Annuleren",
       "continue": "Doorgaan"
@@ -552,7 +552,9 @@
       "news_block_maxheight": "Maximale hoogte (px)",
       "news_block_showimages": "Afbeeldingen tonen",
       "invalid_news_block_feed": "Vul een geldige URL van een nieuwsfeed in.",
-      "image": "Afbeelding"
+      "image": "Afbeelding",
+      "custom_device_idx": "IDX",
+      "custom_device_idx_help": "IDX van het Domoticz-device, of 'v<idx>' voor een Domoticz-variabele (bijv. v3)."
     },
     "layouteditor": {
       "title": "Layout Editor",

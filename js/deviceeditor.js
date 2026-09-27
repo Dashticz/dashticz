@@ -236,6 +236,7 @@ var DashticzDeviceEditor = (function () {
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        custom_device_idx: 'IDX',
         custom_device_idx_help:
           "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3).",
         custom_device_title: 'Title',
@@ -2674,7 +2675,9 @@ var DashticzDeviceEditor = (function () {
       _esc(t.custom_device_name_help) +
       '</div></div>';
     html +=
-      '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
+      '<div class="mb-3"><label class="form-label" for="cd-device-idx">' +
+      _esc(t.custom_device_idx) +
+      '</label>';
     html +=
       '<input type="text" inputmode="numeric" class="form-control" ' +
       'id="cd-device-idx" placeholder="123, or v3 for a variable">';
@@ -8773,9 +8776,13 @@ var DashticzDeviceEditor = (function () {
       // placeholder forever, since the device data subscription for the old
       // idx never resolves, which also means the icon/title never render
       // (both are only painted once real device data arrives).
+      // Only a real Multi Device (with value rows) has a "main" IDX that
+      // other rows fall back to; any other custom-keyed block - including a
+      // plain device the grid Device Editor stored under a named key - just
+      // has the IDX of its own Domoticz device (or variable).
       html +=
         '<div class="mb-3"><label class="form-label" for="de-config-idx">' +
-        _esc(t.multi_device_idx) +
+        _esc(multiDeviceValues ? t.multi_device_idx : t.custom_device_idx) +
         '</label>';
       html +=
         '<input type="text" inputmode="numeric" class="form-control" ' +
@@ -8784,7 +8791,9 @@ var DashticzDeviceEditor = (function () {
         '">';
       html +=
         '<div class="form-text">' +
-        _esc(t.multi_device_idx_help) +
+        _esc(
+          multiDeviceValues ? t.multi_device_idx_help : t.custom_device_idx_help
+        ) +
         '</div></div>';
     } else if (isGroupBlock) {
       html +=

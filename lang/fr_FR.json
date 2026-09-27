@@ -210,7 +210,7 @@
       "wizard_mode_desc": "Créez et modifiez le tableau de bord visuellement avec l’Éditeur d’écran.",
       "save_failed": "Impossible d’enregistrer le mode de configuration.",
       "warning_title": "Modifier le mode de configuration ?",
-      "confirm_wizard": "Le passage à l’Assistant supprime la configuration actuelle du tableau de bord, efface les blocs, colonnes et écrans de CONFIG.js, puis crée une page vierge. Les paramètres de configuration sont conservés.",
+      "confirm_wizard": "Le passage à l’Assistant convertit l’écran affiché en disposition en grille et ouvre l’éditeur d’écran. Vos blocs, colonnes, autres écrans et paramètres restent dans CONFIG.js ; les autres écrans sont convertis lorsque vous les ouvrez dans l’éditeur d’écran. Faites d’abord une copie de CONFIG.js si vous voulez conserver votre version écrite à la main.",
       "confirm_custom": "Le passage au mode Personnalisé conserve la configuration actuelle du tableau de bord, mais masque les commandes de l’Éditeur d’écran. Vous pouvez continuer à gérer le tableau de bord manuellement dans CONFIG.js.",
       "cancel": "Annuler",
       "continue": "Continuer"
@@ -552,7 +552,9 @@
       "seconds": "secondes",
       "lms_player_controls": "Commandes du lecteur",
       "background": "Arrière-plan",
-      "image": "Image"
+      "image": "Image",
+      "custom_device_idx": "IDX",
+      "custom_device_idx_help": "IDX de l’appareil Domoticz, ou 'v<idx>' pour une variable Domoticz (par ex. v3)."
     },
     "layouteditor": {
       "title": "Éditeur de disposition",

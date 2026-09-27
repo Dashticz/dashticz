@@ -210,7 +210,7 @@
       "wizard_mode_desc": "Build and adjust the dashboard visually with the Screen Editor.",
       "save_failed": "Could not save configuration mode.",
       "warning_title": "Change configuration mode?",
-      "confirm_wizard": "Switching to Wizard removes the current dashboard configuration, clears all Blocks, Columns and Screens from CONFIG.js, and creates a clean page. Your config settings are kept.",
+      "confirm_wizard": "Switching to Wizard converts the screen that is shown now to a grid layout and opens the Screen Editor. Your blocks, columns, other screens and config settings stay in CONFIG.js; other screens are converted when you open them in the Screen Editor. Make a copy of CONFIG.js first if you want to keep your hand-written version.",
       "confirm_custom": "Switching to Custom keeps the current dashboard configuration, but hides the Screen Editor controls. You can continue managing the dashboard manually in CONFIG.js.",
       "cancel": "Cancel",
       "continue": "Continue"
@@ -552,7 +552,9 @@
       "seconds": "seconds",
       "lms_player_controls": "Player controls",
       "background": "Background",
-      "image": "Image"
+      "image": "Image",
+      "custom_device_idx": "IDX",
+      "custom_device_idx_help": "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3)."
     },
     "layouteditor": {
       "title": "Layout Editor",
