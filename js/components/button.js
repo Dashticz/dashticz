@@ -1,4 +1,4 @@
-/* global DT_function MoonPhase Dashticz blocks settings*/
+/* global DT_function MoonPhase Dashticz blocks settings language */
 
 // eslint-disable-next-line no-unused-vars
 var DT_button = {
@@ -168,6 +168,19 @@ Dashticz.register(DT_button);
     return found;
   }
 
+  // Label of the Background display option, translated via lang/*.json
+  // (settings.deviceeditor.background) like the Icon/Data/Title buttons next
+  // to it; only characters that are safe in both an attribute and text.
+  function backgroundLabel() {
+    var t =
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.deviceeditor
+        ? language.settings.deviceeditor
+        : {};
+    return String(t.background || 'Background').replace(/[<>&"']/g, '');
+  }
+
   function injectNoBackgroundIntoConfig(popup) {
     var $popup = $(popup);
     if ($popup.data('dt-no-background-ready')) return;
@@ -214,9 +227,13 @@ Dashticz.register(DT_button);
       (hasBackground ? ' active' : '') +
       '" data-dt-no-background aria-pressed="' +
       (hasBackground ? 'true' : 'false') +
-      '" title="Background" style="min-width:72px;">' +
+      '" title="' +
+      backgroundLabel() +
+      '" style="min-width:72px;">' +
       '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
-      '<span class="d-block small">Background</span></button>';
+      '<span class="d-block small">' +
+      backgroundLabel() +
+      '</span></button>';
     if ($optionsRow.length) {
       $optionsRow.append(html);
     } else {
@@ -329,9 +346,13 @@ Dashticz.register(DT_button);
     var $optionsRow = $popup.find('.de-config-options-icons').first();
     if (!$optionsRow.length) return;
     $optionsRow.append(
-      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background" aria-pressed="true" title="Background" style="min-width:72px;">' +
+      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background" aria-pressed="true" title="' +
+        backgroundLabel() +
+        '" style="min-width:72px;">' +
         '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
-        '<span class="d-block small">Background</span></button>'
+        '<span class="d-block small">' +
+        backgroundLabel() +
+        '</span></button>'
     );
   }
 

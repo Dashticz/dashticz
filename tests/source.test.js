@@ -1839,7 +1839,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /Hayman clock/);
   assert.match(widgetEditor, /Miniclock/);
   assert.match(widgetEditor, /id="we-cfg-calendar-list"/);
-  assert.match(widgetEditor, /id="we-calendar-add"/);
+  assert.match(widgetEditor, /_addButtonHtml\(\s*'we-calendar-add'/);
   assert.match(widgetEditor, /class="we-calendar-row/);
   assert.match(widgetEditor, /we-cfg-clock-type/);
   assert.doesNotMatch(widgetEditor, /_cfgField\('hide_seconds',/);
@@ -1895,7 +1895,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     /map: \['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude'\]/
   );
   assert.match(widgetEditor, /moon: \['idx_moonpicture'\]/);
-  assert.match(widgetEditor, /id="we-camera-add"/);
+  assert.match(widgetEditor, /_addButtonHtml\(\s*'we-camera-add'/);
   assert.match(widgetEditor, /class="we-camera-row/);
   assert.match(widgetEditor, /weather:\s*\{[\s\S]*provider:/);
   assert.match(widgetEditor, /clock:\s*\{[\s\S]*clockType:\s*'basicclock'/);
@@ -3558,7 +3558,7 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
   // Multiple values, each optionally from its own device, must remain
   // supported (not just a single 'values: [\"Temp\"]' array) — the dynamic
   // value-row repeater with no artificial row limit.
-  assert.match(widgetEditor, /we-timegraph-value-add/);
+  assert.match(widgetEditor, /we-timegraph-add/);
   assert.match(widgetEditor, /we-timegraph-value-remove/);
   assert.match(widgetEditor, /_timegraphValueRowHtml/);
 

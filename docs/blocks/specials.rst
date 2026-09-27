@@ -1,3 +1,5 @@
+.. _specialblocks :
+
 Specials
 ========
 
