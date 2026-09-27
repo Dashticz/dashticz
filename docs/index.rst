@@ -12,8 +12,9 @@ Dashticz 4 can be configured in two ways: visually from the browser in
 **Custom mode**. New users are guided through a short setup the first time
 they open Dashticz (see :ref:`FirstRun`).
 
-The latest version of this documentation is always available at
-https://dashticz.readthedocs.io/en/master/
+This documentation follows the master (stable) release of Dashticz and is
+published at https://dashticz.readthedocs.io/en/master/. Features that are
+only available on the beta channel may not be described here yet.
 
 .. image :: img/dashticz.jpg
 
