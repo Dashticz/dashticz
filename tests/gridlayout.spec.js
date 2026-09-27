@@ -1010,6 +1010,117 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     await expect(page.locator('#widgeteditorpopup')).toBeVisible();
   });
 
+  test('popup actions clicked while a popup is still opening are not lost', async ({
+    page,
+  }) => {
+    // Each step below is clicked the moment its popup starts opening, while
+    // Bootstrap still ignores Modal.hide(): the Add menu tile (simpleblock.js),
+    // a device's cog while the Device Editor opens (the editor must close for
+    // Device Config to appear, deviceeditor.js) and Device Config's own OK.
+    // Before, each of them left its popup open and the chain stalled.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['device_43'] = {idx: 43, width: 3, icon: 'fas fa-bolt'};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [{key: 'device_43', grid: {x: 1, y: 1, w: 8, h: 5}}]
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'early-click-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['device_43'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    await page.evaluate(() => {
+      const steps = [
+        {
+          selector:
+            '#screeneditoraddpopup .dt-screeneditor-add-tile[data-add-action="device"]',
+          click: (element) => element.click(),
+        },
+        {
+          selector:
+            '#deviceeditorpopup.show [data-order-key="device:43"] .de-config-btn',
+          click: (element) => element.click(),
+        },
+        {
+          selector: '#de-config-popup #de-config-ok',
+          click: (element) => {
+            document.querySelector('[data-option="icon"]').click();
+            element.click();
+          },
+        },
+      ];
+      const observer = new MutationObserver(() => {
+        const step = steps[0];
+        const element = step && document.querySelector(step.selector);
+        if (!element) return;
+        steps.shift();
+        if (!steps.length) observer.disconnect();
+        step.click(element);
+      });
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class'],
+        childList: true,
+        subtree: true,
+      });
+    });
+    await page.locator('.screen1 .screeneditoraddicon').click();
+
+    await expect(page.locator('#de-config-popup')).toHaveCount(0);
+    await expect(page.locator('#screeneditoraddpopup')).toHaveCount(0);
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const device = blocksRequest.devices.find(
+      (entry) => entry.key === 'device_43'
+    );
+    expect(device.icon).toBe('');
+  });
+
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
     page,
   }) => {

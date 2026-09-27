@@ -464,7 +464,30 @@ var DT_simpleblock = (function () {
     $(popup).one('hidden.bs.modal', function () {
       if (typeof callback === 'function') callback();
     });
-    instance.hide();
+    _hideModal(popup);
+  }
+
+  /* Close a popup after one of its own actions (Continue, a picked tile,
+     ...). Bootstrap's Modal.hide() is silently ignored while a modal is
+     still opening (its fade-in), so such an action right after a popup
+     opened left it open and its 'hidden.bs.modal' follow-up never ran.
+     Such a modal is now hidden as soon as it has finished opening; at any
+     other moment this is exactly Modal.hide(). Bootstrap's own close paths
+     (Cancel/X, Escape, backdrop) are left unchanged. Same helper as in
+     js/deviceeditor.js and js/widgeteditor.js. */
+  function _hideModal(element) {
+    var modal =
+      element &&
+      window.bootstrap &&
+      window.bootstrap.Modal.getInstance(element);
+    if (!modal) return;
+    if (modal._isShown === true && modal._isTransitioning === true) {
+      $(element).one('shown.bs.modal', function () {
+        modal.hide();
+      });
+      return;
+    }
+    modal.hide();
   }
 
   function _showConfigModeWarning(mode, onContinue) {
@@ -500,7 +523,7 @@ var DT_simpleblock = (function () {
     var confirmed = false;
     $('#config-mode-warning-continue').one('click', function () {
       confirmed = true;
-      window.bootstrap.Modal.getInstance(popup).hide();
+      _hideModal(popup);
     });
     $(popup).one('hidden.bs.modal', function () {
       $(popup).remove();
@@ -620,7 +643,7 @@ var DT_simpleblock = (function () {
       if (selectedAction) return;
       selectedAction = String($(this).attr('data-add-action') || '');
       $popup.find('.dt-screeneditor-add-tile').prop('disabled', true);
-      window.bootstrap.Modal.getInstance(popup).hide();
+      _hideModal(popup);
     });
     $popup.one('hidden.bs.modal', function () {
       $popup.remove();
