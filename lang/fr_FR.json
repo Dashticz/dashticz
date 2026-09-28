@@ -555,7 +555,7 @@
       "background": "Arrière-plan",
       "image": "Image",
       "custom_device_idx": "IDX",
-      "custom_device_idx_help": "IDX de l’appareil Domoticz, ou 'v<idx>' pour une variable Domoticz (par ex. v3)."
+      "custom_device_idx_help": "IDX de l’appareil Domoticz, 's<idx>' pour un groupe ou une scène (par ex. s3), ou 'v<idx>' pour une variable Domoticz (par ex. v3)."
     },
     "layouteditor": {
       "title": "Éditeur de disposition",

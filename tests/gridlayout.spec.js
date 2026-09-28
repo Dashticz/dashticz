@@ -7,6 +7,20 @@ const dashboardUrl =
 
 test.describe('optional screen grid layout', () => {
   test.afterEach(async ({ page }) => {
+    // Leave the dashboard before removing the mocks. A save chain that is
+    // still running after a test's last assertion (savewidgets.php /
+    // savelayout.php after the asserted saveblocks.php) otherwise reaches
+    // the real PHP endpoints, which reject it (403), and the editor's
+    // alert() then pops up while Playwright closes the page - an
+    // intermittent "Page.handleJavaScriptDialog ... session closed" failure.
+    // beforeunload is accepted so an active Layout Editor cannot block this.
+    page.on('dialog', (dialog) =>
+      (dialog.type() === 'beforeunload'
+        ? dialog.accept()
+        : dialog.dismiss()
+      ).catch(() => {})
+    );
+    await page.goto('about:blank').catch(() => {});
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
   test('keeps legacy column screens on the Bootstrap path', async ({
@@ -482,6 +496,105 @@ screens[2] = {
     expect(editedDevice.icon).toBe('');
   });
 
+  test('keeps the sub-index of a named sub-device block when its Device Config is saved (#1309)', async ({
+    page,
+  }) => {
+    // savegridlayout.php stores a sub-device picked from the Device Editor
+    // list under a key named after its "Power (1)" label, which the Device
+    // Editor then treats as a Custom device. Saving its Device Config used to
+    // parseInt() '43_1' down to 43, so the tile showed every value of the P1
+    // meter instead of the one sub-device.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['Power_1'] = {idx: '43_1', width: 3, title: 'Power (1)', last_update: false};
+blocks['Power_2'] = {idx: '43_2', width: 3, title: 'Power (2)', last_update: false};
+blocks['device_43'] = {idx: 43, width: 3};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [
+    {key: 'Power_1', grid: {x: 1, y: 1, w: 6, h: 5}},
+    {key: 'Power_2', grid: {x: 7, y: 1, w: 6, h: 5}},
+    {key: 'device_43', grid: {x: 13, y: 1, w: 6, h: 5}}
+  ]
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'subdevice-idx-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: ['Power_1', 'Power_2', 'device_43'],
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openDeviceEditorFromScreenEditor(page);
+
+    await page
+      .locator('[data-order-key="special:Power_1"] .de-config-btn')
+      .click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('.de-config-idx-label')).toHaveText('[43_1]');
+    await expect(page.locator('#de-config-idx')).toHaveValue('43_1');
+    const iconToggle = page.locator('[data-option="icon"]');
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'true');
+    await iconToggle.click();
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('#de-config-ok').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const byKey = (key) =>
+      blocksRequest.devices.find((device) => device.key === key);
+    expect(byKey('Power_1')).toMatchObject({
+      kind: 'custom',
+      idx: '43_1',
+      icon: '',
+    });
+    // Untouched siblings keep their own shape: the other sub-device its
+    // sub-index, the plain full device its integer idx.
+    expect(byKey('Power_2')).toMatchObject({ kind: 'custom', idx: '43_2' });
+    expect(byKey('device_43')).toMatchObject({ idx: 43 });
+  });
+
   test('persists a default icon for a newly added Sunrise widget', async ({
     page,
   }) => {
@@ -884,6 +997,144 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     await page.locator('#we-cfg-clock-type').selectOption('stationclock');
     await expect(page.locator('#we-cfg-boss')).toBeVisible();
     await expect(page.locator('#we-cfg-secondhand')).toBeVisible();
+  });
+
+  test('Widget Config closes when OK is clicked while it is still opening', async ({
+    page,
+  }) => {
+    // Bootstrap's Modal.hide() is a no-op while the modal is still fading
+    // in, so an early OK click applied the settings but left the popup open
+    // (the intermittent "Calendar Widget Config reloads a legacy single
+    // icalurl safely" failure).
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.evaluate(() => {
+      document.querySelector('.we-config-btn[data-widget-id="clock"]').click();
+      // The popup is built and shown synchronously, so it is still fading
+      // in here: the earliest possible OK click.
+      document.getElementById('we-cfg-ok-btn').click();
+    });
+    await expect(page.locator('#we-config-popup')).toHaveCount(0);
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+  });
+
+  test('popup actions clicked while a popup is still opening are not lost', async ({
+    page,
+  }) => {
+    // Each step below is clicked the moment its popup starts opening, while
+    // Bootstrap still ignores Modal.hide(): the Add menu tile (simpleblock.js),
+    // a device's cog while the Device Editor opens (the editor must close for
+    // Device Config to appear, deviceeditor.js) and Device Config's own OK.
+    // Before, each of them left its popup open and the chain stalled.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['device_43'] = {idx: 43, width: 3, icon: 'fas fa-bolt'};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [{key: 'device_43', grid: {x: 1, y: 1, w: 8, h: 5}}]
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'early-click-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['device_43'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    await page.evaluate(() => {
+      const steps = [
+        {
+          selector:
+            '#screeneditoraddpopup .dt-screeneditor-add-tile[data-add-action="device"]',
+          click: (element) => element.click(),
+        },
+        {
+          selector:
+            '#deviceeditorpopup.show [data-order-key="device:43"] .de-config-btn',
+          click: (element) => element.click(),
+        },
+        {
+          selector: '#de-config-popup #de-config-ok',
+          click: (element) => {
+            document
+              .querySelector('#de-config-popup [data-option="icon"]')
+              .click();
+            element.click();
+          },
+        },
+      ];
+      const observer = new MutationObserver(() => {
+        const step = steps[0];
+        const element = step && document.querySelector(step.selector);
+        if (!element) return;
+        steps.shift();
+        if (!steps.length) observer.disconnect();
+        step.click(element);
+      });
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class'],
+        childList: true,
+        subtree: true,
+      });
+    });
+    await page.locator('.screen1 .screeneditoraddicon').click();
+
+    await expect(page.locator('#de-config-popup')).toHaveCount(0);
+    await expect(page.locator('#screeneditoraddpopup')).toHaveCount(0);
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const device = blocksRequest.devices.find(
+      (entry) => entry.key === 'device_43'
+    );
+    expect(device.icon).toBe('');
   });
 
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
@@ -1323,12 +1574,20 @@ screens[1] = {
     // button.js's injected Background toggle (#170), which reuses
     // .de-config-option for its shared active-state look (#195).
     await expect(page.locator('.de-config-option')).toHaveCount(3);
-    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
+    // grid_text has no icon and renders none (#169, asserted above), so its
+    // Icon option opens off - reading it as on made any save add
+    // fas fa-divide to the separator. Turning it on offers that default.
+    await expect(page.locator('[data-option="icon"]')).not.toHaveClass(
+      /active/
+    );
     await expect(page.locator('[data-option="show_title"]')).toHaveClass(
       /active/
     );
     await expect(page.locator('[data-dt-no-background]')).toHaveClass(/active/);
     const separatorIconRow = page.locator('.de-icon-field-row');
+    await expect(separatorIconRow).toBeHidden();
+    await page.locator('[data-option="icon"]').click();
+    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
     await expect(separatorIconRow).toBeVisible();
     await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue(
       'icon'
@@ -1398,12 +1657,15 @@ screens[1] = {
     await expect(separatorOverlay.locator('.dle-config-button')).toHaveCount(1);
 
     await expect.poll(() => blocksRequest).not.toBeNull();
+    // tc1 is a scene ('s5') under its own key: it is saved as a Custom
+    // device and keeps that key and its settings, instead of being renamed
+    // to the bare 's5' device key.
     expect(blocksRequest.devices).toEqual([
       {
+        kind: 'custom',
+        key: 'tc1',
         idx: 's5',
-        name: 'KeukenLampen',
         width: 2,
-        key: 's5',
         title: 'Tuin',
         icon: 'fas fa-car',
         hide_data: true,
@@ -1429,7 +1691,7 @@ screens[1] = {
     // Confirming a single device's config from the Layout Editor must never
     // touch anything layout-related: no widgets save, no grid/column layout
     // save, no custom.css rewrite. Grid positions for both blocks - including
-    // the untouched 's5' device - are left exactly as the Layout Editor still
+    // the untouched tc1 device - are left exactly as the Layout Editor still
     // holds them, not re-derived from a stale pre-edit snapshot.
     expect(widgetsRequest).toBeNull();
     expect(gridRequest).toBeNull();
@@ -2038,6 +2300,7 @@ screens[1] = {
       'white'
     );
     await page.locator('#we-cfg-ok-btn').click();
+    await expect(page.locator('#we-config-popup')).toHaveCount(0);
     await expect(page.locator('#widgeteditorpopup')).toBeVisible();
     await page.locator('#we-save-btn').click();
 
@@ -2328,6 +2591,74 @@ screens[1] = {
       __dashticz_empty_object__: true,
     });
     expect(customDevice.custom_fields.items).toEqual([]);
+  });
+
+  test('Custom device popup accepts the documented s<idx> scene/group IDX', async ({
+    page,
+  }) => {
+    // docs/wizard/specialblocks.rst documents 's3' for a Custom device's
+    // IDX; the popup used to reject it as an invalid IDX.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: []
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'custom-scene-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['CustomScene'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openScreenEditorAddMenu(page);
+    await page
+      .locator('.dt-screeneditor-add-tile[data-add-action="custom"]')
+      .click();
+    await expect(page.locator('#customdevicepopup')).toBeVisible();
+    await page.locator('#cd-device-name').fill('CustomScene');
+    await page.locator('#cd-device-idx').fill('s5');
+    await page.locator('#cd-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const customDevice = blocksRequest.devices[0];
+    expect(customDevice.kind).toBe('custom');
+    expect(customDevice.key).toBe('CustomScene');
+    expect(customDevice.idx).toBe('s5');
   });
 
   test('Widget Editor updates widgets without replacing grid layout', async ({
