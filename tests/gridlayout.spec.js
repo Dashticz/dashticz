@@ -7,6 +7,20 @@ const dashboardUrl =
 
 test.describe('optional screen grid layout', () => {
   test.afterEach(async ({ page }) => {
+    // Leave the dashboard before removing the mocks. A save chain that is
+    // still running after a test's last assertion (savewidgets.php /
+    // savelayout.php after the asserted saveblocks.php) otherwise reaches
+    // the real PHP endpoints, which reject it (403), and the editor's
+    // alert() then pops up while Playwright closes the page - an
+    // intermittent "Page.handleJavaScriptDialog ... session closed" failure.
+    // beforeunload is accepted so an active Layout Editor cannot block this.
+    page.on('dialog', (dialog) =>
+      (dialog.type() === 'beforeunload'
+        ? dialog.accept()
+        : dialog.dismiss()
+      ).catch(() => {})
+    );
+    await page.goto('about:blank').catch(() => {});
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
   test('keeps legacy column screens on the Bootstrap path', async ({
@@ -1084,7 +1098,9 @@ screens[1] = {
         {
           selector: '#de-config-popup #de-config-ok',
           click: (element) => {
-            document.querySelector('[data-option="icon"]').click();
+            document
+              .querySelector('#de-config-popup [data-option="icon"]')
+              .click();
             element.click();
           },
         },
@@ -1558,12 +1574,20 @@ screens[1] = {
     // button.js's injected Background toggle (#170), which reuses
     // .de-config-option for its shared active-state look (#195).
     await expect(page.locator('.de-config-option')).toHaveCount(3);
-    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
+    // grid_text has no icon and renders none (#169, asserted above), so its
+    // Icon option opens off - reading it as on made any save add
+    // fas fa-divide to the separator. Turning it on offers that default.
+    await expect(page.locator('[data-option="icon"]')).not.toHaveClass(
+      /active/
+    );
     await expect(page.locator('[data-option="show_title"]')).toHaveClass(
       /active/
     );
     await expect(page.locator('[data-dt-no-background]')).toHaveClass(/active/);
     const separatorIconRow = page.locator('.de-icon-field-row');
+    await expect(separatorIconRow).toBeHidden();
+    await page.locator('[data-option="icon"]').click();
+    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
     await expect(separatorIconRow).toBeVisible();
     await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue(
       'icon'
@@ -1633,12 +1657,15 @@ screens[1] = {
     await expect(separatorOverlay.locator('.dle-config-button')).toHaveCount(1);
 
     await expect.poll(() => blocksRequest).not.toBeNull();
+    // tc1 is a scene ('s5') under its own key: it is saved as a Custom
+    // device and keeps that key and its settings, instead of being renamed
+    // to the bare 's5' device key.
     expect(blocksRequest.devices).toEqual([
       {
+        kind: 'custom',
+        key: 'tc1',
         idx: 's5',
-        name: 'KeukenLampen',
         width: 2,
-        key: 's5',
         title: 'Tuin',
         icon: 'fas fa-car',
         hide_data: true,
@@ -1664,7 +1691,7 @@ screens[1] = {
     // Confirming a single device's config from the Layout Editor must never
     // touch anything layout-related: no widgets save, no grid/column layout
     // save, no custom.css rewrite. Grid positions for both blocks - including
-    // the untouched 's5' device - are left exactly as the Layout Editor still
+    // the untouched tc1 device - are left exactly as the Layout Editor still
     // holds them, not re-derived from a stale pre-edit snapshot.
     expect(widgetsRequest).toBeNull();
     expect(gridRequest).toBeNull();
@@ -2564,6 +2591,74 @@ screens[1] = {
       __dashticz_empty_object__: true,
     });
     expect(customDevice.custom_fields.items).toEqual([]);
+  });
+
+  test('Custom device popup accepts the documented s<idx> scene/group IDX', async ({
+    page,
+  }) => {
+    // docs/wizard/specialblocks.rst documents 's3' for a Custom device's
+    // IDX; the popup used to reject it as an invalid IDX.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: []
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'custom-scene-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['CustomScene'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openScreenEditorAddMenu(page);
+    await page
+      .locator('.dt-screeneditor-add-tile[data-add-action="custom"]')
+      .click();
+    await expect(page.locator('#customdevicepopup')).toBeVisible();
+    await page.locator('#cd-device-name').fill('CustomScene');
+    await page.locator('#cd-device-idx').fill('s5');
+    await page.locator('#cd-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const customDevice = blocksRequest.devices[0];
+    expect(customDevice.kind).toBe('custom');
+    expect(customDevice.key).toBe('CustomScene');
+    expect(customDevice.idx).toBe('s5');
   });
 
   test('Widget Editor updates widgets without replacing grid layout', async ({

@@ -118,7 +118,9 @@ Each button switches one part of the tile on or off. A green button is on.
   * - Data
     - Show the value or status of the device.
   * - Updated
-    - Show the time of the last update.
+    - Show the time of the last update. A tile on which this was never
+      changed follows **Show last update time/date** in the Settings menu; the
+      button shows what the tile currently does.
   * - Title
     - Show the title of the device.
   * - Background

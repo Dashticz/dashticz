@@ -39,8 +39,8 @@ Group
 
 Shows several devices in one tile.
 
-* **Group/Scene IDX**: a Domoticz group or scene. Its devices are shown in the
-  tile.
+* **Group/Scene IDX**: a Domoticz group or scene, as its number (``12``) or as
+  ``s12``. Its devices are shown in the tile.
 * **Devices**: alternatively, a comma-separated list of Domoticz device IDs
   (used when the Group/Scene IDX is empty).
 
