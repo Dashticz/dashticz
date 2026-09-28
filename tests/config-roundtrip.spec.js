@@ -21,6 +21,12 @@ const BLOCKS = {
   rt_plain: '{idx: 43, width: 3}',
   rt_sub: "{idx: '43_2', width: 3, title: 'Sub 2'}",
   rt_scene: "{idx: 's5', width: 3, title: 'Scene'}",
+  // A second block on the same scene: 4.1.0 merged both into one 's5' tile
+  // and dropped this one from the screen.
+  rt_scene2: "{idx: 's5', width: 3, title: 'Scene 2'}",
+  // A block stored under the scene key itself (as the editor writes plain
+  // groups/scenes) stays the plain scene device it was.
+  s5: "{width: 2, hide_data: false, switch: false, title: 'Scene key'}",
   rt_var: "{idx: 'v1', width: 3, title: 'Variable'}",
   rt_lu_false: "{idx: 43, width: 3, title: 'No update', last_update: false}",
   rt_props:
@@ -95,6 +101,8 @@ async function tileState(page) {
       subLastUpdate: count('rt_sub', '.lastupdate'),
       titleIcons: count('rt_title', '.col-icon'),
       sceneTiles: count('rt_scene', '.dt_block'),
+      scene2Tiles: count('rt_scene2', '.dt_block'),
+      sceneKeyTiles: count('s5', '.dt_block'),
       groupTiles: count('rt_group_s', '.dt_block'),
     };
   });

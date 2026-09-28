@@ -1032,7 +1032,10 @@ var DashticzDeviceEditor = (function () {
         definition.type === reference) &&
       (parseInt(definition.idx, 10) > 0 ||
         _isCustomVariableIdx(definition.idx) ||
-        _isSceneIdx(definition.idx))
+        // A scene under a hand-picked key. A block stored under its own
+        // scene key ('s5', which the runtime stamps with idx: 's5') stays
+        // the plain scene device it has always been.
+        (_isSceneIdx(definition.idx) && !_isSceneIdx(reference)))
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
