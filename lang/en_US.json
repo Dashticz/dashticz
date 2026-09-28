@@ -555,7 +555,7 @@
       "background": "Background",
       "image": "Image",
       "custom_device_idx": "IDX",
-      "custom_device_idx_help": "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3)."
+      "custom_device_idx_help": "Domoticz device idx, 's<idx>' for a group or scene (e.g. s3), or 'v<idx>' for a Domoticz variable (e.g. v3)."
     },
     "layouteditor": {
       "title": "Layout Editor",

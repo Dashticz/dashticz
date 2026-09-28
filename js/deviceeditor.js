@@ -238,7 +238,7 @@ var DashticzDeviceEditor = (function () {
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         custom_device_idx: 'IDX',
         custom_device_idx_help:
-          "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3).",
+          "Domoticz device idx, 's<idx>' for a group or scene (e.g. s3), or 'v<idx>' for a Domoticz variable (e.g. v3).",
         custom_device_title: 'Title',
         custom_device_options: 'Device options',
         custom_device_values_help: 'For arrays or objects, enter valid JSON.',
@@ -2744,7 +2744,7 @@ var DashticzDeviceEditor = (function () {
       '</label>';
     html +=
       '<input type="text" inputmode="numeric" class="form-control" ' +
-      'id="cd-device-idx" placeholder="123, or v3 for a variable">';
+      'id="cd-device-idx" placeholder="123, s3 or v3">';
     html +=
       '<div class="form-text">' +
       _esc(t.custom_device_idx_help) +
@@ -2814,9 +2814,14 @@ var DashticzDeviceEditor = (function () {
       var reference = $.trim(String($('#cd-device-name').val() || ''));
       var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
       var isVariableIdx = _isCustomVariableIdx(rawIdx);
+      // docs/wizard/specialblocks.rst documents 's<idx>' (a group or scene)
+      // for this field too; the rest of the editor already keeps that form.
+      var isSceneIdx = _isSceneIdx(rawIdx);
       var idx = isVariableIdx
         ? _normalizeCustomVariableIdx(rawIdx)
-        : parseInt(rawIdx, 10);
+        : isSceneIdx
+          ? _normalizeSceneIdx(rawIdx)
+          : parseInt(rawIdx, 10);
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_custom_device_name);
         $('#cd-device-name').trigger('focus');
@@ -2830,7 +2835,11 @@ var DashticzDeviceEditor = (function () {
         $('#cd-device-name').trigger('focus');
         return;
       }
-      if (!isVariableIdx && !(idx > 0 && String(idx) === rawIdx)) {
+      if (
+        !isVariableIdx &&
+        !isSceneIdx &&
+        !(idx > 0 && String(idx) === rawIdx)
+      ) {
         $message.addClass('text-danger').text(t.invalid_idx);
         $('#cd-device-idx').trigger('focus');
         return;
@@ -8821,7 +8830,7 @@ var DashticzDeviceEditor = (function () {
         '</label>';
       html +=
         '<input type="text" inputmode="numeric" class="form-control" ' +
-        'id="de-config-idx" placeholder="123, or v3 for a variable" value="' +
+        'id="de-config-idx" placeholder="123, s3 or v3" value="' +
         _esc(special.idx || '') +
         '">';
       html +=

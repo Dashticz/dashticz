@@ -2593,6 +2593,74 @@ screens[1] = {
     expect(customDevice.custom_fields.items).toEqual([]);
   });
 
+  test('Custom device popup accepts the documented s<idx> scene/group IDX', async ({
+    page,
+  }) => {
+    // docs/wizard/specialblocks.rst documents 's3' for a Custom device's
+    // IDX; the popup used to reject it as an invalid IDX.
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: []
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'custom-scene-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['CustomScene'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openScreenEditorAddMenu(page);
+    await page
+      .locator('.dt-screeneditor-add-tile[data-add-action="custom"]')
+      .click();
+    await expect(page.locator('#customdevicepopup')).toBeVisible();
+    await page.locator('#cd-device-name').fill('CustomScene');
+    await page.locator('#cd-device-idx').fill('s5');
+    await page.locator('#cd-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const customDevice = blocksRequest.devices[0];
+    expect(customDevice.kind).toBe('custom');
+    expect(customDevice.key).toBe('CustomScene');
+    expect(customDevice.idx).toBe('s5');
+  });
+
   test('Widget Editor updates widgets without replacing grid layout', async ({
     page,
   }) => {
