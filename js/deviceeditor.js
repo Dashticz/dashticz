@@ -238,7 +238,7 @@ var DashticzDeviceEditor = (function () {
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         custom_device_idx: 'IDX',
         custom_device_idx_help:
-          "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3).",
+          "Domoticz device idx, 's<idx>' for a group or scene (e.g. s3), or 'v<idx>' for a Domoticz variable (e.g. v3).",
         custom_device_title: 'Title',
         custom_device_options: 'Device options',
         custom_device_values_help: 'For arrays or objects, enter valid JSON.',
@@ -893,6 +893,71 @@ var DashticzDeviceEditor = (function () {
     return 'v' + idx.slice(1);
   }
 
+  /* A block under a hand-picked key may also reference one sub-device of a
+     multi-value Domoticz device as '<idx>_<subidx>' (e.g. '274_1' for the
+     current usage of a P1 Smart Meter). savegridlayout.php writes exactly
+     that shape when a sub-device from the Device Editor list is placed on a
+     grid screen, under a key named after its "Power (1)" label, so it is
+     classified as a Custom device below. Keep the full string: parseInt()
+     would silently drop the sub-index on the next save and the tile would
+     show every value of the base device instead (#1309). Live Domoticz
+     lookups still need the base device, see _customSubdevice(). */
+  function _isCustomSubdeviceIdx(idx) {
+    return typeof idx === 'string' && /^[1-9][0-9]*_[1-9][0-9]*$/.test(idx);
+  }
+  function _customSubdevice(idx) {
+    return _isCustomSubdeviceIdx(idx) ? _parseCk(idx) : null;
+  }
+
+  /* 's<idx>' references a Domoticz group/scene (docs/blocks/domoticzblocks.rst
+     and docs/blocks/specials/group.rst). Keep it as written: a bare number
+     means a device idx elsewhere (for example js/devicerules.js), so turning
+     's12' into 12 would quietly point Automation at device 12. */
+  function _isSceneIdx(idx) {
+    return typeof idx === 'string' && /^[sS][1-9][0-9]*$/.test(idx);
+  }
+  function _normalizeSceneIdx(idx) {
+    return 's' + idx.slice(1);
+  }
+
+  /* The idx a special block keeps while it is edited. Custom devices and
+     Groups keep their documented string forms as written (see the helpers
+     above): parseInt() would silently change what the block points at on
+     the next save. */
+  function _specialIdx(kind, idx) {
+    if (IDX_LESS_SPECIAL_KINDS.indexOf(kind) > -1) return null;
+    if (kind === 'group') {
+      if (_isSceneIdx(idx)) return _normalizeSceneIdx(idx);
+      return parseInt(idx, 10) > 0 ? parseInt(idx, 10) : null;
+    }
+    if (kind === 'custom') {
+      if (_isCustomVariableIdx(idx)) return _normalizeCustomVariableIdx(idx);
+      if (_isCustomSubdeviceIdx(idx)) return idx;
+      if (_isSceneIdx(idx)) return _normalizeSceneIdx(idx);
+    }
+    return parseInt(idx, 10);
+  }
+
+  /* A block without a last_update property of its own follows the global
+     settings['last_update'] (js/blocks.js showUpdateInformation()); a Dial
+     shows it by default (js/components/dial.js defaultCfg). Such a block is
+     read as inherited: its toggle shows what the tile really does, and it is
+     saved without the property until the toggle is changed. Reading it as
+     false wrote last_update:false on every save, which silently removed the
+     last update time from tiles nobody had edited. */
+  function _lastUpdateOptions(definition) {
+    var inherited =
+      !definition || typeof definition.last_update === 'undefined';
+    var isDial =
+      !!definition && String(definition.type || '').toLowerCase() === 'dial';
+    return {
+      last_update: inherited
+        ? isDial || !!settings['last_update']
+        : !!definition.last_update,
+      last_update_inherited: inherited,
+    };
+  }
+
   /* F1 originally shipped as the two singleton catalog widgets
      widget_f1/type:'f1' and widget_f1events/type:'f1events', with their
      options stored globally in settings. Keep those blocks editable and
@@ -965,7 +1030,12 @@ var DashticzDeviceEditor = (function () {
         definition.type === 'dial' ||
         definition.type === 'bar' ||
         definition.type === reference) &&
-      (parseInt(definition.idx, 10) > 0 || _isCustomVariableIdx(definition.idx))
+      (parseInt(definition.idx, 10) > 0 ||
+        _isCustomVariableIdx(definition.idx) ||
+        // A scene under a hand-picked key. A block stored under its own
+        // scene key ('s5', which the runtime stamps with idx: 's5') stays
+        // the plain scene device it has always been.
+        (_isSceneIdx(definition.idx) && !_isSceneIdx(reference)))
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
@@ -1174,6 +1244,7 @@ var DashticzDeviceEditor = (function () {
       kind = 'lms';
     }
     if (!kind) return null;
+    var lastUpdate = _lastUpdateOptions(definition);
     var hasConfiguredImage =
       typeof definition.image === 'string' && definition.image !== '';
     var barMode = _isBarDefinition(definition);
@@ -1184,16 +1255,7 @@ var DashticzDeviceEditor = (function () {
       orderKey: _specialOrderKey(reference),
       reference: reference,
       definition: definition,
-      idx:
-        IDX_LESS_SPECIAL_KINDS.indexOf(kind) > -1
-          ? null
-          : kind === 'group'
-            ? parseInt(definition.idx, 10) > 0
-              ? parseInt(definition.idx, 10)
-              : null
-            : kind === 'custom' && _isCustomVariableIdx(definition.idx)
-              ? _normalizeCustomVariableIdx(definition.idx)
-              : parseInt(definition.idx, 10),
+      idx: _specialIdx(kind, definition.idx),
       title:
         TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(kind) > -1
           ? String(definition.title || '')
@@ -1256,10 +1318,14 @@ var DashticzDeviceEditor = (function () {
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
+        // A separator without an icon property renders without an icon
+        // (#169, js/components/blocktitle.js), so show its Icon option as
+        // off: reading it as on added fas fa-divide on the next save.
         icon:
           hasConfiguredImage ||
-          typeof definition.icon === 'undefined' ||
-          definition.icon !== '',
+          (kind === 'title'
+            ? typeof definition.icon === 'string' && definition.icon !== ''
+            : typeof definition.icon === 'undefined' || definition.icon !== ''),
         // Icon and Image are one source selector in the editor. Prefer the
         // configured image when an older block still contains both so an
         // unrelated Device Editor save also cleans up the stale icon.
@@ -1267,11 +1333,10 @@ var DashticzDeviceEditor = (function () {
           ? null
           : typeof definition.icon === 'string' && definition.icon !== ''
             ? definition.icon
-            : kind === 'title' && typeof definition.icon === 'undefined'
-              ? SEPARATOR_DEFAULT_ICON
-              : null,
+            : null,
         hide_data: definition.hide_data === true,
-        last_update: definition.last_update === true,
+        last_update: lastUpdate.last_update,
+        last_update_inherited: lastUpdate.last_update_inherited,
         switch: definition.switch === true,
         dial: definition.type === 'dial' && !barMode,
         bar: barMode,
@@ -1710,9 +1775,9 @@ var DashticzDeviceEditor = (function () {
     var renderedIcon = _renderedIconForReference(reference);
     if (renderedIcon) return renderedIcon;
 
-    var parsed = special ? null : _parseCk(ck);
-    var idx = special ? special.idx : parsed.idx;
-    var subidx = special ? 0 : parsed.subidx;
+    var parsed = special ? _customSubdevice(special.idx) : _parseCk(ck);
+    var idx = parsed ? parsed.idx : special.idx;
+    var subidx = parsed ? parsed.subidx : 0;
     var devices = Domoticz.getAllDevices();
     var device = devices && (devices[String(idx)] || devices[idx]);
     if (device) return _defaultDomoticzIcon(device, subidx, idx);
@@ -2354,6 +2419,7 @@ var DashticzDeviceEditor = (function () {
         return;
       }
       var configured = _getConfiguredBlockForCk(ck) || {};
+      var configuredLastUpdate = _lastUpdateOptions(configured);
       var barMode = _isBarDefinition(configured);
       deviceTitles[ck] = configured._dashticzAutoTitle
         ? ''
@@ -2370,7 +2436,8 @@ var DashticzDeviceEditor = (function () {
             ? configured.icon
             : null,
         hide_data: configured.hide_data === true,
-        last_update: configured.last_update === true,
+        last_update: configuredLastUpdate.last_update,
+        last_update_inherited: configuredLastUpdate.last_update_inherited,
         switch: configured.switch === true,
         dial: configured.type === 'dial' && !barMode,
         bar: barMode,
@@ -2680,7 +2747,7 @@ var DashticzDeviceEditor = (function () {
       '</label>';
     html +=
       '<input type="text" inputmode="numeric" class="form-control" ' +
-      'id="cd-device-idx" placeholder="123, or v3 for a variable">';
+      'id="cd-device-idx" placeholder="123, s3 or v3">';
     html +=
       '<div class="form-text">' +
       _esc(t.custom_device_idx_help) +
@@ -2750,9 +2817,14 @@ var DashticzDeviceEditor = (function () {
       var reference = $.trim(String($('#cd-device-name').val() || ''));
       var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
       var isVariableIdx = _isCustomVariableIdx(rawIdx);
+      // docs/wizard/specialblocks.rst documents 's<idx>' (a group or scene)
+      // for this field too; the rest of the editor already keeps that form.
+      var isSceneIdx = _isSceneIdx(rawIdx);
       var idx = isVariableIdx
         ? _normalizeCustomVariableIdx(rawIdx)
-        : parseInt(rawIdx, 10);
+        : isSceneIdx
+          ? _normalizeSceneIdx(rawIdx)
+          : parseInt(rawIdx, 10);
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_custom_device_name);
         $('#cd-device-name').trigger('focus');
@@ -2766,7 +2838,11 @@ var DashticzDeviceEditor = (function () {
         $('#cd-device-name').trigger('focus');
         return;
       }
-      if (!isVariableIdx && !(idx > 0 && String(idx) === rawIdx)) {
+      if (
+        !isVariableIdx &&
+        !isSceneIdx &&
+        !(idx > 0 && String(idx) === rawIdx)
+      ) {
         $message.addClass('text-danger').text(t.invalid_idx);
         $('#cd-device-idx').trigger('focus');
         return;
@@ -2880,9 +2956,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('customdevicepopup')
-      ).hide();
+      _hideModal(document.getElementById('customdevicepopup'));
       _save();
     });
 
@@ -3151,7 +3225,7 @@ var DashticzDeviceEditor = (function () {
     var backRequested = false;
     $popup.on('click', '.de-back-btn', function () {
       backRequested = true;
-      window.bootstrap.Modal.getInstance(popup).hide();
+      _hideModal(popup);
     });
     $popup.one('hidden.bs.modal', function () {
       if (
@@ -3382,9 +3456,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('multidevicepopup')
-      ).hide();
+      _hideModal(document.getElementById('multidevicepopup'));
       _save();
     });
 
@@ -3580,9 +3652,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('groupblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('groupblockpopup'));
       _save();
     });
 
@@ -4450,9 +4520,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('clusterblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('clusterblockpopup'));
       _save();
     });
 
@@ -4939,9 +5007,7 @@ var DashticzDeviceEditor = (function () {
         lmsStationColor: lms.stationColor,
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('lmsblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('lmsblockpopup'));
       _save();
     });
 
@@ -5107,9 +5173,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('htmlblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('htmlblockpopup'));
       _save();
     });
 
@@ -5344,9 +5408,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('iframeblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('iframeblockpopup'));
       _save();
     });
 
@@ -5869,9 +5931,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('calendarblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('calendarblockpopup'));
       _save();
     });
 
@@ -6096,9 +6156,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('publictransportblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('publictransportblockpopup'));
       _save();
     });
 
@@ -6315,9 +6373,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('timegraphblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('timegraphblockpopup'));
       _save();
     });
 
@@ -6546,9 +6602,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('xmltvguideblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('xmltvguideblockpopup'));
       _save();
     });
 
@@ -6762,9 +6816,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('camerablockpopup')
-      ).hide();
+      _hideModal(document.getElementById('camerablockpopup'));
       _save();
     });
 
@@ -6931,9 +6983,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('newsblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('newsblockpopup'));
       _save();
     });
 
@@ -7253,9 +7303,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('graphblockpopup')
-      ).hide();
+      _hideModal(document.getElementById('graphblockpopup'));
       _save();
     });
 
@@ -7775,9 +7823,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('f1blockpopup')
-      ).hide();
+      _hideModal(document.getElementById('f1blockpopup'));
       _save();
     });
 
@@ -7987,9 +8033,7 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('slidebuttonpopup')
-      ).hide();
+      _hideModal(document.getElementById('slidebuttonpopup'));
       _save();
     });
 
@@ -8027,7 +8071,7 @@ var DashticzDeviceEditor = (function () {
     if (editor && editorModal && $(editor).hasClass('show')) {
       $(editor).data('de-config-transition', true);
       $(editor).one('hidden.bs.modal', showChild);
-      editorModal.hide();
+      _hideModal(editor);
       return;
     }
     showChild();
@@ -8097,7 +8141,7 @@ var DashticzDeviceEditor = (function () {
     if (editor && editorModal && $(editor).hasClass('show')) {
       $(editor).data('de-config-transition', true);
       $(editor).one('hidden.bs.modal', openFullWidgetConfig);
-      editorModal.hide();
+      _hideModal(editor);
       return;
     }
     openFullWidgetConfig();
@@ -8464,7 +8508,8 @@ var DashticzDeviceEditor = (function () {
       if (!isSpecial && ck) {
         barDeviceIdx = _parseCk(ck).idx;
       } else if (isSpecial && isCustom && special.idx) {
-        barDeviceIdx = special.idx;
+        var customSubdevice = _customSubdevice(special.idx);
+        barDeviceIdx = customSubdevice ? customSubdevice.idx : special.idx;
       }
     }
     var barLiveDevice = barDeviceIdx
@@ -8788,7 +8833,7 @@ var DashticzDeviceEditor = (function () {
         '</label>';
       html +=
         '<input type="text" inputmode="numeric" class="form-control" ' +
-        'id="de-config-idx" placeholder="123, or v3 for a variable" value="' +
+        'id="de-config-idx" placeholder="123, s3 or v3" value="' +
         _esc(special.idx || '') +
         '">';
       html +=
@@ -8802,8 +8847,11 @@ var DashticzDeviceEditor = (function () {
         '<div class="mb-3"><label class="form-label" for="de-config-idx">' +
         _esc(t.group_idx) +
         '</label>';
+      // A text input, not type="number": it must also show and keep the
+      // documented 's12' group/scene form (see _isSceneIdx()).
       html +=
-        '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        '<input type="text" inputmode="numeric" class="form-control" ' +
+        'id="de-config-idx" placeholder="12, or s12" value="' +
         _esc(special.idx || '') +
         '">';
       html +=
@@ -9338,6 +9386,10 @@ var DashticzDeviceEditor = (function () {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
         if (_isCustomVariableIdx(rawIdx)) {
           pendingIdx = _normalizeCustomVariableIdx(rawIdx);
+        } else if (_isCustomSubdeviceIdx(rawIdx)) {
+          pendingIdx = rawIdx;
+        } else if (_isSceneIdx(rawIdx)) {
+          pendingIdx = _normalizeSceneIdx(rawIdx);
         } else {
           var parsedIdx = parseInt(rawIdx, 10);
           if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
@@ -9357,6 +9409,8 @@ var DashticzDeviceEditor = (function () {
         var rawGroupIdx = $.trim(String($('#de-config-idx').val() || ''));
         if (!rawGroupIdx) {
           pendingIdx = null;
+        } else if (_isSceneIdx(rawGroupIdx)) {
+          pendingIdx = _normalizeSceneIdx(rawGroupIdx);
         } else {
           var parsedGroupIdx = parseInt(rawGroupIdx, 10);
           if (!(parsedGroupIdx > 0 && String(parsedGroupIdx) === rawGroupIdx)) {
@@ -9453,6 +9507,15 @@ var DashticzDeviceEditor = (function () {
         var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
+      // An inherited Last update (see _lastUpdateOptions()) stays inherited
+      // unless its toggle was actually changed in this popup.
+      if (
+        options.last_update_inherited === true &&
+        typeof updated.last_update === 'boolean'
+      ) {
+        updated.last_update_inherited =
+          updated.last_update === options.last_update;
+      }
       if (supportsTextStyle) {
         updated.fontsizeTitle = _parseTextFontSize(
           $('#de-config-fontsize-title').val()
@@ -9877,9 +9940,7 @@ var DashticzDeviceEditor = (function () {
           .text(t.saving);
         _saveDeviceConfigOnly()
           .done(function () {
-            window.bootstrap.Modal.getInstance(
-              document.getElementById('de-config-popup')
-            ).hide();
+            _hideModal(document.getElementById('de-config-popup'));
           })
           .fail(function (xhr) {
             var msg =
@@ -9894,9 +9955,7 @@ var DashticzDeviceEditor = (function () {
           });
         return;
       }
-      window.bootstrap.Modal.getInstance(
-        document.getElementById('de-config-popup')
-      ).hide();
+      _hideModal(document.getElementById('de-config-popup'));
     });
 
     var popup = document.getElementById('de-config-popup');
@@ -10839,7 +10898,10 @@ var DashticzDeviceEditor = (function () {
             specialEntry.icon = specialOptions.iconValue;
           }
           specialEntry.hide_data = specialOptions.hide_data === true;
-          specialEntry.last_update = specialOptions.last_update === true;
+          // Left out while inherited, see _lastUpdateOptions().
+          if (specialOptions.last_update_inherited !== true) {
+            specialEntry.last_update = specialOptions.last_update === true;
+          }
           specialEntry.switch = specialOptions.switch === true;
           if (specialOptions.bar === true) {
             // saveblocks.php intentionally accepts only type:'dial'; keep its
@@ -10903,7 +10965,9 @@ var DashticzDeviceEditor = (function () {
           } else if (quickSaveOptions.iconValue) {
             specialEntry.icon = quickSaveOptions.iconValue;
           }
-          specialEntry.last_update = quickSaveOptions.last_update === true;
+          if (quickSaveOptions.last_update_inherited !== true) {
+            specialEntry.last_update = quickSaveOptions.last_update === true;
+          }
           if (special.specialType === 'group' && special.idx) {
             specialEntry.idx = special.idx;
           }
@@ -10920,7 +10984,9 @@ var DashticzDeviceEditor = (function () {
           } else if (tgOptions.iconValue) {
             specialEntry.icon = tgOptions.iconValue;
           }
-          specialEntry.last_update = tgOptions.last_update === true;
+          if (tgOptions.last_update_inherited !== true) {
+            specialEntry.last_update = tgOptions.last_update === true;
+          }
           specialEntry.idx = special.idx;
         } else if (special.specialType === 'slidebutton') {
           var slideOptions = special.options || {};
@@ -10994,7 +11060,10 @@ var DashticzDeviceEditor = (function () {
         entry.icon = options.iconValue;
       }
       entry.hide_data = options.hide_data === true;
-      entry.last_update = options.last_update === true;
+      // Left out while inherited, see _lastUpdateOptions().
+      if (options.last_update_inherited !== true) {
+        entry.last_update = options.last_update === true;
+      }
       entry.switch = options.switch === true;
       if (options.bar === true || options.dial === true) {
         // Dial and Bar both need the full Domoticz device. A sub-value idx
@@ -11163,10 +11232,31 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _closeModalWithoutSaving() {
-    var el = document.getElementById('deviceeditorpopup');
-    var instance =
-      el && window.bootstrap && window.bootstrap.Modal.getInstance(el);
-    if (instance) instance.hide();
+    _hideModal(document.getElementById('deviceeditorpopup'));
+  }
+
+  /* Close a popup after one of its own actions (OK, Save, Back, ...).
+     Bootstrap's Modal.hide() is silently ignored while a modal is still
+     opening (its fade-in), so an action handled right after a popup opened
+     did its work but left the popup open, and anything waiting for its
+     'hidden.bs.modal' (the parent editor, a child popup) never ran. Such a
+     modal is now hidden as soon as it has finished opening; at any other
+     moment this is exactly Modal.hide(). Bootstrap's own close paths
+     (Cancel/X, Escape, backdrop) are left unchanged. Kept per file, like
+     widgeteditor.js's copy, so no editor depends on another cached script. */
+  function _hideModal(element) {
+    var modal =
+      element &&
+      window.bootstrap &&
+      window.bootstrap.Modal.getInstance(element);
+    if (!modal) return;
+    if (modal._isShown === true && modal._isTransitioning === true) {
+      $(element).one('shown.bs.modal', function () {
+        modal.hide();
+      });
+      return;
+    }
+    modal.hide();
   }
 
   // Devices in openDeviceEntries no longer in managedOrder were toggled off
@@ -11410,10 +11500,7 @@ var DashticzDeviceEditor = (function () {
       .done(function () {
         $btn.removeClass('btn-primary').addClass('btn-success').text(t.saved);
         setTimeout(function () {
-          var el = document.getElementById('deviceeditorpopup');
-          if (el && window.bootstrap) {
-            window.bootstrap.Modal.getInstance(el).hide();
-          }
+          _hideModal(document.getElementById('deviceeditorpopup'));
           // eslint-disable-next-line no-self-assign
           window.location.href = window.location.href;
         }, 900);

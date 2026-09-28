@@ -32,6 +32,17 @@ function _validate_custom_device_value($value, $depth = 0)
     return true;
 }
 
+/** Last update as sent by the editor: true/false, or null when the editor
+ * left it out because the block has no last_update of its own and the user
+ * did not change it - it then keeps following the global
+ * settings['last_update'] (see configwriter.php). */
+function _dashticz_editor_last_update($entry)
+{
+    return is_array($entry) && array_key_exists('last_update', $entry)
+        ? !empty($entry['last_update'])
+        : null;
+}
+
 /** The Device Editor's Dial checkbox is the only supported way to set a
  * block's type; 'type' itself stays a reserved/rejected custom field. */
 function _dashticz_editor_block_type($entry)
@@ -175,21 +186,23 @@ foreach ($data['devices'] as $entry) {
         if ($kind === 'dummy' || $kind === 'custom') {
             // A Custom device may also reference a Domoticz user variable via
             // a 'v<idx>' string (see js/domoticz-api.js's _setAllVariables()
-            // and docs/blocks/domoticzblocks.rst) - a Dummy device has no
+            // and docs/blocks/domoticzblocks.rst), one sub-device of a
+            // multi-value device via '<idx>_<subidx>' (e.g. '274_1', #1309)
+            // or a Domoticz group/scene via 's<idx>' - a Dummy device has no
             // Domoticz backing, so it stays a plain positive integer.
-            $isVariableIdx = $kind === 'custom'
+            $isStringIdx = $kind === 'custom'
                 && isset($entry['idx'])
                 && is_string($entry['idx'])
-                && preg_match('/^v\d+$/', $entry['idx']);
+                && preg_match('/^(?:v\d+|s[1-9]\d*|[1-9]\d*_[1-9]\d*)$/', $entry['idx']);
             if (
-                !$isVariableIdx
+                !$isStringIdx
                 && (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1)
             ) {
                 dashticz_json_error(
                     400,
                     $kind === 'dummy'
                         ? 'A dummy block requires a positive integer idx.'
-                        : 'A custom device requires a positive integer idx or a v<idx> variable reference.'
+                        : 'A custom device requires a positive integer idx, a v<idx> variable, an s<idx> group/scene or an <idx>_<subidx> sub-device reference.'
                 );
             }
             $idx = $entry['idx'];
@@ -197,7 +210,7 @@ foreach ($data['devices'] as $entry) {
                 ? substr($entry['icon'], 0, 100)
                 : null;
             $hideData = !empty($entry['hide_data']);
-            $lastUpdate = !empty($entry['last_update']);
+            $lastUpdate = _dashticz_editor_last_update($entry);
             $switch = !empty($entry['switch']);
             $type = _dashticz_editor_block_type($entry);
         } elseif ($kind === 'title') {
@@ -212,15 +225,19 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-            $lastUpdate = !empty($entry['last_update']);
+            $lastUpdate = _dashticz_editor_last_update($entry);
             if ($kind === 'group') {
                 // A Group's idx (the Domoticz group/scene whose devices are
                 // grouped) is optional - custom_fields.devices below can list
-                // plain device ids instead. When given it must still be a
-                // positive integer, same as every other idx in this file.
+                // plain device ids instead. When given it must be a positive
+                // integer or the documented 's<idx>' form (docs/blocks/specials/
+                // group.rst), which is kept as written: elsewhere a bare number
+                // means a device idx.
                 if (isset($entry['idx']) && $entry['idx'] !== null && $entry['idx'] !== '') {
-                    if (!is_int($entry['idx']) || $entry['idx'] < 1) {
-                        dashticz_json_error(400, 'A group idx must be a positive integer.');
+                    $isSceneIdx = is_string($entry['idx'])
+                        && preg_match('/^s[1-9]\d*$/', $entry['idx']);
+                    if (!$isSceneIdx && (!is_int($entry['idx']) || $entry['idx'] < 1)) {
+                        dashticz_json_error(400, 'A group idx must be a positive integer or s<idx>.');
                     }
                     $idx = $entry['idx'];
                 }
@@ -522,7 +539,7 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-            $lastUpdate = !empty($entry['last_update']);
+            $lastUpdate = _dashticz_editor_last_update($entry);
         } elseif ($kind === 'lms') {
             // Icon defaults off (js/deviceeditor.js's Lyrion Music Server popup
             // uses the cover artwork as its visual, like an HTML Block), but is
@@ -703,7 +720,7 @@ foreach ($data['devices'] as $entry) {
             'title' => $title,
             'icon' => $icon,
             'hide_data' => !empty($entry['hide_data']),
-            'last_update' => !empty($entry['last_update']),
+            'last_update' => _dashticz_editor_last_update($entry),
             'switch' => !empty($entry['switch']),
             'type' => _dashticz_editor_block_type($entry),
             'hide_title' => !empty($entry['hide_title']),
@@ -760,7 +777,7 @@ foreach ($data['devices'] as $entry) {
             'title' => $title,
             'icon' => $icon,
             'hide_data' => !empty($entry['hide_data']),
-            'last_update' => !empty($entry['last_update']),
+            'last_update' => _dashticz_editor_last_update($entry),
             'switch' => !empty($entry['switch']),
             'type' => _dashticz_editor_block_type($entry),
             'hide_title' => !empty($entry['hide_title']),
@@ -886,7 +903,11 @@ if (!empty($devices)) {
         // block definitions. Preserve an explicitly unchecked Last update
         // option as last_update:false instead of omitting the property and
         // falling back to the global config['last_update'] after reload (#172).
-        if (isset($device['kind']) && $device['kind'] === 'custom') {
+        // null (not set on the block, not changed in the editor) stays out
+        // so the tile keeps following the global setting.
+        if (isset($device['kind']) && $device['kind'] === 'custom'
+            && $device['last_update'] !== null
+        ) {
             $props['last_update'] = !empty($device['last_update']);
         }
         $section .= configwriter_emit_block_line($device['key'], $props);
