@@ -7,6 +7,20 @@ const dashboardUrl =
 
 test.describe('optional screen grid layout', () => {
   test.afterEach(async ({ page }) => {
+    // Leave the dashboard before removing the mocks. A save chain that is
+    // still running after a test's last assertion (savewidgets.php /
+    // savelayout.php after the asserted saveblocks.php) otherwise reaches
+    // the real PHP endpoints, which reject it (403), and the editor's
+    // alert() then pops up while Playwright closes the page - an
+    // intermittent "Page.handleJavaScriptDialog ... session closed" failure.
+    // beforeunload is accepted so an active Layout Editor cannot block this.
+    page.on('dialog', (dialog) =>
+      (dialog.type() === 'beforeunload'
+        ? dialog.accept()
+        : dialog.dismiss()
+      ).catch(() => {})
+    );
+    await page.goto('about:blank').catch(() => {});
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
   test('keeps legacy column screens on the Bootstrap path', async ({
@@ -1084,7 +1098,9 @@ screens[1] = {
         {
           selector: '#de-config-popup #de-config-ok',
           click: (element) => {
-            document.querySelector('[data-option="icon"]').click();
+            document
+              .querySelector('#de-config-popup [data-option="icon"]')
+              .click();
             element.click();
           },
         },
