@@ -555,7 +555,7 @@
       "invalid_news_block_feed": "Vul een geldige URL van een nieuwsfeed in.",
       "image": "Afbeelding",
       "custom_device_idx": "IDX",
-      "custom_device_idx_help": "IDX van het Domoticz-device, of 'v<idx>' voor een Domoticz-variabele (bijv. v3)."
+      "custom_device_idx_help": "IDX van het Domoticz-device, 's<idx>' voor een group of scene (bijv. s3), of 'v<idx>' voor een Domoticz-variabele (bijv. v3)."
     },
     "layouteditor": {
       "title": "Layout Editor",

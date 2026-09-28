@@ -63,7 +63,7 @@ test('saveblocks.php accepts the same sub-device idx shape for Custom devices', 
     'utf8'
   );
   const writer = fs.readFileSync(configwriterPath, 'utf8');
-  const shape = "preg_match('/^(?:v\\d+|[1-9]\\d*_[1-9]\\d*)$/'";
+  const shape = "preg_match('/^(?:v\\d+|s[1-9]\\d*|[1-9]\\d*_[1-9]\\d*)$/'";
   assert.ok(saveblocks.includes(shape), 'saveblocks.php validation');
   assert.ok(writer.includes(shape), 'configwriter.php custom branch');
 });
@@ -77,10 +77,11 @@ test('Device Editor keeps a Custom device sub-device idx as a string', () => {
     deviceEditor,
     /function _isCustomSubdeviceIdx\(idx\) \{\s*return typeof idx === 'string' && \/\^\[1-9\]\[0-9\]\*_\[1-9\]\[0-9\]\*\$\/\.test\(idx\);/
   );
-  // _specialFromReference(): the sub-device string is kept instead of
-  // falling through to parseInt(), which dropped the sub-index.
+  // _specialFromReference() -> _specialIdx(): the sub-device string is kept
+  // instead of falling through to parseInt(), which dropped the sub-index.
+  assert.match(deviceEditor, /idx: _specialIdx\(kind, definition\.idx\),/);
   assert.match(
     deviceEditor,
-    /: kind === 'custom' && _isCustomSubdeviceIdx\(definition\.idx\)\s*\? definition\.idx\s*: parseInt\(definition\.idx, 10\),/
+    /if \(kind === 'custom'\) \{[\s\S]{0,160}?if \(_isCustomSubdeviceIdx\(idx\)\) return idx;[\s\S]{0,120}?\}\s*return parseInt\(idx, 10\);/
   );
 });

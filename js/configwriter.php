@@ -1538,7 +1538,13 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
         $props['hide_data'] = !empty($device['hide_data']);
     }
     if (array_key_exists('last_update', $device)) {
-        $props['last_update'] = !empty($device['last_update']);
+        if ($device['last_update'] === null) {
+            // Not set on the block and not changed in the editor: keep
+            // following the global settings['last_update'].
+            unset($props['last_update']);
+        } else {
+            $props['last_update'] = !empty($device['last_update']);
+        }
     }
     if (array_key_exists('switch', $device)) {
         $props['switch'] = !empty($device['switch']);
@@ -1625,12 +1631,13 @@ function configwriter_special_block_props($block)
         }
     } elseif ($kind === 'custom') {
         // A Custom device's idx is usually a plain Domoticz device id, but it
-        // may also be a 'v<idx>' string referencing a Domoticz user variable
-        // or an '<idx>_<subidx>' sub-device reference (js/saveblocks.php
-        // already validated the shape) - that string must survive unchanged,
-        // not be cast down to (int) 0 or lose its sub-index (#1309).
+        // may also be a 'v<idx>' string referencing a Domoticz user variable,
+        // an 's<idx>' group/scene or an '<idx>_<subidx>' sub-device reference
+        // (js/saveblocks.php already validated the shape) - that string must
+        // survive unchanged, not be cast down to (int) 0 or lose its
+        // sub-index (#1309).
         $isStringIdx = is_string($block['idx'])
-            && preg_match('/^(?:v\d+|[1-9]\d*_[1-9]\d*)$/', $block['idx']);
+            && preg_match('/^(?:v\d+|s[1-9]\d*|[1-9]\d*_[1-9]\d*)$/', $block['idx']);
         $props = [
             'idx' => $isStringIdx ? $block['idx'] : (int)$block['idx'],
             'width' => $width,
@@ -1698,7 +1705,11 @@ function configwriter_special_block_props($block)
         // property is present and explicitly false.
         $props['last_update'] = !empty($block['last_update']);
         if (isset($block['idx']) && $block['idx'] !== null && $block['idx'] !== '') {
-            $props['idx'] = (int)$block['idx'];
+            // Keep a documented 's<idx>' group reference as written (a bare
+            // number is a device idx for Automation, see js/devicerules.js).
+            $props['idx'] = is_string($block['idx']) && preg_match('/^s[1-9]\d*$/', $block['idx'])
+                ? $block['idx']
+                : (int)$block['idx'];
         }
     } elseif ($kind === 'cluster') {
         // js/components/cluster.js dispatches purely on type: 'cluster',
@@ -1994,6 +2005,12 @@ function configwriter_special_block_props($block)
         foreach ($block['custom_fields'] as $field => $value) {
             $props[$field] = $value;
         }
+    }
+    // null = the block has no last_update of its own and the user did not
+    // change it: leave it out so the tile keeps following the global
+    // settings['last_update'] instead of turning into last_update:false.
+    if (array_key_exists('last_update', $block) && $block['last_update'] === null) {
+        unset($props['last_update']);
     }
     return $props;
 }

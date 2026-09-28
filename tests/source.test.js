@@ -1303,7 +1303,7 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\|\s*_isCustomVariableIdx\(definition\.idx\) \|\|[\s\S]{0,300}?\(_isSceneIdx\(definition\.idx\) && !_isSceneIdx\(reference\)\)\)/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -1433,9 +1433,16 @@ test('device and widget config editors share full widget config and preserve hid
     dashticz,
     /special\.name === 'blocktitle' && cfg\.image[\s\S]*cfg\.icon = '';/
   );
+  // A separator without an icon property is read with its Icon option off,
+  // matching how it renders (#169 below), so an unrelated save does not add
+  // SEPARATOR_DEFAULT_ICON to it.
   assert.match(
     deviceEditor,
-    /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/
+    /\(kind === 'title'\s*\n\s*\? typeof definition\.icon === 'string' && definition\.icon !== ''/
+  );
+  assert.doesNotMatch(
+    deviceEditor,
+    /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]{0,40}\? SEPARATOR_DEFAULT_ICON/
   );
   // #169: a hand-written/legacy blocktitle entry with no `icon` property at
   // all must render with no icon, exactly like Wizard's explicit icon: ''
@@ -4656,7 +4663,7 @@ test("Move mode Settings button opens the Multi/Custom Device's own config, not 
   // the Dial/Bar visual mode's type:'dial' (#182).
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\|\s*_isCustomVariableIdx\(definition\.idx\) \|\|[\s\S]{0,300}?\(_isSceneIdx\(definition\.idx\) && !_isSceneIdx\(reference\)\)\)/
   );
 });
 
@@ -4821,7 +4828,7 @@ test("Device Config popup lets a Custom/Multi device's main idx be corrected aft
   );
   assert.match(
     deviceEditor,
-    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else if \(_isCustomSubdeviceIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = rawIdx;[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
+    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else if \(_isCustomSubdeviceIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = rawIdx;[\s\S]{0,40}?\} else if \(_isSceneIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = _normalizeSceneIdx\(rawIdx\);[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
   );
   assert.match(
     deviceEditor,
