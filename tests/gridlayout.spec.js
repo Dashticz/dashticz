@@ -1558,12 +1558,20 @@ screens[1] = {
     // button.js's injected Background toggle (#170), which reuses
     // .de-config-option for its shared active-state look (#195).
     await expect(page.locator('.de-config-option')).toHaveCount(3);
-    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
+    // grid_text has no icon and renders none (#169, asserted above), so its
+    // Icon option opens off - reading it as on made any save add
+    // fas fa-divide to the separator. Turning it on offers that default.
+    await expect(page.locator('[data-option="icon"]')).not.toHaveClass(
+      /active/
+    );
     await expect(page.locator('[data-option="show_title"]')).toHaveClass(
       /active/
     );
     await expect(page.locator('[data-dt-no-background]')).toHaveClass(/active/);
     const separatorIconRow = page.locator('.de-icon-field-row');
+    await expect(separatorIconRow).toBeHidden();
+    await page.locator('[data-option="icon"]').click();
+    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
     await expect(separatorIconRow).toBeVisible();
     await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue(
       'icon'
@@ -1633,12 +1641,15 @@ screens[1] = {
     await expect(separatorOverlay.locator('.dle-config-button')).toHaveCount(1);
 
     await expect.poll(() => blocksRequest).not.toBeNull();
+    // tc1 is a scene ('s5') under its own key: it is saved as a Custom
+    // device and keeps that key and its settings, instead of being renamed
+    // to the bare 's5' device key.
     expect(blocksRequest.devices).toEqual([
       {
+        kind: 'custom',
+        key: 'tc1',
         idx: 's5',
-        name: 'KeukenLampen',
         width: 2,
-        key: 's5',
         title: 'Tuin',
         icon: 'fas fa-car',
         hide_data: true,
@@ -1664,7 +1675,7 @@ screens[1] = {
     // Confirming a single device's config from the Layout Editor must never
     // touch anything layout-related: no widgets save, no grid/column layout
     // save, no custom.css rewrite. Grid positions for both blocks - including
-    // the untouched 's5' device - are left exactly as the Layout Editor still
+    // the untouched tc1 device - are left exactly as the Layout Editor still
     // holds them, not re-derived from a stale pre-edit snapshot.
     expect(widgetsRequest).toBeNull();
     expect(gridRequest).toBeNull();
