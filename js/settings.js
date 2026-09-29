@@ -850,7 +850,7 @@ var defaultSettings = {
   language: 'en_US',
   speak_lang: 'en_US',
   timeformat: 'DD-MM-YY HH:mm',
-  calendarformat: 'dd DD.MM HH:mm',
+  calendarformat: 'dd DD-MM HH:mm',
   calendar_maxitems: 15,
   shortdate: 'D MMM',
   longdate: 'D MMMM YYYY',

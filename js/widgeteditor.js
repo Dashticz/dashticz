@@ -1119,7 +1119,7 @@ var DashticzWidgetEditor = (function () {
       },
       calendar: {
         sources: [_defaultCalendarSource(0)],
-        calendarformat: _s('calendarformat', 'dd DD.MM HH:mm'),
+        calendarformat: _s('calendarformat', 'dd DD-MM HH:mm'),
         calendarlanguage: _s('calendarlanguage', 'en_US'),
         calendar_maxitems: _s('calendar_maxitems', '15'),
       },
