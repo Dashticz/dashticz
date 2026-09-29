@@ -1,6 +1,23 @@
 Release Notes
 =============
 
+v4.1.2 (29-9-2026)
+----------------------
+
+* **Enhancements**
+
+- The calendar language now follows the general language setting. Previously
+  ``calendarlanguage`` defaulted to ``en_US``, so weekdays and months in the
+  Calendar block stayed English when ``language`` was set to, for example,
+  ``nl_NL`` (#1315). ``calendarlanguage`` now defaults to the value of
+  ``language``; an explicitly configured ``calendarlanguage`` still takes
+  precedence.
+
+* **Code**
+
+- ``js/settings.js`` falls back to ``settings['language']`` when
+  ``calendarlanguage`` is not configured.
+
 v4.1.1 (27-9-2026)
 ----------------------
 
