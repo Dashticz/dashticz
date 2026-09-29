@@ -263,11 +263,21 @@ settingList['localize']['timeformat']['title'] =
   language.settings.localize.timeformat;
 settingList['localize']['timeformat']['type'] = 'text';
 
-/* Moved to widget editor (calendar widget settings)
-settingList['localize']['calendarformat'] = ...
-settingList['localize']['calendarlanguage'] = ...
-settingList['localize']['calendarurl'] = ...
-*/
+// Calendar format and language are shared with the Calendar widget config: both
+// read and write config['calendarformat'] / config['calendarlanguage'].
+settingList['localize']['calendarformat'] = {};
+settingList['localize']['calendarformat']['title'] =
+  language.settings.localize.calendarformat;
+settingList['localize']['calendarformat']['type'] = 'text';
+
+settingList['localize']['calendarlanguage'] = {};
+settingList['localize']['calendarlanguage']['title'] =
+  language.settings.localize.calendarlanguage;
+settingList['localize']['calendarlanguage']['type'] = 'select';
+settingList['localize']['calendarlanguage']['options'] = $.extend(
+  {},
+  settingList['localize']['language']['options']
+);
 
 settingList['localize']['speak_lang'] = {};
 settingList['localize']['speak_lang']['title'] =
@@ -541,14 +551,6 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.calendar_title || 'Calendar',
     icon: 'fas fa-calendar-alt',
     settings: {
-      calendarformat: {
-        title: language.settings.localize.calendarformat,
-        type: 'text',
-      },
-      calendarlanguage: {
-        title: language.settings.localize.calendarlanguage,
-        type: 'text',
-      },
       calendarurl: {
         title:
           language.settings.localize.calendarurl_link || 'Full calendar link',
