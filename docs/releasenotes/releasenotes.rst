@@ -12,6 +12,9 @@ v4.1.2 (29-9-2026)
   ``nl_NL`` (#1315). ``calendarlanguage`` now defaults to the value of
   ``language``; an explicitly configured ``calendarlanguage`` still takes
   precedence.
+- The default ``calendarformat`` is now ``dd DD-MM HH:mm`` (was
+  ``dd DD.MM HH:mm``), so dates show as 29-09 instead of 29.09. A configured
+  ``calendarformat`` is not affected.
 
 * **Code**
 
