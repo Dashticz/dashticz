@@ -156,7 +156,7 @@ Config parameters
       | ``'DD-MM-YY HH:mm'`` = default
   * - calendarformat
     - | Configure the Calendar Date/Time format.
-      | ``'dd DD.MM HH:mm'`` = default
+      | ``'dd DD-MM HH:mm'`` = default
   * - calendarlanguage
     - | Controls the weather dates and garbage pickup dates language
       | ``'<LANGUAGE>'``, for example ``'nl_NL'``. Default: the value of ``language``.
