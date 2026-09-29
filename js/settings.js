@@ -1086,6 +1086,14 @@ if (typeof(Storage) !== "undefined") {
 
 $.extend(settings, defaultSettings, config);
 
+// The calendar locale follows the general language unless calendarlanguage
+// is explicitly configured.
+if (
+  typeof config === 'undefined' ||
+  typeof config['calendarlanguage'] === 'undefined'
+)
+  settings['calendarlanguage'] = settings['language'];
+
 // When config_mode is not explicitly set in CONFIG.js, default to custom
 // mode (user is editing by hand) rather than wizard.
 var _configModeAutoDetected =
