@@ -26,8 +26,9 @@ The following config settings are applicable:
     - | Configure the Calendar Date/Time format.
       | ``'dd DD.MM HH:mm'`` = default
   * - calendarlanguage
-    - | Controls the calendar locale
-      | ``'nl'`` , ``'en'`` , ``'hu'``, etc.
+    - | Controls the calendar locale, e.g. for the weekday and month names.
+      | ``'nl'`` , ``'nl_NL'``, ``'en'`` , ``'hu'``, etc.
+      | Default: the value of ``language``.
 
 Usage
 -----
