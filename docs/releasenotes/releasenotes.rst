@@ -15,11 +15,18 @@ v4.1.2 (29-9-2026)
 - The default ``calendarformat`` is now ``dd DD-MM HH:mm`` (was
   ``dd DD.MM HH:mm``), so dates show as 29-09 instead of 29.09. A configured
   ``calendarformat`` is not affected.
+- The calendar format and language are back in the Settings menu (Localize).
+  They stay in sync with the Calendar Widget Config: both edit
+  ``calendarformat`` and ``calendarlanguage``.
+- Adding a calendar with **Add items > Calendar** now writes ``calendarformat``
+  and ``calendarlanguage`` to the config, as Dashticz 3 did.
 
 * **Code**
 
 - ``js/settings.js`` falls back to ``settings['language']`` when
   ``calendarlanguage`` is not configured.
+- ``js/savewidgets.php`` also saves settings when no widgets are submitted and
+  keeps the saved settings that are not part of the request.
 
 v4.1.1 (27-9-2026)
 ----------------------
