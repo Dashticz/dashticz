@@ -242,7 +242,7 @@
       "traffic_roadworks": "Wegwerkzaamheden",
       "traffic_roadworks_help": "Toon wegwerkzaamheden.",
       "traffic_results": "Max resultaten",
-      "traffic_results_help": "Maximum aantal items dat in het blok getoond wordt.",
+      "traffic_results_help": "Maximum aantal meldingen: per weg bij Gekozen wegen, in totaal bij een afstand.",
       "traffic_max_distance": "Max afstand (km)",
       "traffic_max_distance_help": "Toon alleen meldingen binnen deze afstand (in km, hemelsbreed) van de locatie hieronder. Leeg laten om alles te tonen (voorlopig alleen voor RWS).",
       "traffic_latitude": "Breedtegraad",
@@ -250,7 +250,15 @@
       "traffic_location_help": "Referentielocatie voor Max afstand. Laat Breedtegraad en Lengtegraad beide leeg om Domoticz' eigen ingestelde locatie te gebruiken (Instellingen > Systeem > Locatie) - vul ze alleen zelf in als dat niet is ingesteld.",
       "clock_scale": "Schaal",
       "clock_scale_help": "Relatieve schaalfactor, bijv. 0.75 (standaard 1)",
-      "miniclock_note": "Miniclock heeft geen extra weergave-opties."
+      "miniclock_note": "Miniclock heeft geen extra weergave-opties.",
+      "traffic_filter": "Tonen",
+      "traffic_filter_distance": "Alles binnen een afstand",
+      "traffic_filter_roads": "Gekozen wegen",
+      "traffic_filter_help": "Alles binnen een afstand van een locatie, of alleen de wegen die je opgeeft.",
+      "traffic_roads": "Wegen",
+      "traffic_roads_help": "Wegnummers gescheiden door komma's, bijvoorbeeld A4, A17, N201. Ze worden in deze volgorde getoond.",
+      "traffic_showemptyroads": "Wegen zonder meldingen tonen",
+      "traffic_showemptyroads_help": "Toon een weg ook als er geen files of wegwerkzaamheden zijn."
     },
     "deviceeditor": {
       "editor_title": "Device-editor",
