@@ -7321,7 +7321,7 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   );
   assert.match(
     widgetEditor,
-    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*radars: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*\},/
+    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*radars: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*filter: true,\s*\n\s*road: true,\s*\n\s*showemptyroads: true,\s*\n\s*\},/
   );
 
   // Defaults: 5 results, 40km max distance shown in the field and used
@@ -7564,6 +7564,232 @@ test("Trafficinfo defaultCfg falls back to Domoticz's own location, block overri
   assert.equal(withOverride.latitude, 51.5);
   assert.equal(withOverride.longitude, 4.5);
   assert.equal(withOverride.maxDistance, 25);
+});
+
+// Issue #1321: traffic info for selected roads (the 3.x `road` option) as a
+// second filter next to the distance filter.
+function loadTrafficInfoWithRender() {
+  const ctx = loadTrafficInfoModule();
+  ctx.rendered = '';
+  ctx.$ = () => ({
+    html(value) {
+      ctx.rendered = value;
+    },
+    append(value) {
+      ctx.rendered += value;
+    },
+  });
+  return ctx;
+}
+
+const trafficRoadData = {
+  obstructions: [
+    {
+      obstructionType: 4,
+      roadNumber: 'A17',
+      latitude: 51.5,
+      longitude: 4.5,
+      directionText: 'Moerdijk - Rotterdam',
+      locationText: 'Tussen Klaaswaal en Rotterdam.',
+      cause: 'Door een ongeval',
+      delay: 12,
+      length: 3000,
+    },
+    {
+      obstructionType: 4,
+      roadNumber: 'A4',
+      latitude: 53.5,
+      longitude: 6.5,
+      directionText: 'Amsterdam - Den Haag',
+      locationText: 'Eerste melding A4.',
+    },
+    {
+      obstructionType: 1,
+      roadNumber: 'A4',
+      directionText: 'Den Haag - Amsterdam',
+      locationText: 'Tweede melding A4.',
+    },
+    {
+      obstructionType: 4,
+      roadNumber: 'A2',
+      directionText: 'Utrecht - Amsterdam',
+      locationText: 'Melding <b>A2</b>.',
+    },
+  ],
+};
+
+test('Trafficinfo road filter: road list parsing and filter selection (#1321)', () => {
+  const ctx = loadTrafficInfoModule();
+  // Commas or semicolons, any spacing/case, duplicates removed, order kept.
+  assert.deepEqual(Array.from(ctx._parseRoads(' a4, A17;a 4 ,n201 ')), [
+    'A4',
+    'A17',
+    'N201',
+  ]);
+  assert.deepEqual(Array.from(ctx._parseRoads(['A4', 'a17'])), ['A4', 'A17']);
+  assert.deepEqual(Array.from(ctx._parseRoads(undefined)), []);
+
+  // A hand-written 3.x block with a road list and no filter keeps filtering
+  // on its roads; an explicit filter always wins; default is distance.
+  assert.equal(ctx.DT_trafficinfo.defaultCfg({ road: 'A4' }).filter, 'roads');
+  assert.equal(
+    ctx.DT_trafficinfo.defaultCfg({ road: 'A4', filter: 'distance' }).filter,
+    'distance'
+  );
+  assert.equal(ctx.DT_trafficinfo.defaultCfg({}).filter, 'distance');
+});
+
+test('Trafficinfo road filter: only the selected roads, in their order, per-road limit, empty roads (#1321)', () => {
+  const ctx = loadTrafficInfoWithRender();
+  const me = {
+    mountPoint: '#test',
+    block: {
+      filter: 'roads',
+      road: 'A17, A4, A12',
+      trafficJams: true,
+      roadWorks: true,
+      results: 1,
+      showemptyroads: true,
+      // Far away from every obstruction: the distance filter must not apply
+      // in roads mode.
+      latitude: 0,
+      longitude: 0,
+      maxDistance: 1,
+    },
+  };
+  const result = ctx._buildRWSDataPart(me, trafficRoadData);
+  assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A4']);
+  assert.ok(!result.dataPart.A2, 'roads that are not selected are left out');
+  assert.equal(result.dataPart.A4.length, 2);
+  assert.ok(
+    result.dataPart.A17.join('').includes('Door een ongeval'),
+    'the cause is shown'
+  );
+
+  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  const html = ctx.rendered;
+  // Configured order: A17 before A4 before A12.
+  assert.ok(html.indexOf('A17') < html.indexOf('>A4<'));
+  assert.ok(html.indexOf('>A4<') < html.indexOf('>A12<'));
+  // results is a per-road limit in roads mode.
+  assert.ok(html.includes('Eerste melding A4.'));
+  assert.ok(!html.includes('Tweede melding A4.'));
+  // showemptyroads lists a selected road without announcements once.
+  assert.equal(html.split('>A12<').length - 1, 1);
+  assert.ok(html.includes('No traffic announcements'));
+
+  // A custom empty-road text is used as such.
+  me.block.showemptyroads = 'Rustig';
+  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  assert.ok(ctx.rendered.includes('Rustig'));
+});
+
+test('Trafficinfo distance mode: road list ignored, total limit, RWS text escaped (#1321)', () => {
+  const ctx = loadTrafficInfoWithRender();
+  const me = {
+    mountPoint: '#test',
+    block: {
+      filter: 'distance',
+      road: 'A17',
+      trafficJams: true,
+      roadWorks: true,
+      results: 2,
+    },
+  };
+  const result = ctx._buildRWSDataPart(me, trafficRoadData);
+  assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A2', 'A4']);
+  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  // Road-number order (A2, A4, A17) with 2 announcements in total.
+  assert.ok(ctx.rendered.includes('Melding &lt;b&gt;A2&lt;/b&gt;.'));
+  assert.ok(ctx.rendered.includes('Eerste melding A4.'));
+  assert.ok(!ctx.rendered.includes('Tweede melding A4.'));
+  assert.ok(!ctx.rendered.includes('Klaaswaal'));
+});
+
+test('Trafficinfo announcement text: direction with a hyphenated place name, no zero delay/length', () => {
+  const ctx = loadTrafficInfoModule();
+  const result = ctx._buildRWSDataPart(
+    { block: { filter: 'roads', road: 'A2', roadWorks: true, results: 5 } },
+    {
+      obstructions: [
+        {
+          obstructionType: 1,
+          roadNumber: 'A2',
+          directionText: "Utrecht - 's-Hertogenbosch",
+          delay: 0,
+          length: 0,
+          locationText: 'Rijstrook dicht.',
+        },
+      ],
+    }
+  );
+  const html = result.dataPart.A2.join('');
+  assert.ok(html.includes('Utrecht</b><b> - &#39;s-Hertogenbosch'));
+  assert.ok(!html.includes('0.0km'));
+  assert.ok(!html.includes('+ 0min'));
+});
+
+test('Trafficinfo Widget Config and save: Distance/Roads filter, road list and empty roads (#1321)', () => {
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'filter',/);
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'road',/);
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'showemptyroads',/);
+  assert.match(widgetEditor, /data-traffic-filter="roads"/);
+  assert.match(widgetEditor, /data-traffic-filter="distance"/);
+  assert.match(widgetEditor, /\$cfgModal\.on\('change', '#we-cfg-filter'/);
+  // Both scan paths (column and grid screens) read the filter back.
+  assert.equal(
+    (widgetEditor.match(/_hydrateTrafficRoadFilter\(definition\);/g) || [])
+      .length,
+    2
+  );
+  assert.match(
+    widgetEditor,
+    /entry\.filter = trcfg\.filter === 'roads' \? 'roads' : 'distance';/
+  );
+
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const extractStart = savewidgets.indexOf("if (\$id === 'trafficinfo') {");
+  const extractBlock = savewidgets.slice(
+    extractStart,
+    savewidgets.indexOf("if (\$id === 'camera') {", extractStart)
+  );
+  assert.match(extractBlock, /\$widget\['filter'\]/);
+  assert.match(extractBlock, /\$widget\['road'\] = \$road;/);
+  assert.match(extractBlock, /\$widget\['showemptyroads'\]/);
+  const caseStart = savewidgets.indexOf("case 'trafficinfo':");
+  const caseBlock = savewidgets.slice(
+    caseStart,
+    savewidgets.indexOf('break;', caseStart)
+  );
+  assert.match(caseBlock, /\$props\['filter'\] = \$widget\['filter'\];/);
+  assert.match(caseBlock, /\$props\['road'\] = \$widget\['road'\];/);
+  assert.match(
+    caseBlock,
+    /\$props\['showemptyroads'\] = \$widget\['showemptyroads'\];/
+  );
+
+  for (const file of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', file + '.json'), 'utf8')
+    );
+    for (const key of [
+      'traffic_filter',
+      'traffic_filter_distance',
+      'traffic_filter_roads',
+      'traffic_roads',
+      'traffic_roads_help',
+      'traffic_showemptyroads',
+    ]) {
+      assert.ok(lang.settings.widgets[key], file + ' ' + key);
+    }
+  }
 });
 
 test('Traffic info translations: no ANWB/provider keys left, jams/roadworks/results/distance keys exist', () => {

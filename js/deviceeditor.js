@@ -5931,6 +5931,15 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
+      // Like Dashticz 3: write the calendar format and language to the config
+      // when they are not configured yet, so they can be edited there and in
+      // the Settings menu.
+      ['calendarformat', 'calendarlanguage'].forEach(function (name) {
+        var configured =
+          typeof config !== 'undefined' && typeof config[name] !== 'undefined';
+        if (!configured && typeof settings[name] !== 'undefined')
+          pendingWidgetSettings[name] = String(settings[name]);
+      });
       _hideModal(document.getElementById('calendarblockpopup'));
       _save();
     });
