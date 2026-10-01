@@ -7336,98 +7336,173 @@ var DashticzDeviceEditor = (function () {
     'https://files-f1.motorsportcalendars.com/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
   var F1_URL_NL =
     'https://files-f1.motorsportcalendars.com/nl/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
-  // Custom field name (lower case) -> value, kept in one place so the popup,
-  // the config popup and the generic Custom fields list agree on which
-  // fields the dedicated F1 section owns.
-  var F1_FIELDS = {
-    f1mode: true,
-    f1language: true,
-    f1urlen: true,
-    f1urlnl: true,
-    f1utcoffset: true,
-    f1pollminutes: true,
-    f1sessions: true,
-    f1visibility: true,
-    f1emptytext: true,
-    hideimageonempty: true,
-    f1fontsize: true,
-    f1image: true,
-  };
+  // Every F1 setting except the mode, in the order of the F1 section. The
+  // fields, reading them back and saving them are all derived from this:
+  //   key   - element id <prefix>-f1-<key>, custom field 'f1' + key (unless
+  //           `field`), label 'f1_block_' + key (unless `label`), help text
+  //           label + '_help' when `help` is set (or the `help` key)
+  //   def   - default, as applied by js/components/f1.js; a default value
+  //           is left out of the saved block
+  //   range - [min, max, step] of a number field
+  //   full  - the field spans both columns
+  var F1_SETTINGS = [
+    { key: 'language', type: 'select', def: 'en' },
+    { key: 'utcoffset', type: 'number', def: 1, range: [-24, 24, 1], help: 1 },
+    {
+      key: 'pollminutes',
+      type: 'number',
+      def: 60,
+      range: [5, 1440, 5],
+      help: 1,
+    },
+    { key: 'sessions', type: 'select', def: 'all' },
+    { key: 'visibility', type: 'number', def: 3, range: [0, 365, 1], help: 1 },
+    { key: 'emptytext', type: 'text', def: '', max: 200, help: 1 },
+    // Optional whole number: empty means the default size.
+    { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1], help: 1 },
+    { key: 'hideimage', type: 'switch', def: false, field: 'hideimageonempty' },
+    { key: 'image', type: 'image', def: '', full: 1, help: 1 },
+    {
+      key: 'urlen',
+      type: 'url',
+      def: F1_URL_EN,
+      full: 1,
+      label: 'url_en',
+      help: 'url',
+    },
+    { key: 'urlnl', type: 'url', def: F1_URL_NL, full: 1, label: 'url_nl' },
+  ];
+  // Order of the settings in a saved block, after f1mode.
+  var F1_SAVE_ORDER =
+    'language urlen urlnl utcoffset pollminutes sessions visibility emptytext hideimage fontsize image';
 
-  // Stored custom-field rows -> the values shown in the F1 section.
+  function _f1Field(setting) {
+    return setting.field || 'f1' + setting.key;
+  }
+
+  // Custom field name (lower case) -> true: the fields the F1 section owns,
+  // left out of the generic Custom fields list.
+  var F1_FIELDS = { f1mode: true };
+  F1_SETTINGS.forEach(function (setting) {
+    F1_FIELDS[_f1Field(setting)] = true;
+  });
+
+  function _f1Options(key, t) {
+    return key === 'language'
+      ? [
+          ['en', 'English'],
+          ['nl', 'Nederlands'],
+        ]
+      : [
+          ['all', t.f1_block_sessions_all],
+          ['sprint_race', t.f1_block_sessions_sprint_race],
+          ['race', t.f1_block_sessions_race],
+        ];
+  }
+
+  // A select value if it is one of its options, else the default.
+  function _f1Option(setting, value) {
+    var allowed = _f1Options(setting.key, {}).map(function (option) {
+      return option[0];
+    });
+    return allowed.indexOf(value) > -1 ? value : setting.def;
+  }
+
+  // Stored custom-field rows -> the F1 values (mode + every setting key).
   function _f1ValuesFromRows(rows) {
-    var values = {};
+    var stored = {};
     (rows || []).forEach(function (row) {
       var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
-      if (F1_FIELDS[field]) values[field] = row.value;
+      if (F1_FIELDS[field]) stored[field] = row.value;
     });
-    return {
-      mode: values.f1mode === 'all' ? 'all' : 'next',
-      language: values.f1language === 'nl' ? 'nl' : 'en',
-      urlEn: String(values.f1urlen || ''),
-      urlNl: String(values.f1urlnl || ''),
-      utcOffset: values.f1utcoffset !== undefined ? values.f1utcoffset : 1,
-      pollMinutes:
-        values.f1pollminutes !== undefined ? values.f1pollminutes : 60,
-      sessions: /^(sprint_race|race)$/.test(values.f1sessions)
-        ? values.f1sessions
-        : 'all',
-      visibility: values.f1visibility !== undefined ? values.f1visibility : 3,
-      emptyText: String(values.f1emptytext || ''),
-      hideImage:
-        values.hideimageonempty === true || values.hideimageonempty === 'true',
-      fontSize: values.f1fontsize !== undefined ? values.f1fontsize : '',
-      image: String(values.f1image || ''),
-    };
+    var values = { mode: stored.f1mode === 'all' ? 'all' : 'next' };
+    F1_SETTINGS.forEach(function (setting) {
+      var raw = stored[_f1Field(setting)];
+      if (setting.type === 'select') {
+        values[setting.key] = _f1Option(setting, raw);
+      } else if (setting.type === 'number') {
+        values[setting.key] =
+          raw !== undefined ? raw : setting.def === null ? '' : setting.def;
+      } else if (setting.type === 'switch') {
+        values[setting.key] = raw === true || raw === 'true';
+      } else {
+        // An empty URL shows its default feed (see _f1FieldsHtml).
+        values[setting.key] = String(raw || '');
+      }
+    });
+    return values;
   }
 
-  function _f1FieldHtml(prefix, key, label, inputHtml, help, full) {
-    return (
-      '<div class="' +
-      (full ? 'col-12' : 'col-md-6') +
-      '"><div class="mb-3"><label class="form-label" for="' +
-      _esc(prefix) +
-      '-f1-' +
-      key +
-      '">' +
-      _esc(label) +
-      '</label>' +
-      inputHtml +
-      (help ? '<div class="form-text">' + _esc(help) + '</div>' : '') +
-      '</div></div>'
-    );
-  }
-
-  function _f1InputHtml(prefix, key, type, value, attrs) {
+  function _f1ControlHtml(id, setting, value, t) {
+    if (setting.type === 'select') {
+      return (
+        '<select class="form-select" id="' +
+        id +
+        '">' +
+        _f1Options(setting.key, t)
+          .map(function (option) {
+            return (
+              '<option value="' +
+              _esc(option[0]) +
+              '"' +
+              (String(value) === option[0] ? ' selected' : '') +
+              '>' +
+              _esc(option[1]) +
+              '</option>'
+            );
+          })
+          .join('') +
+        '</select>'
+      );
+    }
+    if (setting.type === 'switch') {
+      return (
+        '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+        id +
+        '"' +
+        (value ? ' checked' : '') +
+        '></div>'
+      );
+    }
+    if (setting.type === 'image') {
+      // Own image picker (_wireF1Fields): the image is shown next to the
+      // text of a Next event tile, in addition to the tile icon.
+      return (
+        '<div class="input-group input-group-sm de-f1-image-row" style="position:relative;">' +
+        '<input type="text" class="form-control de-f1-image-input" id="' +
+        id +
+        '" placeholder="custom/icon.png" value="' +
+        _esc(value) +
+        '" autocomplete="off">' +
+        '<button type="button" class="btn btn-outline-danger de-f1-image-clear" title="' +
+        _esc(t.remove_field) +
+        '"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
+        '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
+        _esc(t.custom_images) +
+        '"><div class="dt-custom-image-status"></div>' +
+        '<div class="dt-custom-image-grid"></div></div></div>'
+      );
+    }
+    var range = setting.range
+      ? ' min="' +
+        setting.range[0] +
+        '" max="' +
+        setting.range[1] +
+        '" step="' +
+        setting.range[2] +
+        '"'
+      : '';
     return (
       '<input type="' +
-      type +
+      (setting.range ? 'number' : 'text') +
       '" class="form-control" id="' +
-      _esc(prefix) +
-      '-f1-' +
-      key +
+      id +
       '" value="' +
       _esc(String(value)) +
       '"' +
-      (attrs || '') +
+      range +
       ' autocomplete="off">'
     );
-  }
-
-  function _f1SelectHtml(prefix, key, value, options) {
-    var html =
-      '<select class="form-select" id="' + _esc(prefix) + '-f1-' + key + '">';
-    options.forEach(function (option) {
-      html +=
-        '<option value="' +
-        _esc(option[0]) +
-        '"' +
-        (String(value) === option[0] ? ' selected' : '') +
-        '>' +
-        _esc(option[1]) +
-        '</option>';
-    });
-    return html + '</select>';
   }
 
   /* The F1 section shared by the quick-add popup and the config popup. Two
@@ -7435,8 +7510,7 @@ var DashticzDeviceEditor = (function () {
      buttons at the top. */
   function _f1FieldsHtml(prefix, values) {
     var t = _translations();
-    var v = _f1ValuesFromRows([]);
-    v = $.extend(v, values || {});
+    var v = $.extend(_f1ValuesFromRows([]), values || {});
     var html =
       '<div class="de-f1-fields" data-f1-prefix="' + _esc(prefix) + '">';
     html += '<h6 class="de-section-title">' + _esc(t.f1_block) + '</h6>';
@@ -7465,134 +7539,30 @@ var DashticzDeviceEditor = (function () {
         _esc(mode[2]) +
         '</button>';
     });
-    html += '</div></div>';
-    html += '<div class="row">';
-    html += _f1FieldHtml(
-      prefix,
-      'language',
-      t.f1_block_language,
-      _f1SelectHtml(prefix, 'language', v.language, [
-        ['en', 'English'],
-        ['nl', 'Nederlands'],
-      ])
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'utcoffset',
-      t.f1_block_utcoffset,
-      _f1InputHtml(
-        prefix,
-        'utcoffset',
-        'number',
-        v.utcOffset,
-        ' min="-24" max="24" step="1"'
-      ),
-      t.f1_block_utcoffset_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'pollminutes',
-      t.f1_block_pollminutes,
-      _f1InputHtml(
-        prefix,
-        'pollminutes',
-        'number',
-        v.pollMinutes,
-        ' min="5" max="1440" step="5"'
-      ),
-      t.f1_block_pollminutes_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'sessions',
-      t.f1_block_sessions,
-      _f1SelectHtml(prefix, 'sessions', v.sessions, [
-        ['all', t.f1_block_sessions_all],
-        ['sprint_race', t.f1_block_sessions_sprint_race],
-        ['race', t.f1_block_sessions_race],
-      ])
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'visibility',
-      t.f1_block_visibility,
-      _f1InputHtml(
-        prefix,
-        'visibility',
-        'number',
-        v.visibility,
-        ' min="0" max="365" step="1"'
-      ),
-      t.f1_block_visibility_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'emptytext',
-      t.f1_block_emptytext,
-      _f1InputHtml(prefix, 'emptytext', 'text', v.emptyText),
-      t.f1_block_emptytext_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'fontsize',
-      t.f1_block_fontsize,
-      _f1InputHtml(
-        prefix,
-        'fontsize',
-        'number',
-        v.fontSize,
-        ' min="8" max="60" step="1"'
-      ),
-      t.f1_block_fontsize_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'hideimage',
-      t.f1_block_hideimage,
-      '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
-        _esc(prefix) +
-        '-f1-hideimage"' +
-        (v.hideImage ? ' checked' : '') +
-        '></div>'
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'image',
-      t.f1_block_image,
-      '<div class="input-group input-group-sm de-f1-image-row" style="position:relative;">' +
-        '<input type="text" class="form-control de-f1-image-input" id="' +
-        _esc(prefix) +
-        '-f1-image" placeholder="custom/icon.png" value="' +
-        _esc(v.image) +
-        '" autocomplete="off">' +
-        '<button type="button" class="btn btn-outline-danger de-f1-image-clear" title="' +
-        _esc(t.remove_field) +
-        '"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
-        '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
-        _esc(t.custom_images) +
-        '"><div class="dt-custom-image-status"></div>' +
-        '<div class="dt-custom-image-grid"></div></div></div>',
-      t.f1_block_image_help,
-      true
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'urlen',
-      t.f1_block_url_en,
-      _f1InputHtml(prefix, 'urlen', 'text', v.urlEn || F1_URL_EN),
-      t.f1_block_url_help,
-      true
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'urlnl',
-      t.f1_block_url_nl,
-      _f1InputHtml(prefix, 'urlnl', 'text', v.urlNl || F1_URL_NL),
-      '',
-      true
-    );
-    html += '</div></div>';
-    return html;
+    html += '</div></div><div class="de-f1-grid">';
+    F1_SETTINGS.forEach(function (setting) {
+      var id = _esc(prefix) + '-f1-' + setting.key;
+      var label = 'f1_block_' + (setting.label || setting.key);
+      var help = setting.help
+        ? 'f1_block_' +
+          (setting.help === 1 ? setting.label || setting.key : setting.help) +
+          '_help'
+        : '';
+      var value = v[setting.key];
+      if (setting.type === 'url') value = value || setting.def;
+      html +=
+        '<div class="de-f1-field' +
+        (setting.full ? ' de-f1-field-full' : '') +
+        '"><div class="mb-3"><label class="form-label" for="' +
+        id +
+        '">' +
+        _esc(t[label]) +
+        '</label>' +
+        _f1ControlHtml(id, setting, value, t) +
+        (help ? '<div class="form-text">' + _esc(t[help]) + '</div>' : '') +
+        '</div></div>';
+    });
+    return html + '</div></div>';
   }
 
   /* Call once after appending markup built with _f1FieldsHtml() above. */
@@ -7662,68 +7632,65 @@ var DashticzDeviceEditor = (function () {
     });
   }
 
+  // The F1 section's fields -> F1 values plus validUrls. Numbers are
+  // clamped to their range; anything invalid falls back to the default.
   function _readF1Fields(prefix) {
-    function num(key, def, min, max) {
-      var value = parseFloat($('#' + prefix + '-f1-' + key).val());
-      return isNaN(value)
-        ? def
-        : Math.min(max, Math.max(min, Math.round(value)));
+    function $field(key) {
+      return $('#' + prefix + '-f1-' + key);
     }
-    function text(key) {
-      return $.trim(String($('#' + prefix + '-f1-' + key).val() || ''));
-    }
-    var urlEn = text('urlen');
-    var urlNl = text('urlnl');
-    return {
-      mode:
-        $('#' + prefix + '-f1-mode').attr('data-value') === 'all'
-          ? 'all'
-          : 'next',
-      language: text('language') === 'nl' ? 'nl' : 'en',
-      urlEn: urlEn || F1_URL_EN,
-      urlNl: urlNl || F1_URL_NL,
-      validUrls:
-        /^https:\/\/\S+$/i.test(urlEn || F1_URL_EN) &&
-        /^https:\/\/\S+$/i.test(urlNl || F1_URL_NL),
-      utcOffset: num('utcoffset', 1, -24, 24),
-      pollMinutes: num('pollminutes', 60, 5, 1440),
-      sessions: /^(sprint_race|race)$/.test(text('sessions'))
-        ? text('sessions')
-        : 'all',
-      visibility: num('visibility', 3, 0, 365),
-      emptyText: text('emptytext').slice(0, 200),
-      hideImage: $('#' + prefix + '-f1-hideimage').is(':checked'),
-      fontSize:
-        parseInt(text('fontsize'), 10) > 0
-          ? Math.min(60, Math.max(8, parseInt(text('fontsize'), 10)))
-          : null,
-      image:
-        /^[A-Za-z0-9 _.\/-]{0,100}$/.test(text('image')) &&
-        text('image').indexOf('..') < 0
-          ? text('image')
-          : '',
+    var f1 = {
+      mode: $field('mode').attr('data-value') === 'all' ? 'all' : 'next',
     };
+    F1_SETTINGS.forEach(function (setting) {
+      var raw = $.trim(String($field(setting.key).val() || ''));
+      var range = setting.range || [];
+      var value;
+      if (setting.type === 'select') {
+        value = _f1Option(setting, raw);
+      } else if (setting.type === 'number' && setting.def === null) {
+        var whole = parseInt(raw, 10);
+        value =
+          whole > 0 ? Math.min(range[1], Math.max(range[0], whole)) : null;
+      } else if (setting.type === 'number') {
+        var number = parseFloat($field(setting.key).val());
+        value = isNaN(number)
+          ? setting.def
+          : Math.min(range[1], Math.max(range[0], Math.round(number)));
+      } else if (setting.type === 'switch') {
+        value = $field(setting.key).is(':checked');
+      } else if (setting.type === 'image') {
+        // A relative path only, no parent directory.
+        value =
+          /^[A-Za-z0-9 _.\/-]{0,100}$/.test(raw) && raw.indexOf('..') < 0
+            ? raw
+            : '';
+      } else if (setting.type === 'url') {
+        value = raw || setting.def;
+      } else {
+        value = raw.slice(0, setting.max);
+      }
+      f1[setting.key] = value;
+    });
+    f1.validUrls =
+      /^https:\/\/\S+$/i.test(f1.urlen) && /^https:\/\/\S+$/i.test(f1.urlnl);
+    return f1;
   }
 
-  // F1 section values -> custom_fields rows. Defaults are left out so the
-  // saved block stays short; js/components/f1.js applies the same defaults.
+  // F1 values -> custom_fields rows, without the default values (the saved
+  // block stays short; js/components/f1.js applies the same defaults).
   function _f1CustomRows(f1) {
     var rows = [{ field: 'f1mode', setting: f1.mode, value: f1.mode }];
-    function add(field, value, def) {
-      if (value === def) return;
-      rows.push({ field: field, setting: String(value), value: value });
-    }
-    add('f1language', f1.language, 'en');
-    add('f1urlen', f1.urlEn, F1_URL_EN);
-    add('f1urlnl', f1.urlNl, F1_URL_NL);
-    add('f1utcoffset', f1.utcOffset, 1);
-    add('f1pollminutes', f1.pollMinutes, 60);
-    add('f1sessions', f1.sessions, 'all');
-    add('f1visibility', f1.visibility, 3);
-    add('f1emptytext', f1.emptyText, '');
-    add('hideimageonempty', f1.hideImage, false);
-    add('f1fontsize', f1.fontSize, null);
-    add('f1image', f1.image, '');
+    F1_SAVE_ORDER.split(' ').forEach(function (key) {
+      var setting = F1_SETTINGS.filter(function (item) {
+        return item.key === key;
+      })[0];
+      if (f1[key] === setting.def) return;
+      rows.push({
+        field: _f1Field(setting),
+        setting: String(f1[key]),
+        value: f1[key],
+      });
+    });
     return rows;
   }
 
