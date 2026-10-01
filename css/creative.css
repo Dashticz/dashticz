@@ -3096,6 +3096,26 @@ h6.de-section-title .fas {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Device Config / F1 quick-add -> F1 section (js/deviceeditor.js
+   _f1FieldsHtml()): two columns, one on a phone; image and calendar URLs
+   span both. */
+.de-f1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-f1-grid > .de-f1-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-f1-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Widget Config -> Settings (js/widgeteditor.js _buildConfigModalHtml()):
    one shared two-column grid for every widget's own fields, one column on a
    phone. Headings, help paragraphs, lists, add buttons and the existing
