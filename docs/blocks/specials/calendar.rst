@@ -28,7 +28,7 @@ The following config settings are applicable:
   * - calendarlanguage
     - | Controls the calendar locale, e.g. for the weekday and month names.
       | ``'nl'`` , ``'nl_NL'``, ``'en'`` , ``'hu'``, etc.
-      | Default: the value of ``language``.
+      | Default: the value of ``language``. Also available in the Settings menu (Localize).
 
 Usage
 -----

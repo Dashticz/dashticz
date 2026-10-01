@@ -469,6 +469,9 @@ var DashticzWidgetEditor = (function () {
       maxDistance: true,
       latitude: true,
       longitude: true,
+      filter: true,
+      road: true,
+      showemptyroads: true,
     },
     camera: { imageUrl: true, videoUrl: true, cameras: true },
     alarmmeldingen: { rss: true, filter: true },
@@ -1143,6 +1146,9 @@ var DashticzWidgetEditor = (function () {
         radars: 1,
         results: 5,
         maxDistance: 40,
+        filter: 'distance',
+        road: '',
+        showemptyroads: 0,
       },
       map: {
         gm_api: _s('gm_api'),
@@ -1451,6 +1457,7 @@ var DashticzWidgetEditor = (function () {
           if (typeof definition.longitude !== 'undefined') {
             widgetConfigs.trafficinfo.longitude = definition.longitude;
           }
+          _hydrateTrafficRoadFilter(definition);
         }
         if (item.id === 'camera') {
           if (Array.isArray(definition.cameras) && definition.cameras.length) {
@@ -1914,6 +1921,7 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.longitude !== 'undefined') {
         widgetConfigs.trafficinfo.longitude = definition.longitude;
       }
+      _hydrateTrafficRoadFilter(definition);
     } else if (item.id === 'camera') {
       if (Array.isArray(definition.cameras) && definition.cameras.length) {
         widgetConfigs.camera.cameras = definition.cameras;
@@ -2811,6 +2819,33 @@ var DashticzWidgetEditor = (function () {
     }
     html += '</div>';
     return html;
+  }
+
+  // Traffic info: the Distance/Roads filter, the road list and the
+  // show-empty-roads option of an existing block. A hand-written block with
+  // a `road` list and no `filter` of its own is a Roads block (the 3.x
+  // behaviour, see js/components/trafficinfo.js). showemptyroads may be a
+  // custom text; it is kept so saving doesn't turn it back into `true`.
+  function _hydrateTrafficRoadFilter(definition) {
+    var cfg = widgetConfigs.trafficinfo;
+    var road = Array.isArray(definition.road)
+      ? definition.road.join(', ')
+      : typeof definition.road === 'string' ||
+          typeof definition.road === 'number'
+        ? String(definition.road)
+        : '';
+    cfg.road = road;
+    cfg.filter =
+      definition.filter === 'roads' || definition.filter === 'distance'
+        ? definition.filter
+        : road.trim()
+          ? 'roads'
+          : 'distance';
+    cfg.showemptyroads = definition.showemptyroads ? 1 : 0;
+    cfg.showemptyroadsText =
+      typeof definition.showemptyroads === 'string'
+        ? definition.showemptyroads
+        : '';
   }
 
   // Add button below a repeatable list (Calendar, Camera, Radio, Timegraph):
@@ -4199,6 +4234,19 @@ var DashticzWidgetEditor = (function () {
         lwgt.traffic_radars_help || ''
       );
       fields += '</div>';
+      var trafficFilter = tcfg.filter === 'roads' ? 'roads' : 'distance';
+      fields += _cfgField(
+        'filter',
+        lwgt.traffic_filter || 'Show',
+        'select',
+        trafficFilter,
+        {
+          distance:
+            lwgt.traffic_filter_distance || 'Everything within a distance',
+          roads: lwgt.traffic_filter_roads || 'Selected roads',
+        },
+        lwgt.traffic_filter_help || ''
+      );
       fields += _cfgField(
         'results',
         lwgt.traffic_results || 'Max results',
@@ -4207,6 +4255,33 @@ var DashticzWidgetEditor = (function () {
         { min: 1, step: 1 },
         lwgt.traffic_results_help || ''
       );
+      // Roads: only the listed roads, in that order (Distance is ignored).
+      fields +=
+        '<div class="we-traffic-group" data-traffic-filter="roads"' +
+        (trafficFilter === 'roads' ? '' : ' style="display:none"') +
+        '>';
+      fields += _cfgField(
+        'road',
+        lwgt.traffic_roads || 'Roads',
+        'text',
+        tcfg.road || '',
+        null,
+        lwgt.traffic_roads_help || ''
+      );
+      fields += _cfgField(
+        'showemptyroads',
+        lwgt.traffic_showemptyroads || 'Show roads without announcements',
+        'checkbox',
+        tcfg.showemptyroads ? 1 : 0,
+        null,
+        lwgt.traffic_showemptyroads_help || ''
+      );
+      fields += '</div>';
+      // Distance: everything within maxDistance of latitude/longitude.
+      fields +=
+        '<div class="we-traffic-group" data-traffic-filter="distance"' +
+        (trafficFilter === 'distance' ? '' : ' style="display:none"') +
+        '>';
       fields += _cfgField(
         'maxDistance',
         lwgt.traffic_max_distance || 'Max distance (km)',
@@ -4231,6 +4306,7 @@ var DashticzWidgetEditor = (function () {
         null,
         lwgt.traffic_location_help || ''
       );
+      fields += '</div>';
     } else if (item.id === 'alarmmeldingen') {
       var acfg = widgetConfigs.alarmmeldingen || {};
       fields +=
@@ -4873,6 +4949,15 @@ var DashticzWidgetEditor = (function () {
       });
     });
 
+    $cfgModal.on('change', '#we-cfg-filter', function () {
+      var trafficFilter = $(this).val() === 'roads' ? 'roads' : 'distance';
+      $cfgModal.find('.we-traffic-group').each(function () {
+        $(this).toggle(
+          String($(this).data('traffic-filter')) === trafficFilter
+        );
+      });
+    });
+
     $cfgModal.on('change', '#we-cfg-clock-type', function () {
       var type = $(this).val() || 'basicclock';
       $cfgModal.find('.we-clock-group').each(function () {
@@ -5375,6 +5460,8 @@ var DashticzWidgetEditor = (function () {
           station: $.trim($('#we-cfg-pt-station').val() || '') || 'UT',
         };
       } else if (widgetId === 'trafficinfo') {
+        collected.showemptyroadsText =
+          (widgetConfigs.trafficinfo || {}).showemptyroadsText || '';
         widgetConfigs.trafficinfo = collected;
       } else if (widgetId === 'alarmmeldingen') {
         var rss = $.trim($('#we-cfg-alarm-rss').val() || '');
@@ -6056,6 +6143,13 @@ var DashticzWidgetEditor = (function () {
         entry.latitude = parseFloat(trcfg.latitude);
       if (trcfg.longitude !== '' && typeof trcfg.longitude !== 'undefined')
         entry.longitude = parseFloat(trcfg.longitude);
+      entry.filter = trcfg.filter === 'roads' ? 'roads' : 'distance';
+      entry.road = String(trcfg.road || '').trim();
+      // A custom "no announcements" text from CONFIG.js is kept as long as
+      // the option stays switched on.
+      entry.showemptyroads = Number(trcfg.showemptyroads)
+        ? trcfg.showemptyroadsText || true
+        : false;
     }
     if (item.id === 'iframe') {
       var icfg = widgetConfigs.iframe || {};

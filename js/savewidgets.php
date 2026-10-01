@@ -589,6 +589,34 @@ foreach ($data['widgets'] as $entry) {
         if (isset($entry['longitude']) && is_numeric($entry['longitude'])) {
             $widget['longitude'] = (float)$entry['longitude'];
         }
+        // Distance (everything within maxDistance) or Roads (only the
+        // road numbers in `road`, e.g. "A4, A17").
+        $widget['filter'] = isset($entry['filter']) && $entry['filter'] === 'roads'
+            ? 'roads'
+            : 'distance';
+        $road = isset($entry['road']) && is_string($entry['road'])
+            ? $entry['road']
+            : '';
+        $road = trim(preg_replace('/[^A-Za-z0-9 ,;\-]/', '', $road));
+        if (strlen($road) > 200) {
+            dashticz_json_error(400, 'The road list is too long.');
+        }
+        $widget['road'] = $road;
+        // true/false, or a custom "no announcements" text kept from
+        // CONFIG.js.
+        $showEmptyRoads = isset($entry['showemptyroads'])
+            ? $entry['showemptyroads']
+            : false;
+        if (is_string($showEmptyRoads) && $showEmptyRoads !== ''
+            && !in_array(strtolower($showEmptyRoads), ['0', '1', 'true', 'false'], true)
+        ) {
+            $widget['showemptyroads'] = substr(strip_tags($showEmptyRoads), 0, 100);
+        } else {
+            $widget['showemptyroads'] = filter_var(
+                $showEmptyRoads,
+                FILTER_VALIDATE_BOOLEAN
+            );
+        }
     }
 
     if ($id === 'camera') {
@@ -984,7 +1012,7 @@ $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 $blocksOnly = !empty($data['blocksOnly']);
 
-if (!empty($widgets)) {
+if (!empty($widgets) || !empty($configSettings)) {
     // TAAK1: never let a widget silently take over a block key that a
     // different screen already owns; clone it (screen-prefixed) instead.
     // configwriter_ensure_screen_owned_key() exempts radio/log/sunrise from
@@ -1002,46 +1030,54 @@ if (!empty($widgets)) {
     }
     unset($widget);
 
-    $section = configwriter_section_header('BLOCKS') . "\n";
-    $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
+    $section = '';
+    if (!empty($widgets)) {
+        $section = configwriter_section_header('BLOCKS') . "\n";
+        $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
 
-    foreach ($widgets as $widget) {
-        $props = _widgetBlockProps($widget);
-        $section .= configwriter_emit_block_line($widget['key'], $props);
-    }
-
-    if (!$blocksOnly) {
-        $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
-        $section .= "if (typeof columns === 'undefined') var columns = {}\n";
-        $layoutItems = array_map(function ($widget) {
-            $item = [
-                'ref' => $widget['key'],
-                'width' => $widget['width'],
-            ];
-            if ($widget['height'] !== null) {
-                $item['height'] = $widget['height'];
-            }
-            return $item;
-        }, $widgets);
-        $columnKeys = [];
-        $prefix = configwriter_column_prefix('we', $screenNumber);
-        foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
-            $columnKeys[] = $column['key'];
-            $section .= configwriter_emit_column_line(
-                $column['key'],
-                $column['blocks'],
-                $column['width']
-            );
+        foreach ($widgets as $widget) {
+            $props = _widgetBlockProps($widget);
+            $section .= configwriter_emit_block_line($widget['key'], $props);
         }
 
-        if ($screenNumber > 0) {
-            $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
-            $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+        if (!$blocksOnly) {
+            $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
+            $section .= "if (typeof columns === 'undefined') var columns = {}\n";
+            $layoutItems = array_map(function ($widget) {
+                $item = [
+                    'ref' => $widget['key'],
+                    'width' => $widget['width'],
+                ];
+                if ($widget['height'] !== null) {
+                    $item['height'] = $widget['height'];
+                }
+                return $item;
+            }, $widgets);
+            $columnKeys = [];
+            $prefix = configwriter_column_prefix('we', $screenNumber);
+            foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
+                $columnKeys[] = $column['key'];
+                $section .= configwriter_emit_column_line(
+                    $column['key'],
+                    $column['blocks'],
+                    $column['width']
+                );
+            }
+
+            if ($screenNumber > 0) {
+                $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
+                $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+            }
         }
     }
 
     if (!empty($configSettings)) {
-        $section .= configwriter_emit_config_settings($configSettings, false);
+        // Keep the previously saved settings this save does not touch.
+        $merged = array_diff_key($existingSettings, $configSettings);
+        foreach ($configSettings as $key => $value) {
+            $merged[$key] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+        $section .= configwriter_emit_config_settings($merged, true);
     } elseif (!empty($existingSettings)) {
         $section .= configwriter_emit_config_settings($existingSettings, true);
     }
@@ -1166,6 +1202,13 @@ function _widgetBlockProps($widget)
             }
             if (isset($widget['longitude'])) {
                 $props['longitude'] = $widget['longitude'];
+            }
+            $props['filter'] = $widget['filter'];
+            if ($widget['road'] !== '') {
+                $props['road'] = $widget['road'];
+            }
+            if ($widget['showemptyroads'] !== false) {
+                $props['showemptyroads'] = $widget['showemptyroads'];
             }
             break;
         case 'alarmmeldingen':
