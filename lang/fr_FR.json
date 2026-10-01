@@ -245,12 +245,20 @@
       "traffic_roadworks": "Travaux",
       "traffic_roadworks_help": "Afficher les travaux routiers.",
       "traffic_results": "Résultats max.",
-      "traffic_results_help": "Nombre maximal d’éléments affichés dans le bloc.",
+      "traffic_results_help": "Nombre maximal d’éléments : par route pour Routes choisies, au total pour un rayon.",
       "traffic_max_distance": "Distance max. (km)",
       "traffic_max_distance_help": "N’afficher que les éléments situés à cette distance (en km, à vol d’oiseau) de l’emplacement ci-dessous. Laisser vide pour tout afficher (uniquement RWS pour l’instant).",
       "traffic_latitude": "Latitude",
       "traffic_longitude": "Longitude",
-      "traffic_location_help": "Emplacement de référence pour la distance max. Laissez Latitude et Longitude vides pour utiliser l’emplacement configuré dans Domoticz (Réglages > Système > Emplacement) - ne les remplissez vous-même que s’il n’est pas défini."
+      "traffic_location_help": "Emplacement de référence pour la distance max. Laissez Latitude et Longitude vides pour utiliser l’emplacement configuré dans Domoticz (Réglages > Système > Emplacement) - ne les remplissez vous-même que s’il n’est pas défini.",
+      "traffic_filter": "Afficher",
+      "traffic_filter_distance": "Tout dans un rayon donné",
+      "traffic_filter_roads": "Routes choisies",
+      "traffic_filter_help": "Tout dans un rayon autour d’un emplacement, ou uniquement les routes indiquées.",
+      "traffic_roads": "Routes",
+      "traffic_roads_help": "Numéros de route séparés par des virgules, par exemple A4, A17, N201. Ils sont affichés dans cet ordre.",
+      "traffic_showemptyroads": "Afficher les routes sans annonces",
+      "traffic_showemptyroads_help": "Afficher aussi une route sans embouteillages ni travaux."
     },
     "deviceeditor": {
       "editor_title": "Éditeur d’appareils",
