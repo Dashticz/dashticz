@@ -53,20 +53,8 @@ function dashticz_f1_check_url($url)
 
 function dashticz_f1_cache_file($url)
 {
-    $baseDir = dirname(__DIR__, 2) . '/custom/cache/f1';
-    if (!is_dir($baseDir)) {
-        @mkdir($baseDir, 0775, true);
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-f1-cache';
-        if (!is_dir($baseDir)) {
-            @mkdir($baseDir, 0775, true);
-        }
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        return null;
-    }
-    return $baseDir . '/' . sha1($url) . '.json';
+    $baseDir = dashticz_cache_dir('f1');
+    return $baseDir === null ? null : $baseDir . '/' . sha1($url) . '.json';
 }
 
 function dashticz_f1_events($url, $ttl)

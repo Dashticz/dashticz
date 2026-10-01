@@ -272,6 +272,71 @@ function dashticz_atomic_write_file($path, $contents, $mode = 0664)
     return true;
 }
 
+// Directory for a PHP proxy's server-side cache: custom/cache/<name>, or a
+// folder in the system temp directory when that isn't writable. Returns null
+// when neither can be used. custom/cache gets an .htaccess that keeps the
+// cache files away from browsers on Apache (docker/default.conf does the same
+// for nginx). Cache files that earlier versions wrote to the wrong place,
+// vendor/custom/cache/<name>, are removed.
+function dashticz_cache_dir($name)
+{
+    $name = preg_replace('/[^a-z0-9_-]/', '', strtolower((string) $name));
+    if ($name === '') {
+        return null;
+    }
+    dashticz_remove_misplaced_cache($name);
+
+    // This file is vendor/dashticz/security.php: two levels up is the
+    // Dashticz folder.
+    $root = dirname(__DIR__, 2) . '/custom/cache';
+    $baseDir = $root . '/' . $name;
+    if (!is_dir($baseDir)) {
+        @mkdir($baseDir, 0775, true);
+    }
+    if (is_dir($baseDir) && is_writable($baseDir)) {
+        dashticz_protect_cache_root($root);
+        return $baseDir;
+    }
+
+    $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-' . $name . '-cache';
+    if (!is_dir($baseDir)) {
+        @mkdir($baseDir, 0775, true);
+    }
+    return is_dir($baseDir) && is_writable($baseDir) ? $baseDir : null;
+}
+
+function dashticz_protect_cache_root($root)
+{
+    $file = $root . '/.htaccess';
+    if (is_file($file)) {
+        return;
+    }
+    @file_put_contents(
+        $file,
+        "# Written by Dashticz: server-side cache of the PHP proxies, never served.\n"
+        . "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n"
+        . "<IfModule !mod_authz_core.c>\n    Order deny,allow\n    Deny from all\n</IfModule>\n",
+        LOCK_EX
+    );
+}
+
+function dashticz_remove_misplaced_cache($name)
+{
+    $oldDir = dirname(__DIR__) . '/custom/cache/' . $name;
+    if (!is_dir($oldDir)) {
+        return;
+    }
+    foreach (scandir($oldDir) ?: array() as $entry) {
+        if (preg_match('/\.(json|xml|tmp)$/', $entry) && is_file($oldDir . '/' . $entry)) {
+            @unlink($oldDir . '/' . $entry);
+        }
+    }
+    // The folders go when they are empty (rmdir fails otherwise).
+    @rmdir($oldDir);
+    @rmdir(dirname($oldDir));
+    @rmdir(dirname($oldDir, 2));
+}
+
 function dashticz_resolve_redirect_url($baseUrl, $location)
 {
     $location = trim((string) $location);

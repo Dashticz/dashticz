@@ -1143,3 +1143,71 @@ test('screens writer can add extra screens with CSRF protection', () => {
   assert.match(writer, /function configwriter_emit_new_screen/);
   assert.match(writer, /screens-editor-start/);
 });
+
+/* Runs dashticz_cache_dir() through PHP in a temporary copy of the
+   vendor/dashticz layout: the cache must land in <dashticz>/custom/cache
+   (not vendor/custom/cache, where earlier versions wrote the F1, HP iLO and
+   PostNL caches), the cache root must get a deny-all .htaccess, and the
+   misplaced files of earlier versions must be removed. */
+test('PHP proxy caches live in custom/cache, closed to browsers', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-cache-'));
+  try {
+    const vendorDir = path.join(tmp, 'vendor', 'dashticz');
+    fs.mkdirSync(vendorDir, { recursive: true });
+    fs.copyFileSync(
+      path.join(root, 'vendor/dashticz/security.php'),
+      path.join(vendorDir, 'security.php')
+    );
+    const oldDir = path.join(tmp, 'vendor', 'custom', 'cache', 'postnl');
+    fs.mkdirSync(oldDir, { recursive: true });
+    fs.writeFileSync(path.join(oldDir, 'old.json'), '{"refreshToken":"x"}');
+
+    const securityPhp = path
+      .join(vendorDir, 'security.php')
+      .replace(/\\/g, '/');
+    const script = `require '${securityPhp}'; echo json_encode(dashticz_cache_dir('postnl'));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+
+    const cacheDir = JSON.parse(result.stdout);
+    assert.equal(
+      path.resolve(cacheDir),
+      path.join(tmp, 'custom', 'cache', 'postnl')
+    );
+    assert.ok(fs.statSync(cacheDir).isDirectory());
+    const htaccess = fs.readFileSync(
+      path.join(tmp, 'custom', 'cache', '.htaccess'),
+      'utf8'
+    );
+    assert.match(htaccess, /Require all denied/);
+    assert.match(htaccess, /Deny from all/);
+    assert.ok(!fs.existsSync(path.join(tmp, 'vendor', 'custom')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('F1, HP iLO, PostNL and XMLTV proxies use the shared cache folder', () => {
+  for (const [file, name] of [
+    ['vendor/dashticz/f1/index.php', 'f1'],
+    ['vendor/dashticz/hpilo/index.php', 'hpilo'],
+    ['vendor/dashticz/postnl/index.php', 'postnl'],
+    ['vendor/dashticz/xmltv.php', 'xmltv'],
+  ]) {
+    const source = read(file);
+    assert.match(source, new RegExp(`dashticz_cache_dir\\('${name}'\\)`));
+    assert.doesNotMatch(source, /'\/custom\/cache/);
+  }
+  // The PostNL file holds a refresh token: its name must not be derivable
+  // from the e-mail address alone.
+  const postnl = read('vendor/dashticz/postnl/index.php');
+  assert.match(
+    postnl,
+    /hash_hmac\('sha256', strtolower\(\$username\), \(string\) \$password\)/
+  );
+  assert.match(postnl, /dashticz_postnl_cache_file\(\$username, \$password\)/);
+
+  const nginx = read('docker/default.conf');
+  assert.match(nginx, /location \^~ \/custom\/cache\/ \{\s*return 404;/);
+  assert.match(nginx, /location \^~ \/vendor\/custom\/ \{\s*return 404;/);
+});

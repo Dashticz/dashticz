@@ -138,17 +138,8 @@ function dashticz_hpilo_read_input()
 
 function dashticz_hpilo_cache_file($input)
 {
-    $baseDir = dirname(__DIR__, 2) . '/custom/cache/hpilo';
-    if (!is_dir($baseDir)) {
-        @mkdir($baseDir, 0775, true);
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-hpilo-cache';
-        if (!is_dir($baseDir)) {
-            @mkdir($baseDir, 0775, true);
-        }
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
+    $baseDir = dashticz_cache_dir('hpilo');
+    if ($baseDir === null) {
         return null;
     }
     $key = strtolower($input['host'] . ':' . $input['port'] . '|' . $input['username'] . '|' . implode(',', $input['sections']));
