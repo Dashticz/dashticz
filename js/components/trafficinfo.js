@@ -36,6 +36,15 @@ var DT_trafficinfo = {
           ? parseFloat(block.longitude)
           : parseFloat(domoticzLocation.Longitude),
       results: 5,
+      // 'distance' (around latitude/longitude) or 'roads' (only the roads
+      // listed in `road`). A hand-written block with a `road` list and no
+      // filter of its own keeps the 3.x behaviour: filter on those roads.
+      filter:
+        block && (block.filter === 'roads' || block.filter === 'distance')
+          ? block.filter
+          : block && _parseRoads(block.road).length
+            ? 'roads'
+            : 'distance',
       showempty: showempty,
       showemptyroads: false,
       trafficJams: true,
@@ -51,41 +60,47 @@ var DT_trafficinfo = {
 
     $.getJSON(dataURL, function (data) {
       var result = _buildRWSDataPart(me, data);
-      _renderTrafficInfo(me, result.dataPart, result.noData);
+      _renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
     });
   },
 };
 
-// Pre-seeds dataPart with an empty-road placeholder (showemptyroads) for
-// every configured road, and returns the parsed/sorted road filter list.
-function _seedEmptyRoads(trafficobject) {
-  var dataPart = {};
-  var roadArray = [];
-  if (typeof trafficobject.road != 'undefined') {
-    if (trafficobject.road.indexOf(',')) {
-      roadArray = trafficobject.road.split(/, |,/);
-    } else {
-      roadArray.push(trafficobject.road);
-    }
-    roadArray.sort();
-    if (trafficobject.showemptyroads) {
-      var showempty =
-        typeof trafficobject.showemptyroads === 'string'
-          ? trafficobject.showemptyroads
-          : language.misc.no_traffic || 'No traffic announcements';
-      for (var x = 0; x < roadArray.length; x++) {
-        var key = roadArray[x];
-        var html =
-          '<div><b class="title">' +
-          key +
-          '</b><br>' +
-          showempty +
-          '<br></div>';
-        dataPart[key] = [html];
-      }
-    }
-  }
-  return { dataPart: dataPart, roadArray: roadArray };
+// Road number as RWS writes it: upper case, no spaces ('a 4' -> 'A4').
+function _normalizeRoad(road) {
+  return String(road == null ? '' : road)
+    .replace(/\s+/g, '')
+    .toUpperCase();
+}
+
+// The configured road list ('A4, A17' / 'A4;a17' / ['A4', 'A17']) as
+// normalized road numbers, in the configured order, without duplicates.
+function _parseRoads(road) {
+  if (Array.isArray(road)) road = road.join(',');
+  if (typeof road !== 'string' && typeof road !== 'number') return [];
+  var seen = {};
+  return String(road)
+    .split(/[,;]+/)
+    .map(_normalizeRoad)
+    .filter(function (item) {
+      if (!item || seen[item]) return false;
+      seen[item] = true;
+      return true;
+    });
+}
+
+// Whether this block shows the roads in `road` instead of everything
+// within maxDistance.
+function _isRoadFilter(trafficobject) {
+  return trafficobject.filter === 'roads';
+}
+
+function _escapeTraffic(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // Whether maxDistance filtering is actually configured and usable (a
@@ -145,9 +160,9 @@ function _rwsCoords(o) {
 // category in this API.
 function _buildRWSDataPart(me, data) {
   var trafficobject = me.block;
-  var seed = _seedEmptyRoads(trafficobject);
-  var dataPart = seed.dataPart;
-  var roadArray = seed.roadArray;
+  var roadFilter = _isRoadFilter(trafficobject);
+  var roadArray = roadFilter ? _parseRoads(trafficobject.road) : [];
+  var dataPart = {};
   var noData = true;
   var obstructions = (data && data.obstructions) || [];
   var header = {};
@@ -161,63 +176,96 @@ function _buildRWSDataPart(me, data) {
     )) {
       continue;
     }
-    var roadId = o.roadNumber;
-    if (
-      typeof trafficobject.road != 'undefined' &&
-      roadArray.indexOf(roadId) === -1
-    ) {
-      continue;
-    }
-    var coords = _rwsCoords(o);
-    if (coords && !_isWithinDistance(trafficobject, coords.lat, coords.lon)) {
-      continue;
+    var roadId = _normalizeRoad(o.roadNumber) || '?';
+    if (roadFilter) {
+      // Roads mode: only the configured roads (all roads when the list is
+      // empty), regardless of distance.
+      if (roadArray.length && roadArray.indexOf(roadId) === -1) continue;
+    } else {
+      var coords = _rwsCoords(o);
+      if (coords && !_isWithinDistance(trafficobject, coords.lat, coords.lon)) {
+        continue;
+      }
     }
     if (typeof dataPart[roadId] == 'undefined') dataPart[roadId] = [];
     var html;
     if (!header[roadId]) {
-      html = '<div><b class="title">' + (roadId || '') + '</b><br>';
+      html = '<div><b class="title">' + _escapeTraffic(roadId) + '</b><br>';
       header[roadId] = true;
     } else {
       html = '<div>';
     }
+    // "Utrecht - 's-Hertogenbosch": only a dash with spaces around it
+    // separates the two places, not the dash inside a place name.
     var direction = String(o.directionText || '')
-      .split(/\s*-\s*/)
+      .split(/\s+-\s+/)
       .filter(Boolean);
-    if (direction[0]) html += '<b>' + direction[0] + '</b>';
+    if (direction[0]) html += '<b>' + _escapeTraffic(direction[0]) + '</b>';
     if (direction[1] && direction[1] !== direction[0]) {
-      html += '<b> - ' + direction[1] + '</b>';
+      html += '<b> - ' + _escapeTraffic(direction[1]) + '</b>';
     }
     if (direction.length) html += '<br>';
-    if (isJam && o.delay != null) {
+    // Delay and length only when RWS reports a real value (roadworks
+    // usually come with 0).
+    var hasDelay = isJam && Number(o.delay) > 0;
+    var hasLength = Number(o.length) > 0;
+    if (hasDelay) {
       html += '+ ' + Math.round(o.delay) + 'min';
     }
-    if (o.length != null) {
-      html +=
-        (isJam && o.delay != null ? ' - ' : '') +
-        (o.length / 1000).toFixed(1) +
-        'km';
+    if (hasLength) {
+      html += (hasDelay ? ' - ' : '') + (o.length / 1000).toFixed(1) + 'km';
     }
-    if ((isJam && o.delay != null) || o.length != null) html += '<br>';
+    if (hasDelay || hasLength) html += '<br>';
     var reason = o.description || o.locationText;
-    if (reason) html += reason + '<br>';
+    if (reason) html += _escapeTraffic(reason) + '<br>';
+    if (o.cause) html += _escapeTraffic(o.cause) + '<br>';
     html += '</div>';
     dataPart[roadId].push(html);
     noData = false;
   }
-  return { dataPart: dataPart, noData: noData };
+  return { dataPart: dataPart, noData: noData, roadArray: roadArray };
 }
 
-function _renderTrafficInfo(me, dataPart, noData) {
+// Roads mode lists the configured roads in their configured order, with at
+// most `results` announcements per road, plus (showemptyroads) a line for
+// every configured road without announcements. Distance mode lists the
+// roads in road-number order, with at most `results` announcements in total.
+function _renderTrafficInfo(me, dataPart, noData, roadArray) {
   var trafficobject = me.block;
-  $(me.mountPoint + ' .dt_state').html('');
-  var c = 1;
-  Object.keys(dataPart).forEach(function (d) {
-    for (var p in dataPart[d]) {
-      if (c <= trafficobject.results)
-        $(me.mountPoint + ' .dt_state').append(dataPart[d][p]);
-      c++;
+  var results = parseInt(trafficobject.results, 10) || 5;
+  var roadFilter = _isRoadFilter(trafficobject);
+  var roads =
+    roadFilter && roadArray && roadArray.length
+      ? roadArray
+      : Object.keys(dataPart).sort(function (a, b) {
+          return a.localeCompare(b, undefined, { numeric: true });
+        });
+  var emptyRoadText =
+    typeof trafficobject.showemptyroads === 'string'
+      ? trafficobject.showemptyroads
+      : language.misc.no_traffic || 'No traffic announcements';
+  var html = '';
+  var shown = 0;
+  roads.forEach(function (road) {
+    var items = dataPart[road] || [];
+    if (!items.length) {
+      if (roadFilter && trafficobject.showemptyroads) {
+        html +=
+          '<div><b class="title">' +
+          _escapeTraffic(road) +
+          '</b><br>' +
+          _escapeTraffic(emptyRoadText) +
+          '<br></div>';
+      }
+      return;
     }
+    var limit = roadFilter ? results : results - shown;
+    items.slice(0, Math.max(0, limit)).forEach(function (item) {
+      html += item;
+      shown++;
+    });
   });
+  $(me.mountPoint + ' .dt_state').html(html);
 
   if (noData && me.block.showempty) {
     var emptyblock =
@@ -225,7 +273,7 @@ function _renderTrafficInfo(me, dataPart, noData) {
         ? me.block.showempty
         : language.misc.no_traffic || 'No traffic announcements';
     $(me.mountPoint + ' .dt_state').append(
-      '<div class="empty">' + emptyblock + '</div>'
+      '<div class="empty">' + _escapeTraffic(emptyblock) + '</div>'
     );
   }
 
