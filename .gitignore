@@ -5,6 +5,8 @@
 !/custom/custom.DEFAULT.js
 !/custom/sample-radio_playlist.m3u
 /custom_2/*
+# Cache folder written by mistake by earlier versions of some PHP proxies.
+/vendor/custom/
 
 # Local environment files
 .env

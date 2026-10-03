@@ -1,6 +1,41 @@
 Release Notes
 =============
 
+v4.1.3 (1-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Traffic info can show selected roads as well as everything within a
+  distance (#1321). ``filter: 'roads'`` shows only the roads in ``road``, for
+  example ``'A4, A17'``, in that order and with at most ``results``
+  announcements per road; ``showemptyroads`` also lists a road without
+  announcements. Everything can be set in the Traffic information Widget
+  Config.
+
+* **Fixes**
+
+- Traffic info: a dash inside a place name (``'s-Hertogenbosch``) no longer
+  splits the direction text, and a delay or length of 0 is no longer shown.
+- The server-side caches of the F1, HP iLO and PostNL widgets were written to
+  ``vendor/custom/cache`` instead of ``custom/cache``, where git did not
+  ignore them and a browser could download them. They are now written to
+  ``custom/cache``, and the misplaced files are removed.
+- ``custom/cache`` is closed to browsers: Dashticz writes a deny-all
+  ``.htaccess`` there (Apache), and the Docker nginx configuration blocks
+  ``/custom/cache/`` and ``/vendor/custom/``.
+- The name of the PostNL cache file, which holds a refresh token, can no
+  longer be derived from the e-mail address.
+
+* **Code**
+
+- New ``dashticz_cache_dir()`` in ``vendor/dashticz/security.php``, used by
+  the F1, HP iLO, PostNL and XMLTV proxies.
+- The F1 section of the Device Editor (``js/deviceeditor.js``) is built from
+  one settings table instead of separate functions per field; the fields and
+  the saved block are unchanged.
+- ``_DASHTICZ_VERSION`` raised to 192.
+
 v4.1.2 (29-9-2026)
 ----------------------
 

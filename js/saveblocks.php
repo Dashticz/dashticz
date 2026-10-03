@@ -101,9 +101,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -161,7 +161,9 @@ foreach ($data['devices'] as $entry) {
             dashticz_json_error(400, 'A special block title is required.');
         }
         $defaultWidth = 3;
-        if ($kind === 'title' || $kind === 'slidebutton') {
+        if ($kind === 'title' || $kind === 'slidebutton' || $kind === 'tvgids') {
+            // A TVgids block shows its channels as columns next to each
+            // other, so it starts at the full width.
             $defaultWidth = 12;
         } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster') {
             // Cover (100x100) + artist/title/album (lms), an embedded page
@@ -219,8 +221,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1') {
-            // Only Icon and Last update apply to these eleven (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1' || $kind === 'tvgids') {
+            // Only Icon and Last update apply to these twelve (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -388,6 +390,17 @@ foreach ($data['devices'] as $entry) {
                             || strlen($customFields[$f1UrlField]) > 2048)) {
                         dashticz_json_error(400, 'Enter a valid F1 calendar URL.');
                     }
+                }
+            } elseif ($kind === 'tvgids') {
+                // tvgids (the channel list) is otherwise just another custom
+                // field, but js/components/tvgids.js dispatches on it, so it
+                // is required here: channel ids as in
+                // vendor/dashticz/tvgids/channels.json, comma separated.
+                if (!isset($customFields['tvgids'])
+                    || !is_string($customFields['tvgids'])
+                    || !preg_match('/^[a-z0-9_]{1,40}(,[a-z0-9_]{1,40}){0,49}$/', $customFields['tvgids'])
+                ) {
+                    dashticz_json_error(400, 'Choose the TV channels of the TVgids block.');
                 }
             } elseif ($kind === 'graph') {
                 // devices is otherwise just another custom field (see

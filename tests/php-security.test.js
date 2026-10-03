@@ -706,7 +706,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
      the pattern) only touches this one array. */
   assert.match(
     source,
-    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];/
+    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];/
   );
   assert.match(
     source,
@@ -1142,4 +1142,151 @@ test('screens writer can add extra screens with CSRF protection', () => {
   assert.match(writer, /function configwriter_replace_screens_section/);
   assert.match(writer, /function configwriter_emit_new_screen/);
   assert.match(writer, /screens-editor-start/);
+});
+
+/* Runs dashticz_cache_dir() through PHP in a temporary copy of the
+   vendor/dashticz layout: the cache must land in <dashticz>/custom/cache
+   (not vendor/custom/cache, where earlier versions wrote the F1, HP iLO and
+   PostNL caches), the cache root must get a deny-all .htaccess, and the
+   misplaced files of earlier versions must be removed. */
+test('PHP proxy caches live in custom/cache, closed to browsers', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-cache-'));
+  try {
+    const vendorDir = path.join(tmp, 'vendor', 'dashticz');
+    fs.mkdirSync(vendorDir, { recursive: true });
+    fs.copyFileSync(
+      path.join(root, 'vendor/dashticz/security.php'),
+      path.join(vendorDir, 'security.php')
+    );
+    const oldDir = path.join(tmp, 'vendor', 'custom', 'cache', 'postnl');
+    fs.mkdirSync(oldDir, { recursive: true });
+    fs.writeFileSync(path.join(oldDir, 'old.json'), '{"refreshToken":"x"}');
+
+    const securityPhp = path
+      .join(vendorDir, 'security.php')
+      .replace(/\\/g, '/');
+    const script = `require '${securityPhp}'; echo json_encode(dashticz_cache_dir('postnl'));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+
+    const cacheDir = JSON.parse(result.stdout);
+    assert.equal(
+      path.resolve(cacheDir),
+      path.join(tmp, 'custom', 'cache', 'postnl')
+    );
+    assert.ok(fs.statSync(cacheDir).isDirectory());
+    const htaccess = fs.readFileSync(
+      path.join(tmp, 'custom', 'cache', '.htaccess'),
+      'utf8'
+    );
+    assert.match(htaccess, /Require all denied/);
+    assert.match(htaccess, /Deny from all/);
+    assert.ok(!fs.existsSync(path.join(tmp, 'vendor', 'custom')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('F1, HP iLO, PostNL and XMLTV proxies use the shared cache folder', () => {
+  for (const [file, name] of [
+    ['vendor/dashticz/f1/index.php', 'f1'],
+    ['vendor/dashticz/hpilo/index.php', 'hpilo'],
+    ['vendor/dashticz/postnl/index.php', 'postnl'],
+    ['vendor/dashticz/xmltv.php', 'xmltv'],
+  ]) {
+    const source = read(file);
+    assert.match(source, new RegExp(`dashticz_cache_dir\\('${name}'\\)`));
+    assert.doesNotMatch(source, /'\/custom\/cache/);
+  }
+  // The PostNL file holds a refresh token: its name must not be derivable
+  // from the e-mail address alone.
+  const postnl = read('vendor/dashticz/postnl/index.php');
+  assert.match(
+    postnl,
+    /hash_hmac\('sha256', strtolower\(\$username\), \(string\) \$password\)/
+  );
+  assert.match(postnl, /dashticz_postnl_cache_file\(\$username, \$password\)/);
+
+  const nginx = read('docker/default.conf');
+  assert.match(nginx, /location \^~ \/custom\/cache\/ \{\s*return 404;/);
+  assert.match(nginx, /location \^~ \/vendor\/custom\/ \{\s*return 404;/);
+});
+
+/* Runs the TVgids bridge's parser (vendor/dashticz/tvgids/tvgids.php)
+   through PHP on a piece of a tvgids24.nl channel page. */
+test('TVgids bridge reads the BroadcastEvent items of a tvgids24.nl page', () => {
+  const page = `
+<li itemscope itemtype="https://schema.org/TelevisionChannel"><a href="zender/npo_1" itemprop="name">NPO 1</a></li>
+<li itemscope itemtype="https://schema.org/BroadcastEvent">
+<meta itemprop="name" content="Tom &amp; Jerry">
+<meta itemprop="startDate" content="2026-10-03T21:35+02:00">
+<meta itemprop="endDate" content="2026-10-03T22:30+02:00">
+<span class="one" itemprop="publishedOn" itemscope itemtype="https://schema.org/BroadcastService">
+<meta itemprop="name" content="NPO 1">
+</span>
+<a class="prog" href="51829622/tom-jerry">Tom &amp; Jerry</a>
+</li>
+<li itemscope itemtype="https://schema.org/BroadcastEvent" class="active">
+<meta itemprop="name" content="Beste Zangers">
+<meta itemprop="startDate" content="2026-10-03T20:30+02:00">
+<meta itemprop="endDate" content="2026-10-03T21:35+02:00">
+<a class="prog" href="51829621/beste-zangers">Beste Zangers</a>
+</li>
+<li itemscope itemtype="https://schema.org/BroadcastEvent">
+<meta itemprop="name" content="Spanje - Tsjechiu00eb">
+<meta itemprop="startDate" content="2026-10-03T22:30+02:00">
+<meta itemprop="endDate" content="2026-10-03T23:00+02:00">
+</li>
+<li itemscope itemtype="https://schema.org/BroadcastEvent">
+<meta itemprop="name" content="No end">
+<meta itemprop="startDate" content="2026-10-03T23:00+02:00">
+</li>`;
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const script =
+    `require '${dir}/security.php'; require '${dir}/tvgids/tvgids.php';` +
+    ` echo json_encode(array(dashticz_tvgids_parse(stream_get_contents(STDIN)),` +
+    ` count(dashticz_tvgids_channels())));`;
+  const result = spawnSync('php', ['-r', script], {
+    encoding: 'utf8',
+    input: page,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const [programmes, channelCount] = JSON.parse(result.stdout);
+  assert.deepEqual(programmes, [
+    {
+      start: Date.parse('2026-10-03T20:30+02:00') / 1000,
+      end: Date.parse('2026-10-03T21:35+02:00') / 1000,
+      title: 'Beste Zangers',
+      url: 'https://www.tvgids24.nl/51829621/beste-zangers',
+    },
+    {
+      start: Date.parse('2026-10-03T21:35+02:00') / 1000,
+      end: Date.parse('2026-10-03T22:30+02:00') / 1000,
+      title: 'Tom & Jerry',
+      url: 'https://www.tvgids24.nl/51829622/tom-jerry',
+    },
+    {
+      // The site's own broken escape of "Tsjechië" is repaired.
+      start: Date.parse('2026-10-03T22:30+02:00') / 1000,
+      end: Date.parse('2026-10-03T23:00+02:00') / 1000,
+      title: 'Spanje - Tsjechië',
+      url: '',
+    },
+  ]);
+  assert.equal(channelCount, 86);
+});
+
+test('TVgids bridge only fetches known channels from tvgids24.nl, cached', () => {
+  const index = read('vendor/dashticz/tvgids/index.php');
+  const helpers = read('vendor/dashticz/tvgids/tvgids.php');
+  assert.match(index, /dashticz_require_same_origin\(\)/);
+  // Only ids from channels.json reach the URL.
+  assert.match(index, /isset\(\$known\[\$id\]\)/);
+  assert.match(
+    helpers,
+    /dashticz_fetch_remote\('https:\/\/www\.tvgids24\.nl\/zender\/' \. \$id \. '\/vandaag'/
+  );
+  assert.match(helpers, /dashticz_cache_dir\('tvgids'\)/);
+  assert.match(helpers, /\$cached\['date'\] === \$today/);
+  assert.doesNotMatch(index + helpers, /shell_exec|exec\(|passthru|system\(/);
 });

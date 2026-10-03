@@ -44,17 +44,8 @@ try {
 
 function dashticz_xmltv_cache_file($url)
 {
-    $baseDir = dirname(__DIR__, 2) . '/custom/cache/xmltv';
-    if (!is_dir($baseDir)) {
-        @mkdir($baseDir, 0775, true);
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-xmltv-cache';
-        if (!is_dir($baseDir)) {
-            @mkdir($baseDir, 0775, true);
-        }
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
+    $baseDir = dashticz_cache_dir('xmltv');
+    if ($baseDir === null) {
         throw new RuntimeException('XMLTV cache directory is not writable.');
     }
     return $baseDir . '/' . sha1($url) . '.xml';

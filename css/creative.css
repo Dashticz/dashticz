@@ -3096,6 +3096,26 @@ h6.de-section-title .fas {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Device Config / F1 quick-add -> F1 section (js/deviceeditor.js
+   _f1FieldsHtml()): two columns, one on a phone; image and calendar URLs
+   span both. */
+.de-f1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-f1-grid > .de-f1-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-f1-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Widget Config -> Settings (js/widgeteditor.js _buildConfigModalHtml()):
    one shared two-column grid for every widget's own fields, one column on a
    phone. Headings, help paragraphs, lists, add buttons and the existing
@@ -8803,6 +8823,218 @@ canvas {
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
+}
+
+/* TVgids widget (js/components/tvgids.js): one column per channel. The
+   columns have a minimum width (set inline from tvgidscolumnwidth) and fill
+   the block, so a wider block shows more of them next to each other. */
+.tvgids-block .dt_state {
+  display: block;
+  height: auto;
+  padding: 4px 0;
+  text-align: left;
+  font-size: var(--tvgids-font-size, 0.85em);
+  line-height: 1.35;
+}
+
+.tvgids-grid {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+.tvgids-channel {
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.tvgids-head {
+  display: flex;
+  align-items: center;
+  min-height: 31px;
+  margin-bottom: 4px;
+}
+
+/* Many channel logos are black, so every logo gets a light plate that
+   works on light and dark themes alike. */
+.tvgids-logo,
+.de-tvgids-tile img {
+  box-sizing: content-box;
+  width: 51px;
+  height: 27px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: #fff;
+  object-fit: contain;
+}
+
+/* 2px larger than the programmes, also with a custom tvgidsfontsize. */
+.tvgids-name {
+  font-size: calc(1em + 2px);
+  font-weight: bold;
+}
+
+/* With a logo the name is only the fallback for a missing image. */
+.tvgids-name-fallback,
+.tvgids-nologo .tvgids-logo {
+  display: none;
+}
+
+.tvgids-nologo .tvgids-name-fallback {
+  display: inline;
+}
+
+.tvgids-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tvgids-item {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 8px;
+  padding: 1px 0;
+}
+
+.tvgids-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.tvgids-title {
+  overflow-wrap: anywhere;
+}
+
+.tvgids-now {
+  font-weight: bold;
+}
+
+.tvgids-now .tvgids-time {
+  opacity: 1;
+}
+
+.tvgids-past {
+  opacity: 0.5;
+}
+
+.tvgids-empty,
+.tvgids-error {
+  padding: 2px 0;
+  opacity: 0.8;
+}
+
+.tvgids-error {
+  color: #e74c3c;
+  opacity: 1;
+}
+
+/* Grid screens: the tile follows its row height; a longer programme list
+   scrolls inside it. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block .dt_content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block .dt_state {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* TVgids section of the quick-add and Device Config popups
+   (js/deviceeditor.js _tvgidsFieldsHtml): the channel logos as tiles, per
+   channel group. */
+.de-tvgids-picker {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 2px 4px 2px 0;
+}
+
+.de-tvgids-group + .de-tvgids-group {
+  margin-top: 10px;
+}
+
+.de-tvgids-group-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.de-tvgids-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 6px;
+}
+
+.de-tvgids-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 4px 4px;
+  border: 2px solid var(--bs-border-color, #dee2e6);
+  border-radius: 6px;
+  background: rgba(127, 127, 127, 0.08);
+  color: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.de-tvgids-tile-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.de-tvgids-tile.active {
+  border-color: var(--bs-primary, #0d6efd);
+  background: rgba(13, 110, 253, 0.15);
+}
+
+/* The position of a chosen channel in the block. */
+.de-tvgids-order {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: none;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 18px;
+}
+
+.de-tvgids-tile.active .de-tvgids-order {
+  display: block;
+}
+
+.de-tvgids-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+@media (max-width: 575px) {
+  .de-tvgids-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Device Config -> Text: per-device font size and alignment, set by
