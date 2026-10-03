@@ -2214,6 +2214,7 @@ var DashticzWidgetEditor = (function () {
     html += _lmsWidgetCardHtml();
     html += _graphWidgetCardHtml();
     html += _f1WidgetCardHtml();
+    html += _tvgidsWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2696,6 +2697,39 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openF1();
+    });
+  }
+
+  /* TVgids (docs/blocks/specials/tvgids.rst, js/components/tvgids.js) is,
+     like F1, only ever a repeatable card: it opens the TVgids quick-add
+     popup (DashticzDeviceEditor.openTvgids()), where the channels are
+     picked from their logos. */
+  function _tvgidsWidgetCardHtml() {
+    var itemTitle = _t('tvgids_title', 'TVgids24');
+    return (
+      '<div class="we-widget-card we-widget-card-tvgids" data-special-widget="tvgids" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-tv" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'tvgids_description',
+        "Today's TV programme of the chosen channels (tvgids24.nl)."
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openTvgidsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openTvgids();
     });
   }
 
@@ -5819,6 +5853,10 @@ var DashticzWidgetEditor = (function () {
         _openF1FromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'tvgids') {
+        _openTvgidsFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5864,6 +5902,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'f1') {
         _openF1FromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'tvgids') {
+        _openTvgidsFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

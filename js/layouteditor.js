@@ -41,6 +41,7 @@ var DashticzLayoutEditor = (function () {
     'news',
     'graph',
     'f1',
+    'tvgids',
   ];
   var active = false;
   var items = [];
@@ -1352,6 +1353,21 @@ var DashticzLayoutEditor = (function () {
       return {
         definition: definition,
         kind: 'camera',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && typeof definition.tvgids === 'string' && definition.tvgids) {
+      // Repeatable TVgids block (js/deviceeditor.js's _showTvgidsPopup()),
+      // dispatched purely on a truthy tvgids channel list
+      // (js/components/tvgids.js's canHandle()), like the F1 check below.
+      return {
+        definition: definition,
+        kind: 'tvgids',
         reference: key,
         widgetId: null,
         idx: null,

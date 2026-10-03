@@ -942,6 +942,255 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     expect(f1Blocks[0].custom_fields.f1language).toBe('nl');
   });
 
+  test('TVgids quick-add picks channels from their logos, per group, in click order', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'tvgids-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: blocksRequest.devices.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="tvgids"]').click();
+    const popup = page.locator('#tvgidsblockpopup');
+    await expect(popup).toBeVisible();
+    await expect(popup.locator('.de-tvgids-group-title')).toHaveCount(5);
+    await expect(popup.locator('.de-tvgids-tile')).toHaveCount(86);
+
+    // Saving without a channel is refused.
+    await page.locator('#tvgids-save-btn').click();
+    await expect(popup.locator('.cd-custom-message')).toHaveClass(
+      /text-danger/
+    );
+
+    await popup.locator('.de-tvgids-tile[data-channel="rtl_4"]').click();
+    await popup.locator('.de-tvgids-tile[data-channel="npo_1"]').click();
+    await popup.locator('.de-tvgids-tile[data-channel="espn"]').click();
+    await popup.locator('.de-tvgids-tile[data-channel="espn"]').click();
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="rtl_4"] .de-tvgids-order')
+    ).toHaveText('1');
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="npo_1"] .de-tvgids-order')
+    ).toHaveText('2');
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="espn"]')
+    ).not.toHaveClass(/active/);
+    await page.locator('#tvgids-tvgids-maxitems').fill('5');
+    await page.locator('#tvgids-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const tvgids = blocksRequest.devices.filter(
+      (entry) => entry.kind === 'tvgids'
+    );
+    expect(tvgids).toHaveLength(1);
+    expect(tvgids[0].key).toBe('tvgids_1');
+    expect(tvgids[0].width).toBe(12);
+    expect(tvgids[0].custom_fields.tvgids).toBe('rtl_4,npo_1');
+    expect(tvgids[0].custom_fields.tvgidsmaxitems).toBe(5);
+  });
+
+  test('TVgids block shows one column per channel, as many next to each other as fit', async ({
+    page,
+  }) => {
+    let request = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['tvgids_1'] = {
+  width: 12,
+  title: 'TVgids',
+  tvgids: 'npo_1,npo_2,npo_3,rtl_4',
+  tvgidscolumnwidth: 250
+};
+columns = {1: {blocks: ['tvgids_1'], width: 12}};
+screens[1] = {background: 'bg2.jpg', columns: [1]};
+`,
+      });
+    });
+    const now = Math.floor(Date.now() / 1000);
+    await page.route('**/vendor/dashticz/tvgids/index.php*', (route) => {
+      request = route.request().postDataJSON();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          channels: request.channels.map((id) => ({
+            id,
+            name: id.toUpperCase(),
+            programmes: [
+              { start: now - 3600, end: now - 60, title: 'Earlier' },
+              { start: now - 60, end: now + 1800, title: 'Now on ' + id },
+              { start: now + 1800, end: now + 3600, title: 'Next' },
+            ],
+          })),
+        }),
+      });
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    const block = page.locator('.tvgids-block');
+    await expect(block.locator('.tvgids-channel')).toHaveCount(4);
+    expect(request.channels).toEqual(['npo_1', 'npo_2', 'npo_3', 'rtl_4']);
+    await expect(block.locator('.tvgids-now').first()).toContainText(
+      'Now on npo_1'
+    );
+    await expect(block.locator('.tvgids-past')).toHaveCount(0);
+    await expect(
+      block.locator('.tvgids-channel[data-channel="npo_1"] .tvgids-logo')
+    ).toHaveAttribute('src', 'img/custom/tvgids/npo_1.png');
+
+    // Columns in the first row: all four on a wide screen, fewer when the
+    // block gets narrower.
+    const columnsInFirstRow = () =>
+      block.locator('.tvgids-channel').evaluateAll((columns) => {
+        const top = columns[0].getBoundingClientRect().top;
+        return columns.filter(
+          (column) => Math.abs(column.getBoundingClientRect().top - top) < 2
+        ).length;
+      });
+    expect(await columnsInFirstRow()).toBe(4);
+    await page.setViewportSize({ width: 700, height: 900 });
+    await expect.poll(columnsInFirstRow).toBe(2);
+  });
+
+  test('TVgids Device Config shows the chosen channels and saves a changed selection', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['tvgids_1'] = {
+  width: 12,
+  title: 'TVgids',
+  tvgids: 'npo_1,rtl_4',
+  tvgidsmaxitems: 8,
+  tvgidsshowpast: true
+};
+columns = {1: {blocks: ['tvgids_1'], width: 12}};
+screens[1] = {background: 'bg2.jpg', columns: [1]};
+`,
+      });
+    });
+    await page.route('**/vendor/dashticz/tvgids/index.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ channels: [] }),
+      })
+    );
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'tvgids-config-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: blocksRequest.devices.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/deviceeditor.js', dashboardUrl).href,
+    });
+    await page.evaluate("DashticzDeviceEditor.openLayoutConfig('tvgids_1')");
+    const popup = page.locator('#de-config-popup');
+    await expect(popup.locator('.de-tvgids-tile')).toHaveCount(86);
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="npo_1"] .de-tvgids-order')
+    ).toHaveText('1');
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="rtl_4"] .de-tvgids-order')
+    ).toHaveText('2');
+    await expect(page.locator('#de-config-tvgids-maxitems')).toHaveValue('8');
+    await expect(page.locator('#de-config-tvgids-showpast')).toBeChecked();
+    // The TVgids fields are not repeated in the generic Custom fields list.
+    const customNames = await popup
+      .locator('.de-custom-field-name')
+      .evaluateAll((inputs) => inputs.map((input) => input.value));
+    expect(customNames.filter((name) => /^tvgids/.test(name))).toEqual([]);
+
+    await popup.locator('.de-tvgids-tile[data-channel="npo_1"]').click();
+    await popup
+      .locator('.de-tvgids-tile[data-channel="omroep_brabant"]')
+      .click();
+    await page.locator('#de-config-ok').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const tvgids = blocksRequest.devices.filter(
+      (entry) => entry.kind === 'tvgids'
+    );
+    expect(tvgids).toHaveLength(1);
+    expect(tvgids[0].key).toBe('tvgids_1');
+    expect(tvgids[0].custom_fields.tvgids).toBe('rtl_4,omroep_brabant');
+    expect(tvgids[0].custom_fields.tvgidsmaxitems).toBe(8);
+    expect(tvgids[0].custom_fields.tvgidsshowpast).toBe(true);
+  });
+
   test('Widget Config hides legacy globals and keeps current widget controls', async ({
     page,
   }) => {
@@ -1805,6 +2054,72 @@ screens[1] = {
     );
     await page.locator('#de-config-popup .modal-footer .btn-secondary').click();
     await expect(page.locator('#de-config-popup')).toBeHidden();
+  });
+
+  test('a TVgids grid tile keeps its config cog in the Layout Editor', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['tvgids_1'] = {
+  tvgids: 'npo_1,rtl_4',
+  title: 'TVgids',
+  grid: {x: 1, y: 1, w: 24, h: 10}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['tvgids_1']
+};
+`,
+      });
+    });
+    await page.route('**/vendor/dashticz/tvgids/index.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          channels: [
+            { id: 'npo_1', name: 'NPO 1', programmes: [] },
+            { id: 'rtl_4', name: 'RTL 4', programmes: [] },
+          ],
+        }),
+      })
+    );
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'tvgids-grid-token' }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await expect(
+      page.locator('[data-grid-block="tvgids_1"] .tvgids-channel')
+    ).toHaveCount(2);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    const overlay = page.locator('[data-grid-block="tvgids_1"] .dle-overlay');
+    await expect(overlay.locator('.dle-config-button .fa-cog')).toHaveCount(1);
+    await overlay.locator('.dle-config-button').click();
+    const popup = page.locator('#de-config-popup');
+    await expect(popup).toBeVisible();
+    await expect(
+      popup.locator('.de-tvgids-tile[data-channel="rtl_4"] .de-tvgids-order')
+    ).toHaveText('2');
+    await popup.locator('.modal-footer .btn-secondary').click();
+    await expect(popup).toBeHidden();
   });
 
   test('the remove button asks for confirmation before deleting a tile', async ({
