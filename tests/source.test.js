@@ -7929,3 +7929,178 @@ test('HP iLO rows can each get their own icon, chosen in the widget config', () 
   assert.match(save, /'hpilo_icons'\s*=> 'hpilo_icons',/);
   assert.match(save, /\$type === 'hpilo_icons'/);
 });
+
+function loadTvgidsModule() {
+  const source = fs.readFileSync(
+    path.join(root, 'js/components/tvgids.js'),
+    'utf8'
+  );
+  const context = {
+    language: { misc: { tvgids_empty: 'No more programmes today.' } },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+  };
+  vm.runInNewContext(source, context);
+  return context.DT_tvgids;
+}
+
+test('TVgids block: dispatched on its channel list, columns follow the block width', () => {
+  const tvgids = loadTvgidsModule();
+  assert.equal(tvgids.canHandle({ tvgids: 'npo_1,rtl_4' }), true);
+  assert.equal(tvgids.canHandle({ tvgids: '' }), false);
+  // The old tvguide (block.channels) and XMLTV (xmltvurl) blocks stay theirs.
+  assert.equal(tvgids.canHandle({ channels: [1, 2] }), false);
+
+  const now = 1000000;
+  const programme = (start, end, title) => ({
+    start: now + start * 60,
+    end: now + end * 60,
+    title,
+  });
+  const channels = [
+    {
+      id: 'npo_1',
+      name: 'NPO 1',
+      programmes: [
+        programme(-90, -30, 'Finished'),
+        programme(-30, 20, 'On air'),
+        programme(20, 60, 'Next <b>'),
+        programme(60, 90, 'Later'),
+      ],
+    },
+    {
+      id: 'rtl_4',
+      name: 'RTL 4',
+      error: 'Unable to fetch the TV guide of rtl_4.',
+    },
+  ];
+
+  let html = tvgids.channelsHtml(
+    { tvgids: 'npo_1,rtl_4', tvgidsmaxitems: 2, tvgidscolumnwidth: 300 },
+    channels,
+    now
+  );
+  assert.match(html, /repeat\(auto-fill, minmax\(min\(100%, 300px\), 1fr\)\)/);
+  assert.match(html, /src="img\/custom\/tvgids\/npo_1\.png"/);
+  assert.doesNotMatch(html, /Finished/);
+  assert.match(html, /tvgids-item tvgids-now">.*On air/);
+  assert.match(html, /Next &lt;b&gt;/);
+  assert.doesNotMatch(html, /Later/); // tvgidsmaxitems: 2
+  assert.match(html, /tvgids-error">Unable to fetch the TV guide of rtl_4\./);
+
+  // Finished programmes on request; 0 = the rest of the day.
+  html = tvgids.channelsHtml(
+    { tvgidsshowpast: true, tvgidsmaxitems: 0 },
+    channels.slice(0, 1),
+    now
+  );
+  assert.match(html, /tvgids-item tvgids-past">.*Finished/);
+  assert.match(html, /Later/);
+
+  html = tvgids.channelsHtml(
+    { tvgidshidelogo: true },
+    channels.slice(0, 1),
+    now
+  );
+  assert.doesNotMatch(html, /tvgids-logo/);
+  assert.match(html, /<span class="tvgids-name">NPO 1<\/span>/);
+});
+
+test('TVgids is a repeatable Widgets card with a logo picker in the Device Editor', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assert.match(widgets, /html \+= _tvgidsWidgetCardHtml\(\);/);
+  assert.equal(
+    (widgets.match(/=== 'tvgids'\) \{\s*_openTvgidsFromWidgets\(\);/g) || [])
+      .length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openTvgids\(\);/);
+  assert.match(editor, /openTvgids: openTvgids,/);
+  assert.match(editor, /tvgids: 'tvgids_',/);
+  assert.match(editor, /kind = 'tvgids';/);
+  assert.match(
+    editor,
+    /if \(isTvgidsBlock\)\s*html \+= _tvgidsFieldsHtml\('de-config', tvgidsValues\);/
+  );
+  assert.match(
+    editor,
+    /if \(isTvgidsBlock\) _wireTvgidsFields\('de-config', \$popup\);/
+  );
+  assert.match(editor, /'tvgids\/channels\.json'/);
+  assert.match(editor, /t\['tvgids_group_' \+ group\.group\]/);
+  assert.match(layout, /kind: 'tvgids',/);
+  assert.match(dashticz, /'f1',\s*'tvgids',/);
+  assert.match(save, /\$kind === 'tvgids'/);
+  assert.match(writer, /\$kind === 'tvgids'/);
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const group of ['algemeen', 'overig', 'regionaal', 'sport', 'films']) {
+      assert.ok(de[`tvgids_group_${group}`], `${locale} tvgids_group_${group}`);
+    }
+    for (const key of [
+      'tvgids_block',
+      'tvgids_block_channels',
+      'invalid_tvgids_block_channels',
+      'tvgids_block_maxitems',
+      'tvgids_block_columnwidth',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.tvgids_title,
+      `${locale} tvgids_title`
+    );
+    assert.ok(lang.misc.tvgids_error, `${locale} tvgids_error`);
+  }
+});
+
+test('TVgids channel list: five groups, every channel with its own logo', () => {
+  const groups = JSON.parse(
+    fs.readFileSync(
+      path.join(root, 'vendor/dashticz/tvgids/channels.json'),
+      'utf8'
+    )
+  );
+  assert.deepEqual(
+    groups.map((group) => group.group),
+    ['algemeen', 'overig', 'regionaal', 'sport', 'films']
+  );
+  const ids = groups.flatMap((group) => group.channels.map((c) => c.id));
+  assert.equal(new Set(ids).size, ids.length);
+  for (const id of ids) {
+    assert.match(id, /^[a-z0-9_]{1,40}$/);
+    assert.ok(
+      fs.existsSync(path.join(root, `img/custom/tvgids/${id}.png`)),
+      `logo of ${id}`
+    );
+  }
+  // No logos of channels that are not offered.
+  const logos = fs
+    .readdirSync(path.join(root, 'img/custom/tvgids'))
+    .map((file) => file.replace(/\.png$/, ''));
+  assert.deepEqual(logos.sort(), [...ids].sort());
+  // img/custom/.gitignore ignores everything else in img/custom, so the
+  // logos must be excepted explicitly or a commit leaves them out.
+  const ignored = spawnSync(
+    'git',
+    ['check-ignore', '--no-index', 'img/custom/tvgids/npo_1.png'],
+    { cwd: root, encoding: 'utf8' }
+  );
+  assert.equal(ignored.status, 1, 'img/custom/tvgids/*.png is git-ignored');
+});

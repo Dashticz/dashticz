@@ -111,3 +111,16 @@ test('saveblocks.php passes an omitted Last update on as null', () => {
     /preg_match\('\/\^\(\?:v\\d\+\|s\[1-9\]\\d\*\|\[1-9\]\\d\*_\[1-9\]\\d\*\)\$\/', \$entry\['idx'\]\)/
   );
 });
+
+// A TVgids block (js/components/tvgids.js) is dispatched on its tvgids
+// channel list, which - like every other TVgids setting - arrives as a
+// custom field.
+test('a TVgids block is written with its channel list and settings', () => {
+  const line = specialLine(
+    "['kind' => 'tvgids', 'name' => 'TVgids', 'width' => 12, 'icon' => 'fas fa-tv', 'custom_fields' => ['tvgids' => 'npo_1,rtl_4', 'tvgidsmaxitems' => 5]]"
+  );
+  assert.match(line, /tvgids:'npo_1,rtl_4'/);
+  assert.match(line, /tvgidsmaxitems:5/);
+  assert.match(line, /width:12/);
+  assert.doesNotMatch(line, /type:/);
+});
