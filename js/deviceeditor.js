@@ -39,6 +39,7 @@ var DashticzDeviceEditor = (function () {
     'news',
     'graph',
     'f1',
+    'tvgids',
   ];
 
   // Title is optional (blank is fine) rather than required.
@@ -57,6 +58,7 @@ var DashticzDeviceEditor = (function () {
     'news',
     'graph',
     'f1',
+    'tvgids',
   ];
 
   // Defaults to a 6-column width instead of the generic 3-column
@@ -69,6 +71,7 @@ var DashticzDeviceEditor = (function () {
     'timegraph',
     'xmltvguide',
     'graph',
+    'tvgids',
   ];
 
   // No Dial/Bar/Slider visual mode of their own, and only Icon/Last
@@ -88,6 +91,7 @@ var DashticzDeviceEditor = (function () {
     'news',
     'graph',
     'f1',
+    'tvgids',
   ];
 
   // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
@@ -110,6 +114,7 @@ var DashticzDeviceEditor = (function () {
     'news',
     'graph',
     'f1',
+    'tvgids',
   ];
   var deviceNames = {}; // composite key -> device name
   var deviceWidths = {}; // composite key -> block width (1..12)
@@ -581,6 +586,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showF1Popup();
+  }
+
+  /** Open the dedicated TVgids popup used by the Widgets menu. */
+  function openTvgids() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showTvgidsPopup();
   }
 
   /** Open the dedicated News popup used by the Screen Editor add menu. */
@@ -1199,6 +1213,16 @@ var DashticzDeviceEditor = (function () {
       definition = _normaliseLegacyF1Definition(definition);
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      typeof definition.tvgids === 'string' &&
+      definition.tvgids !== ''
+    ) {
+      // Repeatable TVgids block, added via the Widgets menu's TVgids card
+      // (_showTvgidsPopup()). Matches js/components/tvgids.js's own
+      // canHandle(): dispatched on a truthy tvgids (the channel list), no
+      // `type` of its own, same convention as F1.
+      kind = 'tvgids';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       reference !== 'widget_news' &&
       String(definition.type || '').toLowerCase() !== 'news' &&
       typeof definition.feed === 'string' &&
@@ -1795,6 +1819,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'xmltvguide') return 'fas fa-tv';
       if (special.specialType === 'lms') return 'fas fa-music';
       if (special.specialType === 'f1') return 'fas fa-flag-checkered';
+      if (special.specialType === 'tvgids') return 'fas fa-tv';
     }
     return 'fas fa-question';
   }
@@ -7336,98 +7361,173 @@ var DashticzDeviceEditor = (function () {
     'https://files-f1.motorsportcalendars.com/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
   var F1_URL_NL =
     'https://files-f1.motorsportcalendars.com/nl/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics';
-  // Custom field name (lower case) -> value, kept in one place so the popup,
-  // the config popup and the generic Custom fields list agree on which
-  // fields the dedicated F1 section owns.
-  var F1_FIELDS = {
-    f1mode: true,
-    f1language: true,
-    f1urlen: true,
-    f1urlnl: true,
-    f1utcoffset: true,
-    f1pollminutes: true,
-    f1sessions: true,
-    f1visibility: true,
-    f1emptytext: true,
-    hideimageonempty: true,
-    f1fontsize: true,
-    f1image: true,
-  };
+  // Every F1 setting except the mode, in the order of the F1 section. The
+  // fields, reading them back and saving them are all derived from this:
+  //   key   - element id <prefix>-f1-<key>, custom field 'f1' + key (unless
+  //           `field`), label 'f1_block_' + key (unless `label`), help text
+  //           label + '_help' when `help` is set (or the `help` key)
+  //   def   - default, as applied by js/components/f1.js; a default value
+  //           is left out of the saved block
+  //   range - [min, max, step] of a number field
+  //   full  - the field spans both columns
+  var F1_SETTINGS = [
+    { key: 'language', type: 'select', def: 'en' },
+    { key: 'utcoffset', type: 'number', def: 1, range: [-24, 24, 1], help: 1 },
+    {
+      key: 'pollminutes',
+      type: 'number',
+      def: 60,
+      range: [5, 1440, 5],
+      help: 1,
+    },
+    { key: 'sessions', type: 'select', def: 'all' },
+    { key: 'visibility', type: 'number', def: 3, range: [0, 365, 1], help: 1 },
+    { key: 'emptytext', type: 'text', def: '', max: 200, help: 1 },
+    // Optional whole number: empty means the default size.
+    { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1], help: 1 },
+    { key: 'hideimage', type: 'switch', def: false, field: 'hideimageonempty' },
+    { key: 'image', type: 'image', def: '', full: 1, help: 1 },
+    {
+      key: 'urlen',
+      type: 'url',
+      def: F1_URL_EN,
+      full: 1,
+      label: 'url_en',
+      help: 'url',
+    },
+    { key: 'urlnl', type: 'url', def: F1_URL_NL, full: 1, label: 'url_nl' },
+  ];
+  // Order of the settings in a saved block, after f1mode.
+  var F1_SAVE_ORDER =
+    'language urlen urlnl utcoffset pollminutes sessions visibility emptytext hideimage fontsize image';
 
-  // Stored custom-field rows -> the values shown in the F1 section.
+  function _f1Field(setting) {
+    return setting.field || 'f1' + setting.key;
+  }
+
+  // Custom field name (lower case) -> true: the fields the F1 section owns,
+  // left out of the generic Custom fields list.
+  var F1_FIELDS = { f1mode: true };
+  F1_SETTINGS.forEach(function (setting) {
+    F1_FIELDS[_f1Field(setting)] = true;
+  });
+
+  function _f1Options(key, t) {
+    return key === 'language'
+      ? [
+          ['en', 'English'],
+          ['nl', 'Nederlands'],
+        ]
+      : [
+          ['all', t.f1_block_sessions_all],
+          ['sprint_race', t.f1_block_sessions_sprint_race],
+          ['race', t.f1_block_sessions_race],
+        ];
+  }
+
+  // A select value if it is one of its options, else the default.
+  function _f1Option(setting, value) {
+    var allowed = _f1Options(setting.key, {}).map(function (option) {
+      return option[0];
+    });
+    return allowed.indexOf(value) > -1 ? value : setting.def;
+  }
+
+  // Stored custom-field rows -> the F1 values (mode + every setting key).
   function _f1ValuesFromRows(rows) {
-    var values = {};
+    var stored = {};
     (rows || []).forEach(function (row) {
       var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
-      if (F1_FIELDS[field]) values[field] = row.value;
+      if (F1_FIELDS[field]) stored[field] = row.value;
     });
-    return {
-      mode: values.f1mode === 'all' ? 'all' : 'next',
-      language: values.f1language === 'nl' ? 'nl' : 'en',
-      urlEn: String(values.f1urlen || ''),
-      urlNl: String(values.f1urlnl || ''),
-      utcOffset: values.f1utcoffset !== undefined ? values.f1utcoffset : 1,
-      pollMinutes:
-        values.f1pollminutes !== undefined ? values.f1pollminutes : 60,
-      sessions: /^(sprint_race|race)$/.test(values.f1sessions)
-        ? values.f1sessions
-        : 'all',
-      visibility: values.f1visibility !== undefined ? values.f1visibility : 3,
-      emptyText: String(values.f1emptytext || ''),
-      hideImage:
-        values.hideimageonempty === true || values.hideimageonempty === 'true',
-      fontSize: values.f1fontsize !== undefined ? values.f1fontsize : '',
-      image: String(values.f1image || ''),
-    };
+    var values = { mode: stored.f1mode === 'all' ? 'all' : 'next' };
+    F1_SETTINGS.forEach(function (setting) {
+      var raw = stored[_f1Field(setting)];
+      if (setting.type === 'select') {
+        values[setting.key] = _f1Option(setting, raw);
+      } else if (setting.type === 'number') {
+        values[setting.key] =
+          raw !== undefined ? raw : setting.def === null ? '' : setting.def;
+      } else if (setting.type === 'switch') {
+        values[setting.key] = raw === true || raw === 'true';
+      } else {
+        // An empty URL shows its default feed (see _f1FieldsHtml).
+        values[setting.key] = String(raw || '');
+      }
+    });
+    return values;
   }
 
-  function _f1FieldHtml(prefix, key, label, inputHtml, help, full) {
-    return (
-      '<div class="' +
-      (full ? 'col-12' : 'col-md-6') +
-      '"><div class="mb-3"><label class="form-label" for="' +
-      _esc(prefix) +
-      '-f1-' +
-      key +
-      '">' +
-      _esc(label) +
-      '</label>' +
-      inputHtml +
-      (help ? '<div class="form-text">' + _esc(help) + '</div>' : '') +
-      '</div></div>'
-    );
-  }
-
-  function _f1InputHtml(prefix, key, type, value, attrs) {
+  function _f1ControlHtml(id, setting, value, t) {
+    if (setting.type === 'select') {
+      return (
+        '<select class="form-select" id="' +
+        id +
+        '">' +
+        _f1Options(setting.key, t)
+          .map(function (option) {
+            return (
+              '<option value="' +
+              _esc(option[0]) +
+              '"' +
+              (String(value) === option[0] ? ' selected' : '') +
+              '>' +
+              _esc(option[1]) +
+              '</option>'
+            );
+          })
+          .join('') +
+        '</select>'
+      );
+    }
+    if (setting.type === 'switch') {
+      return (
+        '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+        id +
+        '"' +
+        (value ? ' checked' : '') +
+        '></div>'
+      );
+    }
+    if (setting.type === 'image') {
+      // Own image picker (_wireF1Fields): the image is shown next to the
+      // text of a Next event tile, in addition to the tile icon.
+      return (
+        '<div class="input-group input-group-sm de-f1-image-row" style="position:relative;">' +
+        '<input type="text" class="form-control de-f1-image-input" id="' +
+        id +
+        '" placeholder="custom/icon.png" value="' +
+        _esc(value) +
+        '" autocomplete="off">' +
+        '<button type="button" class="btn btn-outline-danger de-f1-image-clear" title="' +
+        _esc(t.remove_field) +
+        '"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
+        '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
+        _esc(t.custom_images) +
+        '"><div class="dt-custom-image-status"></div>' +
+        '<div class="dt-custom-image-grid"></div></div></div>'
+      );
+    }
+    var range = setting.range
+      ? ' min="' +
+        setting.range[0] +
+        '" max="' +
+        setting.range[1] +
+        '" step="' +
+        setting.range[2] +
+        '"'
+      : '';
     return (
       '<input type="' +
-      type +
+      (setting.range ? 'number' : 'text') +
       '" class="form-control" id="' +
-      _esc(prefix) +
-      '-f1-' +
-      key +
+      id +
       '" value="' +
       _esc(String(value)) +
       '"' +
-      (attrs || '') +
+      range +
       ' autocomplete="off">'
     );
-  }
-
-  function _f1SelectHtml(prefix, key, value, options) {
-    var html =
-      '<select class="form-select" id="' + _esc(prefix) + '-f1-' + key + '">';
-    options.forEach(function (option) {
-      html +=
-        '<option value="' +
-        _esc(option[0]) +
-        '"' +
-        (String(value) === option[0] ? ' selected' : '') +
-        '>' +
-        _esc(option[1]) +
-        '</option>';
-    });
-    return html + '</select>';
   }
 
   /* The F1 section shared by the quick-add popup and the config popup. Two
@@ -7435,8 +7535,7 @@ var DashticzDeviceEditor = (function () {
      buttons at the top. */
   function _f1FieldsHtml(prefix, values) {
     var t = _translations();
-    var v = _f1ValuesFromRows([]);
-    v = $.extend(v, values || {});
+    var v = $.extend(_f1ValuesFromRows([]), values || {});
     var html =
       '<div class="de-f1-fields" data-f1-prefix="' + _esc(prefix) + '">';
     html += '<h6 class="de-section-title">' + _esc(t.f1_block) + '</h6>';
@@ -7465,134 +7564,30 @@ var DashticzDeviceEditor = (function () {
         _esc(mode[2]) +
         '</button>';
     });
-    html += '</div></div>';
-    html += '<div class="row">';
-    html += _f1FieldHtml(
-      prefix,
-      'language',
-      t.f1_block_language,
-      _f1SelectHtml(prefix, 'language', v.language, [
-        ['en', 'English'],
-        ['nl', 'Nederlands'],
-      ])
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'utcoffset',
-      t.f1_block_utcoffset,
-      _f1InputHtml(
-        prefix,
-        'utcoffset',
-        'number',
-        v.utcOffset,
-        ' min="-24" max="24" step="1"'
-      ),
-      t.f1_block_utcoffset_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'pollminutes',
-      t.f1_block_pollminutes,
-      _f1InputHtml(
-        prefix,
-        'pollminutes',
-        'number',
-        v.pollMinutes,
-        ' min="5" max="1440" step="5"'
-      ),
-      t.f1_block_pollminutes_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'sessions',
-      t.f1_block_sessions,
-      _f1SelectHtml(prefix, 'sessions', v.sessions, [
-        ['all', t.f1_block_sessions_all],
-        ['sprint_race', t.f1_block_sessions_sprint_race],
-        ['race', t.f1_block_sessions_race],
-      ])
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'visibility',
-      t.f1_block_visibility,
-      _f1InputHtml(
-        prefix,
-        'visibility',
-        'number',
-        v.visibility,
-        ' min="0" max="365" step="1"'
-      ),
-      t.f1_block_visibility_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'emptytext',
-      t.f1_block_emptytext,
-      _f1InputHtml(prefix, 'emptytext', 'text', v.emptyText),
-      t.f1_block_emptytext_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'fontsize',
-      t.f1_block_fontsize,
-      _f1InputHtml(
-        prefix,
-        'fontsize',
-        'number',
-        v.fontSize,
-        ' min="8" max="60" step="1"'
-      ),
-      t.f1_block_fontsize_help
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'hideimage',
-      t.f1_block_hideimage,
-      '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
-        _esc(prefix) +
-        '-f1-hideimage"' +
-        (v.hideImage ? ' checked' : '') +
-        '></div>'
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'image',
-      t.f1_block_image,
-      '<div class="input-group input-group-sm de-f1-image-row" style="position:relative;">' +
-        '<input type="text" class="form-control de-f1-image-input" id="' +
-        _esc(prefix) +
-        '-f1-image" placeholder="custom/icon.png" value="' +
-        _esc(v.image) +
-        '" autocomplete="off">' +
-        '<button type="button" class="btn btn-outline-danger de-f1-image-clear" title="' +
-        _esc(t.remove_field) +
-        '"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
-        '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
-        _esc(t.custom_images) +
-        '"><div class="dt-custom-image-status"></div>' +
-        '<div class="dt-custom-image-grid"></div></div></div>',
-      t.f1_block_image_help,
-      true
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'urlen',
-      t.f1_block_url_en,
-      _f1InputHtml(prefix, 'urlen', 'text', v.urlEn || F1_URL_EN),
-      t.f1_block_url_help,
-      true
-    );
-    html += _f1FieldHtml(
-      prefix,
-      'urlnl',
-      t.f1_block_url_nl,
-      _f1InputHtml(prefix, 'urlnl', 'text', v.urlNl || F1_URL_NL),
-      '',
-      true
-    );
-    html += '</div></div>';
-    return html;
+    html += '</div></div><div class="de-f1-grid">';
+    F1_SETTINGS.forEach(function (setting) {
+      var id = _esc(prefix) + '-f1-' + setting.key;
+      var label = 'f1_block_' + (setting.label || setting.key);
+      var help = setting.help
+        ? 'f1_block_' +
+          (setting.help === 1 ? setting.label || setting.key : setting.help) +
+          '_help'
+        : '';
+      var value = v[setting.key];
+      if (setting.type === 'url') value = value || setting.def;
+      html +=
+        '<div class="de-f1-field' +
+        (setting.full ? ' de-f1-field-full' : '') +
+        '"><div class="mb-3"><label class="form-label" for="' +
+        id +
+        '">' +
+        _esc(t[label]) +
+        '</label>' +
+        _f1ControlHtml(id, setting, value, t) +
+        (help ? '<div class="form-text">' + _esc(t[help]) + '</div>' : '') +
+        '</div></div>';
+    });
+    return html + '</div></div>';
   }
 
   /* Call once after appending markup built with _f1FieldsHtml() above. */
@@ -7662,68 +7657,65 @@ var DashticzDeviceEditor = (function () {
     });
   }
 
+  // The F1 section's fields -> F1 values plus validUrls. Numbers are
+  // clamped to their range; anything invalid falls back to the default.
   function _readF1Fields(prefix) {
-    function num(key, def, min, max) {
-      var value = parseFloat($('#' + prefix + '-f1-' + key).val());
-      return isNaN(value)
-        ? def
-        : Math.min(max, Math.max(min, Math.round(value)));
+    function $field(key) {
+      return $('#' + prefix + '-f1-' + key);
     }
-    function text(key) {
-      return $.trim(String($('#' + prefix + '-f1-' + key).val() || ''));
-    }
-    var urlEn = text('urlen');
-    var urlNl = text('urlnl');
-    return {
-      mode:
-        $('#' + prefix + '-f1-mode').attr('data-value') === 'all'
-          ? 'all'
-          : 'next',
-      language: text('language') === 'nl' ? 'nl' : 'en',
-      urlEn: urlEn || F1_URL_EN,
-      urlNl: urlNl || F1_URL_NL,
-      validUrls:
-        /^https:\/\/\S+$/i.test(urlEn || F1_URL_EN) &&
-        /^https:\/\/\S+$/i.test(urlNl || F1_URL_NL),
-      utcOffset: num('utcoffset', 1, -24, 24),
-      pollMinutes: num('pollminutes', 60, 5, 1440),
-      sessions: /^(sprint_race|race)$/.test(text('sessions'))
-        ? text('sessions')
-        : 'all',
-      visibility: num('visibility', 3, 0, 365),
-      emptyText: text('emptytext').slice(0, 200),
-      hideImage: $('#' + prefix + '-f1-hideimage').is(':checked'),
-      fontSize:
-        parseInt(text('fontsize'), 10) > 0
-          ? Math.min(60, Math.max(8, parseInt(text('fontsize'), 10)))
-          : null,
-      image:
-        /^[A-Za-z0-9 _.\/-]{0,100}$/.test(text('image')) &&
-        text('image').indexOf('..') < 0
-          ? text('image')
-          : '',
+    var f1 = {
+      mode: $field('mode').attr('data-value') === 'all' ? 'all' : 'next',
     };
+    F1_SETTINGS.forEach(function (setting) {
+      var raw = $.trim(String($field(setting.key).val() || ''));
+      var range = setting.range || [];
+      var value;
+      if (setting.type === 'select') {
+        value = _f1Option(setting, raw);
+      } else if (setting.type === 'number' && setting.def === null) {
+        var whole = parseInt(raw, 10);
+        value =
+          whole > 0 ? Math.min(range[1], Math.max(range[0], whole)) : null;
+      } else if (setting.type === 'number') {
+        var number = parseFloat($field(setting.key).val());
+        value = isNaN(number)
+          ? setting.def
+          : Math.min(range[1], Math.max(range[0], Math.round(number)));
+      } else if (setting.type === 'switch') {
+        value = $field(setting.key).is(':checked');
+      } else if (setting.type === 'image') {
+        // A relative path only, no parent directory.
+        value =
+          /^[A-Za-z0-9 _.\/-]{0,100}$/.test(raw) && raw.indexOf('..') < 0
+            ? raw
+            : '';
+      } else if (setting.type === 'url') {
+        value = raw || setting.def;
+      } else {
+        value = raw.slice(0, setting.max);
+      }
+      f1[setting.key] = value;
+    });
+    f1.validUrls =
+      /^https:\/\/\S+$/i.test(f1.urlen) && /^https:\/\/\S+$/i.test(f1.urlnl);
+    return f1;
   }
 
-  // F1 section values -> custom_fields rows. Defaults are left out so the
-  // saved block stays short; js/components/f1.js applies the same defaults.
+  // F1 values -> custom_fields rows, without the default values (the saved
+  // block stays short; js/components/f1.js applies the same defaults).
   function _f1CustomRows(f1) {
     var rows = [{ field: 'f1mode', setting: f1.mode, value: f1.mode }];
-    function add(field, value, def) {
-      if (value === def) return;
-      rows.push({ field: field, setting: String(value), value: value });
-    }
-    add('f1language', f1.language, 'en');
-    add('f1urlen', f1.urlEn, F1_URL_EN);
-    add('f1urlnl', f1.urlNl, F1_URL_NL);
-    add('f1utcoffset', f1.utcOffset, 1);
-    add('f1pollminutes', f1.pollMinutes, 60);
-    add('f1sessions', f1.sessions, 'all');
-    add('f1visibility', f1.visibility, 3);
-    add('f1emptytext', f1.emptyText, '');
-    add('hideimageonempty', f1.hideImage, false);
-    add('f1fontsize', f1.fontSize, null);
-    add('f1image', f1.image, '');
+    F1_SAVE_ORDER.split(' ').forEach(function (key) {
+      var setting = F1_SETTINGS.filter(function (item) {
+        return item.key === key;
+      })[0];
+      if (f1[key] === setting.def) return;
+      rows.push({
+        field: _f1Field(setting),
+        setting: String(f1[key]),
+        value: f1[key],
+      });
+    });
     return rows;
   }
 
@@ -7841,6 +7833,381 @@ var DashticzDeviceEditor = (function () {
     });
     window.bootstrap.Modal.getOrCreateInstance(
       document.getElementById('f1blockpopup')
+    ).show();
+  }
+
+  /* TVgids (js/components/tvgids.js, docs/blocks/specials/tvgids.rst): the
+     channels are picked from their logos, per channel group, in the order
+     they are clicked. Every other setting is derived from this table, as
+     for F1 above:
+       key   - element id <prefix>-tvgids-<key>, custom field 'tvgids' + key,
+               label 'tvgids_block_' + key, help text label + '_help'
+       def   - default, as applied by js/components/tvgids.js; a default
+               value is left out of the saved block
+       range - [min, max, step] of a number field */
+  var TVGIDS_SETTINGS = [
+    { key: 'maxitems', type: 'number', def: 10, range: [0, 200, 1] },
+    { key: 'columnwidth', type: 'number', def: 250, range: [120, 1000, 10] },
+    { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
+    { key: 'pollminutes', type: 'number', def: 60, range: [15, 1440, 5] },
+    { key: 'showpast', type: 'switch', def: false },
+    { key: 'hidelogo', type: 'switch', def: false },
+  ];
+
+  // Custom field name (lower case) -> true: the fields the TVgids section
+  // owns, left out of the generic Custom fields list.
+  var TVGIDS_FIELDS = { tvgids: true };
+  TVGIDS_SETTINGS.forEach(function (setting) {
+    TVGIDS_FIELDS['tvgids' + setting.key] = true;
+  });
+
+  var tvgidsChannelsPromise = null;
+
+  // vendor/dashticz/tvgids/channels.json: [{group, channels: [{id, name}]}].
+  function _loadTvgidsChannels() {
+    if (tvgidsChannelsPromise) return tvgidsChannelsPromise;
+    tvgidsChannelsPromise = $.getJSON(
+      settings['dashticz_php_path'] + 'tvgids/channels.json'
+    ).then(function (groups) {
+      return Array.isArray(groups) ? groups : [];
+    });
+    tvgidsChannelsPromise.fail(function () {
+      tvgidsChannelsPromise = null;
+    });
+    return tvgidsChannelsPromise;
+  }
+
+  function _tvgidsChannelList(value) {
+    var seen = {};
+    return String(value || '')
+      .split(',')
+      .map(function (id) {
+        return $.trim(id);
+      })
+      .filter(function (id) {
+        if (!/^[a-z0-9_]{1,40}$/.test(id) || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      });
+  }
+
+  // Stored custom-field rows -> the TVgids values (channels + every key).
+  function _tvgidsValuesFromRows(rows) {
+    var stored = {};
+    (rows || []).forEach(function (row) {
+      var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+      if (TVGIDS_FIELDS[field]) stored[field] = row.value;
+    });
+    var values = { channels: _tvgidsChannelList(stored.tvgids).join(',') };
+    TVGIDS_SETTINGS.forEach(function (setting) {
+      var raw = stored['tvgids' + setting.key];
+      if (setting.type === 'switch') {
+        values[setting.key] = raw === true || raw === 'true';
+      } else {
+        values[setting.key] =
+          raw !== undefined && raw !== null
+            ? raw
+            : setting.def === null
+              ? ''
+              : setting.def;
+      }
+    });
+    return values;
+  }
+
+  /* The TVgids section shared by the quick-add popup and the config popup.
+     The tiles are filled by _wireTvgidsFields() once channels.json is in. */
+  function _tvgidsFieldsHtml(prefix, values) {
+    var t = _translations();
+    var v = $.extend(_tvgidsValuesFromRows([]), values || {});
+    var html =
+      '<div class="de-tvgids-fields" data-tvgids-prefix="' +
+      _esc(prefix) +
+      '">';
+    html += '<h6 class="de-section-title">' + _esc(t.tvgids_block) + '</h6>';
+    html +=
+      '<div class="mb-3"><label class="form-label">' +
+      _esc(t.tvgids_block_channels) +
+      '</label><div class="form-text mt-0 mb-2">' +
+      _esc(t.tvgids_block_channels_help) +
+      '</div><input type="hidden" id="' +
+      _esc(prefix) +
+      '-tvgids-channels" value="' +
+      _esc(v.channels) +
+      '"><div class="de-tvgids-picker" id="' +
+      _esc(prefix) +
+      '-tvgids-picker"><div class="form-text">' +
+      _esc(t.loading_images) +
+      '</div></div></div>';
+    html += '<div class="de-tvgids-grid">';
+    TVGIDS_SETTINGS.forEach(function (setting) {
+      var id = _esc(prefix) + '-tvgids-' + setting.key;
+      var label = 'tvgids_block_' + setting.key;
+      var control;
+      if (setting.type === 'switch') {
+        control =
+          '<div class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+          id +
+          '"' +
+          (v[setting.key] ? ' checked' : '') +
+          '></div>';
+      } else {
+        control =
+          '<input type="number" class="form-control" id="' +
+          id +
+          '" value="' +
+          _esc(String(v[setting.key])) +
+          '" min="' +
+          setting.range[0] +
+          '" max="' +
+          setting.range[1] +
+          '" step="' +
+          setting.range[2] +
+          '" autocomplete="off">';
+      }
+      html +=
+        '<div class="mb-3"><label class="form-label" for="' +
+        id +
+        '">' +
+        _esc(t[label]) +
+        '</label>' +
+        control +
+        (t[label + '_help']
+          ? '<div class="form-text">' + _esc(t[label + '_help']) + '</div>'
+          : '') +
+        '</div>';
+    });
+    return html + '</div></div>';
+  }
+
+  /* Call once after appending markup built with _tvgidsFieldsHtml() above:
+     shows the channel tiles and keeps the hidden channel list (in click
+     order) and the order badges in step with them. */
+  function _wireTvgidsFields(prefix, $popup) {
+    var t = _translations();
+    var $input = $popup.find('#' + prefix + '-tvgids-channels');
+    var $picker = $popup.find('#' + prefix + '-tvgids-picker');
+
+    function showOrder() {
+      var chosen = _tvgidsChannelList($input.val());
+      $picker.find('.de-tvgids-tile').each(function () {
+        var position = chosen.indexOf(String($(this).attr('data-channel')));
+        $(this)
+          .toggleClass('active', position > -1)
+          .attr('aria-pressed', position > -1 ? 'true' : 'false')
+          .find('.de-tvgids-order')
+          .text(position > -1 ? String(position + 1) : '');
+      });
+    }
+
+    _loadTvgidsChannels()
+      .done(function (groups) {
+        var html = '';
+        groups.forEach(function (group) {
+          var channels = Array.isArray(group.channels) ? group.channels : [];
+          if (!channels.length) return;
+          html +=
+            '<div class="de-tvgids-group"><div class="de-tvgids-group-title">' +
+            _esc(t['tvgids_group_' + group.group] || group.group) +
+            '</div><div class="de-tvgids-tiles">';
+          channels.forEach(function (channel) {
+            html +=
+              '<button type="button" class="de-tvgids-tile" data-channel="' +
+              _esc(channel.id) +
+              '" title="' +
+              _esc(channel.name) +
+              '" aria-pressed="false"><img src="img/custom/tvgids/' +
+              _esc(channel.id) +
+              '.png" alt="" loading="lazy"><span class="de-tvgids-tile-name">' +
+              _esc(channel.name) +
+              '</span><span class="de-tvgids-order"></span></button>';
+          });
+          html += '</div></div>';
+        });
+        $picker.html(html);
+        showOrder();
+      })
+      .fail(function () {
+        $picker.html(
+          '<div class="form-text text-danger">' +
+            _esc(t.tvgids_block_channels_error) +
+            '</div>'
+        );
+      });
+
+    $picker.on('click', '.de-tvgids-tile', function () {
+      var id = String($(this).attr('data-channel'));
+      var chosen = _tvgidsChannelList($input.val());
+      var position = chosen.indexOf(id);
+      if (position > -1) chosen.splice(position, 1);
+      else chosen.push(id);
+      $input.val(chosen.join(','));
+      showOrder();
+    });
+  }
+
+  // The TVgids section's fields -> TVgids values. Numbers are clamped to
+  // their range; anything invalid falls back to the default.
+  function _readTvgidsFields(prefix) {
+    function $field(key) {
+      return $('#' + prefix + '-tvgids-' + key);
+    }
+    var values = {
+      channels: _tvgidsChannelList($field('channels').val()).join(','),
+    };
+    TVGIDS_SETTINGS.forEach(function (setting) {
+      var range = setting.range || [];
+      var raw = $.trim(String($field(setting.key).val() || ''));
+      var value;
+      if (setting.type === 'switch') {
+        value = $field(setting.key).is(':checked');
+      } else if (setting.def === null) {
+        // Optional whole number: empty means the default.
+        var whole = parseInt(raw, 10);
+        value =
+          whole > 0 ? Math.min(range[1], Math.max(range[0], whole)) : null;
+      } else {
+        var number = parseFloat(raw);
+        value = isNaN(number)
+          ? setting.def
+          : Math.min(range[1], Math.max(range[0], Math.round(number)));
+      }
+      values[setting.key] = value;
+    });
+    return values;
+  }
+
+  // TVgids values -> custom_fields rows, without the default values.
+  function _tvgidsCustomRows(values) {
+    var rows = [
+      { field: 'tvgids', setting: values.channels, value: values.channels },
+    ];
+    TVGIDS_SETTINGS.forEach(function (setting) {
+      if (values[setting.key] === setting.def) return;
+      rows.push({
+        field: 'tvgids' + setting.key,
+        setting: String(values[setting.key]),
+        value: values[setting.key],
+      });
+    });
+    return rows;
+  }
+
+  function _showTvgidsPopup() {
+    var t = _translations();
+    $('#tvgidsblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="tvgidsblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-tv me-2" aria-hidden="true"></i>' +
+      _esc(t.tvgids_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('tvgids', {
+      icon: true,
+      iconValue: 'fas fa-tv',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tvgids-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="tvgids-device-title" autocomplete="off" value="' +
+      _esc(t.tvgids_block) +
+      '"></div>';
+    html += _tvgidsFieldsHtml('tvgids', {});
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="tvgids-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#tvgidsblockpopup');
+    _wireQuickOptions('tvgids', $popup);
+    _wireTvgidsFields('tvgids', $popup);
+    _wireBackButton('tvgidsblockpopup');
+
+    $('#tvgids-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#tvgids-device-title').val() || ''));
+      var tvgids = _readTvgidsFields('tvgids');
+      if (!tvgids.channels) {
+        $message.addClass('text-danger').text(t.invalid_tvgids_block_channels);
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('tvgids');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows = customRows.concat(_tvgidsCustomRows(tvgids));
+
+      var reference = _nextSpecialReference('tvgids');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'tvgids',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 12,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      _hideModal(document.getElementById('tvgidsblockpopup'));
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('tvgidsblockpopup')
     ).show();
   }
 
@@ -8243,6 +8610,7 @@ var DashticzDeviceEditor = (function () {
     var isLmsBlock = special && special.specialType === 'lms';
     var isGraphBlock = special && special.specialType === 'graph';
     var isF1Block = special && special.specialType === 'f1';
+    var isTvgidsBlock = special && special.specialType === 'tvgids';
     var isCalendarBlock = special && special.specialType === 'calendar';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
@@ -8305,6 +8673,16 @@ var DashticzDeviceEditor = (function () {
       f1Values = _f1ValuesFromRows(customRows);
       customRows = customRows.filter(function (row) {
         return !F1_FIELDS[
+          _normaliseCustomFieldName(row && row.field).toLowerCase()
+        ];
+      });
+    }
+    var tvgidsValues = null;
+    if (isTvgidsBlock) {
+      // Same as F1: the TVgids section owns these fields.
+      tvgidsValues = _tvgidsValuesFromRows(customRows);
+      customRows = customRows.filter(function (row) {
+        return !TVGIDS_FIELDS[
           _normaliseCustomFieldName(row && row.field).toLowerCase()
         ];
       });
@@ -8490,7 +8868,7 @@ var DashticzDeviceEditor = (function () {
       '" tabindex="-1" aria-hidden="true">';
     html +=
       '<div class="modal-dialog modal-dialog-centered de-config-dialog' +
-      (isF1Block ? ' modal-lg' : '') +
+      (isF1Block || isTvgidsBlock ? ' modal-lg' : '') +
       '"><div class="modal-content">';
     html +=
       '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
@@ -8940,6 +9318,7 @@ var DashticzDeviceEditor = (function () {
     html += '</div>';
     // After the (Title/Icon/Image) custom fields, so those stay at the top.
     if (isF1Block) html += _f1FieldsHtml('de-config', f1Values);
+    if (isTvgidsBlock) html += _tvgidsFieldsHtml('de-config', tvgidsValues);
     html +=
       '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
     html +=
@@ -8967,6 +9346,7 @@ var DashticzDeviceEditor = (function () {
     var iconFieldTouched = false;
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     if (isF1Block) _wireF1Fields('de-config', $popup);
+    if (isTvgidsBlock) _wireTvgidsFields('de-config', $popup);
     if (isCalendarBlock)
       _wireCalendarFields('de-config', $popup, calendarSources, t);
     if (isClusterBlock) {
@@ -9376,6 +9756,11 @@ var DashticzDeviceEditor = (function () {
           customKeys[key] = true;
         });
       }
+      if (isTvgidsBlock) {
+        Object.keys(TVGIDS_FIELDS).forEach(function (key) {
+          customKeys[key] = true;
+        });
+      }
       if (isGraphBlock) {
         customKeys.graph = true;
         customKeys.legend = true;
@@ -9470,6 +9855,17 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_f1_block_url);
           $('#de-config-f1-urlen').trigger('focus');
+        }
+      }
+      var pendingTvgids = null;
+      if (isTvgidsBlock) {
+        pendingTvgids = _readTvgidsFields('de-config');
+        if (!pendingTvgids.channels) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_tvgids_block_channels);
         }
       }
       var pendingGraph = null;
@@ -9777,6 +10173,8 @@ var DashticzDeviceEditor = (function () {
       }
       storedRows = storedRows.concat(pendingCustomFields);
       if (pendingF1) storedRows = storedRows.concat(_f1CustomRows(pendingF1));
+      if (pendingTvgids)
+        storedRows = storedRows.concat(_tvgidsCustomRows(pendingTvgids));
       if (pendingGraph) {
         storedRows.push({
           field: 'devices',
@@ -10169,6 +10567,7 @@ var DashticzDeviceEditor = (function () {
     else if (isXmltvguideBlock) label = t.xmltvguide_block;
     else if (isLmsBlock) label = t.lms_block;
     else if (special.specialType === 'f1') label = t.f1_block;
+    else if (special.specialType === 'tvgids') label = t.tvgids_block;
     var htmlFileRow =
       isHtmlBlock && special.customFields
         ? special.customFields.find(function (row) {
@@ -10258,6 +10657,7 @@ var DashticzDeviceEditor = (function () {
     else if (isLmsBlock) specialIconClass = 'fa-music';
     else if (special.specialType === 'f1')
       specialIconClass = 'fa-flag-checkered';
+    else if (special.specialType === 'tvgids') specialIconClass = 'fa-tv';
     var html =
       '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) +
@@ -10411,6 +10811,7 @@ var DashticzDeviceEditor = (function () {
     camera: 'camera_',
     news: 'news_',
     f1: 'f1_',
+    tvgids: 'tvgids_',
     // Matches the legacy hand-written 'graph_<idx>' convention (see
     // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
     // key-prefix check), so a repeatable instance's auto-generated key
@@ -11830,6 +12231,7 @@ var DashticzDeviceEditor = (function () {
     openCamera: openCamera,
     openNews: openNews,
     openF1: openF1,
+    openTvgids: openTvgids,
     openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,
