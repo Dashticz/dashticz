@@ -525,6 +525,15 @@ var DashticzDeviceEditor = (function () {
     _showTvgidsPopup();
   }
 
+  /** Open the dedicated Fully Kiosk popup used by the Widgets menu. */
+  function openFullykiosk() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showFullykioskPopup();
+  }
+
   /** Open the dedicated News popup used by the Screen Editor add menu. */
   function openNews() {
     editorMode = 'devices';
@@ -1141,6 +1150,15 @@ var DashticzDeviceEditor = (function () {
       definition = _normaliseLegacyF1Definition(definition);
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      definition.fullymode === 'charge'
+    ) {
+      // Repeatable Fully Kiosk block, added via the Widgets menu's Fully
+      // Kiosk card (_showFullykioskPopup()). Matches
+      // js/components/fullykiosk.js's own canHandle(): dispatched on
+      // fullymode, no `type` of its own, same convention as F1.
+      kind = 'fullykiosk';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       typeof definition.tvgids === 'string' &&
       definition.tvgids !== ''
     ) {
@@ -1743,6 +1761,8 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'lms') return 'fas fa-music';
       if (special.specialType === 'f1') return 'fas fa-flag-checkered';
       if (special.specialType === 'tvgids') return 'fas fa-tv';
+      if (special.specialType === 'fullykiosk')
+        return 'fas fa-tablet-screen-button';
     }
     return 'fas fa-question';
   }
@@ -7409,7 +7429,8 @@ var DashticzDeviceEditor = (function () {
               ? ''
               : setting.def;
       } else if (setting.type === 'switch') {
-        values[setting.key] = raw === true || raw === 'true';
+        values[setting.key] =
+          raw === undefined ? !!setting.def : raw === true || raw === 'true';
       } else if (setting.type === 'color') {
         values[setting.key] = _settingColor(raw, setting.def);
       } else {
@@ -7489,6 +7510,56 @@ var DashticzDeviceEditor = (function () {
         '<div class="dt-custom-image-grid"></div></div></div>'
       );
     }
+    if (setting.type === 'password') {
+      return (
+        '<input type="password" class="form-control" id="' +
+        id +
+        '" value="' +
+        _esc(String(value)) +
+        '" autocomplete="new-password">'
+      );
+    }
+    if (setting.type === 'device') {
+      // A Domoticz on/off switch, picked from the devices of this dashboard;
+      // a number field when the device list is not available.
+      var switches = _settingSwitchDevices();
+      if (!switches.length) {
+        return (
+          '<input type="number" class="form-control" id="' +
+          id +
+          '" min="0" step="1" value="' +
+          _esc(String(value)) +
+          '" autocomplete="off">'
+        );
+      }
+      if (
+        value &&
+        !switches.some(function (item) {
+          return item[0] === String(value);
+        })
+      ) {
+        switches.unshift([String(value), String(value)]);
+      }
+      return (
+        '<select class="form-select" id="' +
+        id +
+        '"><option value="">-</option>' +
+        switches
+          .map(function (item) {
+            return (
+              '<option value="' +
+              _esc(item[0]) +
+              '"' +
+              (String(value) === item[0] ? ' selected' : '') +
+              '>' +
+              _esc(item[1]) +
+              '</option>'
+            );
+          })
+          .join('') +
+        '</select>'
+      );
+    }
     var range = setting.range
       ? ' min="' +
         setting.range[0] +
@@ -7509,6 +7580,30 @@ var DashticzDeviceEditor = (function () {
       range +
       ' autocomplete="off">'
     );
+  }
+
+  // [[idx, 'Name (idx)'], ...] of the on/off switches of Domoticz, by name.
+  function _settingSwitchDevices() {
+    var devices = {};
+    try {
+      devices = Domoticz.getAllDevices() || {};
+    } catch (e) {
+      devices = {};
+    }
+    return Object.keys(devices)
+      .filter(function (idx) {
+        return (
+          /^\d+$/.test(idx) &&
+          devices[idx] &&
+          devices[idx].SwitchType === 'On/Off'
+        );
+      })
+      .map(function (idx) {
+        return [idx, (devices[idx].Name || idx) + ' (' + idx + ')'];
+      })
+      .sort(function (a, b) {
+        return a[1].localeCompare(b[1]);
+      });
   }
 
   // The label, control and help text of one setting of a section.
@@ -7557,6 +7652,7 @@ var DashticzDeviceEditor = (function () {
         : '';
     }
     if (setting.type === 'url') return raw || setting.def;
+    if (setting.type === 'device') return /^\d{1,9}$/.test(raw) ? raw : '';
     if (setting.type === 'number') {
       var number = parseFloat(raw);
       if (setting.def === null) {
@@ -8172,6 +8268,211 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  /* Fully Kiosk (js/components/fullykiosk.js, docs/blocks/specials/
+     fullykiosk.rst): the connection to the tablet, the charger switch and the
+     charge percentages, all from one settings table like F1 and TVgids above.
+     The block is dispatched on fullymode ('charge'), kept apart from the
+     table, like f1mode. */
+  var FULLY_SECTION = {
+    fieldPrefix: 'fully',
+    idPart: 'fully',
+    labelPrefix: 'fully_block_',
+    fieldClass: 'de-fully-field',
+    saveOrder:
+      'host port password https switch auto startmin startmax stopmin stopmax hardmin hardmax showbattery showcharging showscreen showscreensaver showmotion showbrightness showloadurl fontsize',
+    settings: [
+      { key: 'host', type: 'text', def: '', max: 100 },
+      { key: 'port', type: 'number', def: 2323, range: [1, 65535, 1] },
+      { key: 'password', type: 'password', def: '', max: 100 },
+      { key: 'https', type: 'switch', def: false },
+      { key: 'switch', type: 'device', def: '', full: 1 },
+      { key: 'auto', type: 'switch', def: true, full: 1 },
+      { key: 'startmin', type: 'number', def: 25, range: [1, 100, 1] },
+      { key: 'startmax', type: 'number', def: 30, range: [1, 100, 1] },
+      { key: 'stopmin', type: 'number', def: 80, range: [1, 100, 1] },
+      { key: 'stopmax', type: 'number', def: 90, range: [1, 100, 1] },
+      { key: 'hardmin', type: 'number', def: 15, range: [0, 100, 1] },
+      { key: 'hardmax', type: 'number', def: 95, range: [1, 100, 1] },
+      // The other devices of the plugin, as extra rows of the block.
+      { key: 'showbattery', type: 'switch', def: true },
+      { key: 'showcharging', type: 'switch', def: false },
+      { key: 'showscreen', type: 'switch', def: false },
+      { key: 'showscreensaver', type: 'switch', def: false },
+      { key: 'showmotion', type: 'switch', def: false },
+      { key: 'showbrightness', type: 'switch', def: false },
+      { key: 'showloadurl', type: 'switch', def: false },
+      { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
+    ],
+  };
+  var FULLY_SETTINGS = FULLY_SECTION.settings;
+  var FULLY_FIELDS = _settingFieldNames(FULLY_SECTION, 'fullymode');
+
+  // Stored custom-field rows -> the Fully Kiosk values (every setting key).
+  function _fullyValuesFromRows(rows) {
+    return _settingsFromRows(FULLY_SECTION, rows, FULLY_FIELDS);
+  }
+
+  /* The Fully Kiosk section shared by the quick-add popup and the config
+     popup. */
+  function _fullyFieldsHtml(prefix, values) {
+    var t = _translations();
+    var v = $.extend(_fullyValuesFromRows([]), values || {});
+    var html =
+      '<div class="de-fully-fields" data-fully-prefix="' + _esc(prefix) + '">';
+    html += '<h6 class="de-section-title">' + _esc(t.fully_block) + '</h6>';
+    html += '<div class="de-fully-grid">';
+    FULLY_SETTINGS.forEach(function (setting) {
+      html += _settingHtml(FULLY_SECTION, prefix, setting, v[setting.key], t);
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  // The Fully Kiosk section's fields -> values. Numbers are clamped to their
+  // range; the minimum percentages are kept at or below the maximum ones.
+  function _readFullyFields(prefix) {
+    var values = {};
+    FULLY_SETTINGS.forEach(function (setting) {
+      values[setting.key] = _settingValue(FULLY_SECTION, prefix, setting);
+    });
+    [
+      ['startmin', 'startmax'],
+      ['stopmin', 'stopmax'],
+    ].forEach(function (pair) {
+      if (values[pair[0]] > values[pair[1]]) {
+        var low = values[pair[1]];
+        values[pair[1]] = values[pair[0]];
+        values[pair[0]] = low;
+      }
+    });
+    return values;
+  }
+
+  // Fully Kiosk values -> custom_fields rows, without the default values.
+  function _fullyCustomRows(values) {
+    return [{ field: 'fullymode', setting: 'charge', value: 'charge' }].concat(
+      _settingRows(FULLY_SECTION, values)
+    );
+  }
+
+  function _showFullykioskPopup() {
+    var t = _translations();
+    $('#fullykioskblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="fullykioskblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-tablet-screen-button me-2" aria-hidden="true"></i>' +
+      _esc(t.fully_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('fullykiosk', {
+      icon: true,
+      iconValue: 'fas fa-tablet-screen-button',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="fullykiosk-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="fullykiosk-device-title" autocomplete="off" value="' +
+      _esc(t.fully_block) +
+      '"></div>';
+    html += _fullyFieldsHtml('fullykiosk', {});
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="fullykiosk-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#fullykioskblockpopup');
+    _wireQuickOptions('fullykiosk', $popup);
+    _wireBackButton('fullykioskblockpopup');
+
+    $('#fullykiosk-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#fullykiosk-device-title').val() || ''));
+      var fully = _readFullyFields('fullykiosk');
+      if (!fully.host) {
+        $message.addClass('text-danger').text(t.invalid_fully_block_host);
+        $('#fullykiosk-fully-host').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('fullykiosk');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows = customRows.concat(_fullyCustomRows(fully));
+
+      var reference = _nextSpecialReference('fullykiosk');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'fullykiosk',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 4,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      _hideModal(document.getElementById('fullykioskblockpopup'));
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('fullykioskblockpopup')
+    ).show();
+  }
+
   function _showSlideButtonPopup() {
     var t = _translations();
     $('#slidebuttonpopup').remove();
@@ -8572,6 +8873,7 @@ var DashticzDeviceEditor = (function () {
     var isGraphBlock = special && special.specialType === 'graph';
     var isF1Block = special && special.specialType === 'f1';
     var isTvgidsBlock = special && special.specialType === 'tvgids';
+    var isFullyBlock = special && special.specialType === 'fullykiosk';
     var isCalendarBlock = special && special.specialType === 'calendar';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
@@ -8644,6 +8946,16 @@ var DashticzDeviceEditor = (function () {
       tvgidsValues = _tvgidsValuesFromRows(customRows);
       customRows = customRows.filter(function (row) {
         return !TVGIDS_FIELDS[
+          _normaliseCustomFieldName(row && row.field).toLowerCase()
+        ];
+      });
+    }
+    var fullyValues = null;
+    if (isFullyBlock) {
+      // Same as F1: the Fully Kiosk section owns these fields.
+      fullyValues = _fullyValuesFromRows(customRows);
+      customRows = customRows.filter(function (row) {
+        return !FULLY_FIELDS[
           _normaliseCustomFieldName(row && row.field).toLowerCase()
         ];
       });
@@ -8829,7 +9141,7 @@ var DashticzDeviceEditor = (function () {
       '" tabindex="-1" aria-hidden="true">';
     html +=
       '<div class="modal-dialog modal-dialog-centered de-config-dialog' +
-      (isF1Block || isTvgidsBlock ? ' modal-lg' : '') +
+      (isF1Block || isTvgidsBlock || isFullyBlock ? ' modal-lg' : '') +
       '"><div class="modal-content">';
     html +=
       '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
@@ -9280,6 +9592,7 @@ var DashticzDeviceEditor = (function () {
     // After the (Title/Icon/Image) custom fields, so those stay at the top.
     if (isF1Block) html += _f1FieldsHtml('de-config', f1Values);
     if (isTvgidsBlock) html += _tvgidsFieldsHtml('de-config', tvgidsValues);
+    if (isFullyBlock) html += _fullyFieldsHtml('de-config', fullyValues);
     html +=
       '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
     html +=
@@ -9722,6 +10035,11 @@ var DashticzDeviceEditor = (function () {
           customKeys[key] = true;
         });
       }
+      if (isFullyBlock) {
+        Object.keys(FULLY_FIELDS).forEach(function (key) {
+          customKeys[key] = true;
+        });
+      }
       if (isGraphBlock) {
         customKeys.graph = true;
         customKeys.legend = true;
@@ -9827,6 +10145,18 @@ var DashticzDeviceEditor = (function () {
             .find('.de-config-message')
             .addClass('text-danger')
             .text(t.invalid_tvgids_block_channels);
+        }
+      }
+      var pendingFully = null;
+      if (isFullyBlock) {
+        pendingFully = _readFullyFields('de-config');
+        if (!pendingFully.host) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_fully_block_host);
+          $('#de-config-fully-host').trigger('focus');
         }
       }
       var pendingGraph = null;
@@ -10136,6 +10466,8 @@ var DashticzDeviceEditor = (function () {
       if (pendingF1) storedRows = storedRows.concat(_f1CustomRows(pendingF1));
       if (pendingTvgids)
         storedRows = storedRows.concat(_tvgidsCustomRows(pendingTvgids));
+      if (pendingFully)
+        storedRows = storedRows.concat(_fullyCustomRows(pendingFully));
       if (pendingGraph) {
         storedRows.push({
           field: 'devices',
@@ -10529,6 +10861,7 @@ var DashticzDeviceEditor = (function () {
     else if (isLmsBlock) label = t.lms_block;
     else if (special.specialType === 'f1') label = t.f1_block;
     else if (special.specialType === 'tvgids') label = t.tvgids_block;
+    else if (special.specialType === 'fullykiosk') label = t.fully_block;
     var htmlFileRow =
       isHtmlBlock && special.customFields
         ? special.customFields.find(function (row) {
@@ -10619,6 +10952,8 @@ var DashticzDeviceEditor = (function () {
     else if (special.specialType === 'f1')
       specialIconClass = 'fa-flag-checkered';
     else if (special.specialType === 'tvgids') specialIconClass = 'fa-tv';
+    else if (special.specialType === 'fullykiosk')
+      specialIconClass = 'fa-tablet-screen-button';
     var html =
       '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) +
@@ -10773,6 +11108,7 @@ var DashticzDeviceEditor = (function () {
     news: 'news_',
     f1: 'f1_',
     tvgids: 'tvgids_',
+    fullykiosk: 'fullykiosk_',
     // Matches the legacy hand-written 'graph_<idx>' convention (see
     // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
     // key-prefix check), so a repeatable instance's auto-generated key
@@ -12193,6 +12529,7 @@ var DashticzDeviceEditor = (function () {
     openNews: openNews,
     openF1: openF1,
     openTvgids: openTvgids,
+    openFullykiosk: openFullykiosk,
     openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,

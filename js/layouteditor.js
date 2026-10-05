@@ -1345,6 +1345,21 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && definition.fullymode === 'charge') {
+      // Repeatable Fully Kiosk block (js/deviceeditor.js's
+      // _showFullykioskPopup()), dispatched purely on fullymode
+      // (js/components/fullykiosk.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'fullykiosk',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && typeof definition.tvgids === 'string' && definition.tvgids) {
       // Repeatable TVgids block (js/deviceeditor.js's _showTvgidsPopup()),
       // dispatched purely on a truthy tvgids channel list
