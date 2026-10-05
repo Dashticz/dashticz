@@ -136,6 +136,15 @@
       "referenceBased": true,
       "saved": true,
       "defaultWidth": 12
+    },
+    "fullykiosk": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
     }
   }
 }

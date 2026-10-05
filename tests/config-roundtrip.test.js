@@ -124,3 +124,16 @@ test('a TVgids block is written with its channel list and settings', () => {
   assert.match(line, /width:12/);
   assert.doesNotMatch(line, /type:/);
 });
+
+// A Fully Kiosk block (js/components/fullykiosk.js) is dispatched on
+// fullymode; the connection and charge settings arrive as custom fields.
+test('a Fully Kiosk block is written with its mode and settings', () => {
+  const line = specialLine(
+    "['kind' => 'fullykiosk', 'name' => 'Fully Kiosk', 'width' => 4, 'icon' => 'fas fa-tablet-screen-button', 'custom_fields' => ['fullymode' => 'charge', 'fullyhost' => '192.168.1.50', 'fullyswitch' => 123]]"
+  );
+  assert.match(line, /fullymode:'charge'/);
+  assert.match(line, /fullyhost:'192\.168\.1\.50'/);
+  assert.match(line, /fullyswitch:123/);
+  assert.match(line, /width:4/);
+  assert.doesNotMatch(line, /type:/);
+});

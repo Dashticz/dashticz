@@ -9077,3 +9077,215 @@ canvas {
 .mh.dt-align-right .col-data > * {
   text-align: right !important;
 }
+
+/* Shared widget button (.dt-btn): a rounded, themed button for the controls of
+   a widget, used by the LMS control and the Fully Kiosk widget. Add .on for
+   the active state of a power or toggle button. The size is set by the widget
+   itself. */
+.dt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  border-radius: var(--radius-selector, 4px);
+  background: var(--main-bg-dark);
+  color: var(--text-normal);
+  font-size: var(--font-small);
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dt-btn:hover {
+  background: var(--main-bg-dark-hover, var(--main-bg-dark));
+}
+
+.dt-btn:active {
+  transform: scale(0.94);
+}
+
+.dt-btn:focus-visible {
+  outline: 2px solid var(--button-active);
+  outline-offset: 1px;
+}
+
+.dt-btn.on {
+  background: var(--button-active);
+  color: var(--main-bg, #fff);
+}
+
+/* The themes give every .transbg (so these buttons too) their panel
+   background and edge with !important; the active state has to win from
+   that, with the theme's active border colour as the edge. */
+.transbg.dt-btn.on:not(.dial) {
+  background: var(--button-active) !important;
+  box-shadow: inset 0 0 0 var(--main-border-width, 1px)
+    var(--border-color-active) !important;
+  color: #fff;
+}
+
+/* Fully Kiosk widget (js/components/fullykiosk.js): battery, next switch
+   percentage and the charger switch, painted into .dt_state like the HP iLO
+   widget above. Every row has two columns: the switch (or button) and the
+   data; no margin or padding to the left of the rows. */
+.fullykiosk-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.fullykiosk-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.fullykiosk-row {
+  display: grid;
+  grid-template-columns: 25% minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+}
+
+.fullykiosk-data {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* margin: 0 !important - same reasoning as .hpilo-icon above. */
+.fullykiosk-block .dt_state .fullykiosk-icon {
+  flex: none;
+  width: 1.4em;
+  margin: 0 !important;
+  font-size: 1em;
+  line-height: 1;
+  text-align: center;
+  color: var(--dt-info);
+}
+
+.fullykiosk-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fullykiosk-value {
+  flex: none;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fullykiosk-battery .fullykiosk-value {
+  font-weight: bold;
+}
+
+/* The buttons of column 1 are shared .dt-btn buttons (see above). A power button shows its state (filled when on); side by side when a row
+   has two. */
+.fullykiosk-control {
+  display: flex;
+  gap: 6px;
+  /* 10 px free from the left, and 10% narrower than the column */
+  margin-left: 10px;
+  width: calc(90% - 10px);
+}
+
+.fullykiosk-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3.4em;
+}
+
+/* The charger button runs over the rows of the charge data. */
+.fullykiosk-group {
+  align-items: stretch;
+}
+
+.fullykiosk-group .fullykiosk-btn {
+  height: auto;
+}
+
+/* A power button that is off has a grey icon. */
+.fullykiosk-btn[role='switch']:not(.on) {
+  color: var(--text-muted);
+}
+
+.fullykiosk-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.fullykiosk-error {
+  font-size: inherit;
+  color: var(--dt-error);
+}
+
+/* Device Config / quick-add -> Fully Kiosk section
+   (js/deviceeditor.js _fullyFieldsHtml()): two columns, one on a phone. */
+.de-fully-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-fully-grid > .de-fully-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-fully-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The icon in a button: absolute size, legacy per-icon rules further up
+   (.fas.fa-power-off, ...) would otherwise enlarge or shift it. */
+.fullykiosk-block .fullykiosk-btn .fas {
+  margin: 0 !important;
+  font-size: calc(var(--font-small) + 4px) !important;
+  line-height: 1;
+}
+
+/* Fully Kiosk widget: no scrollbars. A tile that is too small for its rows
+   still scrolls (touch or wheel), but without a visible scrollbar. */
+.fullykiosk-block,
+.fullykiosk-block .dt_content,
+.fullykiosk-block .dt_state {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fullykiosk-block::-webkit-scrollbar,
+.fullykiosk-block .dt_content::-webkit-scrollbar,
+.fullykiosk-block .dt_state::-webkit-scrollbar {
+  display: none;
+}
+
+/* The icon of the charger button is 2px bigger than the other buttons'. */
+.fullykiosk-block .fullykiosk-group .fullykiosk-btn .fas {
+  font-size: calc(var(--font-small) + 6px) !important;
+}
+
+/* Fully Kiosk widget: the brightness dimmer slider and its value. */
+.fullykiosk-brightness-input {
+  width: 8em;
+  max-width: 60%;
+  margin-right: 8px;
+  vertical-align: middle;
+  accent-color: var(--button-active);
+}
+
+.fullykiosk-brightness-value {
+  display: inline-block;
+  min-width: 3em;
+  text-align: right;
+}
