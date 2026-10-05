@@ -532,6 +532,8 @@
       "tvgids_block_pollminutes_help": "How often the programme of a channel is downloaded. Minimum 15. Default: 60.",
       "tvgids_block_showpast": "Also show programmes that have finished",
       "tvgids_block_hidelogo": "Channel name instead of logo",
+      "tvgids_block_logobg": "Logo frame background",
+      "tvgids_block_transparent": "Transparent",
       "invalid_tvgids_block_channels": "Choose at least one channel.",
       "tvgids_group_algemeen": "General",
       "tvgids_group_overig": "Other",
