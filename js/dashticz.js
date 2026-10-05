@@ -41,6 +41,7 @@ var Dashticz = (function () {
     'hpilo',
     'f1',
     'tvgids',
+    'fullykiosk',
     'group',
     'cluster',
     'waqi',

@@ -10,6 +10,15 @@ v4.1.4 (5-10-2026)
   (``vendor/dashticz/rws/index.php``) when PHP is the CORS proxy, so several
   widgets share one download.
 - Traffic info shows an error message when the feed cannot be loaded.
+- New Fully Kiosk widget (Widgets menu, multiple per screen), based on the
+  domoticz_fullykiosk plugin: the battery percentage of a tablet, the
+  percentage at which its charger is switched next and a switch for the
+  charger. Optional automatic charge control with random start and stop
+  percentages, a hard minimum and maximum and a 16 hour backup; the battery is
+  read through the new bridge ``vendor/dashticz/fullykiosk/index.php``. The
+  other devices of the plugin (charging state, screen, screensaver, motion sensor, brightness
+  and load start URL) can be added as extra rows (the battery row can be hidden), each with its own switch in
+  the settings.
 
 * **Fixes**
 
@@ -33,7 +42,7 @@ v4.1.4 (5-10-2026)
 - The F1 and TVgids sections of the Device Editor use shared settings-table
   functions.
 - The unused ``radars`` option of Traffic info is removed.
-- ``_DASHTICZ_VERSION`` raised to 193.
+- ``_DASHTICZ_VERSION`` raised to 194.
 
 v4.1.3 (1-10-2026)
 ----------------------

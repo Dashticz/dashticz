@@ -8163,3 +8163,243 @@ test('TVgids channel list: five groups, every channel with its own logo', () => 
   );
   assert.equal(ignored.status, 1, 'img/custom/tvgids/*.png is git-ignored');
 });
+
+function loadFullykioskModule() {
+  const context = {
+    language: { misc: {} },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/fullykiosk.js'), 'utf8'),
+    context
+  );
+  return context.DT_fullykiosk;
+}
+
+test('Fully Kiosk block: dispatched on its mode, percentages kept in order', () => {
+  const fully = loadFullykioskModule();
+  assert.equal(fully.canHandle({ fullymode: 'charge' }), true);
+  assert.equal(fully.canHandle({ fullymode: '' }), false);
+  assert.equal(fully.canHandle({ tvgids: 'npo_1' }), false);
+  assert.deepEqual(JSON.parse(JSON.stringify(fully.limits({}))), {
+    startmin: 25,
+    startmax: 30,
+    stopmin: 80,
+    stopmax: 90,
+    hardmin: 15,
+    hardmax: 95,
+  });
+  const swapped = fully.limits({ fullystartmin: 40, fullystartmax: 20 });
+  assert.equal(swapped.startmin, 20);
+  assert.equal(swapped.startmax, 40);
+  // Both ends of a range can be picked, like random.randint.
+  assert.equal(
+    fully.randomBetween(80, 90, () => 0),
+    80
+  );
+  assert.equal(
+    fully.randomBetween(80, 90, () => 0.999999),
+    90
+  );
+});
+
+test('Fully Kiosk charge control follows the domoticz_fullykiosk plugin', () => {
+  const fully = loadFullykioskModule();
+  const lim = fully.limits({});
+  const targets = { start: 27, stop: 85 };
+  const decide = (battery, charger, random) =>
+    JSON.parse(
+      JSON.stringify(
+        fully.decide(battery, charger, targets, lim, random || (() => 0))
+      )
+    );
+
+  // Between the percentages nothing is switched.
+  assert.equal(decide(50, 'Off').command, null);
+  assert.equal(decide(50, 'On').command, null);
+  // Starts at the start percentage and picks both percentages again.
+  let result = decide(27, 'Off');
+  assert.equal(result.command, 'On');
+  assert.deepEqual(result.targets, { start: 25, stop: 80 });
+  // Always starts at the hard minimum, whatever the start percentage.
+  result = decide(15, 'Off');
+  assert.equal(result.command, 'On');
+  // Stops at the stop percentage and only picks a new start percentage.
+  result = decide(85, 'On', () => 0.999999);
+  assert.equal(result.command, 'Off');
+  assert.deepEqual(result.targets, { start: 30, stop: 85 });
+  // Always stops at the hard maximum and when full.
+  assert.equal(decide(95, 'On').command, 'Off');
+  assert.equal(decide(100, 'On').command, 'Off');
+  // A charger that is already in the right state is left alone.
+  assert.equal(decide(10, 'On').command, null);
+  assert.equal(decide(96, 'Off').command, null);
+  // The next switch percentage depends on the state of the charger.
+  assert.equal(fully.nextSwitchPercentage('On', targets), 85);
+  assert.equal(fully.nextSwitchPercentage('Off', targets), 27);
+});
+
+test('Fully Kiosk is a repeatable Widgets card with its own settings table', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assertReferenceBasedKind(layout, 'fullykiosk');
+  assert.match(widgets, /html \+= _fullykioskWidgetCardHtml\(\);/);
+  assert.equal(
+    (
+      widgets.match(
+        /=== 'fullykiosk'\) \{\s*_openFullykioskFromWidgets\(\);/g
+      ) || []
+    ).length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openFullykiosk\(\);/);
+  assert.match(editor, /openFullykiosk: openFullykiosk,/);
+  assert.match(editor, /fullykiosk: 'fullykiosk_',/);
+  assert.match(editor, /kind = 'fullykiosk';/);
+  assert.match(
+    editor,
+    /if \(isFullyBlock\) html \+= _fullyFieldsHtml\('de-config', fullyValues\);/
+  );
+  assert.match(layout, /kind: 'fullykiosk',/);
+  assert.match(dashticz, /'tvgids',\s*'fullykiosk',/);
+  assert.match(save, /\$kind === 'fullykiosk'/);
+  assert.match(writer, /\$kind === 'fullykiosk'/);
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const key of [
+      'fully_block',
+      'fully_block_host',
+      'fully_block_switch',
+      'fully_block_auto',
+      'fully_block_startmin',
+      'fully_block_stopmax',
+      'invalid_fully_block_host',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.fullykiosk_title,
+      `${locale} fullykiosk_title`
+    );
+    assert.ok(lang.misc.fullykiosk_battery, `${locale} fullykiosk_battery`);
+  }
+});
+
+test('Fully Kiosk block renders its rows: switches in column 1, data in column 2', () => {
+  let html = '';
+  const classes = {};
+  const chain = {
+    css: () => chain,
+    html: (value) => {
+      html = value;
+      return chain;
+    },
+    find: () => chain,
+    on: () => chain,
+    toggleClass: (name, state) => {
+      classes[name] = state;
+      return chain;
+    },
+  };
+  // Domoticz is a global of the dashboard.
+  const context = {
+    language: { misc: {} },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+    Domoticz: {
+      getAllDevices: () => ({ 123: { Status: 'Off' } }),
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/fullykiosk.js'), 'utf8'),
+    context
+  );
+  const me = {
+    key: 'k',
+    block: {
+      fullymode: 'charge',
+      fullyswitch: '123',
+      fullyshowscreen: true,
+      fullyshowcharging: true,
+      fullyshowbrightness: true,
+      fullyshowloadurl: true,
+    },
+    $mountPoint: chain,
+    battery: 49,
+    info: { brightness: 14, plugged: false, screenOn: true },
+    targets: { start: 27, stop: 85 },
+  };
+  context.DT_fullykiosk.render(me);
+  assert.match(html, /fullykiosk-battery/);
+  assert.match(html, /49 %/);
+  assert.match(html, /Starts charging at.*27 %/);
+  // Every row has the control column and the data column.
+  const rows = html.match(/class="fullykiosk-row /g) || [];
+  // The charger button spans the battery and next switch rows (one group).
+  assert.equal(rows.length, 5);
+  assert.match(html, /fullykiosk-group/);
+  assert.equal((html.match(/class="fullykiosk-control"/g) || []).length, 5);
+  assert.equal((html.match(/class="fullykiosk-data[ "]/g) || []).length, 6);
+  // The charger is a power button in column 1, with no Charging line; the
+  // next switch percentage is the data of that row. No sliders.
+  assert.match(html, /data-action="charger"/);
+  assert.doesNotMatch(html, />Charging</);
+  assert.match(html, /Starts charging at/);
+  // The brightness is a dimmer slider, without minus and plus buttons.
+  assert.match(html, /type="range" class="fullykiosk-brightness-input"/);
+  assert.doesNotMatch(html, /data-step|fa-minus|fa-plus/);
+  assert.match(html, /data-action="loadurl"/);
+  // The tile icon follows the charger switch (Off here).
+  assert.deepEqual(classes, { on: false, off: true });
+  // The battery row can be switched off.
+  me.block.fullyshowbattery = false;
+  context.DT_fullykiosk.render(me);
+  assert.doesNotMatch(html, /fullykiosk-battery/);
+});
+
+test('LMS and Fully Kiosk share the .dt-btn button style of creative.css', () => {
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const lmsCss = fs.readFileSync(
+    path.join(root, 'js/components/lms.css'),
+    'utf8'
+  );
+  const lms = fs.readFileSync(path.join(root, 'js/components/lms.js'), 'utf8');
+  const fully = fs.readFileSync(
+    path.join(root, 'js/components/fullykiosk.js'),
+    'utf8'
+  );
+  assert.match(css, /\n\.dt-btn \{/);
+  assert.match(css, /\n\.dt-btn\.on \{/);
+  // The look lives in one place; lms.css only sets the size.
+  assert.doesNotMatch(lmsCss, /background:/);
+  assert.match(lms, /transbg hover dt-btn lms-btn/);
+  assert.match(fully, /transbg hover dt-btn fullykiosk-btn/);
+  // The Fully Kiosk widget does not depend on LMS.
+  assert.doesNotMatch(fully, /lms\.css|lms-btn/);
+});
