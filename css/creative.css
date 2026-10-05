@@ -23,6 +23,12 @@
   --text-inactive: rgba(255, 255, 255, 0.5);
   --warning-red: red;
   --success-green: green;
+  /* Status colours of the widgets (PostNL, HP iLO, TVgids, F1); a theme can
+     override them. */
+  --dt-ok: #2e9e5b;
+  --dt-info: #3a86d8;
+  --dt-warn: #e0a800;
+  --dt-error: #d9534f;
   --selector-bg: #292b2c;
   --blocktitle: rgba(0, 0, 0, 0.5);
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
@@ -5050,11 +5056,11 @@ img.icon {
 }
 
 .postnl-icon-in {
-  color: #2e9e5b;
+  color: var(--dt-ok);
 }
 
 .postnl-icon-out {
-  color: #3a86d8;
+  color: var(--dt-info);
 }
 
 .postnl-row-delivered {
@@ -5120,7 +5126,7 @@ img.icon {
   font-size: 1em;
   line-height: 1;
   text-align: center;
-  color: #3a86d8;
+  color: var(--dt-info);
 }
 
 .hpilo-label {
@@ -5136,11 +5142,11 @@ img.icon {
 }
 
 .hpilo-warning .hpilo-value {
-  color: #e0a800;
+  color: var(--dt-warn);
 }
 
 .hpilo-critical .hpilo-value {
-  color: #d9534f;
+  color: var(--dt-error);
 }
 
 .hpilo-error {
@@ -8799,6 +8805,14 @@ canvas {
   opacity: 0.5;
 }
 
+.f1-error {
+  color: var(--dt-error);
+}
+
+.f1-empty {
+  opacity: 0.8;
+}
+
 .f1-next {
   display: flex;
   align-items: center;
@@ -8812,17 +8826,6 @@ canvas {
   max-width: 40%;
   height: 3em;
   object-fit: contain;
-}
-
-/* Grid screens: cap the F1 tile at its row's height and clip the excess, like
-   .frame/.waqi/.log above - min-height alone lets a tile with more rows than
-   fit grow past its row, and .dt-grid-item's own overflow: auto then shows a
-   scrollbar on the grid item. */
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1,
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1-block {
-  height: 100% !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
 }
 
 /* TVgids widget (js/components/tvgids.js): one column per channel. The
@@ -8929,24 +8932,31 @@ canvas {
 }
 
 .tvgids-error {
-  color: #e74c3c;
+  color: var(--dt-error);
   opacity: 1;
 }
 
-/* Grid screens: the tile follows its row height; a longer programme list
-   scrolls inside it. */
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block {
+/* Grid screens: a list widget (containerClass 'dt-widget-rows': F1, TVgids,
+   Traffic info) follows its row height and clips the excess; a longer list
+   scrolls inside the tile. Without this, min-height alone lets the tile grow
+   past its row, and .dt-grid-item's own overflow: auto then shows a scrollbar
+   on the grid item. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt-widget-rows {
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
 }
 
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block .dt_content {
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .dt-widget-rows
+  .dt_content {
   min-height: 0;
   overflow: hidden;
 }
 
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .tvgids-block .dt_state {
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt-widget-rows .dt_state {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;

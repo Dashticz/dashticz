@@ -1,4 +1,4 @@
-/* global Dashticz settings language */
+/* global Dashticz DT_function settings */
 //# sourceURL=js/components/f1.js
 /* F1 widget: shows the upcoming Formula 1 race weekend, based on the
  * domoticz_F1 plugin (https://github.com/MadPatrick/domoticz_F1). It is
@@ -20,7 +20,9 @@
  *                  heading above the rows.
  *   f1language     'en' (default) | 'nl'  (weekday/month names and feed)
  *   f1urlen/f1urlnl  ICS feed per language (defaults: the plugin's feeds)
- *   f1utcoffset    hours added to the (UTC) session times (default 1)
+ *   f1utcoffset    optional: fixed hours added to the (UTC) session times;
+ *                  empty (default) = the time zone of the browser, which
+ *                  follows summer time
  *   f1pollminutes  how often the feed is downloaded (default 60)
  *   f1sessions     'all' (default) | 'sprint_race' | 'race'
  *   f1visibility   show the event this many days before its first upcoming
@@ -86,17 +88,14 @@ var DT_f1 = (function () {
       width: 4,
       icon: 'fas fa-flag-checkered',
       refresh: 60,
-      containerClass: 'f1-block',
+      containerClass: 'f1-block dt-widget-rows',
     },
+    // Mounting calls refresh() itself when block.refresh is set.
     run: function (me) {
-      refresh(me);
+      if (!me.block.refresh) refresh(me);
     },
     refresh: refresh,
   };
-
-  function misc() {
-    return (typeof language !== 'undefined' && language.misc) || {};
-  }
 
   // Compatibility for the original singleton F1 widgets. Their mode lived
   // in block.type and all other options in global settings. Device Editor
@@ -134,8 +133,7 @@ var DT_f1 = (function () {
   }
 
   function num(block, key, def, min, max) {
-    var value = parseFloat(block[key]);
-    return isNaN(value) ? def : Math.min(max, Math.max(min, value));
+    return DT_function.clampNumber(block[key], def, min, max);
   }
 
   function lang(block) {
@@ -150,16 +148,8 @@ var DT_f1 = (function () {
     );
   }
 
-  function esc(text) {
-    return String(text).replace(/[&<>"']/g, function (c) {
-      return {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      }[c];
-    });
+  function esc(value) {
+    return DT_function.escapeHtml(value);
   }
 
   function pad(n) {
@@ -168,19 +158,31 @@ var DT_f1 = (function () {
 
   // Unix time -> "Sat 5 Jul 12:30", shifted by the UTC offset.
   function formatWhen(block, ts) {
-    var offset = num(block, 'f1utcoffset', 1, -24, 24);
-    var d = new Date((ts + offset * 3600) * 1000);
+    var offset = parseFloat(block.f1utcoffset);
+    var d;
+    var local = isNaN(offset);
+    if (local) {
+      // Browser time zone, so summer time is followed automatically.
+      d = new Date(ts * 1000);
+    } else {
+      d = new Date((ts + Math.min(24, Math.max(-24, offset)) * 3600) * 1000);
+    }
     var l = lang(block);
+    var day = local ? d.getDay() : d.getUTCDay();
+    var date = local ? d.getDate() : d.getUTCDate();
+    var month = local ? d.getMonth() : d.getUTCMonth();
+    var hours = local ? d.getHours() : d.getUTCHours();
+    var minutes = local ? d.getMinutes() : d.getUTCMinutes();
     return (
-      WEEKDAYS[l][d.getUTCDay()] +
+      WEEKDAYS[l][day] +
       ' ' +
-      d.getUTCDate() +
+      date +
       ' ' +
-      MONTHS[l][d.getUTCMonth()] +
+      MONTHS[l][month] +
       ' ' +
-      pad(d.getUTCHours()) +
+      pad(hours) +
       ':' +
-      pad(d.getUTCMinutes())
+      pad(minutes)
     );
   }
 
@@ -330,15 +332,9 @@ var DT_f1 = (function () {
       '--font-device-title',
       fontSize >= 8 && fontSize <= 60 ? fontSize + 'px' : ''
     );
-    $.ajax({
-      url: settings['dashticz_php_path'] + 'f1/index.php',
-      method: 'POST',
-      contentType: 'application/json',
-      dataType: 'json',
-      data: JSON.stringify({
-        url: feedUrl(block),
-        pollMinutes: num(block, 'f1pollminutes', 60, 5, 1440),
-      }),
+    DT_function.bridge('f1/index.php', {
+      url: feedUrl(block),
+      pollMinutes: num(block, 'f1pollminutes', 60, 5, 1440),
     }).then(
       function (res) {
         var now = Math.floor(Date.now() / 1000);
@@ -371,9 +367,10 @@ var DT_f1 = (function () {
       function (jqXHR) {
         showError(
           me,
-          (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ||
-            misc().f1_error ||
-            'Unable to fetch the F1 calendar.'
+          DT_function.bridgeError(
+            jqXHR,
+            DT_function.t('f1_error', 'Unable to fetch the F1 calendar.')
+          )
         );
       }
     );

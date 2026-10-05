@@ -462,9 +462,11 @@ var DashticzWidgetEditor = (function () {
       // just drops off the block on the next save instead of showing up
       // as a stray "Extra fields" row with nothing to edit it.
       provider: true,
+      // Like provider: no field, an old radars property just drops off the
+      // block (the RWS API has no speed-camera category).
+      radars: true,
       trafficJams: true,
       roadWorks: true,
-      radars: true,
       results: true,
       maxDistance: true,
       latitude: true,
@@ -1143,7 +1145,6 @@ var DashticzWidgetEditor = (function () {
       trafficinfo: {
         trafficJams: 1,
         roadWorks: 1,
-        radars: 1,
         results: 5,
         maxDistance: 40,
         filter: 'distance',
@@ -1441,9 +1442,6 @@ var DashticzWidgetEditor = (function () {
           }
           if (typeof definition.roadWorks !== 'undefined') {
             widgetConfigs.trafficinfo.roadWorks = definition.roadWorks ? 1 : 0;
-          }
-          if (typeof definition.radars !== 'undefined') {
-            widgetConfigs.trafficinfo.radars = definition.radars ? 1 : 0;
           }
           if (typeof definition.results !== 'undefined') {
             widgetConfigs.trafficinfo.results = definition.results;
@@ -1899,7 +1897,6 @@ var DashticzWidgetEditor = (function () {
       [
         ['trafficJams', 1],
         ['roadWorks', 1],
-        ['radars', 1],
       ].forEach(function (mapping) {
         var prop = mapping[0];
         widgetConfigs.trafficinfo[prop] =
@@ -4236,7 +4233,7 @@ var DashticzWidgetEditor = (function () {
       // Rijkswaterstaat only - no provider choice (see AGENTS.md-tracked
       // history: ANWB no longer issues API keys, and a Custom endpoint
       // added no real value without a second built-in provider to compare
-      // against). trafficJams/roadWorks/radars/results/maxDistance/
+      // against). trafficJams/roadWorks/results/maxDistance/
       // latitude/longitude are per-block CONFIG.js properties (see
       // managedWidgetPropertiesById.trafficinfo and the hydration in
       // _readConfiguredWidgets()/_hydrateGridWidget() above).
@@ -4258,14 +4255,6 @@ var DashticzWidgetEditor = (function () {
         typeof tcfg.roadWorks === 'undefined' ? 1 : tcfg.roadWorks,
         null,
         lwgt.traffic_roadworks_help || ''
-      );
-      fields += _cfgField(
-        'radars',
-        lwgt.traffic_radars || 'Radars',
-        'checkbox',
-        typeof tcfg.radars === 'undefined' ? 1 : tcfg.radars,
-        null,
-        lwgt.traffic_radars_help || ''
       );
       fields += '</div>';
       var trafficFilter = tcfg.filter === 'roads' ? 'roads' : 'distance';
@@ -6171,11 +6160,6 @@ var DashticzWidgetEditor = (function () {
         : 0;
       entry.roadWorks = Number(
         typeof trcfg.roadWorks === 'undefined' ? 1 : trcfg.roadWorks
-      )
-        ? 1
-        : 0;
-      entry.radars = Number(
-        typeof trcfg.radars === 'undefined' ? 1 : trcfg.radars
       )
         ? 1
         : 0;

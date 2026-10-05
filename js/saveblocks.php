@@ -101,9 +101,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];
+$specialBlockKinds = dashticz_widget_kinds('saved');
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];
+$titleOptionalBlockKinds = array_merge(dashticz_widget_kinds('titleOptional'), ['slidebutton']);
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -160,19 +160,8 @@ foreach ($data['devices'] as $entry) {
         if ($title === '' && !in_array($kind, $titleOptionalBlockKinds, true)) {
             dashticz_json_error(400, 'A special block title is required.');
         }
-        $defaultWidth = 3;
-        if ($kind === 'title' || $kind === 'slidebutton' || $kind === 'tvgids') {
-            // A TVgids block shows its channels as columns next to each
-            // other, so it starts at the full width.
-            $defaultWidth = 12;
-        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster') {
-            // Cover (100x100) + artist/title/album (lms), an embedded page
-            // (iframe), an agenda/calendar table (calendar), a chart
-            // (timegraph, graph), a programme guide (xmltvguide), or a
-            // stacked list of device rows (cluster), needs more room than
-            // the generic 3-column default other special blocks start at.
-            $defaultWidth = 6;
-        }
+        // The default width of a kind is in js/widgets.json.
+        $defaultWidth = dashticz_widget_default_width($kind);
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
         $width = max(1, min(12, $width));
         $height = $kind === 'title' ? 120 : null;
@@ -221,7 +210,7 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1' || $kind === 'tvgids') {
+        } elseif (in_array($kind, dashticz_widget_kinds('simpleIconPayload'), true)) {
             // Only Icon and Last update apply to these twelve (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])

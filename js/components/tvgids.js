@@ -1,4 +1,4 @@
-/* global Dashticz settings language */
+/* global Dashticz DT_function */
 //# sourceURL=js/components/tvgids.js
 /* TVgids widget: today's TV programme of the chosen channels, from
  * tvgids24.nl. The pages are read and cached by vendor/dashticz/tvgids/,
@@ -36,32 +36,23 @@ var DT_tvgids = (function () {
       // Moves the "on air now" marker along; the bridge only downloads a
       // channel again after tvgidspollminutes.
       refresh: 300,
-      containerClass: 'tvgids-block',
+      containerClass: 'tvgids-block dt-widget-rows',
     },
+    // Mounting calls refresh() itself when block.refresh is set.
     run: function (me) {
-      refresh(me);
+      if (!me.block.refresh) refresh(me);
     },
     refresh: refresh,
     // Exposed for the tests.
     channelsHtml: channelsHtml,
   };
 
-  function misc() {
-    return (typeof language !== 'undefined' && language.misc) || {};
-  }
-
   function esc(value) {
-    return String(value === null || typeof value === 'undefined' ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return DT_function.escapeHtml(value);
   }
 
   function num(block, field, def, min, max) {
-    var value = parseInt(block[field], 10);
-    return isNaN(value) ? def : Math.min(max, Math.max(min, value));
+    return DT_function.clampNumber(block[field], def, min, max, true);
   }
 
   function channelIds(block) {
@@ -143,7 +134,7 @@ var DT_tvgids = (function () {
         if (!programmes.length) {
           html +=
             '<div class="tvgids-empty">' +
-            esc(misc().tvgids_empty || 'No more programmes today.') +
+            esc(DT_function.t('tvgids_empty', 'No more programmes today.')) +
             '</div>';
         }
         html += '<ul class="tvgids-list">';
@@ -192,18 +183,15 @@ var DT_tvgids = (function () {
     );
     var ids = channelIds(block);
     if (!ids.length) {
-      showMessage(me, misc().tvgids_nochannels || 'Choose the TV channels.');
+      showMessage(
+        me,
+        DT_function.t('tvgids_nochannels', 'Choose the TV channels.')
+      );
       return;
     }
-    $.ajax({
-      url: settings['dashticz_php_path'] + 'tvgids/index.php',
-      method: 'POST',
-      contentType: 'application/json',
-      dataType: 'json',
-      data: JSON.stringify({
-        channels: ids,
-        pollMinutes: num(block, 'tvgidspollminutes', 60, 15, 1440),
-      }),
+    DT_function.bridge('tvgids/index.php', {
+      channels: ids,
+      pollMinutes: num(block, 'tvgidspollminutes', 60, 15, 1440),
     }).then(
       function (res) {
         var channels = (res && res.channels) || [];
@@ -218,9 +206,10 @@ var DT_tvgids = (function () {
       function (jqXHR) {
         showMessage(
           me,
-          (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ||
-            misc().tvgids_error ||
-            'Unable to fetch the TV guide.'
+          DT_function.bridgeError(
+            jqXHR,
+            DT_function.t('tvgids_error', 'Unable to fetch the TV guide.')
+          )
         );
       }
     );
