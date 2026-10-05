@@ -573,8 +573,6 @@ foreach ($data['widgets'] as $entry) {
             || (bool)$entry['trafficJams'];
         $widget['roadWorks'] = !array_key_exists('roadWorks', $entry)
             || (bool)$entry['roadWorks'];
-        $widget['radars'] = !array_key_exists('radars', $entry)
-            || (bool)$entry['radars'];
         $results = isset($entry['results']) && is_numeric($entry['results'])
             ? (int)$entry['results']
             : 5;
@@ -1194,7 +1192,6 @@ function _widgetBlockProps($widget)
             $props['title'] = 'Traffic';
             $props['trafficJams'] = $widget['trafficJams'];
             $props['roadWorks'] = $widget['roadWorks'];
-            $props['radars'] = $widget['radars'];
             $props['results'] = $widget['results'];
             $props['maxDistance'] = $widget['maxDistance'];
             if (isset($widget['latitude'])) {

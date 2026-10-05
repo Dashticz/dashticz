@@ -1,5 +1,26 @@
 <?php
 
+/* js/widgets.json: the special block kinds and their flags, shared with the
+   editors (js/dt_function.js). Returns the kinds that have $flag. */
+function dashticz_widget_kinds($flag)
+{
+    $manifest = json_decode((string) @file_get_contents(dirname(__DIR__, 2) . '/js/widgets.json'), true);
+    $kinds = array();
+    foreach (isset($manifest['kinds']) && is_array($manifest['kinds']) ? $manifest['kinds'] : array() as $kind => $entry) {
+        if (!empty($entry[$flag])) {
+            $kinds[] = $kind;
+        }
+    }
+    return $kinds;
+}
+
+// Columns of a new block of this kind without a width.
+function dashticz_widget_default_width($kind)
+{
+    $manifest = json_decode((string) @file_get_contents(dirname(__DIR__, 2) . '/js/widgets.json'), true);
+    return isset($manifest['kinds'][$kind]['defaultWidth']) ? (int) $manifest['kinds'][$kind]['defaultWidth'] : 3;
+}
+
 function dashticz_json_error($status, $message)
 {
     http_response_code($status);
@@ -303,6 +324,47 @@ function dashticz_cache_dir($name)
         @mkdir($baseDir, 0775, true);
     }
     return is_dir($baseDir) && is_writable($baseDir) ? $baseDir : null;
+}
+
+/* JSON cache shared by the PHP proxies: $producer() returns the data to
+   cache (and throws a RuntimeException when it can't).
+   - A cache file younger than $ttl seconds, with the same $tag, is returned.
+   - When $producer() fails, stale data is returned instead of an error.
+   - Without stale data the error is remembered for $failTtl seconds, so a
+     site that is down isn't asked again by every dashboard refresh.
+   $file may be null (no writable cache folder): then nothing is cached. */
+function dashticz_cached_json($file, $ttl, $producer, $tag = '', $failTtl = 0)
+{
+    $cached = null;
+    if ($file && is_file($file)) {
+        $cached = json_decode((string) @file_get_contents($file), true);
+        if (!is_array($cached)) {
+            $cached = null;
+        }
+    }
+    $hasData = $cached !== null && array_key_exists('data', $cached) && isset($cached['fetchedAt']);
+    if ($hasData && ($cached['tag'] ?? '') === $tag && time() - $cached['fetchedAt'] < $ttl) {
+        return $cached['data'];
+    }
+    if ($failTtl > 0 && $cached !== null && !$hasData && isset($cached['failedAt'], $cached['error'])
+        && time() - $cached['failedAt'] < $failTtl) {
+        throw new RuntimeException($cached['error']);
+    }
+    try {
+        $data = $producer();
+    } catch (RuntimeException $error) {
+        if ($hasData) {
+            return $cached['data'];
+        }
+        if ($file && $failTtl > 0) {
+            dashticz_atomic_write_file($file, json_encode(array('failedAt' => time(), 'error' => $error->getMessage())));
+        }
+        throw $error;
+    }
+    if ($file) {
+        dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'tag' => $tag, 'data' => $data)));
+    }
+    return $data;
 }
 
 function dashticz_protect_cache_root($root)

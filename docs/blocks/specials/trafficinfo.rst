@@ -41,7 +41,7 @@ Using the Widget editor
 
 In Wizard mode all options can be set in the Widget Config of the Traffic
 information widget (see :ref:`WidgetConfig`), without hand-writing a block:
-traffic jams, roadworks and radars, **Show** (*Everything within a distance*
+traffic jams and roadworks, **Show** (*Everything within a distance*
 or *Selected roads*), the maximum number of results, and either the distance
 and location, or the **Roads** and **Show roads without announcements**.
 
@@ -84,8 +84,6 @@ Parameters
     - ``false`` , ``true``.  To show traffic jam info
   * - roadWorks
     - ``false`` , ``true``.  To show road work info
-  * - radars
-    - ``false`` , ``true``.  To show radar info. RWS has no radar data, so this currently has no visible effect.
   * - showempty
     - | Control text to show in case of no traffic announcements
       | ``false``: Don't show a message in case of no traffic announcements

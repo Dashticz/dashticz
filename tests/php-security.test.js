@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
+const vm = require('node:vm');
 const { spawn, spawnSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
@@ -706,7 +707,35 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
      the pattern) only touches this one array. */
   assert.match(
     source,
-    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1', 'tvgids'];/
+    /\$specialBlockKinds = dashticz_widget_kinds\('saved'\);/
+  );
+  // The kinds themselves are in js/widgets.json.
+  const manifest = JSON.parse(read('js/widgets.json'));
+  assert.deepEqual(
+    Object.keys(manifest.kinds).filter((kind) => manifest.kinds[kind].saved),
+    [
+      'title',
+      'dummy',
+      'custom',
+      'group',
+      'cluster',
+      'html',
+      'iframe',
+      'calendar',
+      'publictransport',
+      'timegraph',
+      'xmltvguide',
+      'lms',
+      'camera',
+      'news',
+      'graph',
+      'f1',
+      'tvgids',
+    ].sort(
+      (a, b) =>
+        Object.keys(manifest.kinds).indexOf(a) -
+        Object.keys(manifest.kinds).indexOf(b)
+    )
   );
   assert.match(
     source,
@@ -1189,7 +1218,7 @@ test('PHP proxy caches live in custom/cache, closed to browsers', () => {
 
 test('F1, HP iLO, PostNL and XMLTV proxies use the shared cache folder', () => {
   for (const [file, name] of [
-    ['vendor/dashticz/f1/index.php', 'f1'],
+    ['vendor/dashticz/f1/f1.php', 'f1'],
     ['vendor/dashticz/hpilo/index.php', 'hpilo'],
     ['vendor/dashticz/postnl/index.php', 'postnl'],
     ['vendor/dashticz/xmltv.php', 'xmltv'],
@@ -1287,6 +1316,149 @@ test('TVgids bridge only fetches known channels from tvgids24.nl, cached', () =>
     /dashticz_fetch_remote\('https:\/\/www\.tvgids24\.nl\/zender\/' \. \$id \. '\/vandaag'/
   );
   assert.match(helpers, /dashticz_cache_dir\('tvgids'\)/);
-  assert.match(helpers, /\$cached\['date'\] === \$today/);
+  assert.match(helpers, /dashticz_tvgids_today\(\), 300\)/);
   assert.doesNotMatch(index + helpers, /shell_exec|exec\(|passthru|system\(/);
+});
+
+/* Runs PHP code that has security.php and the F1 helpers loaded. */
+function runPhp(code) {
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const result = spawnSync(
+    'php',
+    [
+      '-r',
+      `require '${dir}/security.php'; require '${dir}/f1/f1.php'; ${code}`,
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
+}
+
+test('F1 bridge parses the sessions of an ICS feed', () => {
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'BEGIN:VEVENT',
+    'DTSTART:20260306T043000Z',
+    'DTEND:20260306T053000Z',
+    'SUMMARY:F1: Practice 1 (Australian Grand Prix)',
+    'LOCATION:Melbourne\\, Australia',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART:20260308T040000Z',
+    'SUMMARY:F1: Australian Grand Prix',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const events = runPhp(
+    `echo json_encode(dashticz_f1_parse(${JSON.stringify(ics).replace(/\$/g, '\\$')}));`
+  );
+  assert.equal(events.length, 2);
+  assert.deepEqual(events[0], {
+    start: Date.parse('2026-03-06T04:30:00Z') / 1000,
+    end: Date.parse('2026-03-06T05:30:00Z') / 1000,
+    session: 'Practice 1',
+    gp: 'Australian Grand Prix',
+    location: 'Melbourne, Australia',
+  });
+  // A session without a "(Grand Prix)" part has no gp and a 2 hour length.
+  assert.equal(events[1].session, 'Australian Grand Prix');
+  assert.equal(events[1].gp, '');
+  assert.equal(events[1].end - events[1].start, 7200);
+});
+
+test('dashticz_cached_json caches, falls back to stale data and remembers failures', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dt-cache-'));
+  try {
+    const file = dir.replace(/\\/g, '/') + '/c.json';
+    const result = runPhp(`
+      $file = '${file}';
+      $calls = 0;
+      $ok = function () use (&$calls) { $calls++; return array('n' => $calls); };
+      $out = array();
+      $out[] = dashticz_cached_json($file, 60, $ok);            // miss: produce
+      $out[] = dashticz_cached_json($file, 60, $ok);            // hit
+      $out[] = dashticz_cached_json($file, 60, $ok, 'other');   // other tag: produce
+      $fail = function () use (&$calls) { $calls++; throw new RuntimeException('down'); };
+      $out[] = dashticz_cached_json($file, 0, $fail, 'other');  // expired, failing: stale
+      $f2 = '${file}2';
+      foreach (array(1, 2) as $i) {
+          try { dashticz_cached_json($f2, 60, $fail, '', 300); }
+          catch (RuntimeException $e) { $out[] = $e->getMessage() . $calls; }
+      }
+      echo json_encode($out);
+    `);
+    assert.deepEqual(result[0], { n: 1 });
+    assert.deepEqual(result[1], { n: 1 });
+    assert.deepEqual(result[2], { n: 2 });
+    assert.deepEqual(result[3], { n: 2 });
+    // Two failing calls, but the producer ran only once (calls: 3 -> 4).
+    assert.deepEqual(result.slice(4), ['down4', 'down4']);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('js/widgets.json is read the same way by PHP and by DT_function', () => {
+  const manifest = JSON.parse(read('js/widgets.json'));
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const php = spawnSync(
+    'php',
+    [
+      '-r',
+      `require '${dir}/security.php'; echo json_encode(array(dashticz_widget_kinds('titleOptional'), dashticz_widget_default_width('tvgids'), dashticz_widget_default_width('f1'), dashticz_widget_default_width('news')));`,
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.equal(php.status, 0, php.stderr);
+  const [titleOptional, tvgidsWidth, f1Width, newsWidth] = JSON.parse(
+    php.stdout
+  );
+  assert.ok(titleOptional.includes('f1') && titleOptional.includes('tvgids'));
+  assert.deepEqual([tvgidsWidth, f1Width, newsWidth], [12, 4, 3]);
+
+  // Same answer from the browser side.
+  const context = {
+    $: { getJSON: () => ({ then: (done) => done(manifest) }) },
+    _DASHTICZ_VERSION: '1',
+  };
+  vm.createContext(context);
+  vm.runInContext(read('js/dt_function.js'), context);
+  context.DT_function.loadWidgetManifest();
+  assert.deepEqual(
+    Array.from(context.DT_function.widgetKinds('titleOptional')),
+    titleOptional
+  );
+  assert.equal(context.DT_function.widgetDefaultWidth('f1'), 4);
+});
+
+test('RWS bridge: same-origin, cached, and used through DT_function.rwsTrafficUrl()', () => {
+  const bridge = read('vendor/dashticz/rws/index.php');
+  assert.match(bridge, /dashticz_require_same_origin\(\)/);
+  assert.match(bridge, /dashticz_cache_dir\('rws'\)/);
+  assert.match(bridge, /dashticz_cached_json\(/);
+  assert.match(
+    bridge,
+    /dashticz_fetch_remote\('https:\/\/api\.rwsverkeersinfo\.nl/
+  );
+
+  const url = (corsPath) => {
+    const context = {
+      $: {},
+      _DASHTICZ_VERSION: '1',
+      settings: { dashticz_php_path: 'vendor/dashticz/' },
+      _CORS_PATH: corsPath,
+    };
+    vm.createContext(context);
+    vm.runInContext(read('js/dt_function.js'), context);
+    return context.DT_function.rwsTrafficUrl();
+  };
+  assert.equal(
+    url('vendor/dashticz/cors.php?'),
+    'vendor/dashticz/rws/index.php'
+  );
+  assert.equal(
+    url('https://proxy.example/'),
+    'https://proxy.example/https://api.rwsverkeersinfo.nl/api/traffic/'
+  );
 });

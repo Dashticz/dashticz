@@ -26,23 +26,7 @@ var DashticzLayoutEditor = (function () {
   // Timegraph/TV Guide additions for the pattern) touches this one array
   // instead of two separately hand-duplicated `item.kind === 'x' || ...`
   // chains.
-  var REFERENCE_BASED_SPECIAL_KINDS = [
-    'separator',
-    'html',
-    'iframe',
-    'calendar',
-    'publictransport',
-    'timegraph',
-    'xmltvguide',
-    'lms',
-    'group',
-    'cluster',
-    'camera',
-    'news',
-    'graph',
-    'f1',
-    'tvgids',
-  ];
+  var REFERENCE_BASED_SPECIAL_KINDS = DT_function.widgetKinds('referenceBased');
   var active = false;
   var items = [];
   var itemById = {};
