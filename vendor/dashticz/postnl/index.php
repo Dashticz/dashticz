@@ -173,11 +173,8 @@ function dashticz_postnl_write_cache($cacheFile, $refreshToken, $days, $incoming
         'incoming' => $incoming,
         'sent' => $sent,
     );
-    $tmpFile = $cacheFile . '.tmp';
-    if (@file_put_contents($tmpFile, json_encode($data), LOCK_EX) === false) {
-        return;
-    }
-    @rename($tmpFile, $cacheFile);
+    // The file holds the refresh token: owner only.
+    dashticz_atomic_write_file($cacheFile, json_encode($data), 0600);
 }
 
 // -------------------------------------------------------------- http/curl

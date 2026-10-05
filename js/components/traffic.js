@@ -1,4 +1,4 @@
-/* global _CORS_PATH Dashticz templateEngine moment settings*/
+/* global DT_function Dashticz templateEngine moment settings*/
 // eslint-disable-next-line no-unused-vars
 var DT_traffic = {
   name: 'traffic',
@@ -14,9 +14,7 @@ var DT_traffic = {
     clickHandler: true,
   },
   refresh: function (me) {
-    var rssurl = _CORS_PATH + 'https://api.rwsverkeersinfo.nl/api/traffic/';
-
-    $.getJSON(rssurl).then(function (data) {
+    $.getJSON(DT_function.rwsTrafficUrl()).then(function (data) {
       var isEmpty =
         data.totalLengthOfJams == 0 &&
         data.numberOfJams == 0 &&

@@ -1,6 +1,40 @@
 Release Notes
 =============
 
+v4.1.4 (5-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Traffic and Traffic info fetch the RWS feed through a new cached bridge
+  (``vendor/dashticz/rws/index.php``) when PHP is the CORS proxy, so several
+  widgets share one download.
+- Traffic info shows an error message when the feed cannot be loaded.
+
+* **Fixes**
+
+- F1 times follow the browser time zone, unless ``f1utcoffset`` is set.
+- The F1, TVgids, PostNL and HP iLO widgets no longer fetch twice when they
+  are mounted.
+- PostNL escapes the error message returned by the server.
+- The F1, HP iLO and PostNL caches are written atomically; the TVgids and F1
+  bridges keep serving stale data when the source is down.
+- The PostNL, HP iLO and TVgids status colours, and the F1 and TVgids lists on
+  grid screens, now follow the shared ``--dt-ok/info/warn/error`` tokens and
+  one list-widget layout rule.
+
+* **Code**
+
+- New helpers ``DT_function.escapeHtml``, ``t``, ``clampNumber``, ``bridge``
+  and ``bridgeError``, and ``dashticz_cached_json()`` in
+  ``vendor/dashticz/security.php``.
+- New widget manifest ``js/widgets.json``, read by the Device Editor, the
+  Layout Editor and ``saveblocks.php``.
+- The F1 and TVgids sections of the Device Editor use shared settings-table
+  functions.
+- The unused ``radars`` option of Traffic info is removed.
+- ``_DASHTICZ_VERSION`` raised to 193.
+
 v4.1.3 (1-10-2026)
 ----------------------
 
