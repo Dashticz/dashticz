@@ -170,12 +170,10 @@ function _buildRWSDataPart(me, data) {
     var o = obstructions[idx] || {};
     var isJam = String(o.obstructionType) === '4';
     var isRoadwork = String(o.obstructionType) === '1';
-    if (
-      !(
-        (trafficobject.trafficJams && isJam) ||
-        (trafficobject.roadWorks && isRoadwork)
-      )
-    ) {
+    if (!(
+      (trafficobject.trafficJams && isJam) ||
+      (trafficobject.roadWorks && isRoadwork)
+    )) {
       continue;
     }
     var roadId = _normalizeRoad(o.roadNumber) || '?';
