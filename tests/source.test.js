@@ -7,6 +7,19 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 
+// The kinds that are found by their reference in the Layout Editor come from
+// js/widgets.json (flag referenceBased).
+function assertReferenceBasedKind(layoutEditor, kind) {
+  assert.match(
+    layoutEditor,
+    /var REFERENCE_BASED_SPECIAL_KINDS = DT_function\.widgetKinds\('referenceBased'\);/
+  );
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(root, 'js/widgets.json'), 'utf8')
+  );
+  assert.equal(manifest.kinds[kind].referenceBased, true);
+}
+
 // These tests verify source tokens and ordering, not a particular formatter's
 // line wrapping. Make their regular expressions insensitive to whitespace so
 // a clean Prettier pass cannot invalidate otherwise unchanged behavior. Text
@@ -5293,10 +5306,7 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   // added to that one array to get both the cog control and correct
   // config routing - see also 'Group block gets the Layout Editor
   // config...' below, which checks the same array for 'group'.
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'lms'[\s\S]{0,400}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'lms');
   assert.match(
     layoutEditor,
     /isConfigurable =[\s\S]{0,300}?REFERENCE_BASED_SPECIAL_KINDS\.indexOf\(item\.kind\) > -1/
@@ -5846,10 +5856,7 @@ test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blo
   // shared REFERENCE_BASED_SPECIAL_KINDS array (see the LMS test above,
   // which checks the array declaration and both call sites) - here it
   // only needs to be re-checked for 'group' itself.
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'group'[\s\S]{0,150}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'group');
 });
 
 test('Cluster block gets its own Layout Editor config (cog) control and renders individually-switchable rows', () => {
@@ -5881,10 +5888,7 @@ test('Cluster block gets its own Layout Editor config (cog) control and renders 
     /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'cluster'/
   );
   assert.match(layoutEditor, /kind: 'cluster',/);
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'cluster'[\s\S]{0,150}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'cluster');
 
   // js/deviceeditor.js's own _specialFromReference() recognizes the same
   // type: 'cluster' shape, and the quick-add popup exists.
@@ -6411,10 +6415,7 @@ test('rendered Graph blocks keep the Layout Editor config cog and open their own
     /\(!definition\.type \|\| definition\.type === key\) &&\s*\n\s*Array\.isArray\(definition\.devices\)/
   );
   assert.match(layoutEditor, /kind: 'graph',/);
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,500}?'graph'[\s\S]{0,50}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'graph');
 
   // Clicking that cog routes through Device Editor. It must accept the same
   // key-as-type artifact so openLayoutConfig(reference) resolves the exact
@@ -7256,10 +7257,12 @@ test('Trafficinfo widget is RWS-only - no provider choice, no ANWB/Custom code p
   assert.doesNotMatch(trafficinfo, /_buildCustomDataPart/);
   assert.match(
     trafficinfo,
-    /canHandle: function \(block\) \{\s*\n\s*return block && \(block\.trafficJams \|\| block\.roadWorks \|\| block\.radars\);/
+    /canHandle: function \(block\) \{\s*\n\s*return block && \(block\.trafficJams \|\| block\.roadWorks\);/
   );
+  // The data comes from the cached bridge (vendor/dashticz/rws/index.php).
+  assert.match(trafficinfo, /DT_function\.rwsTrafficUrl\(\)/);
   assert.match(
-    trafficinfo,
+    fs.readFileSync(path.join(root, 'vendor/dashticz/rws/index.php'), 'utf8'),
     /'https:\/\/api\.rwsverkeersinfo\.nl\/api\/traffic\/'/
   );
   // obstructionType 1 = roadworks, 4 = jam (Rijkswaterstaat's own schema).
@@ -7303,9 +7306,10 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   // number field - not raw rows in the generic "Extra fields" editor.
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'trafficJams',/);
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'roadWorks',/);
-  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'radars',/);
+  // The RWS API has no radar category: no toggle for it.
+  assert.doesNotMatch(widgetEditor, /_cfgField\(\s*\n\s*'radars',/);
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'results',/);
-  for (const key of ['trafficJams', 'roadWorks', 'radars']) {
+  for (const key of ['trafficJams', 'roadWorks']) {
     const field = widgetEditor.slice(
       widgetEditor.indexOf(`_cfgField(\n        '${key}',`)
     );
@@ -7313,7 +7317,7 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   }
   assert.match(
     widgetEditor,
-    /<div class="we-switch-grid we-switch-grid-three">[\s\S]*?'trafficJams',[\s\S]*?'roadWorks',[\s\S]*?'radars',[\s\S]*?fields \+= '<\/div>';/
+    /<div class="we-switch-grid we-switch-grid-three">[\s\S]*?'trafficJams',[\s\S]*?'roadWorks',[\s\S]*?fields \+= '<\/div>';/
   );
   assert.match(
     fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8'),
@@ -7321,7 +7325,7 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   );
   assert.match(
     widgetEditor,
-    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*radars: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*filter: true,\s*\n\s*road: true,\s*\n\s*showemptyroads: true,\s*\n\s*\},/
+    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,[\s\S]{0,200}?radars: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*filter: true,\s*\n\s*road: true,\s*\n\s*showemptyroads: true,\s*\n\s*\},/
   );
 
   // Defaults: 5 results, 40km max distance shown in the field and used
@@ -7347,14 +7351,14 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
       hydrationMatches ? hydrationMatches.length : 0
     }`
   );
-  assert.match(widgetEditor, /\['radars', 1\],/);
+  assert.doesNotMatch(widgetEditor, /\['radars', 1\],/);
 
   // The saved payload entry carries trafficJams/roadWorks/radars/results/
   // maxDistance directly (like publictransport's own provider) - no
   // entry.provider/customUrl anywhere.
   assert.match(widgetEditor, /entry\.trafficJams = Number\(/);
   assert.match(widgetEditor, /entry\.roadWorks = Number\(/);
-  assert.match(widgetEditor, /entry\.radars = Number\(/);
+  assert.doesNotMatch(widgetEditor, /entry\.radars = Number\(/);
   assert.match(
     widgetEditor,
     /entry\.results = parseInt\(trcfg\.results, 10\) \|\| 5;/
@@ -7397,7 +7401,7 @@ test('savewidgets.php: trafficinfo save bug - the request handler had no case re
   );
   assert.match(extractBlock, /\$widget\['trafficJams'\]/);
   assert.match(extractBlock, /\$widget\['roadWorks'\]/);
-  assert.match(extractBlock, /\$widget\['radars'\]/);
+  assert.doesNotMatch(extractBlock, /\$widget\['radars'\]/);
   assert.match(
     extractBlock,
     /\$widget\['results'\] = max\(1, min\(500, \$results\)\);/
@@ -7418,7 +7422,7 @@ test('savewidgets.php: trafficinfo save bug - the request handler had no case re
     /\$props\['trafficJams'\] = \$widget\['trafficJams'\];/
   );
   assert.match(caseBlock, /\$props\['roadWorks'\] = \$widget\['roadWorks'\];/);
-  assert.match(caseBlock, /\$props\['radars'\] = \$widget\['radars'\];/);
+  assert.doesNotMatch(caseBlock, /\$props\['radars'\]/);
   assert.match(caseBlock, /\$props\['results'\] = \$widget\['results'\];/);
   assert.match(
     caseBlock,
@@ -7457,13 +7461,28 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
   const ctx = loadTrafficInfoModule();
 
   // Amsterdam Dam Square to Utrecht Dom: actually about 35.7km straight-line.
-  const km = ctx._distanceKm(52.373, 4.8925, 52.0908, 5.1214);
+  const km = ctx.DT_trafficinfo.internals._distanceKm(
+    52.373,
+    4.8925,
+    52.0908,
+    5.1214
+  );
   assert.ok(km > 34 && km < 37, `expected ~35.7km, got ${km}`);
 
   // No maxDistance configured -> filter inactive, everything kept.
-  assert.equal(ctx._hasDistanceFilter({ latitude: 52, longitude: 5 }), false);
   assert.equal(
-    ctx._isWithinDistance({ latitude: 52, longitude: 5 }, 60, 10),
+    ctx.DT_trafficinfo.internals._hasDistanceFilter({
+      latitude: 52,
+      longitude: 5,
+    }),
+    false
+  );
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(
+      { latitude: 52, longitude: 5 },
+      60,
+      10
+    ),
     true
   );
 
@@ -7472,7 +7491,7 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
   // from going silently empty if _rwsCoords ever guesses a wrong field name
   // for live RWS data.
   assert.equal(
-    ctx._isWithinDistance(
+    ctx.DT_trafficinfo.internals._isWithinDistance(
       { latitude: 52, longitude: 5, maxDistance: 10 },
       NaN,
       NaN
@@ -7482,8 +7501,14 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
 
   // Within range vs out of range.
   const near = { latitude: 52.373, longitude: 4.8925, maxDistance: 10 };
-  assert.equal(ctx._isWithinDistance(near, 52.38, 4.9), true);
-  assert.equal(ctx._isWithinDistance(near, 52.09, 5.12), false);
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(near, 52.38, 4.9),
+    true
+  );
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(near, 52.09, 5.12),
+    false
+  );
 
   // _rwsCoords reads the confirmed flat latitude/longitude fields (verified
   // against a live obstruction object).
@@ -7493,11 +7518,14 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
     assert.equal(coords.lon, expectedLon);
   }
   assertCoords(
-    ctx._rwsCoords({ latitude: '52.1', longitude: '5.2' }),
+    ctx.DT_trafficinfo.internals._rwsCoords({
+      latitude: '52.1',
+      longitude: '5.2',
+    }),
     52.1,
     5.2
   );
-  assert.equal(ctx._rwsCoords({}), null);
+  assert.equal(ctx.DT_trafficinfo.internals._rwsCoords({}), null);
 
   // End-to-end through _buildRWSDataPart: a far-away jam is filtered out, a
   // nearby one stays, and one with no coordinates at all is never hidden.
@@ -7511,7 +7539,7 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
       maxDistance: 10,
     },
   };
-  const result = ctx._buildRWSDataPart(me, {
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(me, {
     obstructions: [
       {
         obstructionType: 4,
@@ -7621,13 +7649,18 @@ const trafficRoadData = {
 test('Trafficinfo road filter: road list parsing and filter selection (#1321)', () => {
   const ctx = loadTrafficInfoModule();
   // Commas or semicolons, any spacing/case, duplicates removed, order kept.
-  assert.deepEqual(Array.from(ctx._parseRoads(' a4, A17;a 4 ,n201 ')), [
-    'A4',
-    'A17',
-    'N201',
-  ]);
-  assert.deepEqual(Array.from(ctx._parseRoads(['A4', 'a17'])), ['A4', 'A17']);
-  assert.deepEqual(Array.from(ctx._parseRoads(undefined)), []);
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(' a4, A17;a 4 ,n201 ')),
+    ['A4', 'A17', 'N201']
+  );
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(['A4', 'a17'])),
+    ['A4', 'A17']
+  );
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(undefined)),
+    []
+  );
 
   // A hand-written 3.x block with a road list and no filter keeps filtering
   // on its roads; an explicit filter always wins; default is distance.
@@ -7657,7 +7690,10 @@ test('Trafficinfo road filter: only the selected roads, in their order, per-road
       maxDistance: 1,
     },
   };
-  const result = ctx._buildRWSDataPart(me, trafficRoadData);
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
+    me,
+    trafficRoadData
+  );
   assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A4']);
   assert.ok(!result.dataPart.A2, 'roads that are not selected are left out');
   assert.equal(result.dataPart.A4.length, 2);
@@ -7666,7 +7702,12 @@ test('Trafficinfo road filter: only the selected roads, in their order, per-road
     'the cause is shown'
   );
 
-  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
   const html = ctx.rendered;
   // Configured order: A17 before A4 before A12.
   assert.ok(html.indexOf('A17') < html.indexOf('>A4<'));
@@ -7680,7 +7721,12 @@ test('Trafficinfo road filter: only the selected roads, in their order, per-road
 
   // A custom empty-road text is used as such.
   me.block.showemptyroads = 'Rustig';
-  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
   assert.ok(ctx.rendered.includes('Rustig'));
 });
 
@@ -7696,9 +7742,17 @@ test('Trafficinfo distance mode: road list ignored, total limit, RWS text escape
       results: 2,
     },
   };
-  const result = ctx._buildRWSDataPart(me, trafficRoadData);
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
+    me,
+    trafficRoadData
+  );
   assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A2', 'A4']);
-  ctx._renderTrafficInfo(me, result.dataPart, result.noData, result.roadArray);
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
   // Road-number order (A2, A4, A17) with 2 announcements in total.
   assert.ok(ctx.rendered.includes('Melding &lt;b&gt;A2&lt;/b&gt;.'));
   assert.ok(ctx.rendered.includes('Eerste melding A4.'));
@@ -7708,7 +7762,7 @@ test('Trafficinfo distance mode: road list ignored, total limit, RWS text escape
 
 test('Trafficinfo announcement text: direction with a hyphenated place name, no zero delay/length', () => {
   const ctx = loadTrafficInfoModule();
-  const result = ctx._buildRWSDataPart(
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
     { block: { filter: 'roads', road: 'A2', roadWorks: true, results: 5 } },
     {
       obstructions: [
@@ -7940,7 +7994,12 @@ function loadTvgidsModule() {
     settings: { dashticz_php_path: 'vendor/dashticz/' },
     Dashticz: { register: () => {} },
   };
-  vm.runInNewContext(source, context);
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(source, context);
   return context.DT_tvgids;
 }
 

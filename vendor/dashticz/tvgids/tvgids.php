@@ -32,33 +32,20 @@ function dashticz_tvgids_programmes($id, $ttl)
 {
     $dir = dashticz_cache_dir('tvgids');
     $file = $dir === null ? null : $dir . '/' . $id . '.json';
-    $cached = $file && is_file($file) ? json_decode((string) @file_get_contents($file), true) : null;
-    $today = dashticz_tvgids_today();
-    if (is_array($cached) && isset($cached['date'], $cached['fetchedAt'], $cached['programmes'])
-        && $cached['date'] === $today && time() - $cached['fetchedAt'] < $ttl) {
-        return $cached['programmes'];
-    }
-    try {
-        $page = dashticz_fetch_remote('https://www.tvgids24.nl/zender/' . $id . '/vandaag', 2097152);
-        $programmes = dashticz_tvgids_parse($page['body']);
-        if (!$programmes) {
-            throw new RuntimeException('No programmes found for ' . $id . '.');
+    // The cache is per TV day; a failing download is not retried for 5
+    // minutes (stale data is used meanwhile, see dashticz_cached_json()).
+    return dashticz_cached_json($file, $ttl, function () use ($id) {
+        try {
+            $page = dashticz_fetch_remote('https://www.tvgids24.nl/zender/' . $id . '/vandaag', 2097152);
+            $programmes = dashticz_tvgids_parse($page['body']);
+            if (!$programmes) {
+                throw new RuntimeException('No programmes found for ' . $id . '.');
+            }
+        } catch (RuntimeException $error) {
+            throw new RuntimeException('Unable to fetch the TV guide of ' . $id . '.');
         }
-    } catch (RuntimeException $error) {
-        // Stale data beats an error when the site is temporarily down.
-        if (is_array($cached) && isset($cached['programmes'])) {
-            return $cached['programmes'];
-        }
-        throw new RuntimeException('Unable to fetch the TV guide of ' . $id . '.');
-    }
-    if ($file) {
-        $data = array('date' => $today, 'fetchedAt' => time(), 'programmes' => $programmes);
-        $tmp = $file . '.tmp';
-        if (@file_put_contents($tmp, json_encode($data), LOCK_EX) !== false) {
-            @rename($tmp, $file);
-        }
-    }
-    return $programmes;
+        return $programmes;
+    }, dashticz_tvgids_today(), 300);
 }
 
 // A tvgids24.nl channel page -> its programmes, sorted by start time. Each

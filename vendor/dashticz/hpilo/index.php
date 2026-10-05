@@ -160,10 +160,7 @@ function dashticz_hpilo_write_cache($file, $data)
     if (!$file) {
         return;
     }
-    $tmp = $file . '.tmp';
-    if (@file_put_contents($tmp, json_encode(array('fetchedAt' => time(), 'data' => $data)), LOCK_EX) !== false) {
-        @rename($tmp, $file);
-    }
+    dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'data' => $data)));
 }
 
 // ------------------------------------------------------------ Redfish/curl
