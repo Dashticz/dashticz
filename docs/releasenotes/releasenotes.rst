@@ -43,6 +43,11 @@ v4.1.4 (5-10-2026)
   functions.
 - The unused ``radars`` option of Traffic info is removed.
 - ``_DASHTICZ_VERSION`` raised to 194.
+- Faster Playwright CI jobs: 4 parallel workers against a PHP test server with
+  4 workers (``PHP_CLI_SERVER_WORKERS``), the browser jobs no longer wait for
+  the quality job, the downloaded browsers are cached, and
+  ``tests/domoticzblock.spec.js`` waits for the loader instead of a fixed
+  second.
 
 v4.1.3 (1-10-2026)
 ----------------------
