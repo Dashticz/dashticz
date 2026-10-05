@@ -54,6 +54,9 @@ from the default.
   * - tvgidshidelogo
     - ``true``: the channel name above a column instead of its logo. Default:
       false
+  * - tvgidslogobg
+    - Background of the small frame around each logo: a colour like
+      ``'#ffffff'`` or ``'transparent'``. Default: ``'#ffffff'``
   * - tvgidscolumnwidth
     - Minimum width of a column in pixels (``120``-``1000``). Default: 250
   * - tvgidsfontsize

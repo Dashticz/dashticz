@@ -17,6 +17,8 @@
  *   tvgidscolumnwidth  minimum column width in px (default 250): the block
  *                      shows as many columns next to each other as fit, so
  *                      a wider block gets more columns
+ *   tvgidslogobg       background of the frame around each logo: '#rrggbb' or
+ *                      'transparent' (default '#ffffff')
  *   tvgidsfontsize     optional font size in px (8-60); empty = the theme's
  *   tvgidspollminutes  how often the bridge downloads a channel (default 60)
  *
@@ -182,6 +184,11 @@ var DT_tvgids = (function () {
     me.$mountPoint.css(
       '--tvgids-font-size',
       fontSize >= 8 && fontSize <= 60 ? fontSize + 'px' : ''
+    );
+    var logoBg = String(block.tvgidslogobg || '');
+    me.$mountPoint.css(
+      '--tvgids-logo-bg',
+      logoBg === 'transparent' || /^#[0-9a-f]{6}$/i.test(logoBg) ? logoBg : ''
     );
     var ids = channelIds(block);
     if (!ids.length) {

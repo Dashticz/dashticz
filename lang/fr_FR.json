@@ -532,6 +532,8 @@
       "tvgids_block_pollminutes_help": "Fréquence de téléchargement du programme d’une chaîne. Minimum 15. Par défaut : 60.",
       "tvgids_block_showpast": "Afficher aussi les programmes terminés",
       "tvgids_block_hidelogo": "Nom de la chaîne au lieu du logo",
+      "tvgids_block_logobg": "Couleur de fond du cadre du logo",
+      "tvgids_block_transparent": "Transparent",
       "invalid_tvgids_block_channels": "Choisissez au moins une chaîne.",
       "tvgids_group_algemeen": "Généralistes",
       "tvgids_group_overig": "Autres",

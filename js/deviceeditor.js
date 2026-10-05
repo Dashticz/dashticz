@@ -7852,6 +7852,8 @@ var DashticzDeviceEditor = (function () {
     { key: 'pollminutes', type: 'number', def: 60, range: [15, 1440, 5] },
     { key: 'showpast', type: 'switch', def: false },
     { key: 'hidelogo', type: 'switch', def: false },
+    // '#rrggbb' or 'transparent': the frame behind each channel logo.
+    { key: 'logobg', type: 'color', def: '#ffffff' },
   ];
 
   // Custom field name (lower case) -> true: the fields the TVgids section
@@ -7891,6 +7893,15 @@ var DashticzDeviceEditor = (function () {
       });
   }
 
+  // '#rrggbb' or 'transparent'; anything else -> the default.
+  function _tvgidsColor(value, def) {
+    var text = $.trim(
+      String(value === undefined || value === null ? '' : value)
+    );
+    if (text.toLowerCase() === 'transparent') return 'transparent';
+    return /^#[0-9a-f]{6}$/i.test(text) ? text.toLowerCase() : def;
+  }
+
   // Stored custom-field rows -> the TVgids values (channels + every key).
   function _tvgidsValuesFromRows(rows) {
     var stored = {};
@@ -7903,6 +7914,8 @@ var DashticzDeviceEditor = (function () {
       var raw = stored['tvgids' + setting.key];
       if (setting.type === 'switch') {
         values[setting.key] = raw === true || raw === 'true';
+      } else if (setting.type === 'color') {
+        values[setting.key] = _tvgidsColor(raw, setting.def);
       } else {
         values[setting.key] =
           raw !== undefined && raw !== null
@@ -7951,6 +7964,22 @@ var DashticzDeviceEditor = (function () {
           '"' +
           (v[setting.key] ? ' checked' : '') +
           '></div>';
+      } else if (setting.type === 'color') {
+        var transparent = v[setting.key] === 'transparent';
+        control =
+          '<div class="d-flex align-items-center gap-3"><input type="color" class="form-control form-control-color" id="' +
+          id +
+          '" value="' +
+          (transparent ? setting.def : _esc(v[setting.key])) +
+          '"><div class="form-check form-switch mb-0"><input class="form-check-input de-switch" type="checkbox" id="' +
+          id +
+          '-transparent"' +
+          (transparent ? ' checked' : '') +
+          '><label class="form-check-label" for="' +
+          id +
+          '-transparent">' +
+          _esc(t.tvgids_block_transparent) +
+          '</label></div></div>';
       } else {
         control =
           '<input type="number" class="form-control" id="' +
@@ -8035,6 +8064,25 @@ var DashticzDeviceEditor = (function () {
         );
       });
 
+    // Live preview of the logo frame colour on the channel tiles.
+    function showLogoBg() {
+      var color = $popup.find('#' + prefix + '-tvgids-logobg').val();
+      var transparent = $popup
+        .find('#' + prefix + '-tvgids-logobg-transparent')
+        .is(':checked');
+      $picker.css('--tvgids-logo-bg', transparent ? 'transparent' : color);
+    }
+    $popup.on(
+      'input change',
+      '#' +
+        prefix +
+        '-tvgids-logobg, #' +
+        prefix +
+        '-tvgids-logobg-transparent',
+      showLogoBg
+    );
+    showLogoBg();
+
     $picker.on('click', '.de-tvgids-tile', function () {
       var id = String($(this).attr('data-channel'));
       var chosen = _tvgidsChannelList($input.val());
@@ -8061,6 +8109,10 @@ var DashticzDeviceEditor = (function () {
       var value;
       if (setting.type === 'switch') {
         value = $field(setting.key).is(':checked');
+      } else if (setting.type === 'color') {
+        value = $field(setting.key + '-transparent').is(':checked')
+          ? 'transparent'
+          : _tvgidsColor(raw, setting.def);
       } else if (setting.def === null) {
         // Optional whole number: empty means the default.
         var whole = parseInt(raw, 10);

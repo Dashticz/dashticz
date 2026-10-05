@@ -446,6 +446,8 @@
       "tvgids_block_pollminutes_help": "Hoe vaak het programma van een zender wordt gedownload. Minimaal 15. Standaard: 60.",
       "tvgids_block_showpast": "Ook afgelopen programma’s tonen",
       "tvgids_block_hidelogo": "Zendernaam in plaats van logo",
+      "tvgids_block_logobg": "Achtergrondkleur logokader",
+      "tvgids_block_transparent": "Transparant",
       "invalid_tvgids_block_channels": "Kies minstens één zender.",
       "tvgids_group_algemeen": "Algemeen",
       "tvgids_group_overig": "Overig",
