@@ -2212,6 +2212,7 @@ var DashticzWidgetEditor = (function () {
     html += _graphWidgetCardHtml();
     html += _f1WidgetCardHtml();
     html += _tvgidsWidgetCardHtml();
+    html += _fullykioskWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2727,6 +2728,38 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openTvgids();
+    });
+  }
+
+  /* Fully Kiosk (docs/blocks/specials/fullykiosk.rst,
+     js/components/fullykiosk.js) is also only a repeatable card: it opens the
+     Fully Kiosk quick-add popup (DashticzDeviceEditor.openFullykiosk()). */
+  function _fullykioskWidgetCardHtml() {
+    var itemTitle = _t('fullykiosk_title', 'Fully Kiosk');
+    return (
+      '<div class="we-widget-card we-widget-card-fullykiosk" data-special-widget="fullykiosk" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-tablet-screen-button" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'fullykiosk_description',
+        'Battery of a Fully Kiosk tablet with charge control (domoticz_fullykiosk plugin).'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openFullykioskFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openFullykiosk();
     });
   }
 
@@ -5846,6 +5879,10 @@ var DashticzWidgetEditor = (function () {
         _openTvgidsFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'fullykiosk') {
+        _openFullykioskFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5895,6 +5932,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'tvgids') {
         _openTvgidsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'fullykiosk') {
+        _openFullykioskFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

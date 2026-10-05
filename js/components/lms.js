@@ -514,9 +514,9 @@ var DT_lms_scheduler = {
       }
       var label = _esc(_lmsText(def.labelKey, def.fallback));
       html +=
-        '<button type="button" class="transbg hover lms-btn lms-btn-' +
+        '<button type="button" class="transbg hover dt-btn lms-btn lms-btn-' +
         def.action +
-        (active ? ' lms-btn-active' : '') +
+        (active ? ' lms-btn-active on' : '') +
         '" data-action="' +
         def.action +
         '" title="' +

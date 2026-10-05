@@ -380,6 +380,25 @@ foreach ($data['devices'] as $entry) {
                         dashticz_json_error(400, 'Enter a valid F1 calendar URL.');
                     }
                 }
+            } elseif ($kind === 'fullykiosk') {
+                // fullymode is otherwise just another custom field, but
+                // js/components/fullykiosk.js dispatches on it, so it is
+                // required here. The host is only used by
+                // vendor/dashticz/fullykiosk/index.php; reject anything that
+                // is not a plain host name or address already here.
+                if (!isset($customFields['fullymode']) || $customFields['fullymode'] !== 'charge') {
+                    dashticz_json_error(400, 'A Fully Kiosk block requires a mode.');
+                }
+                if (isset($customFields['fullyhost'])
+                    && (!is_string($customFields['fullyhost'])
+                        || ($customFields['fullyhost'] !== ''
+                            && !preg_match('/^[A-Za-z0-9.\-_:\[\]]{1,253}$/', dashticz_normalize_host_input($customFields['fullyhost']))))) {
+                    dashticz_json_error(400, 'Enter a valid host for the Fully Kiosk tablet.');
+                }
+                if (isset($customFields['fullyswitch'])
+                    && !preg_match('/^\d{1,9}$/', (string) $customFields['fullyswitch'])) {
+                    dashticz_json_error(400, 'Choose a valid Domoticz switch for the Fully Kiosk charger.');
+                }
             } elseif ($kind === 'tvgids') {
                 // tvgids (the channel list) is otherwise just another custom
                 // field, but js/components/tvgids.js dispatches on it, so it
