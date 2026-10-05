@@ -8857,8 +8857,9 @@ canvas {
   margin-bottom: 4px;
 }
 
-/* Many channel logos are black, so every logo gets a light plate that
-   works on light and dark themes alike. */
+/* Many channel logos are black, so every logo sits in a small frame, white
+   by default (works on light and dark themes alike). The frame colour is
+   tvgidslogobg, set as --tvgids-logo-bg; it may be transparent. */
 .tvgids-logo,
 .de-tvgids-tile img {
   box-sizing: content-box;
@@ -8866,7 +8867,7 @@ canvas {
   height: 27px;
   padding: 2px 4px;
   border-radius: 4px;
-  background: #fff;
+  background: var(--tvgids-logo-bg, #fff);
   object-fit: contain;
 }
 
