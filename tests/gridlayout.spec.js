@@ -1084,11 +1084,25 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
 
     // Hide the description and drag the logo to the top.
     await popup.locator('.de-parts-item[data-part="desc"] label').click();
-    await popup
+    // jQuery UI sortable follows the pointer, so move it in steps to the top
+    // edge of the first item instead of jumping there (dragTo), which can
+    // drop the logo one place too low.
+    const handle = await popup
       .locator('.de-parts-item[data-part="logo"] .de-parts-handle')
-      .dragTo(popup.locator('.de-parts-item[data-part="status"]'), {
-        targetPosition: { x: 40, y: 2 },
-      });
+      .boundingBox();
+    const first = await popup
+      .locator('.de-parts-item[data-part="status"]')
+      .boundingBox();
+    await page.mouse.move(
+      handle.x + handle.width / 2,
+      handle.y + handle.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(first.x + 40, first.y + first.height / 2, {
+      steps: 20,
+    });
+    await page.mouse.move(first.x + 40, first.y + 2, { steps: 5 });
+    await page.mouse.up();
     await expect(items.first()).toHaveAttribute('data-part', 'logo');
     await page.locator('#weatherinfo-save-btn').click();
 
