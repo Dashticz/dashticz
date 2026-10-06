@@ -732,6 +732,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
       'f1',
       'tvgids',
       'fullykiosk',
+      'weatherinfo',
     ].sort(
       (a, b) =>
         Object.keys(manifest.kinds).indexOf(a) -
@@ -1527,4 +1528,80 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
   assert.match(source, /Cache-Control: no-store/);
   assert.match(source, /dashticz_normalize_host_input\(/);
   assert.match(source, /CURLOPT_FOLLOWLOCATION => false/);
+});
+
+/* The Weather Info bridge (vendor/dashticz/weatherinfo/weatherinfo.php) parses
+   the Buienradar and Open-Meteo feeds of the domoticz_weatherinfo plugin. */
+test('Weather Info bridge validates the location and parses both feeds', () => {
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const rain = '077|12:00\r\n000|12:05\r\nfoo|12:10\r\n255|12:15\r\n';
+  const current = JSON.stringify({
+    current: {
+      temperature_2m: 19.74,
+      wind_speed_10m: 21.5,
+      wind_direction_10m: 310,
+      weather_code: 3,
+      is_day: 0,
+    },
+  });
+  const script =
+    `require '${dir}/weatherinfo/weatherinfo.php';` +
+    ` echo json_encode(array(` +
+    `dashticz_weatherinfo_coordinate('52,3712', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('91', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('abc', -180, 180),` +
+    `dashticz_weatherinfo_parse_rain(${JSON.stringify(rain)}),` +
+    `dashticz_weatherinfo_parse_current(${JSON.stringify(current)}),` +
+    `dashticz_weatherinfo_parse_current(json_encode(array('current' => array('temperature_2m' => 3.5))))));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), [
+    '52.37',
+    null,
+    null,
+    null,
+    [
+      [77, '12:00'],
+      [0, '12:05'],
+      [255, '12:15'],
+    ],
+    {
+      temperature: 19.74,
+      windSpeed: 21.5,
+      windDirection: 310,
+      weatherCode: 3,
+      isDay: false,
+    },
+    { temperature: 3.5 },
+  ]);
+  for (const bad of [
+    "dashticz_weatherinfo_parse_rain('nothing here')",
+    "dashticz_weatherinfo_parse_current('{}')",
+  ]) {
+    const failed = spawnSync(
+      'php',
+      ['-r', `require '${dir}/weatherinfo/weatherinfo.php'; ${bad};`],
+      { encoding: 'utf8' }
+    );
+    assert.notEqual(failed.status, 0, bad);
+  }
+});
+
+test('Weather Info bridge only downloads the two feeds of the plugin', () => {
+  const index = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/weatherinfo/index.php'),
+    'utf8'
+  );
+  const helpers = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/weatherinfo/weatherinfo.php'),
+    'utf8'
+  );
+  assert.match(index, /dashticz_require_same_origin\(\)/);
+  assert.match(helpers, /gpsgadget\.buienradar\.nl\/data\/raintext/);
+  assert.match(helpers, /api\.open-meteo\.com\/v1\/forecast/);
+  assert.match(helpers, /dashticz_fetch_remote\(/);
+  assert.match(helpers, /dashticz_cached_json\(/);
+  // The request only supplies numbers, never a URL.
+  assert.doesNotMatch(index, /\$input\['url'\]/);
 });

@@ -137,3 +137,16 @@ test('a Fully Kiosk block is written with its mode and settings', () => {
   assert.match(line, /width:4/);
   assert.doesNotMatch(line, /type:/);
 });
+
+// A Weather Info block (js/components/weatherinfo.js) is dispatched on wimode;
+// the location and the other settings arrive as custom fields.
+test('a Weather Info block is written with its mode and settings', () => {
+  const line = specialLine(
+    "['kind' => 'weatherinfo', 'name' => 'Weather info', 'width' => 4, 'icon' => 'fas fa-cloud-sun-rain', 'custom_fields' => ['wimode' => 'forecast', 'wilat' => '52.37', 'wilanguage' => 'en']]"
+  );
+  assert.match(line, /wimode:'forecast'/);
+  assert.match(line, /wilat:/);
+  assert.match(line, /wilanguage:'en'/);
+  assert.match(line, /width:4/);
+  assert.doesNotMatch(line, /type:/);
+});

@@ -534,6 +534,15 @@ var DashticzDeviceEditor = (function () {
     _showFullykioskPopup();
   }
 
+  /** Open the dedicated Weather Info popup used by the Widgets menu. */
+  function openWeatherinfo() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showWeatherinfoPopup();
+  }
+
   /** Open the dedicated News popup used by the Screen Editor add menu. */
   function openNews() {
     editorMode = 'devices';
@@ -1159,6 +1168,15 @@ var DashticzDeviceEditor = (function () {
       kind = 'fullykiosk';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      definition.wimode === 'forecast'
+    ) {
+      // Repeatable Weather Info block, added via the Widgets menu's Weather
+      // info card (_showWeatherinfoPopup()). Matches
+      // js/components/weatherinfo.js's own canHandle(): dispatched on wimode,
+      // no `type` of its own, same convention as F1.
+      kind = 'weatherinfo';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       typeof definition.tvgids === 'string' &&
       definition.tvgids !== ''
     ) {
@@ -1763,6 +1781,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'tvgids') return 'fas fa-tv';
       if (special.specialType === 'fullykiosk')
         return 'fas fa-tablet-screen-button';
+      if (special.specialType === 'weatherinfo') return 'fas fa-cloud-sun-rain';
     }
     return 'fas fa-question';
   }
@@ -7400,6 +7419,23 @@ var DashticzDeviceEditor = (function () {
     return allowed.indexOf(value) > -1 ? value : setting.def;
   }
 
+  // An ordered list of parts ('status,temp,wind'): only known parts, each
+  // once, in the given order; an empty or missing list -> the default.
+  function _settingParts(setting, value) {
+    var allowed = setting.options({}).map(function (option) {
+      return option[0];
+    });
+    var parts = String(value === undefined || value === null ? '' : value)
+      .split(',')
+      .map(function (part) {
+        return $.trim(part);
+      })
+      .filter(function (part, index, list) {
+        return allowed.indexOf(part) > -1 && list.indexOf(part) === index;
+      });
+    return parts.length ? parts.join(',') : setting.def;
+  }
+
   // '#rrggbb' or 'transparent'; anything else -> the default.
   function _settingColor(value, def) {
     var text = $.trim(
@@ -7421,6 +7457,8 @@ var DashticzDeviceEditor = (function () {
       var raw = stored[_settingField(section, setting)];
       if (setting.type === 'select') {
         values[setting.key] = _settingOption(setting, raw);
+      } else if (setting.type === 'parts') {
+        values[setting.key] = _settingParts(setting, raw);
       } else if (setting.type === 'number') {
         values[setting.key] =
           raw !== undefined && raw !== null
@@ -7442,6 +7480,51 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _settingControlHtml(id, setting, value, t) {
+    if (setting.type === 'parts') {
+      // A list of parts to show or hide, in the order of the block; the
+      // enabled parts come first. Dragged by the handle (_wireSettingParts).
+      var enabled = _settingParts(setting, value).split(',');
+      var options = setting.options(t);
+      var ordered = enabled
+        .map(function (key) {
+          return options.filter(function (option) {
+            return option[0] === key;
+          })[0];
+        })
+        .concat(
+          options.filter(function (option) {
+            return enabled.indexOf(option[0]) < 0;
+          })
+        );
+      return (
+        '<ul class="de-parts-list list-unstyled mb-0" id="' +
+        id +
+        '">' +
+        ordered
+          .map(function (option) {
+            return (
+              '<li class="de-parts-item" data-part="' +
+              _esc(option[0]) +
+              '"><span class="de-parts-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>' +
+              '<div class="form-check mb-0"><input class="form-check-input de-parts-check" type="checkbox" id="' +
+              id +
+              '-' +
+              _esc(option[0]) +
+              '"' +
+              (enabled.indexOf(option[0]) > -1 ? ' checked' : '') +
+              '><label class="form-check-label" for="' +
+              id +
+              '-' +
+              _esc(option[0]) +
+              '">' +
+              _esc(option[1]) +
+              '</label></div></li>'
+            );
+          })
+          .join('') +
+        '</ul>'
+      );
+    }
     if (setting.type === 'select') {
       return (
         '<select class="form-select" id="' +
@@ -7639,6 +7722,21 @@ var DashticzDeviceEditor = (function () {
     var raw = $.trim(String($field.val() || ''));
     var range = setting.range || [];
     if (setting.type === 'select') return _settingOption(setting, raw);
+    if (setting.type === 'parts') {
+      return _settingParts(
+        setting,
+        $field
+          .find('.de-parts-item')
+          .filter(function () {
+            return $(this).find('.de-parts-check').is(':checked');
+          })
+          .map(function () {
+            return $(this).data('part');
+          })
+          .get()
+          .join(',')
+      );
+    }
     if (setting.type === 'switch') return $field.is(':checked');
     if (setting.type === 'color') {
       return $('#' + $field.attr('id') + '-transparent').is(':checked')
@@ -8473,6 +8571,272 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  /* Weather Info (js/components/weatherinfo.js, docs/blocks/specials/
+     weatherinfo.rst): the options of the domoticz_weatherinfo plugin - the
+     location, the poll interval, the language and the content of the text -
+     from one settings table like F1 and Fully Kiosk. The block is dispatched
+     on wimode ('forecast'), kept apart from the table, like f1mode. */
+  var WEATHERINFO_SECTION = {
+    fieldPrefix: 'wi',
+    idPart: 'weatherinfo',
+    labelPrefix: 'weatherinfo_block_',
+    fieldClass: 'de-weatherinfo-field',
+    saveOrder: 'lat lon pollminutes language icons parts showrainfall fontsize',
+    settings: [
+      { key: 'lat', type: 'text', def: '', max: 12 },
+      { key: 'lon', type: 'text', def: '', max: 12 },
+      { key: 'pollminutes', type: 'number', def: 5, range: [1, 60, 1] },
+      {
+        key: 'language',
+        type: 'select',
+        def: 'nl',
+        options: function () {
+          return [
+            ['nl', 'Nederlands'],
+            ['en', 'English'],
+          ];
+        },
+      },
+      // The parts of the text, shown in this order: the rain status on a row
+      // of its own, the other parts after each other (plugin: Text device).
+      {
+        key: 'parts',
+        type: 'parts',
+        def: 'status,temp,desc,wind,logo',
+        full: 1,
+        options: function (t) {
+          return [
+            ['status', t.weatherinfo_block_part_status],
+            ['temp', t.weatherinfo_block_part_temp],
+            ['desc', t.weatherinfo_block_part_desc],
+            ['wind', t.weatherinfo_block_part_wind],
+            ['logo', t.weatherinfo_block_part_logo],
+          ];
+        },
+      },
+      {
+        key: 'icons',
+        type: 'select',
+        def: 'animated',
+        options: function (t) {
+          return [
+            ['animated', t.weatherinfo_block_icons_animated],
+            ['emoji', t.weatherinfo_block_icons_emoji],
+          ];
+        },
+      },
+      { key: 'showrainfall', type: 'switch', def: false },
+      { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
+    ],
+  };
+  var WEATHERINFO_SETTINGS = WEATHERINFO_SECTION.settings;
+  var WEATHERINFO_FIELDS = _settingFieldNames(WEATHERINFO_SECTION, 'wimode');
+
+  // Stored custom-field rows -> the Weather Info values (every setting key).
+  function _weatherinfoValuesFromRows(rows) {
+    var values = _settingsFromRows(
+      WEATHERINFO_SECTION,
+      rows,
+      WEATHERINFO_FIELDS
+    );
+    delete values._stored;
+    return values;
+  }
+
+  /* The Weather Info section shared by the quick-add popup and the config
+     popup. */
+  function _weatherinfoFieldsHtml(prefix, values) {
+    var t = _translations();
+    var v = $.extend(_weatherinfoValuesFromRows([]), values || {});
+    var html =
+      '<div class="de-weatherinfo-fields" data-weatherinfo-prefix="' +
+      _esc(prefix) +
+      '">';
+    html +=
+      '<h6 class="de-section-title">' + _esc(t.weatherinfo_block) + '</h6>';
+    html += '<div class="de-weatherinfo-grid">';
+    WEATHERINFO_SETTINGS.forEach(function (setting) {
+      html += _settingHtml(
+        WEATHERINFO_SECTION,
+        prefix,
+        setting,
+        v[setting.key],
+        t
+      );
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  // Drag the parts of the text into the order they are shown in.
+  function _wireWeatherinfoFields($popup) {
+    if (!$.fn.sortable) return;
+    $popup.find('.de-parts-list').sortable({
+      handle: '.de-parts-handle',
+      axis: 'y',
+      tolerance: 'pointer',
+      containment: 'parent',
+    });
+  }
+
+  function _readWeatherinfoFields(prefix) {
+    var values = {};
+    WEATHERINFO_SETTINGS.forEach(function (setting) {
+      values[setting.key] = _settingValue(WEATHERINFO_SECTION, prefix, setting);
+    });
+    return values;
+  }
+
+  // The latitude and longitude are both empty (the location of Domoticz) or
+  // both a number within range; returns the message, or '' when valid.
+  function _weatherinfoLocationError(values, t) {
+    var lat = String(values.lat || '').replace(',', '.');
+    var lon = String(values.lon || '').replace(',', '.');
+    if (lat === '' && lon === '') return '';
+    var latNumber = parseFloat(lat);
+    var lonNumber = parseFloat(lon);
+    return lat !== '' &&
+      lon !== '' &&
+      isFinite(lat) &&
+      isFinite(lon) &&
+      Math.abs(latNumber) <= 90 &&
+      Math.abs(lonNumber) <= 180
+      ? ''
+      : t.invalid_weatherinfo_block_location;
+  }
+
+  // Weather Info values -> custom_fields rows, without the default values.
+  function _weatherinfoCustomRows(values) {
+    // A comma is accepted for the decimal point, the block stores a point.
+    values = $.extend({}, values, {
+      lat: String(values.lat || '').replace(',', '.'),
+      lon: String(values.lon || '').replace(',', '.'),
+    });
+    return [{ field: 'wimode', setting: 'forecast', value: 'forecast' }].concat(
+      _settingRows(WEATHERINFO_SECTION, values)
+    );
+  }
+
+  function _showWeatherinfoPopup() {
+    var t = _translations();
+    $('#weatherinfoblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="weatherinfoblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cloud-sun-rain me-2" aria-hidden="true"></i>' +
+      _esc(t.weatherinfo_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('weatherinfo', {
+      icon: true,
+      iconValue: 'fas fa-cloud-sun-rain',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="weatherinfo-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="weatherinfo-device-title" autocomplete="off" value="' +
+      _esc(t.weatherinfo_block) +
+      '"></div>';
+    html += _weatherinfoFieldsHtml('weatherinfo', {});
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="weatherinfo-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#weatherinfoblockpopup');
+    _wireQuickOptions('weatherinfo', $popup);
+    _wireWeatherinfoFields($popup);
+    _wireBackButton('weatherinfoblockpopup');
+
+    $('#weatherinfo-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#weatherinfo-device-title').val() || ''));
+      var weatherinfo = _readWeatherinfoFields('weatherinfo');
+      var locationError = _weatherinfoLocationError(weatherinfo, t);
+      if (locationError) {
+        $message.addClass('text-danger').text(locationError);
+        $('#weatherinfo-weatherinfo-lat').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('weatherinfo');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows = customRows.concat(_weatherinfoCustomRows(weatherinfo));
+
+      var reference = _nextSpecialReference('weatherinfo');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'weatherinfo',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 4,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      _hideModal(document.getElementById('weatherinfoblockpopup'));
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('weatherinfoblockpopup')
+    ).show();
+  }
+
   function _showSlideButtonPopup() {
     var t = _translations();
     $('#slidebuttonpopup').remove();
@@ -8874,6 +9238,7 @@ var DashticzDeviceEditor = (function () {
     var isF1Block = special && special.specialType === 'f1';
     var isTvgidsBlock = special && special.specialType === 'tvgids';
     var isFullyBlock = special && special.specialType === 'fullykiosk';
+    var isWeatherinfoBlock = special && special.specialType === 'weatherinfo';
     var isCalendarBlock = special && special.specialType === 'calendar';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
@@ -8946,6 +9311,16 @@ var DashticzDeviceEditor = (function () {
       tvgidsValues = _tvgidsValuesFromRows(customRows);
       customRows = customRows.filter(function (row) {
         return !TVGIDS_FIELDS[
+          _normaliseCustomFieldName(row && row.field).toLowerCase()
+        ];
+      });
+    }
+    var weatherinfoValues = null;
+    if (isWeatherinfoBlock) {
+      // Same as F1: the Weather Info section owns these fields.
+      weatherinfoValues = _weatherinfoValuesFromRows(customRows);
+      customRows = customRows.filter(function (row) {
+        return !WEATHERINFO_FIELDS[
           _normaliseCustomFieldName(row && row.field).toLowerCase()
         ];
       });
@@ -9141,7 +9516,9 @@ var DashticzDeviceEditor = (function () {
       '" tabindex="-1" aria-hidden="true">';
     html +=
       '<div class="modal-dialog modal-dialog-centered de-config-dialog' +
-      (isF1Block || isTvgidsBlock || isFullyBlock ? ' modal-lg' : '') +
+      (isF1Block || isTvgidsBlock || isFullyBlock || isWeatherinfoBlock
+        ? ' modal-lg'
+        : '') +
       '"><div class="modal-content">';
     html +=
       '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
@@ -9593,6 +9970,8 @@ var DashticzDeviceEditor = (function () {
     if (isF1Block) html += _f1FieldsHtml('de-config', f1Values);
     if (isTvgidsBlock) html += _tvgidsFieldsHtml('de-config', tvgidsValues);
     if (isFullyBlock) html += _fullyFieldsHtml('de-config', fullyValues);
+    if (isWeatherinfoBlock)
+      html += _weatherinfoFieldsHtml('de-config', weatherinfoValues);
     html +=
       '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
     html +=
@@ -9621,6 +10000,7 @@ var DashticzDeviceEditor = (function () {
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     if (isF1Block) _wireF1Fields('de-config', $popup);
     if (isTvgidsBlock) _wireTvgidsFields('de-config', $popup);
+    if (isWeatherinfoBlock) _wireWeatherinfoFields($popup);
     if (isCalendarBlock)
       _wireCalendarFields('de-config', $popup, calendarSources, t);
     if (isClusterBlock) {
@@ -10040,6 +10420,11 @@ var DashticzDeviceEditor = (function () {
           customKeys[key] = true;
         });
       }
+      if (isWeatherinfoBlock) {
+        Object.keys(WEATHERINFO_FIELDS).forEach(function (key) {
+          customKeys[key] = true;
+        });
+      }
       if (isGraphBlock) {
         customKeys.graph = true;
         customKeys.legend = true;
@@ -10157,6 +10542,18 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_fully_block_host);
           $('#de-config-fully-host').trigger('focus');
+        }
+      }
+      var pendingWeatherinfo = null;
+      if (isWeatherinfoBlock) {
+        pendingWeatherinfo = _readWeatherinfoFields('de-config');
+        var weatherinfoError = _weatherinfoLocationError(pendingWeatherinfo, t);
+        if (weatherinfoError) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(weatherinfoError);
         }
       }
       var pendingGraph = null;
@@ -10468,6 +10865,10 @@ var DashticzDeviceEditor = (function () {
         storedRows = storedRows.concat(_tvgidsCustomRows(pendingTvgids));
       if (pendingFully)
         storedRows = storedRows.concat(_fullyCustomRows(pendingFully));
+      if (pendingWeatherinfo)
+        storedRows = storedRows.concat(
+          _weatherinfoCustomRows(pendingWeatherinfo)
+        );
       if (pendingGraph) {
         storedRows.push({
           field: 'devices',
@@ -10862,6 +11263,7 @@ var DashticzDeviceEditor = (function () {
     else if (special.specialType === 'f1') label = t.f1_block;
     else if (special.specialType === 'tvgids') label = t.tvgids_block;
     else if (special.specialType === 'fullykiosk') label = t.fully_block;
+    else if (special.specialType === 'weatherinfo') label = t.weatherinfo_block;
     var htmlFileRow =
       isHtmlBlock && special.customFields
         ? special.customFields.find(function (row) {
@@ -10954,6 +11356,8 @@ var DashticzDeviceEditor = (function () {
     else if (special.specialType === 'tvgids') specialIconClass = 'fa-tv';
     else if (special.specialType === 'fullykiosk')
       specialIconClass = 'fa-tablet-screen-button';
+    else if (special.specialType === 'weatherinfo')
+      specialIconClass = 'fa-cloud-sun-rain';
     var html =
       '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) +
@@ -11109,6 +11513,7 @@ var DashticzDeviceEditor = (function () {
     f1: 'f1_',
     tvgids: 'tvgids_',
     fullykiosk: 'fullykiosk_',
+    weatherinfo: 'weatherinfo_',
     // Matches the legacy hand-written 'graph_<idx>' convention (see
     // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
     // key-prefix check), so a repeatable instance's auto-generated key
@@ -12530,6 +12935,7 @@ var DashticzDeviceEditor = (function () {
     openF1: openF1,
     openTvgids: openTvgids,
     openFullykiosk: openFullykiosk,
+    openWeatherinfo: openWeatherinfo,
     openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,

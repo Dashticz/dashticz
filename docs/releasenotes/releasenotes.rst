@@ -1,6 +1,25 @@
 Release Notes
 =============
 
+v4.1.5 (6-10-2026)
+----------------------
+
+* **Enhancements**
+
+- New Weather Info widget (Widgets menu, multiple per screen), based on the
+  domoticz_weatherinfo plugin: the Buienradar rain forecast (raining now, rain
+  expected, rain expected at a time or dry for now) and the current weather of
+  Open-Meteo (temperature, description, wind and a weather icon). The options
+  of the plugin are settings of the widget: the location (empty = the location
+  of Domoticz), the poll interval, the language (Dutch or English) and the
+  parts of the text (each shown or hidden, in the order you drag them). An extra row can show the current rain intensity in
+  mm/h, and the weather icons are animated (or the plugin's emoji). Both feeds are read through the new bridge
+  ``vendor/dashticz/weatherinfo/index.php``.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 202.
+
 v4.1.4 (5-10-2026)
 ----------------------
 

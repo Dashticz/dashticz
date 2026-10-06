@@ -399,6 +399,22 @@ foreach ($data['devices'] as $entry) {
                     && !preg_match('/^\d{1,9}$/', (string) $customFields['fullyswitch'])) {
                     dashticz_json_error(400, 'Choose a valid Domoticz switch for the Fully Kiosk charger.');
                 }
+            } elseif ($kind === 'weatherinfo') {
+                // wimode is otherwise just another custom field, but
+                // js/components/weatherinfo.js dispatches on it, so it is
+                // required here. The location is sent to Buienradar and
+                // Open-Meteo by vendor/dashticz/weatherinfo/index.php, so it
+                // must be empty or a number within range.
+                if (!isset($customFields['wimode']) || $customFields['wimode'] !== 'forecast') {
+                    dashticz_json_error(400, 'A Weather Info block requires a mode.');
+                }
+                foreach (array('wilat' => 90, 'wilon' => 180) as $wiField => $wiLimit) {
+                    if (isset($customFields[$wiField])
+                        && $customFields[$wiField] !== ''
+                        && (!is_numeric($customFields[$wiField]) || abs((float) $customFields[$wiField]) > $wiLimit)) {
+                        dashticz_json_error(400, 'Enter a valid latitude and longitude for the Weather Info block.');
+                    }
+                }
             } elseif ($kind === 'tvgids') {
                 // tvgids (the channel list) is otherwise just another custom
                 // field, but js/components/tvgids.js dispatches on it, so it
