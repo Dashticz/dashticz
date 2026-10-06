@@ -2213,6 +2213,7 @@ var DashticzWidgetEditor = (function () {
     html += _f1WidgetCardHtml();
     html += _tvgidsWidgetCardHtml();
     html += _fullykioskWidgetCardHtml();
+    html += _weatherinfoWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2760,6 +2761,38 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openFullykiosk();
+    });
+  }
+
+  /* Weather Info (docs/blocks/specials/weatherinfo.rst,
+     js/components/weatherinfo.js) is also only a repeatable card: it opens
+     the Weather Info quick-add popup (DashticzDeviceEditor.openWeatherinfo()). */
+  function _weatherinfoWidgetCardHtml() {
+    var itemTitle = _t('weatherinfo_title', 'Weather info');
+    return (
+      '<div class="we-widget-card we-widget-card-weatherinfo" data-special-widget="weatherinfo" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-cloud-sun-rain" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'weatherinfo_description',
+        'Rain forecast and current weather (Buienradar and Open-Meteo, domoticz_weatherinfo plugin).'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openWeatherinfoFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openWeatherinfo();
     });
   }
 
@@ -5883,6 +5916,10 @@ var DashticzWidgetEditor = (function () {
         _openFullykioskFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'weatherinfo') {
+        _openWeatherinfoFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5936,6 +5973,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'fullykiosk') {
         _openFullykioskFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'weatherinfo') {
+        _openWeatherinfoFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));
