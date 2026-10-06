@@ -9130,8 +9130,8 @@ canvas {
 
 /* Fully Kiosk widget (js/components/fullykiosk.js): battery, next switch
    percentage and the charger switch, painted into .dt_state like the HP iLO
-   widget above. Every row has two columns: the switch (or button) and the
-   data; no margin or padding to the left of the rows. */
+   widget above. Every row has two columns: the data and the switch (or
+   button) at the right; no margin or padding to the left of the rows. */
 .fullykiosk-block .dt_state {
   display: flex;
   flex-direction: column;
@@ -9149,7 +9149,7 @@ canvas {
 
 .fullykiosk-row {
   display: grid;
-  grid-template-columns: 25% minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 25%;
   align-items: center;
   column-gap: 10px;
 }
@@ -9193,9 +9193,12 @@ canvas {
 .fullykiosk-control {
   display: flex;
   gap: 6px;
-  /* 10 px free from the left, and 10% narrower than the column */
+  /* Column 2, at the right of the data: 20 px from the data (10 px column
+     gap + 10 px margin) and 5 px free from the right edge */
+  order: 2;
   margin-left: 10px;
-  width: calc(90% - 10px);
+  margin-right: 5px;
+  width: calc(100% - 15px);
 }
 
 .fullykiosk-btn {
