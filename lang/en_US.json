@@ -934,7 +934,7 @@
       "fullykiosk_title": "Fully Kiosk",
       "fullykiosk_description": "Battery of a Fully Kiosk tablet with charge control (domoticz_fullykiosk plugin).",
       "weatherinfo_title": "Weather info",
-      "weatherinfo_description": "Rain forecast and current weather (Buienradar and Open-Meteo, domoticz_weatherinfo plugin).",
+      "weatherinfo_description": "Rain forecast and current weather (Buienradar, domoticz_weatherinfo plugin).",
       "graph_title": "Graph",
       "graph_description": "Historical chart of one or more Domoticz device values, with Now/Today/Month buttons.",
       "timegraph_title": "Timegraph",

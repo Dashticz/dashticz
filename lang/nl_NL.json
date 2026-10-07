@@ -939,7 +939,7 @@
       "fullykiosk_title": "Fully Kiosk",
       "fullykiosk_description": "Batterij van een Fully Kiosk-tablet met laadregeling (domoticz_fullykiosk-plugin).",
       "weatherinfo_title": "Weerinfo",
-      "weatherinfo_description": "Regenverwachting en actueel weer (Buienradar en Open-Meteo, domoticz_weatherinfo plugin).",
+      "weatherinfo_description": "Regenverwachting en actueel weer (Buienradar, domoticz_weatherinfo plugin).",
       "graph_title": "Grafiek",
       "graph_description": "Historische grafiek van één of meerdere Domoticz-devicewaarden, met Nu/Vandaag/Maand-knoppen.",
       "timegraph_title": "Timegraph",

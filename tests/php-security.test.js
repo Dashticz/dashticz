@@ -1531,17 +1531,32 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
 });
 
 /* The Weather Info bridge (vendor/dashticz/weatherinfo/weatherinfo.php) parses
-   the Buienradar and Open-Meteo feeds of the domoticz_weatherinfo plugin. */
+   the two Buienradar feeds of the domoticz_weatherinfo plugin. */
 test('Weather Info bridge validates the location and parses both feeds', () => {
   const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
   const rain = '077|12:00\r\n000|12:05\r\nfoo|12:10\r\n255|12:15\r\n';
-  const current = JSON.stringify({
-    current: {
-      temperature_2m: 19.74,
-      wind_speed_10m: 21.5,
-      wind_direction_10m: 310,
-      weather_code: 3,
-      is_day: 0,
+  const feed = JSON.stringify({
+    actual: {
+      stationmeasurements: [
+        {
+          stationname: 'Meetstation Schiphol',
+          lat: 52.3,
+          lon: 4.77,
+          iconurl: 'https://x.nl/image/weather-icons/cc.png',
+          weatherdescription: 'Zwaar bewolkt',
+          temperature: 19.7,
+          windspeedBft: 3,
+          winddirectiondegrees: 310,
+        },
+        {
+          stationname: 'Meetstation Zonder',
+          lat: 52.4,
+          lon: 4.8,
+          iconurl: 'https://x.nl/image/weather-icons/bad.png',
+          weatherdescription: 'Bewolkt',
+        },
+        { stationname: 'Geen positie' },
+      ],
     },
   });
   const script =
@@ -1552,8 +1567,8 @@ test('Weather Info bridge validates the location and parses both feeds', () => {
     `dashticz_weatherinfo_coordinate('91', -90, 90),` +
     `dashticz_weatherinfo_coordinate('abc', -180, 180),` +
     `dashticz_weatherinfo_parse_rain(${JSON.stringify(rain)}),` +
-    `dashticz_weatherinfo_parse_current(${JSON.stringify(current)}),` +
-    `dashticz_weatherinfo_parse_current(json_encode(array('current' => array('temperature_2m' => 3.5))))));`;
+    `dashticz_weatherinfo_pick(dashticz_weatherinfo_parse_stations(${JSON.stringify(feed)}), 52.35, 4.78),` +
+    `dashticz_weatherinfo_pick(dashticz_weatherinfo_parse_stations(${JSON.stringify(feed)}), 52.45, 4.8)));`;
   const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout), [
@@ -1567,17 +1582,29 @@ test('Weather Info bridge validates the location and parses both feeds', () => {
       [255, '12:15'],
     ],
     {
-      temperature: 19.74,
-      windSpeed: 21.5,
-      windDirection: 310,
-      weatherCode: 3,
+      station: 'Schiphol',
+      distance: 6,
+      icon: 'cc',
+      description: 'Zwaar bewolkt',
       isDay: false,
+      temperature: 19.7,
+      windBft: 3,
+      windDirection: 310,
     },
-    { temperature: 3.5 },
+    {
+      station: 'Zonder',
+      distance: 6,
+      icon: '',
+      description: 'Bewolkt',
+      temperature: 19.7,
+      windBft: 3,
+      windDirection: 310,
+    },
   ]);
   for (const bad of [
     "dashticz_weatherinfo_parse_rain('nothing here')",
-    "dashticz_weatherinfo_parse_current('{}')",
+    "dashticz_weatherinfo_parse_stations('{}')",
+    "dashticz_weatherinfo_pick(array(array('name' => 'x', 'lat' => 0, 'lon' => 0, 'icon' => '', 'description' => '')), 52, 5)",
   ]) {
     const failed = spawnSync(
       'php',
@@ -1588,7 +1615,7 @@ test('Weather Info bridge validates the location and parses both feeds', () => {
   }
 });
 
-test('Weather Info bridge only downloads the two feeds of the plugin', () => {
+test('Weather Info bridge only downloads the two Buienradar feeds of the plugin', () => {
   const index = fs.readFileSync(
     path.join(root, 'vendor/dashticz/weatherinfo/index.php'),
     'utf8'
@@ -1599,7 +1626,7 @@ test('Weather Info bridge only downloads the two feeds of the plugin', () => {
   );
   assert.match(index, /dashticz_require_same_origin\(\)/);
   assert.match(helpers, /gpsgadget\.buienradar\.nl\/data\/raintext/);
-  assert.match(helpers, /api\.open-meteo\.com\/v1\/forecast/);
+  assert.match(helpers, /data\.buienradar\.nl\/2\.0\/feed\/json/);
   assert.match(helpers, /dashticz_fetch_remote\(/);
   assert.match(helpers, /dashticz_cached_json\(/);
   // The request only supplies numbers, never a URL.

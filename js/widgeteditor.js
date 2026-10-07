@@ -2780,7 +2780,7 @@ var DashticzWidgetEditor = (function () {
       '</div><div class="we-widget-description">' +
       _t(
         'weatherinfo_description',
-        'Rain forecast and current weather (Buienradar and Open-Meteo, domoticz_weatherinfo plugin).'
+        'Rain forecast and current weather (Buienradar, domoticz_weatherinfo plugin).'
       ) +
       '</div></div>' +
       '<div class="we-widget-status">' +

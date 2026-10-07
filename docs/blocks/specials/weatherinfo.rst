@@ -6,9 +6,9 @@ Weather info
 The Weather Info widget shows the rain forecast and the current weather of a
 location. It is standalone (no Domoticz device needed) and based on the
 `domoticz_weatherinfo <https://github.com/MadPatrick/domoticz_weatherinfo>`_
-plugin, with the same data sources, texts and options: the rain forecast comes
-from the Buienradar ``raintext`` feed, the current weather from Open-Meteo.
-Both are downloaded server-side (``vendor/dashticz/weatherinfo/index.php``) and
+plugin, with the same texts and options. All data comes from Buienradar: the
+rain forecast from the ``raintext`` feed, the current weather from the
+measurements of the nearest Buienradar weather station. Both are downloaded server-side (``vendor/dashticz/weatherinfo/index.php``) and
 cached, so several connected dashboards share one download.
 
 The tile shows one line, like the Text device of the plugin, with the parts
@@ -18,6 +18,18 @@ verwacht 1,2 tot 2,4 mm/u``, ``2,4 mm/u regen verwacht om 14:35`` or
 expected at`` and ``Dry for now``), the temperature, the weather description,
 the wind (direction and force in Beaufort, for example ``NW4``) and a weather
 icon. Which parts are shown, and in which order, is the *Text parts* setting.
+
+The weather station can be some kilometres away and reports every 10
+minutes, while the radar shows the rain at your exact location, so they can
+disagree. While the radar reports rain right now and the station still says
+clear, cloudy or fog, the widget shows a rain cloud icon and the description
+light rain, rain or heavy rain, so the line stays consistent.
+
+The station is the nearest one within 75 km; a value that station does not
+measure (temperature or wind) comes from the next nearest station. Buienradar
+covers the Netherlands: outside it the widget shows only the rain status (and
+a message that there is no weather station nearby). The Dutch description is
+the text of Buienradar; the English description is derived from its icon.
 
 The plugin's Rainfall device (the current rain intensity) is an optional extra
 row, see ``wishowrainfall``. The accumulated rain (mm) of that device is a
