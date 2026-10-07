@@ -3,8 +3,8 @@
 /* Weather Info widget: the rain forecast and the current weather of a
  * location, based on the domoticz_weatherinfo plugin
  * (https://github.com/MadPatrick/domoticz_weatherinfo). It is standalone - no
- * Domoticz device needed. The Buienradar rain forecast and the Open-Meteo
- * current weather are downloaded by vendor/dashticz/weatherinfo/index.php, a
+ * Domoticz device needed. The Buienradar rain forecast and the Buienradar
+ * weather station data are downloaded by vendor/dashticz/weatherinfo/index.php, a
  * same-origin PHP bridge like the F1 and HP iLO widgets; the texts below
  * mirror the plugin's status line.
  *
@@ -53,69 +53,25 @@ var DT_weatherinfo = (function () {
     en: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
   };
 
-  // WMO weather code -> description, like the plugin.
-  var WMO = {
-    nl: {
-      0: 'Onbewolkt',
-      1: 'Hoofdzakelijk helder',
-      2: 'Gedeeltelijk bewolkt',
-      3: 'Bewolkt',
-      45: 'Mist',
-      48: 'IJsmist',
-      51: 'Motregen',
-      53: 'Motregen',
-      55: 'Motregen',
-      56: 'IJzel',
-      57: 'IJzel',
-      61: 'Lichte regen',
-      63: 'Regen',
-      65: 'Zware regen',
-      66: 'IJzel',
-      67: 'IJzel',
-      71: 'Lichte sneeuw',
-      73: 'Sneeuw',
-      75: 'Zware sneeuw',
-      77: 'Sneeuwkorrels',
-      80: 'Lichte bui',
-      81: 'Bui',
-      82: 'Zware bui',
-      85: 'Lichte sneeuwbui',
-      86: 'Zware sneeuwbui',
-      95: 'Onweer',
-      96: 'Onweer met hagel',
-      99: 'Onweer met zware hagel',
-    },
-    en: {
-      0: 'Clear',
-      1: 'Mainly clear',
-      2: 'Partly cloudy',
-      3: 'Cloudy',
-      45: 'Fog',
-      48: 'Rime fog',
-      51: 'Drizzle',
-      53: 'Drizzle',
-      55: 'Drizzle',
-      56: 'Freezing drizzle',
-      57: 'Freezing drizzle',
-      61: 'Light rain',
-      63: 'Rain',
-      65: 'Heavy rain',
-      66: 'Freezing rain',
-      67: 'Freezing rain',
-      71: 'Light snow',
-      73: 'Snow',
-      75: 'Heavy snow',
-      77: 'Snow grains',
-      80: 'Light showers',
-      81: 'Showers',
-      82: 'Heavy showers',
-      85: 'Light snow showers',
-      86: 'Heavy snow showers',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm with hail',
-      99: 'Thunderstorm with heavy hail',
-    },
+  // English descriptions by Buienradar icon letter (the feed text is Dutch).
+  var DESCRIPTIONS_EN = {
+    a: 'Clear',
+    b: 'Partly cloudy',
+    j: 'Partly cloudy',
+    c: 'Cloudy',
+    d: 'Fog',
+    n: 'Fog',
+    f: 'Light rain',
+    m: 'Light rain',
+    q: 'Rain',
+    w: 'Rain',
+    g: 'Thunderstorms possible',
+    s: 'Thunderstorms possible',
+    t: 'Heavy snow',
+    u: 'Light snow',
+    v: 'Light snow',
   };
+  var DRY_LETTERS = ['a', 'b', 'j', 'c', 'd', 'n'];
 
   // The plugin's icons: plain Unicode with U+FE0F (full colour emoji), in the
   // colour of the plugin.
@@ -130,43 +86,41 @@ var DT_weatherinfo = (function () {
     snow: '❄️',
     lightning: '⚡️',
   };
-  var WMO_ICONS = {
-    0: ['sun', '#FFC107'],
-    1: ['sun_cloud', '#FFC107'],
-    2: ['sun_cloud', '#FFC107'],
-    3: ['cloud', '#D3D3D3'],
-    45: ['fog', '#B0B0B0'],
-    48: ['fog', '#B0B0B0'],
-    51: ['rain_cloud', '#4FC3F7'],
-    53: ['rain_cloud', '#4FC3F7'],
-    55: ['rain_cloud', '#4FC3F7'],
-    56: ['rain_cloud', '#7FB3D5'],
-    57: ['rain_cloud', '#7FB3D5'],
-    61: ['rain_cloud', '#4FC3F7'],
-    63: ['rain_cloud', '#3B82C4'],
-    65: ['rain_cloud', '#3B82C4'],
-    66: ['rain_cloud', '#7FB3D5'],
-    67: ['rain_cloud', '#7FB3D5'],
-    71: ['snow', '#E0F7FA'],
-    73: ['snow', '#E0F7FA'],
-    75: ['snow', '#E0F7FA'],
-    77: ['snow', '#E0F7FA'],
-    80: ['rain_cloud', '#5DADE2'],
-    81: ['rain_cloud', '#5DADE2'],
-    82: ['rain_cloud', '#3B82C4'],
-    85: ['snow', '#E0F7FA'],
-    86: ['snow', '#E0F7FA'],
-    95: ['lightning', '#FFC107'],
-    96: ['lightning', '#FFC107'],
-    99: ['lightning', '#FFC107'],
+  // Buienradar icon letter (the plugin's map) -> [shape, colour]; the night
+  // icon is the same letter doubled.
+  var ICONS = {
+    a: ['sun', '#FFC107'],
+    j: ['sun_cloud', '#FFC107'],
+    b: ['sun_cloud', '#FFC107'],
+    c: ['cloud', '#D3D3D3'],
+    d: ['fog', '#B0B0B0'],
+    n: ['fog', '#B0B0B0'],
+    f: ['rain_cloud', '#4FC3F7'],
+    m: ['rain_cloud', '#4FC3F7'],
+    q: ['rain_cloud', '#3B82C4'],
+    w: ['rain_cloud', '#3B82C4'],
+    g: ['lightning', '#FFC107'],
+    s: ['lightning', '#FFC107'],
+    t: ['snow', '#E0F7FA'],
+    u: ['snow', '#E0F7FA'],
+    v: ['snow', '#E0F7FA'],
   };
-  // The codes whose icon differs after dark.
-  var WMO_ICONS_NIGHT = {
-    0: ['moon', '#4A6FA5'],
-    1: ['moon_cloud', '#4A6FA5'],
-    2: ['moon_cloud', '#4A6FA5'],
+  var NIGHT_ICONS = {
+    sun: ['moon', '#4A6FA5'],
+    sun_cloud: ['moon_cloud', '#4A6FA5'],
   };
   var DEFAULT_ICON = ['cloud', '#D3D3D3'];
+  var DRY_SHAPES = ['sun', 'moon', 'sun_cloud', 'moon_cloud', 'cloud', 'fog'];
+  // Dutch feed text -> icon letter, when the feed gives no usable icon.
+  var KEYWORDS = [
+    [/onweer/i, 'g'],
+    [/hagel|sneeuw/i, 't'],
+    [/mist|nevel/i, 'd'],
+    [/regen|bui|motregen/i, 'q'],
+    [/gedeeltelijk|opklaring|half/i, 'j'],
+    [/bewolkt/i, 'c'],
+    [/onbewolkt|zonnig|helder/i, 'a'],
+  ];
 
   // The animated icons: inline SVG (64x64) animated by css/creative.css
   // (.weatherinfo-svg), no images or libraries. Keyed like SHAPES.
@@ -215,7 +169,6 @@ var DT_weatherinfo = (function () {
     snow: CLOUD + FLAKES,
     lightning: DARK_CLOUD + BOLT,
   };
-  var BEAUFORT = [1, 6, 12, 20, 29, 39, 50, 62, 75, 89, 103, 118];
 
   return {
     name: 'weatherinfo',
@@ -237,7 +190,6 @@ var DT_weatherinfo = (function () {
     parseRain: parseRain,
     rainStatus: rainStatus,
     rawToMm: rawToMm,
-    beaufort: beaufort,
     compass: compass,
     weatherIcon: weatherIcon,
     partsList: partsList,
@@ -278,13 +230,6 @@ var DT_weatherinfo = (function () {
   // Raw Buienradar value (0-255) -> mm/h.
   function rawToMm(raw) {
     return raw === 0 ? 0 : Math.pow(10, (raw - 109) / 32);
-  }
-
-  function beaufort(kmh) {
-    for (var bft = 0; bft < BEAUFORT.length; bft++) {
-      if (kmh < BEAUFORT[bft]) return bft;
-    }
-    return 12;
   }
 
   function compass(degrees, language) {
@@ -381,32 +326,60 @@ var DT_weatherinfo = (function () {
     return esc(texts.dry);
   }
 
-  // The icon of the plugin: the WMO code decides, day or night; [shape, colour].
-  function weatherIcon(weather) {
-    var code = weather.weatherCode;
-    var icon;
-    if (typeof code === 'number') {
-      if (weather.isDay === false) icon = WMO_ICONS_NIGHT[code];
-      icon = icon || WMO_ICONS[code];
+  // The icon letter of the station: from the icon code of the feed (a doubled
+  // letter is the night icon), else guessed from the Dutch text.
+  function iconLetter(weather) {
+    var code = String(weather.icon || '').toLowerCase();
+    if (/^[a-z]{1,2}$/.test(code) && ICONS[code.charAt(0)]) {
+      return code.charAt(0);
     }
-    return icon || DEFAULT_ICON;
+    for (var i = 0; i < KEYWORDS.length; i++) {
+      if (KEYWORDS[i][0].test(weather.description || '')) return KEYWORDS[i][1];
+    }
+    return '';
   }
 
-  function description(weather, language) {
-    return (WMO[language] || WMO.nl)[weather.weatherCode] || '';
+  // The icon: [shape, colour], day or night. While Buienradar reports rain
+  // right now, a dry icon (sun, moon, cloud or fog) becomes a rain cloud, so
+  // the icon agrees with the rain status.
+  function weatherIcon(weather, raining) {
+    var icon = ICONS[iconLetter(weather)] || DEFAULT_ICON;
+    if (weather.isDay === false && NIGHT_ICONS[icon[0]]) {
+      icon = NIGHT_ICONS[icon[0]];
+    }
+    return raining && DRY_SHAPES.indexOf(icon[0]) > -1
+      ? ['rain_cloud', '#4FC3F7']
+      : icon;
+  }
+
+  // The description: the Dutch text of the feed, in English by icon letter.
+  // While Buienradar reports rain right now (mm/h), a dry description is
+  // replaced by light rain, rain or heavy rain, like the icon.
+  function description(weather, language, rainMm) {
+    var letter = iconLetter(weather);
+    if (rainMm > 0 && (!letter || DRY_LETTERS.indexOf(letter) > -1)) {
+      var level = rainMm < 2.5 ? 0 : rainMm < 7.6 ? 1 : 2;
+      return (
+        language === 'en'
+          ? ['Light rain', 'Rain', 'Heavy rain']
+          : ['Lichte regen', 'Regen', 'Zware regen']
+      )[level];
+    }
+    if (language === 'en' && DESCRIPTIONS_EN[letter]) {
+      return DESCRIPTIONS_EN[letter];
+    }
+    return weather.description || '';
   }
 
   // Direction and force: "NW4"; empty when one of the two is unknown.
   function windText(weather, language) {
     if (
-      typeof weather.windSpeed !== 'number' ||
+      typeof weather.windBft !== 'number' ||
       typeof weather.windDirection !== 'number'
     ) {
       return '';
     }
-    return (
-      compass(weather.windDirection, language) + beaufort(weather.windSpeed)
-    );
+    return compass(weather.windDirection, language) + weather.windBft;
   }
 
   // The html of one part of the text, or '' when there is nothing to show.
@@ -417,21 +390,23 @@ var DT_weatherinfo = (function () {
       return res.rain ? rainStatus(parseRain(res.rain), language) : '';
     }
     if (!weather) return '';
+    var rain = res.rain ? parseRain(res.rain) : null;
+    var rainMm = rain ? rain.mmNow : 0;
     if (part === 'temp') {
       return typeof weather.temperature === 'number'
         ? esc(fmt(weather.temperature, language) + '°C')
         : '';
     }
-    if (part === 'desc') return esc(description(weather, language));
+    if (part === 'desc') return esc(description(weather, language, rainMm));
     if (part === 'wind') return esc(windText(weather, language));
     if (part === 'logo') {
-      var icon = weatherIcon(weather);
+      var icon = weatherIcon(weather, rainMm > 0);
       if (block.wiicons !== 'emoji') {
         return (
           '<svg class="weatherinfo-svg" viewBox="0 0 64 64" role="img" aria-label="' +
-          esc(description(weather, language)) +
+          esc(description(weather, language, rainMm)) +
           '"><title>' +
-          esc(description(weather, language)) +
+          esc(description(weather, language, rainMm)) +
           '</title>' +
           SVG_ICONS[icon[0]] +
           '</svg>'
@@ -439,7 +414,7 @@ var DT_weatherinfo = (function () {
       }
       return (
         '<span class="weatherinfo-icon" title="' +
-        esc(description(weather, language)) +
+        esc(description(weather, language, rainMm)) +
         '" style="color:' +
         icon[1] +
         '">' +

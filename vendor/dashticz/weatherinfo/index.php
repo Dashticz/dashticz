@@ -10,20 +10,25 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
 /* Backend bridge for the Weather Info widget (js/components/weatherinfo.js),
- * based on the domoticz_weatherinfo plugin. It downloads the Buienradar rain
- * forecast and the current weather of Open-Meteo for a location and caches
- * them (custom/cache/weatherinfo/): the rain forecast for the poll interval,
- * the weather for 15 minutes like the plugin, so several connected dashboards
+ * based on the domoticz_weatherinfo plugin. Both parts come from Buienradar:
+ * the rain forecast (raintext feed, cached for the poll interval per
+ * location) and the current weather, the measurements of the nearest weather
+ * station of the Buienradar JSON feed (cached for 10 minutes, one file for
+ * all locations), in custom/cache/weatherinfo/. Several connected dashboards
  * share one download. The texts, icons and units are made in the browser.
  *
  * Request (JSON): {"lat": 52.37, "lon": 4.9, "pollMinutes": 5}
  * Response: {"rain": [[raw, "HH:MM"], ...] | null,
- *            "weather": {"temperature": 19.7, "windSpeed": 12.0 (km/h),
- *                        "windDirection": 310 (degrees), "weatherCode": 3,
- *                        "isDay": true} | null,
+ *            "weather": {"station": "Schiphol", "distance": 12 (km),
+ *                        "icon": "c" ("cc" at night), "description":
+ *                        "Zwaar bewolkt", "isDay": true,
+ *                        "temperature": 17.2, "windBft": 3,
+ *                        "windDirection": 69 (degrees)} | null,
  *            "errors": ["..."]}
- *            Either part is null (with a message in errors) when only that
- *            source failed; when both fail the response is an error.
+ *            temperature and wind are left out when no station within range
+ *            measures them. Either part is null (with a message in errors)
+ *            when only that source failed; when both fail the response is an
+ *            error.
  */
 try {
     $input = json_decode((string) file_get_contents('php://input'), true);

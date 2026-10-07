@@ -1,6 +1,25 @@
 Release Notes
 =============
 
+v4.1.6 (7-10-2026)
+----------------------
+
+* **Fixes**
+
+- Weather Info now gets all its data from one source, Buienradar: the current
+  weather (temperature, description, icon and wind) comes from the nearest
+  Buienradar weather station instead of Open-Meteo, so it no longer
+  contradicts the rain radar. A value the nearest station does not measure
+  comes from the next nearest one; within 75 km.
+- The Weather Info icon and description follow the rain status: while
+  Buienradar reports rain right now and the station still reports a dry sky
+  (clear, cloudy or fog), the icon becomes a rain cloud and the description
+  light rain, rain or heavy rain by intensity. Snow and thunderstorm are kept.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 203.
+
 v4.1.5 (6-10-2026)
 ----------------------
 

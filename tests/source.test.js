@@ -8502,27 +8502,65 @@ test('Weather Info rain status follows the domoticz_weatherinfo plugin', () => {
 
 test('Weather Info weather line: wind, icon and text format', () => {
   const wi = loadWeatherinfoModule();
-  // Beaufort thresholds and the compass of the plugin, per language.
-  assert.equal(wi.beaufort(0.5), 0);
-  assert.equal(wi.beaufort(21.5), 4);
-  assert.equal(wi.beaufort(200), 12);
+  // The compass of the plugin, per language.
   assert.equal(wi.compass(310, 'nl'), 'NW');
   assert.equal(wi.compass(100, 'nl'), 'O');
   assert.equal(wi.compass(100, 'en'), 'E');
   assert.equal(wi.compass(359, 'en'), 'N');
-  // WMO code -> icon, day or night.
-  assert.equal(wi.weatherIcon({ weatherCode: 0, isDay: true })[0], 'sun');
-  assert.equal(wi.weatherIcon({ weatherCode: 0, isDay: false })[0], 'moon');
-  assert.equal(wi.weatherIcon({ weatherCode: 63 })[0], 'rain_cloud');
-  assert.equal(wi.weatherIcon({ weatherCode: 999 })[0], 'cloud');
+  // Buienradar icon letter -> icon, day or night (doubled letter).
+  assert.equal(wi.weatherIcon({ icon: 'a', isDay: true })[0], 'sun');
+  assert.equal(wi.weatherIcon({ icon: 'aa', isDay: false })[0], 'moon');
+  assert.equal(wi.weatherIcon({ icon: 'q' })[0], 'rain_cloud');
+  assert.equal(wi.weatherIcon({ icon: 'zz' })[0], 'cloud');
   assert.equal(wi.weatherIcon({})[0], 'cloud');
+  // No usable icon: guessed from the Dutch text.
+  assert.equal(wi.weatherIcon({ description: 'Onweersbuien' })[0], 'lightning');
+  assert.equal(wi.weatherIcon({ description: 'Zonnig' })[0], 'sun');
+  // Raining right now (Buienradar): a dry icon becomes a rain cloud, snow and
+  // lightning stay.
+  assert.equal(wi.weatherIcon({ icon: 'c' }, true)[0], 'rain_cloud');
+  assert.equal(
+    wi.weatherIcon({ icon: 'aa', isDay: false }, true)[0],
+    'rain_cloud'
+  );
+  assert.equal(wi.weatherIcon({ icon: 't' }, true)[0], 'snow');
+  assert.equal(wi.weatherIcon({ icon: 'g' }, true)[0], 'lightning');
+  // The description follows: light rain, rain or heavy rain by intensity.
+  const desc = (icon, text, raw, language) =>
+    wi
+      .partsHtml(
+        { weather: { icon, description: text }, rain: [[raw, '12:00']] },
+        { wiparts: 'desc', wilanguage: language }
+      )
+      .replace(/<[^>]+>/g, '');
+  assert.equal(desc('c', 'Bewolkt', 109, 'nl'), 'Lichte regen');
+  assert.equal(desc('c', 'Bewolkt', 130, 'en'), 'Rain');
+  assert.equal(desc('c', 'Bewolkt', 160, 'en'), 'Heavy rain');
+  assert.equal(desc('c', 'Zwaar bewolkt', 0, 'nl'), 'Zwaar bewolkt');
+  assert.equal(desc('c', 'Zwaar bewolkt', 0, 'en'), 'Cloudy');
+  assert.equal(desc('t', 'Sneeuw', 109, 'nl'), 'Sneeuw');
+  assert.match(
+    wi.partsHtml(
+      { weather: { icon: 'c' }, rain: [[109, '12:00']] },
+      { wiparts: 'logo' }
+    ),
+    /class="wi-fall/
+  );
+  assert.doesNotMatch(
+    wi.partsHtml(
+      { weather: { icon: 'c' }, rain: [[0, '12:00']] },
+      { wiparts: 'logo' }
+    ),
+    /class="wi-fall/
+  );
   const plain = (value) => JSON.parse(JSON.stringify(value));
   const res = {
     weather: {
       temperature: 19.74,
-      windSpeed: 21.5,
+      windBft: 4,
       windDirection: 310,
-      weatherCode: 3,
+      icon: 'c',
+      description: 'Bewolkt',
       isDay: true,
     },
     rain: [[0, '12:00']],
@@ -8568,7 +8606,7 @@ test('Weather Info weather line: wind, icon and text format', () => {
   assert.deepEqual(
     wi
       .partsHtml(
-        { weather: { temperature: 3, windSpeed: 10 } },
+        { weather: { temperature: 3, windBft: 3 } },
         { wiparts: 'temp,wind' }
       )
       .match(/NW|\d+ ●/),
@@ -8601,7 +8639,7 @@ test('Weather Info block renders its rows and the optional rainfall row', () => 
       [109, '12:00'],
       [0, '12:05'],
     ],
-    weather: { temperature: 12, weatherCode: 61, isDay: true },
+    weather: { temperature: 12, icon: 'q', description: 'Regen', isDay: true },
   });
   assert.match(html, /weatherinfo-weather[^>]*>Raining now/);
   assert.match(html, /weatherinfo-weather/);

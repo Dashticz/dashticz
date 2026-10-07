@@ -402,8 +402,8 @@ foreach ($data['devices'] as $entry) {
             } elseif ($kind === 'weatherinfo') {
                 // wimode is otherwise just another custom field, but
                 // js/components/weatherinfo.js dispatches on it, so it is
-                // required here. The location is sent to Buienradar and
-                // Open-Meteo by vendor/dashticz/weatherinfo/index.php, so it
+                // required here. The location is only used for Buienradar, by
+                // vendor/dashticz/weatherinfo/index.php, so it
                 // must be empty or a number within range.
                 if (!isset($customFields['wimode']) || $customFields['wimode'] !== 'forecast') {
                     dashticz_json_error(400, 'A Weather Info block requires a mode.');
