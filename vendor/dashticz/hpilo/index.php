@@ -138,17 +138,8 @@ function dashticz_hpilo_read_input()
 
 function dashticz_hpilo_cache_file($input)
 {
-    $baseDir = dirname(__DIR__, 2) . '/custom/cache/hpilo';
-    if (!is_dir($baseDir)) {
-        @mkdir($baseDir, 0775, true);
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-hpilo-cache';
-        if (!is_dir($baseDir)) {
-            @mkdir($baseDir, 0775, true);
-        }
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
+    $baseDir = dashticz_cache_dir('hpilo');
+    if ($baseDir === null) {
         return null;
     }
     $key = strtolower($input['host'] . ':' . $input['port'] . '|' . $input['username'] . '|' . implode(',', $input['sections']));
@@ -169,10 +160,7 @@ function dashticz_hpilo_write_cache($file, $data)
     if (!$file) {
         return;
     }
-    $tmp = $file . '.tmp';
-    if (@file_put_contents($tmp, json_encode(array('fetchedAt' => time(), 'data' => $data)), LOCK_EX) !== false) {
-        @rename($tmp, $file);
-    }
+    dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'data' => $data)));
 }
 
 // ------------------------------------------------------------ Redfish/curl

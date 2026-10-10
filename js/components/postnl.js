@@ -1,4 +1,4 @@
-/* global Dashticz settings language moment */
+/* global Dashticz DT_function settings language moment */
 //# sourceURL=js/components/postnl.js
 /* PostNL widget: shows incoming and sent PostNL shipments (Track & Trace),
  * fetched through vendor/dashticz/postnl/index.php - a same-origin PHP
@@ -30,8 +30,9 @@ var DT_postnl = (function () {
       refresh: (parseInt(settings['postnl_pollminutes'], 10) || 60) * 60,
       containerClass: 'postnl-block',
     },
+    // Mounting calls refresh() itself when block.refresh is set.
     run: function (me) {
-      refresh(me);
+      if (!me.block.refresh) refresh(me);
     },
     refresh: refresh,
   };
@@ -178,17 +179,11 @@ var DT_postnl = (function () {
       return;
     }
 
-    $.ajax({
-      url: settings['dashticz_php_path'] + 'postnl/index.php',
-      method: 'POST',
-      contentType: 'application/json',
-      dataType: 'json',
-      data: JSON.stringify({
-        username: username,
-        password: password,
-        days: parseInt(settings['postnl_days'], 10) || 2,
-        pollMinutes: parseInt(settings['postnl_pollminutes'], 10) || 60,
-      }),
+    DT_function.bridge('postnl/index.php', {
+      username: username,
+      password: password,
+      days: parseInt(settings['postnl_days'], 10) || 2,
+      pollMinutes: parseInt(settings['postnl_pollminutes'], 10) || 60,
     }).then(
       function (res) {
         var html = listHtml(res);
@@ -197,10 +192,12 @@ var DT_postnl = (function () {
           .html('<div class="postnl-rows">' + html + '</div>');
       },
       function (jqXHR) {
-        var errorMessage =
-          (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ||
-          misc.postnl_error ||
-          'Unable to fetch PostNL shipments.';
+        var errorMessage = DT_function.escapeHtml(
+          DT_function.bridgeError(
+            jqXHR,
+            misc.postnl_error || 'Unable to fetch PostNL shipments.'
+          )
+        );
         me.$mountPoint
           .find('.dt_state')
           .html(

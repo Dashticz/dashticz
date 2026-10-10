@@ -1,4 +1,4 @@
-/* global Dashticz settings language */
+/* global Dashticz DT_function settings language */
 //# sourceURL=js/components/hpilo.js
 /* HP iLO widget: clustered server info (power, health, uptime, fan speed,
  * temperatures, ...) of an HPE server, read from its iLO Redfish API through
@@ -79,8 +79,9 @@ var DT_hpilo = (function () {
       // the whole block height.
       template: 1,
     },
+    // Mounting calls refresh() itself when block.refresh is set.
     run: function (me) {
-      refresh(me);
+      if (!me.block.refresh) refresh(me);
     },
     refresh: refresh,
   };
@@ -123,16 +124,8 @@ var DT_hpilo = (function () {
     return misc()['hpilo_' + key] || LABELS[key];
   }
 
-  function esc(text) {
-    return String(text).replace(/[&<>"']/g, function (c) {
-      return {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      }[c];
-    });
+  function esc(value) {
+    return DT_function.escapeHtml(value);
   }
 
   // Minutes -> "12d 3h 5m" (units are language independent).
@@ -231,20 +224,14 @@ var DT_hpilo = (function () {
     }
     var metrics = visibleMetrics();
 
-    $.ajax({
-      url: settings['dashticz_php_path'] + 'hpilo/index.php',
-      method: 'POST',
-      contentType: 'application/json',
-      dataType: 'json',
-      data: JSON.stringify({
-        host: host,
-        port: parseInt(settings['hpilo_port'], 10) || 443,
-        username: username,
-        password: password,
-        pollSeconds: pollSeconds(),
-        metrics: metrics.map(function (metric) {
-          return metric.key;
-        }),
+    DT_function.bridge('hpilo/index.php', {
+      host: host,
+      port: parseInt(settings['hpilo_port'], 10) || 443,
+      username: username,
+      password: password,
+      pollSeconds: pollSeconds(),
+      metrics: metrics.map(function (metric) {
+        return metric.key;
       }),
     }).then(
       function (res) {
@@ -257,9 +244,10 @@ var DT_hpilo = (function () {
       function (jqXHR) {
         showMessage(
           me,
-          (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ||
-            misc().hpilo_error ||
-            'Unable to fetch the iLO data.'
+          DT_function.bridgeError(
+            jqXHR,
+            DT_function.t('hpilo_error', 'Unable to fetch the iLO data.')
+          )
         );
       }
     );

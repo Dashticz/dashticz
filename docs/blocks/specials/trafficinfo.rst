@@ -8,26 +8,42 @@ With a traffic info block you can show Dutch traffic jams and roadworks, from RW
 
 For public transport info see :ref:`publictransport`.
 
-A traffic info block can be configured as follows::
+A traffic info block shows one of two selections:
+
+* **Everything within a distance** (``filter: 'distance'``, the default): all
+  announcements within ``maxDistance`` km of a location.
+* **Selected roads** (``filter: 'roads'``): only the roads listed in ``road``,
+  for example ``'A4, A17'``. The roads are shown in that order, each with at
+  most ``results`` announcements. With ``showemptyroads`` a road without
+  announcements is listed as well.
+
+A traffic info block for selected roads can be configured as follows::
 
     var trafficinfo = {}
-    trafficinfo.rwsA1 = {
+    trafficinfo.rwsA4A17 = {
         trafficJams: true,
         roadWorks: false,
-        road:'A1',
-        show_lastupdate:true,
+        filter: 'roads',
+        road: 'A4, A17',
+        showemptyroads: true,
+        show_lastupdate: true,
         icon: 'fas fa-car',
-        width:12,
-        results: 100 };
+        width: 12,
+        results: 10 };
+
+To show two roads in two separate blocks, define two blocks with one road
+each.
 
 .. image :: img/trafficinfo.jpg
 
 Using the Widget editor
 -----------------------
 
-In Wizard mode, ``trafficJams``, ``roadWorks``, ``radars``, ``results``, ``maxDistance``,
-``latitude`` and ``longitude`` can all be set from the Widget editor's Traffic information
-quick-add, without hand-writing a block.
+In Wizard mode all options can be set in the Widget Config of the Traffic
+information widget (see :ref:`WidgetConfig`), without hand-writing a block:
+traffic jams and roadworks, **Show** (*Everything within a distance*
+or *Selected roads*), the maximum number of results, and either the distance
+and location, or the **Roads** and **Show roads without announcements**.
 
 
 Parameters
@@ -40,14 +56,19 @@ Parameters
 
   * - Parameter
     - Description
+  * - filter
+    - | ``'distance'``: show everything within ``maxDistance`` (default)
+      | ``'roads'``: show only the roads in ``road``
+      | Without ``filter``, a block with a ``road`` list uses ``'roads'``, as in earlier versions.
   * - road
-    - Name of the road(s) to show, comma seperated (Example: "A1, A73")
+    - | The road(s) to show with ``filter: 'roads'``, comma separated, in the order they are shown. Case and spaces don't matter.
+      | ``'A1, A73'``
   * - title
     - Title of the block
   * - show_lastupdate
     - ``false`` , ``true``. To display the time of the last update.
   * - maxDistance
-    - Only show items within this distance, in km straight-line, from ``latitude``/``longitude``. Defaults to ``40``.
+    - Only show items within this distance, in km straight-line, from ``latitude``/``longitude``. Defaults to ``40``. Not used with ``filter: 'roads'``.
   * - latitude, longitude
     - | Reference location for ``maxDistance``. Leave both unset to use Domoticz's own configured system location (Settings > System > Location) - only set these yourself if that isn't configured.
   * - icon
@@ -56,22 +77,20 @@ Parameters
   * - refresh
     - time in seconds for refreshing the data
   * - results
-    - Number of results to show. Defaults to ``5``.
+    - Number of results to show: per road with ``filter: 'roads'``, in total with ``filter: 'distance'``. Defaults to ``5``.
   * - width
     - To customize the width. It's not recommended to change the default value (``12``) because of the size of the output.
   * - trafficJams
     - ``false`` , ``true``.  To show traffic jam info
   * - roadWorks
     - ``false`` , ``true``.  To show road work info
-  * - radars
-    - ``false`` , ``true``.  To show radar info. RWS has no radar data, so this currently has no visible effect.
   * - showempty
     - | Control text to show in case of no traffic announcements
       | ``false``: Don't show a message in case of no traffic announcements
       | ``true``: Display default message in case of no traffic announcements
       | ``'<text>'``: Display <text> in case of no traffic announcements
   * - showemptyroads
-    - | Control text to show in case of no traffic announcements for a certain road (only applicable in combination with block parameter ``road``)
+    - | Control text to show in case of no traffic announcements for a certain road (only applicable with ``filter: 'roads'``)
       | ``false``: Don't show a message in case of no traffic announcements for a certain road.
       | ``true``: Display default message in case of no traffic announcements for a certain road.
       | ``'<text>'``: Display <text> in case of no traffic announcements for a certain road.

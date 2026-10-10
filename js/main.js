@@ -697,6 +697,9 @@ function prepareStart() {
     .then(function () {
       return loadScript('js/dt_function.js');
     })
+    .then(function () {
+      return DT_function.loadWidgetManifest();
+    })
     .then(addDebug)
     .then(loadCustomJS)
     .then(configureDashticz)

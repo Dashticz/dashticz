@@ -1,0 +1,113 @@
+[
+  {
+    "group": "algemeen",
+    "channels": [
+      {"id": "npo_1", "name": "NPO 1"},
+      {"id": "npo_2", "name": "NPO 2"},
+      {"id": "npo_3", "name": "NPO 3"},
+      {"id": "rtl_4", "name": "RTL 4"},
+      {"id": "rtl_5", "name": "RTL 5"},
+      {"id": "sbs6", "name": "SBS6"},
+      {"id": "rtl_7", "name": "RTL 7"},
+      {"id": "veronica", "name": "Veronica"},
+      {"id": "net5", "name": "Net5"},
+      {"id": "rtl_8", "name": "RTL 8"},
+      {"id": "viaplay_tv", "name": "ViaPlay TV"},
+      {"id": "star_channel", "name": "STAR Channel"},
+      {"id": "rtl_z", "name": "RTL Z"},
+      {"id": "nickelodeon", "name": "Nickelodeon"},
+      {"id": "comedy_central", "name": "Comedy Central"},
+      {"id": "cartoon_network", "name": "Cartoon Network"},
+      {"id": "paramount_network", "name": "Paramount Network"},
+      {"id": "disney_channel", "name": "Disney Channel"},
+      {"id": "discovery_channel", "name": "Discovery Channel"},
+      {"id": "national_geographic", "name": "National Geographic"},
+      {"id": "animal_planet", "name": "Animal Planet"},
+      {"id": "history_channel", "name": "History Channel"},
+      {"id": "tlc", "name": "TLC"},
+      {"id": "24kitchen", "name": "24Kitchen"},
+      {"id": "ziggo_sport", "name": "Ziggo Sport"},
+      {"id": "eurosport_1", "name": "Eurosport 1"},
+      {"id": "mtv", "name": "MTV"},
+      {"id": "vrt_1", "name": "VRT 1"},
+      {"id": "canvas", "name": "Canvas"},
+      {"id": "ketnet", "name": "Ketnet"}
+    ]
+  },
+  {
+    "group": "overig",
+    "channels": [
+      {"id": "discovery_science", "name": "Discovery Science"},
+      {"id": "id", "name": "ID"},
+      {"id": "crime_investigation", "name": "Crime + Investigation"},
+      {"id": "nat_geo_wild", "name": "Nat Geo Wild"},
+      {"id": "love_nature", "name": "Love Nature"},
+      {"id": "family7", "name": "Family7"},
+      {"id": "xite", "name": "XITE"},
+      {"id": "myzen_tv", "name": "MyZen TV"},
+      {"id": "shortstv", "name": "ShortsTV"},
+      {"id": "e", "name": "E!"},
+      {"id": "horse_country_tv", "name": "Horse & Country TV"},
+      {"id": "fashiontv", "name": "FashionTV"},
+      {"id": "curiosity_channel", "name": "Curiosity Channel"},
+      {"id": "ons", "name": "ONS"},
+      {"id": "nick_jr_", "name": "Nick Jr."},
+      {"id": "nick_toons", "name": "Nick Toons"},
+      {"id": "disney_xd", "name": "Disney XD"},
+      {"id": "cartoonito", "name": "Cartoonito"},
+      {"id": "rtl_lounge", "name": "RTL Lounge"},
+      {"id": "rtl_crime", "name": "RTL Crime"},
+      {"id": "rtl_telekids", "name": "RTL TelekIDs"},
+      {"id": "ducktv", "name": "Duck TV"},
+      {"id": "babytv", "name": "BabyTV"},
+      {"id": "moonbug", "name": "Moonbug"},
+      {"id": "npo_1_extra", "name": "NPO 1 Extra"},
+      {"id": "npo_2_extra", "name": "NPO 2 Extra"},
+      {"id": "npo_politiek_en_nieuws", "name": "NPO Politiek en Nieuws"}
+    ]
+  },
+  {
+    "group": "regionaal",
+    "channels": [
+      {"id": "omrop_fryslan", "name": "Omrop Fryslân"},
+      {"id": "rtv_noord", "name": "RTV Noord"},
+      {"id": "rtv_drenthe", "name": "RTV Drenthe"},
+      {"id": "rtv_oost", "name": "RTV Oost"},
+      {"id": "omroep_gelderland", "name": "Omroep Gelderland"},
+      {"id": "omroep_flevoland", "name": "Omroep Flevoland"},
+      {"id": "omroep_brabant", "name": "Omroep Brabant"},
+      {"id": "rtv_utrecht", "name": "RTV Utrecht"},
+      {"id": "nh", "name": "NH"},
+      {"id": "omroep_west", "name": "Omroep West"},
+      {"id": "rtv_rijnmond", "name": "RTV Rijnmond"},
+      {"id": "l1", "name": "L1"},
+      {"id": "omroep_zeeland", "name": "Omroep Zeeland"},
+      {"id": "at5", "name": "AT5"}
+    ]
+  },
+  {
+    "group": "sport",
+    "channels": [
+      {"id": "ziggo_sport_2", "name": "Ziggo Sport 2"},
+      {"id": "ziggo_sport_3", "name": "Ziggo Sport 3"},
+      {"id": "ziggo_sport_4", "name": "Ziggo Sport 4"},
+      {"id": "ziggo_sport_5", "name": "Ziggo Sport 5"},
+      {"id": "ziggo_sport_6", "name": "Ziggo Sport 6"},
+      {"id": "espn", "name": "ESPN"},
+      {"id": "espn_2", "name": "ESPN 2"},
+      {"id": "espn_3", "name": "ESPN 3"},
+      {"id": "espn_4", "name": "ESPN 4"},
+      {"id": "eurosport_2", "name": "Eurosport 2"}
+    ]
+  },
+  {
+    "group": "films",
+    "channels": [
+      {"id": "film1_premiere", "name": "Film1 Premiere"},
+      {"id": "film1_action", "name": "Film1 Action"},
+      {"id": "film1_family", "name": "Film1 Family"},
+      {"id": "film1_drama", "name": "Film1 Drama"},
+      {"id": "filmbox", "name": "Filmbox"}
+    ]
+  }
+]

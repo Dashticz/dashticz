@@ -1,0 +1,150 @@
+{
+  "_comment": "Special block kinds (js/deviceeditor.js, js/layouteditor.js, js/saveblocks.php). Flags: idxLess = no Domoticz idx; titleOptional = title may be blank; noDial = no Dial/Bar/Slider mode; simpleIconPayload = only icon and last update; referenceBased = block is found by its reference in the screen; saved = kind accepted by saveblocks.php; defaultWidth = columns when the block has no width (default 3). To add a widget, add it here.",
+  "kinds": {
+    "title": {
+      "idxLess": true,
+      "saved": true,
+      "defaultWidth": 12
+    },
+    "slidebutton": {
+      "idxLess": true,
+      "defaultWidth": 12
+    },
+    "dummy": {
+      "saved": true
+    },
+    "custom": {
+      "titleOptional": true,
+      "saved": true
+    },
+    "separator": {
+      "referenceBased": true
+    },
+    "group": {
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true
+    },
+    "cluster": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "html": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true
+    },
+    "iframe": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "calendar": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "publictransport": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true
+    },
+    "timegraph": {
+      "titleOptional": true,
+      "noDial": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "xmltvguide": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "lms": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "camera": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true
+    },
+    "news": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true
+    },
+    "graph": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 6
+    },
+    "f1": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    },
+    "tvgids": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 12
+    },
+    "fullykiosk": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    }
+  }
+}

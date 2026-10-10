@@ -1,4 +1,4 @@
-/* global toSlide getRandomInt settings infoMessage _DASHTICZ_VERSION Dashticz */
+/* global toSlide getRandomInt settings infoMessage _DASHTICZ_VERSION _CORS_PATH Dashticz *
 /* from blocks.js */
 /* global convertBlock addBlock2Column*/
 /* from graph.js */
@@ -401,7 +401,94 @@ var DT_function = (function () {
     }
   }
 
+  // Text -> HTML-safe text. null/undefined give ''.
+  function escapeHtml(value) {
+    return String(value === null || typeof value === 'undefined' ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // language.misc[key], or the fallback text.
+  function t(key, fallback) {
+    var misc = (typeof language !== 'undefined' && language.misc) || {};
+    return misc[key] || fallback;
+  }
+
+  // A number from a block option, kept between min and max; def when it is
+  // not a number. asInt: whole numbers only.
+  function clampNumber(value, def, min, max, asInt) {
+    var number = asInt ? parseInt(value, 10) : parseFloat(value);
+    return isNaN(number) ? def : Math.min(max, Math.max(min, number));
+  }
+
+  // POST a JSON request to a PHP bridge in vendor/dashticz/<name>.
+  function bridge(name, payload) {
+    return $.ajax({
+      url: settings['dashticz_php_path'] + name,
+      method: 'POST',
+      contentType: 'application/json',
+      dataType: 'json',
+      data: JSON.stringify(payload),
+    });
+  }
+
+  // The error text of a failed bridge call, or the fallback.
+  function bridgeError(jqXHR, fallback) {
+    return (
+      (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) || fallback
+    );
+  }
+
+  // js/widgets.json: the special block kinds and their flags, shared by the
+  // editors (and, in PHP, by js/saveblocks.php). Loaded once at startup.
+  var widgetManifest = { kinds: {} };
+
+  function loadWidgetManifest() {
+    return $.getJSON('js/widgets.json?v=' + _DASHTICZ_VERSION).then(
+      function (manifest) {
+        widgetManifest = manifest;
+        return manifest;
+      }
+    );
+  }
+
+  // The kinds that have the given flag, in manifest order.
+  function widgetKinds(flag) {
+    return Object.keys(widgetManifest.kinds).filter(function (kind) {
+      return widgetManifest.kinds[kind][flag];
+    });
+  }
+
+  // Columns of a new block of this kind without a width.
+  function widgetDefaultWidth(kind) {
+    var entry = widgetManifest.kinds[kind];
+    return (entry && entry.defaultWidth) || 3;
+  }
+
+  // Rijkswaterstaat's traffic data (Traffic and Traffic info widgets): the
+  // cached bridge vendor/dashticz/rws/ when PHP is the CORS proxy, else the
+  // configured CORS proxy.
+  function rwsTrafficUrl() {
+    var api = 'https://api.rwsverkeersinfo.nl/api/traffic/';
+    var phpProxy = settings['dashticz_php_path'] + 'cors.php?';
+    return _CORS_PATH === phpProxy
+      ? settings['dashticz_php_path'] + 'rws/index.php'
+      : _CORS_PATH + api;
+  }
+
   return {
+    rwsTrafficUrl: rwsTrafficUrl,
+    loadWidgetManifest: loadWidgetManifest,
+    widgetKinds: widgetKinds,
+    widgetDefaultWidth: widgetDefaultWidth,
+    escapeHtml: escapeHtml,
+    t: t,
+    clampNumber: clampNumber,
+    bridge: bridge,
+    bridgeError: bridgeError,
     clickHandler: clickHandler,
     promptPassword: promptPassword,
     loadFont: loadFont,

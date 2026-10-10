@@ -26,22 +26,7 @@ var DashticzLayoutEditor = (function () {
   // Timegraph/TV Guide additions for the pattern) touches this one array
   // instead of two separately hand-duplicated `item.kind === 'x' || ...`
   // chains.
-  var REFERENCE_BASED_SPECIAL_KINDS = [
-    'separator',
-    'html',
-    'iframe',
-    'calendar',
-    'publictransport',
-    'timegraph',
-    'xmltvguide',
-    'lms',
-    'group',
-    'cluster',
-    'camera',
-    'news',
-    'graph',
-    'f1',
-  ];
+  var REFERENCE_BASED_SPECIAL_KINDS = DT_function.widgetKinds('referenceBased');
   var active = false;
   var items = [];
   var itemById = {};
@@ -1352,6 +1337,36 @@ var DashticzLayoutEditor = (function () {
       return {
         definition: definition,
         kind: 'camera',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && definition.fullymode === 'charge') {
+      // Repeatable Fully Kiosk block (js/deviceeditor.js's
+      // _showFullykioskPopup()), dispatched purely on fullymode
+      // (js/components/fullykiosk.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'fullykiosk',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && typeof definition.tvgids === 'string' && definition.tvgids) {
+      // Repeatable TVgids block (js/deviceeditor.js's _showTvgidsPopup()),
+      // dispatched purely on a truthy tvgids channel list
+      // (js/components/tvgids.js's canHandle()), like the F1 check below.
+      return {
+        definition: definition,
+        kind: 'tvgids',
         reference: key,
         widgetId: null,
         idx: null,

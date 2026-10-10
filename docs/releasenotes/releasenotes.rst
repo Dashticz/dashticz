@@ -1,6 +1,84 @@
 Release Notes
 =============
 
+v4.1.4 (5-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Traffic and Traffic info fetch the RWS feed through a new cached bridge
+  (``vendor/dashticz/rws/index.php``) when PHP is the CORS proxy, so several
+  widgets share one download.
+- Traffic info shows an error message when the feed cannot be loaded.
+- New Fully Kiosk widget (Widgets menu, multiple per screen), based on the
+  domoticz_fullykiosk plugin: the battery percentage of a tablet, the
+  percentage at which its charger is switched next and a switch for the
+  charger. Optional automatic charge control with random start and stop
+  percentages, a hard minimum and maximum and a 16 hour backup; the battery is
+  read through the new bridge ``vendor/dashticz/fullykiosk/index.php``. The
+  other devices of the plugin (charging state, screen, screensaver, motion sensor, brightness
+  and load start URL) can be added as extra rows (the battery row can be hidden), each with its own switch in
+  the settings.
+
+* **Fixes**
+
+- F1 times follow the browser time zone, unless ``f1utcoffset`` is set.
+- The F1, TVgids, PostNL and HP iLO widgets no longer fetch twice when they
+  are mounted.
+- PostNL escapes the error message returned by the server.
+- The F1, HP iLO and PostNL caches are written atomically; the TVgids and F1
+  bridges keep serving stale data when the source is down.
+- The PostNL, HP iLO and TVgids status colours, and the F1 and TVgids lists on
+  grid screens, now follow the shared ``--dt-ok/info/warn/error`` tokens and
+  one list-widget layout rule.
+
+* **Code**
+
+- New helpers ``DT_function.escapeHtml``, ``t``, ``clampNumber``, ``bridge``
+  and ``bridgeError``, and ``dashticz_cached_json()`` in
+  ``vendor/dashticz/security.php``.
+- New widget manifest ``js/widgets.json``, read by the Device Editor, the
+  Layout Editor and ``saveblocks.php``.
+- The F1 and TVgids sections of the Device Editor use shared settings-table
+  functions.
+- The unused ``radars`` option of Traffic info is removed.
+- ``_DASHTICZ_VERSION`` raised to 194.
+
+v4.1.3 (1-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Traffic info can show selected roads as well as everything within a
+  distance (#1321). ``filter: 'roads'`` shows only the roads in ``road``, for
+  example ``'A4, A17'``, in that order and with at most ``results``
+  announcements per road; ``showemptyroads`` also lists a road without
+  announcements. Everything can be set in the Traffic information Widget
+  Config.
+
+* **Fixes**
+
+- Traffic info: a dash inside a place name (``'s-Hertogenbosch``) no longer
+  splits the direction text, and a delay or length of 0 is no longer shown.
+- The server-side caches of the F1, HP iLO and PostNL widgets were written to
+  ``vendor/custom/cache`` instead of ``custom/cache``, where git did not
+  ignore them and a browser could download them. They are now written to
+  ``custom/cache``, and the misplaced files are removed.
+- ``custom/cache`` is closed to browsers: Dashticz writes a deny-all
+  ``.htaccess`` there (Apache), and the Docker nginx configuration blocks
+  ``/custom/cache/`` and ``/vendor/custom/``.
+- The name of the PostNL cache file, which holds a refresh token, can no
+  longer be derived from the e-mail address.
+
+* **Code**
+
+- New ``dashticz_cache_dir()`` in ``vendor/dashticz/security.php``, used by
+  the F1, HP iLO, PostNL and XMLTV proxies.
+- The F1 section of the Device Editor (``js/deviceeditor.js``) is built from
+  one settings table instead of separate functions per field; the fields and
+  the saved block are unchanged.
+- ``_DASHTICZ_VERSION`` raised to 192.
+
 v4.1.2 (29-9-2026)
 ----------------------
 

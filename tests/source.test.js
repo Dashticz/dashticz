@@ -7,6 +7,19 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 
+// The kinds that are found by their reference in the Layout Editor come from
+// js/widgets.json (flag referenceBased).
+function assertReferenceBasedKind(layoutEditor, kind) {
+  assert.match(
+    layoutEditor,
+    /var REFERENCE_BASED_SPECIAL_KINDS = DT_function\.widgetKinds\('referenceBased'\);/
+  );
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(root, 'js/widgets.json'), 'utf8')
+  );
+  assert.equal(manifest.kinds[kind].referenceBased, true);
+}
+
 // These tests verify source tokens and ordering, not a particular formatter's
 // line wrapping. Make their regular expressions insensitive to whitespace so
 // a clean Prettier pass cannot invalidate otherwise unchanged behavior. Text
@@ -5293,10 +5306,7 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   // added to that one array to get both the cog control and correct
   // config routing - see also 'Group block gets the Layout Editor
   // config...' below, which checks the same array for 'group'.
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'lms'[\s\S]{0,400}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'lms');
   assert.match(
     layoutEditor,
     /isConfigurable =[\s\S]{0,300}?REFERENCE_BASED_SPECIAL_KINDS\.indexOf\(item\.kind\) > -1/
@@ -5846,10 +5856,7 @@ test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blo
   // shared REFERENCE_BASED_SPECIAL_KINDS array (see the LMS test above,
   // which checks the array declaration and both call sites) - here it
   // only needs to be re-checked for 'group' itself.
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'group'[\s\S]{0,150}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'group');
 });
 
 test('Cluster block gets its own Layout Editor config (cog) control and renders individually-switchable rows', () => {
@@ -5881,10 +5888,7 @@ test('Cluster block gets its own Layout Editor config (cog) control and renders 
     /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'cluster'/
   );
   assert.match(layoutEditor, /kind: 'cluster',/);
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'cluster'[\s\S]{0,150}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'cluster');
 
   // js/deviceeditor.js's own _specialFromReference() recognizes the same
   // type: 'cluster' shape, and the quick-add popup exists.
@@ -6411,10 +6415,7 @@ test('rendered Graph blocks keep the Layout Editor config cog and open their own
     /\(!definition\.type \|\| definition\.type === key\) &&\s*\n\s*Array\.isArray\(definition\.devices\)/
   );
   assert.match(layoutEditor, /kind: 'graph',/);
-  assert.match(
-    layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,500}?'graph'[\s\S]{0,50}?\];/
-  );
+  assertReferenceBasedKind(layoutEditor, 'graph');
 
   // Clicking that cog routes through Device Editor. It must accept the same
   // key-as-type artifact so openLayoutConfig(reference) resolves the exact
@@ -7256,10 +7257,12 @@ test('Trafficinfo widget is RWS-only - no provider choice, no ANWB/Custom code p
   assert.doesNotMatch(trafficinfo, /_buildCustomDataPart/);
   assert.match(
     trafficinfo,
-    /canHandle: function \(block\) \{\s*\n\s*return block && \(block\.trafficJams \|\| block\.roadWorks \|\| block\.radars\);/
+    /canHandle: function \(block\) \{\s*\n\s*return block && \(block\.trafficJams \|\| block\.roadWorks\);/
   );
+  // The data comes from the cached bridge (vendor/dashticz/rws/index.php).
+  assert.match(trafficinfo, /DT_function\.rwsTrafficUrl\(\)/);
   assert.match(
-    trafficinfo,
+    fs.readFileSync(path.join(root, 'vendor/dashticz/rws/index.php'), 'utf8'),
     /'https:\/\/api\.rwsverkeersinfo\.nl\/api\/traffic\/'/
   );
   // obstructionType 1 = roadworks, 4 = jam (Rijkswaterstaat's own schema).
@@ -7303,9 +7306,10 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   // number field - not raw rows in the generic "Extra fields" editor.
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'trafficJams',/);
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'roadWorks',/);
-  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'radars',/);
+  // The RWS API has no radar category: no toggle for it.
+  assert.doesNotMatch(widgetEditor, /_cfgField\(\s*\n\s*'radars',/);
   assert.match(widgetEditor, /_cfgField\(\s*\n\s*'results',/);
-  for (const key of ['trafficJams', 'roadWorks', 'radars']) {
+  for (const key of ['trafficJams', 'roadWorks']) {
     const field = widgetEditor.slice(
       widgetEditor.indexOf(`_cfgField(\n        '${key}',`)
     );
@@ -7313,7 +7317,7 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   }
   assert.match(
     widgetEditor,
-    /<div class="we-switch-grid we-switch-grid-three">[\s\S]*?'trafficJams',[\s\S]*?'roadWorks',[\s\S]*?'radars',[\s\S]*?fields \+= '<\/div>';/
+    /<div class="we-switch-grid we-switch-grid-three">[\s\S]*?'trafficJams',[\s\S]*?'roadWorks',[\s\S]*?fields \+= '<\/div>';/
   );
   assert.match(
     fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8'),
@@ -7321,7 +7325,7 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   );
   assert.match(
     widgetEditor,
-    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*radars: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*\},/
+    /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,[\s\S]{0,200}?radars: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*filter: true,\s*\n\s*road: true,\s*\n\s*showemptyroads: true,\s*\n\s*\},/
   );
 
   // Defaults: 5 results, 40km max distance shown in the field and used
@@ -7347,14 +7351,14 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
       hydrationMatches ? hydrationMatches.length : 0
     }`
   );
-  assert.match(widgetEditor, /\['radars', 1\],/);
+  assert.doesNotMatch(widgetEditor, /\['radars', 1\],/);
 
   // The saved payload entry carries trafficJams/roadWorks/radars/results/
   // maxDistance directly (like publictransport's own provider) - no
   // entry.provider/customUrl anywhere.
   assert.match(widgetEditor, /entry\.trafficJams = Number\(/);
   assert.match(widgetEditor, /entry\.roadWorks = Number\(/);
-  assert.match(widgetEditor, /entry\.radars = Number\(/);
+  assert.doesNotMatch(widgetEditor, /entry\.radars = Number\(/);
   assert.match(
     widgetEditor,
     /entry\.results = parseInt\(trcfg\.results, 10\) \|\| 5;/
@@ -7397,7 +7401,7 @@ test('savewidgets.php: trafficinfo save bug - the request handler had no case re
   );
   assert.match(extractBlock, /\$widget\['trafficJams'\]/);
   assert.match(extractBlock, /\$widget\['roadWorks'\]/);
-  assert.match(extractBlock, /\$widget\['radars'\]/);
+  assert.doesNotMatch(extractBlock, /\$widget\['radars'\]/);
   assert.match(
     extractBlock,
     /\$widget\['results'\] = max\(1, min\(500, \$results\)\);/
@@ -7418,7 +7422,7 @@ test('savewidgets.php: trafficinfo save bug - the request handler had no case re
     /\$props\['trafficJams'\] = \$widget\['trafficJams'\];/
   );
   assert.match(caseBlock, /\$props\['roadWorks'\] = \$widget\['roadWorks'\];/);
-  assert.match(caseBlock, /\$props\['radars'\] = \$widget\['radars'\];/);
+  assert.doesNotMatch(caseBlock, /\$props\['radars'\]/);
   assert.match(caseBlock, /\$props\['results'\] = \$widget\['results'\];/);
   assert.match(
     caseBlock,
@@ -7457,13 +7461,28 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
   const ctx = loadTrafficInfoModule();
 
   // Amsterdam Dam Square to Utrecht Dom: actually about 35.7km straight-line.
-  const km = ctx._distanceKm(52.373, 4.8925, 52.0908, 5.1214);
+  const km = ctx.DT_trafficinfo.internals._distanceKm(
+    52.373,
+    4.8925,
+    52.0908,
+    5.1214
+  );
   assert.ok(km > 34 && km < 37, `expected ~35.7km, got ${km}`);
 
   // No maxDistance configured -> filter inactive, everything kept.
-  assert.equal(ctx._hasDistanceFilter({ latitude: 52, longitude: 5 }), false);
   assert.equal(
-    ctx._isWithinDistance({ latitude: 52, longitude: 5 }, 60, 10),
+    ctx.DT_trafficinfo.internals._hasDistanceFilter({
+      latitude: 52,
+      longitude: 5,
+    }),
+    false
+  );
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(
+      { latitude: 52, longitude: 5 },
+      60,
+      10
+    ),
     true
   );
 
@@ -7472,7 +7491,7 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
   // from going silently empty if _rwsCoords ever guesses a wrong field name
   // for live RWS data.
   assert.equal(
-    ctx._isWithinDistance(
+    ctx.DT_trafficinfo.internals._isWithinDistance(
       { latitude: 52, longitude: 5, maxDistance: 10 },
       NaN,
       NaN
@@ -7482,8 +7501,14 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
 
   // Within range vs out of range.
   const near = { latitude: 52.373, longitude: 4.8925, maxDistance: 10 };
-  assert.equal(ctx._isWithinDistance(near, 52.38, 4.9), true);
-  assert.equal(ctx._isWithinDistance(near, 52.09, 5.12), false);
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(near, 52.38, 4.9),
+    true
+  );
+  assert.equal(
+    ctx.DT_trafficinfo.internals._isWithinDistance(near, 52.09, 5.12),
+    false
+  );
 
   // _rwsCoords reads the confirmed flat latitude/longitude fields (verified
   // against a live obstruction object).
@@ -7493,11 +7518,14 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
     assert.equal(coords.lon, expectedLon);
   }
   assertCoords(
-    ctx._rwsCoords({ latitude: '52.1', longitude: '5.2' }),
+    ctx.DT_trafficinfo.internals._rwsCoords({
+      latitude: '52.1',
+      longitude: '5.2',
+    }),
     52.1,
     5.2
   );
-  assert.equal(ctx._rwsCoords({}), null);
+  assert.equal(ctx.DT_trafficinfo.internals._rwsCoords({}), null);
 
   // End-to-end through _buildRWSDataPart: a far-away jam is filtered out, a
   // nearby one stays, and one with no coordinates at all is never hidden.
@@ -7511,7 +7539,7 @@ test('Trafficinfo distance filter: haversine math, fail-open behaviour, and RWS 
       maxDistance: 10,
     },
   };
-  const result = ctx._buildRWSDataPart(me, {
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(me, {
     obstructions: [
       {
         obstructionType: 4,
@@ -7564,6 +7592,258 @@ test("Trafficinfo defaultCfg falls back to Domoticz's own location, block overri
   assert.equal(withOverride.latitude, 51.5);
   assert.equal(withOverride.longitude, 4.5);
   assert.equal(withOverride.maxDistance, 25);
+});
+
+// Issue #1321: traffic info for selected roads (the 3.x `road` option) as a
+// second filter next to the distance filter.
+function loadTrafficInfoWithRender() {
+  const ctx = loadTrafficInfoModule();
+  ctx.rendered = '';
+  ctx.$ = () => ({
+    html(value) {
+      ctx.rendered = value;
+    },
+    append(value) {
+      ctx.rendered += value;
+    },
+  });
+  return ctx;
+}
+
+const trafficRoadData = {
+  obstructions: [
+    {
+      obstructionType: 4,
+      roadNumber: 'A17',
+      latitude: 51.5,
+      longitude: 4.5,
+      directionText: 'Moerdijk - Rotterdam',
+      locationText: 'Tussen Klaaswaal en Rotterdam.',
+      cause: 'Door een ongeval',
+      delay: 12,
+      length: 3000,
+    },
+    {
+      obstructionType: 4,
+      roadNumber: 'A4',
+      latitude: 53.5,
+      longitude: 6.5,
+      directionText: 'Amsterdam - Den Haag',
+      locationText: 'Eerste melding A4.',
+    },
+    {
+      obstructionType: 1,
+      roadNumber: 'A4',
+      directionText: 'Den Haag - Amsterdam',
+      locationText: 'Tweede melding A4.',
+    },
+    {
+      obstructionType: 4,
+      roadNumber: 'A2',
+      directionText: 'Utrecht - Amsterdam',
+      locationText: 'Melding <b>A2</b>.',
+    },
+  ],
+};
+
+test('Trafficinfo road filter: road list parsing and filter selection (#1321)', () => {
+  const ctx = loadTrafficInfoModule();
+  // Commas or semicolons, any spacing/case, duplicates removed, order kept.
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(' a4, A17;a 4 ,n201 ')),
+    ['A4', 'A17', 'N201']
+  );
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(['A4', 'a17'])),
+    ['A4', 'A17']
+  );
+  assert.deepEqual(
+    Array.from(ctx.DT_trafficinfo.internals._parseRoads(undefined)),
+    []
+  );
+
+  // A hand-written 3.x block with a road list and no filter keeps filtering
+  // on its roads; an explicit filter always wins; default is distance.
+  assert.equal(ctx.DT_trafficinfo.defaultCfg({ road: 'A4' }).filter, 'roads');
+  assert.equal(
+    ctx.DT_trafficinfo.defaultCfg({ road: 'A4', filter: 'distance' }).filter,
+    'distance'
+  );
+  assert.equal(ctx.DT_trafficinfo.defaultCfg({}).filter, 'distance');
+});
+
+test('Trafficinfo road filter: only the selected roads, in their order, per-road limit, empty roads (#1321)', () => {
+  const ctx = loadTrafficInfoWithRender();
+  const me = {
+    mountPoint: '#test',
+    block: {
+      filter: 'roads',
+      road: 'A17, A4, A12',
+      trafficJams: true,
+      roadWorks: true,
+      results: 1,
+      showemptyroads: true,
+      // Far away from every obstruction: the distance filter must not apply
+      // in roads mode.
+      latitude: 0,
+      longitude: 0,
+      maxDistance: 1,
+    },
+  };
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
+    me,
+    trafficRoadData
+  );
+  assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A4']);
+  assert.ok(!result.dataPart.A2, 'roads that are not selected are left out');
+  assert.equal(result.dataPart.A4.length, 2);
+  assert.ok(
+    result.dataPart.A17.join('').includes('Door een ongeval'),
+    'the cause is shown'
+  );
+
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
+  const html = ctx.rendered;
+  // Configured order: A17 before A4 before A12.
+  assert.ok(html.indexOf('A17') < html.indexOf('>A4<'));
+  assert.ok(html.indexOf('>A4<') < html.indexOf('>A12<'));
+  // results is a per-road limit in roads mode.
+  assert.ok(html.includes('Eerste melding A4.'));
+  assert.ok(!html.includes('Tweede melding A4.'));
+  // showemptyroads lists a selected road without announcements once.
+  assert.equal(html.split('>A12<').length - 1, 1);
+  assert.ok(html.includes('No traffic announcements'));
+
+  // A custom empty-road text is used as such.
+  me.block.showemptyroads = 'Rustig';
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
+  assert.ok(ctx.rendered.includes('Rustig'));
+});
+
+test('Trafficinfo distance mode: road list ignored, total limit, RWS text escaped (#1321)', () => {
+  const ctx = loadTrafficInfoWithRender();
+  const me = {
+    mountPoint: '#test',
+    block: {
+      filter: 'distance',
+      road: 'A17',
+      trafficJams: true,
+      roadWorks: true,
+      results: 2,
+    },
+  };
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
+    me,
+    trafficRoadData
+  );
+  assert.deepEqual(Object.keys(result.dataPart).sort(), ['A17', 'A2', 'A4']);
+  ctx.DT_trafficinfo.internals._renderTrafficInfo(
+    me,
+    result.dataPart,
+    result.noData,
+    result.roadArray
+  );
+  // Road-number order (A2, A4, A17) with 2 announcements in total.
+  assert.ok(ctx.rendered.includes('Melding &lt;b&gt;A2&lt;/b&gt;.'));
+  assert.ok(ctx.rendered.includes('Eerste melding A4.'));
+  assert.ok(!ctx.rendered.includes('Tweede melding A4.'));
+  assert.ok(!ctx.rendered.includes('Klaaswaal'));
+});
+
+test('Trafficinfo announcement text: direction with a hyphenated place name, no zero delay/length', () => {
+  const ctx = loadTrafficInfoModule();
+  const result = ctx.DT_trafficinfo.internals._buildRWSDataPart(
+    { block: { filter: 'roads', road: 'A2', roadWorks: true, results: 5 } },
+    {
+      obstructions: [
+        {
+          obstructionType: 1,
+          roadNumber: 'A2',
+          directionText: "Utrecht - 's-Hertogenbosch",
+          delay: 0,
+          length: 0,
+          locationText: 'Rijstrook dicht.',
+        },
+      ],
+    }
+  );
+  const html = result.dataPart.A2.join('');
+  assert.ok(html.includes('Utrecht</b><b> - &#39;s-Hertogenbosch'));
+  assert.ok(!html.includes('0.0km'));
+  assert.ok(!html.includes('+ 0min'));
+});
+
+test('Trafficinfo Widget Config and save: Distance/Roads filter, road list and empty roads (#1321)', () => {
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'filter',/);
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'road',/);
+  assert.match(widgetEditor, /_cfgField\(\s*\n\s*'showemptyroads',/);
+  assert.match(widgetEditor, /data-traffic-filter="roads"/);
+  assert.match(widgetEditor, /data-traffic-filter="distance"/);
+  assert.match(widgetEditor, /\$cfgModal\.on\('change', '#we-cfg-filter'/);
+  // Both scan paths (column and grid screens) read the filter back.
+  assert.equal(
+    (widgetEditor.match(/_hydrateTrafficRoadFilter\(definition\);/g) || [])
+      .length,
+    2
+  );
+  assert.match(
+    widgetEditor,
+    /entry\.filter = trcfg\.filter === 'roads' \? 'roads' : 'distance';/
+  );
+
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const extractStart = savewidgets.indexOf("if (\$id === 'trafficinfo') {");
+  const extractBlock = savewidgets.slice(
+    extractStart,
+    savewidgets.indexOf("if (\$id === 'camera') {", extractStart)
+  );
+  assert.match(extractBlock, /\$widget\['filter'\]/);
+  assert.match(extractBlock, /\$widget\['road'\] = \$road;/);
+  assert.match(extractBlock, /\$widget\['showemptyroads'\]/);
+  const caseStart = savewidgets.indexOf("case 'trafficinfo':");
+  const caseBlock = savewidgets.slice(
+    caseStart,
+    savewidgets.indexOf('break;', caseStart)
+  );
+  assert.match(caseBlock, /\$props\['filter'\] = \$widget\['filter'\];/);
+  assert.match(caseBlock, /\$props\['road'\] = \$widget\['road'\];/);
+  assert.match(
+    caseBlock,
+    /\$props\['showemptyroads'\] = \$widget\['showemptyroads'\];/
+  );
+
+  for (const file of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', file + '.json'), 'utf8')
+    );
+    for (const key of [
+      'traffic_filter',
+      'traffic_filter_distance',
+      'traffic_filter_roads',
+      'traffic_roads',
+      'traffic_roads_help',
+      'traffic_showemptyroads',
+    ]) {
+      assert.ok(lang.settings.widgets[key], file + ' ' + key);
+    }
+  }
 });
 
 test('Traffic info translations: no ANWB/provider keys left, jams/roadworks/results/distance keys exist', () => {
@@ -7702,4 +7982,424 @@ test('HP iLO rows can each get their own icon, chosen in the widget config', () 
   // Server side: known rows and Font Awesome class names only.
   assert.match(save, /'hpilo_icons'\s*=> 'hpilo_icons',/);
   assert.match(save, /\$type === 'hpilo_icons'/);
+});
+
+function loadTvgidsModule() {
+  const source = fs.readFileSync(
+    path.join(root, 'js/components/tvgids.js'),
+    'utf8'
+  );
+  const context = {
+    language: { misc: { tvgids_empty: 'No more programmes today.' } },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(source, context);
+  return context.DT_tvgids;
+}
+
+test('TVgids block: dispatched on its channel list, columns follow the block width', () => {
+  const tvgids = loadTvgidsModule();
+  assert.equal(tvgids.canHandle({ tvgids: 'npo_1,rtl_4' }), true);
+  assert.equal(tvgids.canHandle({ tvgids: '' }), false);
+  // The old tvguide (block.channels) and XMLTV (xmltvurl) blocks stay theirs.
+  assert.equal(tvgids.canHandle({ channels: [1, 2] }), false);
+
+  const now = 1000000;
+  const programme = (start, end, title) => ({
+    start: now + start * 60,
+    end: now + end * 60,
+    title,
+  });
+  const channels = [
+    {
+      id: 'npo_1',
+      name: 'NPO 1',
+      programmes: [
+        programme(-90, -30, 'Finished'),
+        programme(-30, 20, 'On air'),
+        programme(20, 60, 'Next <b>'),
+        programme(60, 90, 'Later'),
+      ],
+    },
+    {
+      id: 'rtl_4',
+      name: 'RTL 4',
+      error: 'Unable to fetch the TV guide of rtl_4.',
+    },
+  ];
+
+  let html = tvgids.channelsHtml(
+    { tvgids: 'npo_1,rtl_4', tvgidsmaxitems: 2, tvgidscolumnwidth: 300 },
+    channels,
+    now
+  );
+  assert.match(html, /repeat\(auto-fill, minmax\(min\(100%, 300px\), 1fr\)\)/);
+  assert.match(html, /src="img\/custom\/tvgids\/npo_1\.png"/);
+  assert.doesNotMatch(html, /Finished/);
+  assert.match(html, /tvgids-item tvgids-now">.*On air/);
+  assert.match(html, /Next &lt;b&gt;/);
+  assert.doesNotMatch(html, /Later/); // tvgidsmaxitems: 2
+  assert.match(html, /tvgids-error">Unable to fetch the TV guide of rtl_4\./);
+
+  // Finished programmes on request; 0 = the rest of the day.
+  html = tvgids.channelsHtml(
+    { tvgidsshowpast: true, tvgidsmaxitems: 0 },
+    channels.slice(0, 1),
+    now
+  );
+  assert.match(html, /tvgids-item tvgids-past">.*Finished/);
+  assert.match(html, /Later/);
+
+  html = tvgids.channelsHtml(
+    { tvgidshidelogo: true },
+    channels.slice(0, 1),
+    now
+  );
+  assert.doesNotMatch(html, /tvgids-logo/);
+  assert.match(html, /<span class="tvgids-name">NPO 1<\/span>/);
+});
+
+test('TVgids is a repeatable Widgets card with a logo picker in the Device Editor', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assert.match(widgets, /html \+= _tvgidsWidgetCardHtml\(\);/);
+  assert.equal(
+    (widgets.match(/=== 'tvgids'\) \{\s*_openTvgidsFromWidgets\(\);/g) || [])
+      .length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openTvgids\(\);/);
+  assert.match(editor, /openTvgids: openTvgids,/);
+  assert.match(editor, /tvgids: 'tvgids_',/);
+  assert.match(editor, /kind = 'tvgids';/);
+  assert.match(
+    editor,
+    /if \(isTvgidsBlock\)\s*html \+= _tvgidsFieldsHtml\('de-config', tvgidsValues\);/
+  );
+  assert.match(
+    editor,
+    /if \(isTvgidsBlock\) _wireTvgidsFields\('de-config', \$popup\);/
+  );
+  assert.match(editor, /'tvgids\/channels\.json'/);
+  assert.match(editor, /t\['tvgids_group_' \+ group\.group\]/);
+  assert.match(layout, /kind: 'tvgids',/);
+  assert.match(dashticz, /'f1',\s*'tvgids',/);
+  assert.match(save, /\$kind === 'tvgids'/);
+  assert.match(writer, /\$kind === 'tvgids'/);
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const group of ['algemeen', 'overig', 'regionaal', 'sport', 'films']) {
+      assert.ok(de[`tvgids_group_${group}`], `${locale} tvgids_group_${group}`);
+    }
+    for (const key of [
+      'tvgids_block',
+      'tvgids_block_channels',
+      'invalid_tvgids_block_channels',
+      'tvgids_block_maxitems',
+      'tvgids_block_columnwidth',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.tvgids_title,
+      `${locale} tvgids_title`
+    );
+    assert.ok(lang.misc.tvgids_error, `${locale} tvgids_error`);
+  }
+});
+
+test('TVgids channel list: five groups, every channel with its own logo', () => {
+  const groups = JSON.parse(
+    fs.readFileSync(
+      path.join(root, 'vendor/dashticz/tvgids/channels.json'),
+      'utf8'
+    )
+  );
+  assert.deepEqual(
+    groups.map((group) => group.group),
+    ['algemeen', 'overig', 'regionaal', 'sport', 'films']
+  );
+  const ids = groups.flatMap((group) => group.channels.map((c) => c.id));
+  assert.equal(new Set(ids).size, ids.length);
+  for (const id of ids) {
+    assert.match(id, /^[a-z0-9_]{1,40}$/);
+    assert.ok(
+      fs.existsSync(path.join(root, `img/custom/tvgids/${id}.png`)),
+      `logo of ${id}`
+    );
+  }
+  // No logos of channels that are not offered.
+  const logos = fs
+    .readdirSync(path.join(root, 'img/custom/tvgids'))
+    .map((file) => file.replace(/\.png$/, ''));
+  assert.deepEqual(logos.sort(), [...ids].sort());
+  // img/custom/.gitignore ignores everything else in img/custom, so the
+  // logos must be excepted explicitly or a commit leaves them out.
+  const ignored = spawnSync(
+    'git',
+    ['check-ignore', '--no-index', 'img/custom/tvgids/npo_1.png'],
+    { cwd: root, encoding: 'utf8' }
+  );
+  assert.equal(ignored.status, 1, 'img/custom/tvgids/*.png is git-ignored');
+});
+
+function loadFullykioskModule() {
+  const context = {
+    language: { misc: {} },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/fullykiosk.js'), 'utf8'),
+    context
+  );
+  return context.DT_fullykiosk;
+}
+
+test('Fully Kiosk block: dispatched on its mode, percentages kept in order', () => {
+  const fully = loadFullykioskModule();
+  assert.equal(fully.canHandle({ fullymode: 'charge' }), true);
+  assert.equal(fully.canHandle({ fullymode: '' }), false);
+  assert.equal(fully.canHandle({ tvgids: 'npo_1' }), false);
+  assert.deepEqual(JSON.parse(JSON.stringify(fully.limits({}))), {
+    startmin: 25,
+    startmax: 30,
+    stopmin: 80,
+    stopmax: 90,
+    hardmin: 15,
+    hardmax: 95,
+  });
+  const swapped = fully.limits({ fullystartmin: 40, fullystartmax: 20 });
+  assert.equal(swapped.startmin, 20);
+  assert.equal(swapped.startmax, 40);
+  // Both ends of a range can be picked, like random.randint.
+  assert.equal(
+    fully.randomBetween(80, 90, () => 0),
+    80
+  );
+  assert.equal(
+    fully.randomBetween(80, 90, () => 0.999999),
+    90
+  );
+});
+
+test('Fully Kiosk charge control follows the domoticz_fullykiosk plugin', () => {
+  const fully = loadFullykioskModule();
+  const lim = fully.limits({});
+  const targets = { start: 27, stop: 85 };
+  const decide = (battery, charger, random) =>
+    JSON.parse(
+      JSON.stringify(
+        fully.decide(battery, charger, targets, lim, random || (() => 0))
+      )
+    );
+
+  // Between the percentages nothing is switched.
+  assert.equal(decide(50, 'Off').command, null);
+  assert.equal(decide(50, 'On').command, null);
+  // Starts at the start percentage and picks both percentages again.
+  let result = decide(27, 'Off');
+  assert.equal(result.command, 'On');
+  assert.deepEqual(result.targets, { start: 25, stop: 80 });
+  // Always starts at the hard minimum, whatever the start percentage.
+  result = decide(15, 'Off');
+  assert.equal(result.command, 'On');
+  // Stops at the stop percentage and only picks a new start percentage.
+  result = decide(85, 'On', () => 0.999999);
+  assert.equal(result.command, 'Off');
+  assert.deepEqual(result.targets, { start: 30, stop: 85 });
+  // Always stops at the hard maximum and when full.
+  assert.equal(decide(95, 'On').command, 'Off');
+  assert.equal(decide(100, 'On').command, 'Off');
+  // A charger that is already in the right state is left alone.
+  assert.equal(decide(10, 'On').command, null);
+  assert.equal(decide(96, 'Off').command, null);
+  // The next switch percentage depends on the state of the charger.
+  assert.equal(fully.nextSwitchPercentage('On', targets), 85);
+  assert.equal(fully.nextSwitchPercentage('Off', targets), 27);
+});
+
+test('Fully Kiosk is a repeatable Widgets card with its own settings table', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assertReferenceBasedKind(layout, 'fullykiosk');
+  assert.match(widgets, /html \+= _fullykioskWidgetCardHtml\(\);/);
+  assert.equal(
+    (
+      widgets.match(
+        /=== 'fullykiosk'\) \{\s*_openFullykioskFromWidgets\(\);/g
+      ) || []
+    ).length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openFullykiosk\(\);/);
+  assert.match(editor, /openFullykiosk: openFullykiosk,/);
+  assert.match(editor, /fullykiosk: 'fullykiosk_',/);
+  assert.match(editor, /kind = 'fullykiosk';/);
+  assert.match(
+    editor,
+    /if \(isFullyBlock\) html \+= _fullyFieldsHtml\('de-config', fullyValues\);/
+  );
+  assert.match(layout, /kind: 'fullykiosk',/);
+  assert.match(dashticz, /'tvgids',\s*'fullykiosk',/);
+  assert.match(save, /\$kind === 'fullykiosk'/);
+  assert.match(writer, /\$kind === 'fullykiosk'/);
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const key of [
+      'fully_block',
+      'fully_block_host',
+      'fully_block_switch',
+      'fully_block_auto',
+      'fully_block_startmin',
+      'fully_block_stopmax',
+      'invalid_fully_block_host',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.fullykiosk_title,
+      `${locale} fullykiosk_title`
+    );
+    assert.ok(lang.misc.fullykiosk_battery, `${locale} fullykiosk_battery`);
+  }
+});
+
+test('Fully Kiosk block renders its rows: switches in column 1, data in column 2', () => {
+  let html = '';
+  const classes = {};
+  const chain = {
+    css: () => chain,
+    html: (value) => {
+      html = value;
+      return chain;
+    },
+    find: () => chain,
+    on: () => chain,
+    toggleClass: (name, state) => {
+      classes[name] = state;
+      return chain;
+    },
+  };
+  // Domoticz is a global of the dashboard.
+  const context = {
+    language: { misc: {} },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+    Domoticz: {
+      getAllDevices: () => ({ 123: { Status: 'Off' } }),
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/fullykiosk.js'), 'utf8'),
+    context
+  );
+  const me = {
+    key: 'k',
+    block: {
+      fullymode: 'charge',
+      fullyswitch: '123',
+      fullyshowscreen: true,
+      fullyshowcharging: true,
+      fullyshowbrightness: true,
+      fullyshowloadurl: true,
+    },
+    $mountPoint: chain,
+    battery: 49,
+    info: { brightness: 14, plugged: false, screenOn: true },
+    targets: { start: 27, stop: 85 },
+  };
+  context.DT_fullykiosk.render(me);
+  assert.match(html, /fullykiosk-battery/);
+  assert.match(html, /49 %/);
+  assert.match(html, /Starts charging at.*27 %/);
+  // Every row has the control column and the data column.
+  const rows = html.match(/class="fullykiosk-row /g) || [];
+  // The charger button spans the battery and next switch rows (one group).
+  assert.equal(rows.length, 5);
+  assert.match(html, /fullykiosk-group/);
+  assert.equal((html.match(/class="fullykiosk-control"/g) || []).length, 5);
+  assert.equal((html.match(/class="fullykiosk-data[ "]/g) || []).length, 6);
+  // The charger is a power button in column 1, with no Charging line; the
+  // next switch percentage is the data of that row. No sliders.
+  assert.match(html, /data-action="charger"/);
+  assert.doesNotMatch(html, />Charging</);
+  assert.match(html, /Starts charging at/);
+  // The brightness is a dimmer slider, without minus and plus buttons.
+  assert.match(html, /type="range" class="fullykiosk-brightness-input"/);
+  assert.doesNotMatch(html, /data-step|fa-minus|fa-plus/);
+  assert.match(html, /data-action="loadurl"/);
+  // The tile icon follows the charger switch (Off here).
+  assert.deepEqual(classes, { on: false, off: true });
+  // The battery row can be switched off.
+  me.block.fullyshowbattery = false;
+  context.DT_fullykiosk.render(me);
+  assert.doesNotMatch(html, /fullykiosk-battery/);
+});
+
+test('LMS and Fully Kiosk share the .dt-btn button style of creative.css', () => {
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const lmsCss = fs.readFileSync(
+    path.join(root, 'js/components/lms.css'),
+    'utf8'
+  );
+  const lms = fs.readFileSync(path.join(root, 'js/components/lms.js'), 'utf8');
+  const fully = fs.readFileSync(
+    path.join(root, 'js/components/fullykiosk.js'),
+    'utf8'
+  );
+  assert.match(css, /\n\.dt-btn \{/);
+  assert.match(css, /\n\.dt-btn\.on \{/);
+  // The look lives in one place; lms.css only sets the size.
+  assert.doesNotMatch(lmsCss, /background:/);
+  assert.match(lms, /transbg hover dt-btn lms-btn/);
+  assert.match(fully, /transbg hover dt-btn fullykiosk-btn/);
+  // The Fully Kiosk widget does not depend on LMS.
+  assert.doesNotMatch(fully, /lms\.css|lms-btn/);
 });
