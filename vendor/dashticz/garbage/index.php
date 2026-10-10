@@ -1,6 +1,8 @@
 <?php
 
-header("Access-Control-Allow-Origin: *");
+require_once(__DIR__ . '/../security.php');
+
+dashticz_require_same_origin();
 header('Content-Type: application/json');
 
 $messages = array(); 
@@ -140,13 +142,19 @@ function curlWebMatch($url, $regexp) {
 }
 
 
+// A request parameter, encoded for use in a URL or form body of a provider,
+// so that a value cannot add or replace parameters of the provider request.
+function dz_param($name) {
+	return rawurlencode(isset($_GET[$name]) ? (string) $_GET[$name] : '');
+}
+
 function getCalendar() {
 	global $cookies;
 
 	$allDates=array();
-	$zipCode = $_GET['zipcode'];
-	$houseNr = $_GET['nr'];
-	$houseNrSuf = $_GET['t'];
+	$zipCode = dz_param('zipcode');
+	$houseNr = dz_param('nr');
+	$houseNrSuf = dz_param('t');
 	$sub = $_GET['sub'];
 	$service = $_GET['service'];
 /*	$zipCode = '7091xh';
@@ -202,7 +210,7 @@ function getCalendar() {
 			}
 			break;	
 		case 'mijnafvalwijzer': 
-			$url = 'http://json.mijnafvalwijzer.nl/?method=postcodecheck&postcode='.$_GET['zipcode'].'&street=&huisnummer='.$_GET['nr'].'&toevoeging='.$_GET['t'];
+			$url = 'http://json.mijnafvalwijzer.nl/?method=postcodecheck&postcode='.dz_param('zipcode').'&street=&huisnummer='.dz_param('nr').'&toevoeging='.dz_param('t');
 			$return = fileGetJson($url);
 			$return = $return['data']['ophaaldagen']['data'];
 			foreach($return as $row){
@@ -214,7 +222,7 @@ function getCalendar() {
 			
 			break;	
 		case 'hvc': 
-			$url = 'http://inzamelkalender.hvcgroep.nl/push/calendar?postcode='.$_GET['zipcode'].'&huisnummer='.$_GET['nr'];
+			$url = 'http://inzamelkalender.hvcgroep.nl/push/calendar?postcode='.dz_param('zipcode').'&huisnummer='.dz_param('nr');
 			$return = fileGetJson($url);
 			foreach($return as $row){
 				$title = $row['naam'];
@@ -227,7 +235,7 @@ function getCalendar() {
 			}
 			break;
 		case 'edg': 
-			$url = 'https://www.edg.de/JsonHandler.ashx?dates=1&street='.$_GET['street'].'&nr='.$_GET['nr'].'&cmd=findtrash&tbio=0&tpapier=1&trest=1&twert=1&feiertag=0';
+			$url = 'https://www.edg.de/JsonHandler.ashx?dates=1&street='.dz_param('street').'&nr='.dz_param('nr').'&cmd=findtrash&tbio=0&tpapier=1&trest=1&twert=1&feiertag=0';
 			$return = fileGetJson($url);
 
 			foreach($return['data'] as $item) {
@@ -309,7 +317,7 @@ function getCalendar() {
 				}
 			}
 			
-			$url = $baseUrl.'/rest/adressen/'.$_GET['zipcode'].'-'.$_GET['nr'];
+			$url = $baseUrl.'/rest/adressen/'.dz_param('zipcode').'-'.dz_param('nr');
 			$return = fileGetJson($url);
 			if( empty($return[0]['bagId'])){
 				$return = '';
@@ -390,7 +398,7 @@ function getCalendar() {
 			$headers = [
 				'x-consumer: recycleapp.be',
 			];
-			$data=curlWebJson($url."zipcodes?q=".$_GET['zipcode'],$headers);
+			$data=curlWebJson($url."zipcodes?q=".dz_param('zipcode'),$headers);
 
 //			print_r ($data);
 
@@ -407,7 +415,7 @@ function getCalendar() {
 			$startDate=date("Y-m-d");
 			$endDate=date("Y-m-d",time()+28*24*60*60);
 			//Now finally get the collection info
-			$urltmp = $url."collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
+			$urltmp = $url."collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".dz_param('nr')."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
 			$data=curlWebJson($urltmp, $headers);
 //			print_r($data);
 
@@ -422,7 +430,7 @@ function getCalendar() {
 		break;
 		case 'circulusberkel':
 			$url = 'https://mijn.circulus.nl/register/zipcode.json';
-			$data = 'authenticityToken=1e1d2d435e5214dcdf453b31aba2f9d1fc5bb7a1&zipCode='.$_GET['zipcode'].'&number='.$_GET['nr'];
+			$data = 'authenticityToken=1e1d2d435e5214dcdf453b31aba2f9d1fc5bb7a1&zipCode='.dz_param('zipcode').'&number='.dz_param('nr');
 //			var_dump($url);
 //			var_dump($data);
 			$res=curlPost($url, $data);
