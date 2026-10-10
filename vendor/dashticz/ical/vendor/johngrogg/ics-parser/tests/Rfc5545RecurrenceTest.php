@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * The following tests are based on the event recurrence examples given
- * in the RFC5545 iCal specification (https://tools.ietf.org/html/rfc5545,
+ * in the RFC5545 iCal specification (https://datatracker.ietf.org/doc/html/rfc5545,
  * pages 123 to 132).
  *
  * Whilst this might not catch edge-cases, it does give a basic set of
@@ -44,7 +44,7 @@ use PHPUnit\Framework\TestCase;
  *   have been similarly commented out and annotated with a ticket number
  *   (if one exists).
  */
-class rfc5545RecurrenceExamplesTest extends TestCase
+class Rfc5545RecurrenceTest extends TestCase
 {
     // phpcs:disable Generic.Arrays.DisallowLongArraySyntax
     // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
@@ -53,12 +53,18 @@ class rfc5545RecurrenceExamplesTest extends TestCase
 
     private $originalTimeZone = null;
 
-    public function setUp()
+    /**
+     * @before
+     */
+    public function setUpFixtures()
     {
         $this->originalTimeZone = date_default_timezone_get();
     }
 
-    public function tearDown()
+    /**
+     * @after
+     */
+    public function tearDownFixtures()
     {
         date_default_timezone_set($this->originalTimeZone);
     }
@@ -95,6 +101,25 @@ class rfc5545RecurrenceExamplesTest extends TestCase
             array(
                 'DTSTART;TZID=America/New_York:19970902T090000',
                 'RRULE:FREQ=DAILY;UNTIL=19971224T000000Z',
+            ),
+            113,
+            $checks
+        );
+    }
+
+    // Page 123, Test 3 :: Daily, until December 24th, with trailing semicolon
+    public function test_page123_test3()
+    {
+        $checks = array(
+            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
+            array('index' => 1, 'dateString' => '19970903T090000', 'message' => '2nd occurrence: '),
+            array('index' => 2, 'dateString' => '19970904T090000', 'message' => '3rd occurrence: '),
+        );
+        $this->assertVEVENT(
+            'America/New_York',
+            array(
+                'DTSTART;TZID=America/New_York:19970902T090000',
+                'RRULE:FREQ=DAILY;UNTIL=19971224T000000Z;',
             ),
             113,
             $checks
@@ -160,27 +185,27 @@ class rfc5545RecurrenceExamplesTest extends TestCase
         );
     }
 
-/*  Requires support for BYMONTH under DAILY [No ticket]
- *
-    // Page 124, Test 3b :: Every January day, for 3 years (Variant B)
-    public function test_page124_test3b()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19980101T090000', 'message' => '1st occurrence: '),
-            array('index' => 1, 'dateString' => '19980102T090000', 'message' => '2nd occurrence: '),
-            array('index' => 2, 'dateString' => '19980103T090000', 'message' => '3rd occurrence: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19980101T090000',
-                'RRULE:FREQ=DAILY;UNTIL=20000131T140000Z;BYMONTH=1',
-            ),
-            93,
-            $checks
-        );
-    }
-*/
+    /*  Requires support for BYMONTH under DAILY [No ticket]
+     *
+        // Page 124, Test 3b :: Every January day, for 3 years (Variant B)
+        public function test_page124_test3b()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19980101T090000', 'message' => '1st occurrence: '),
+                array('index' => 1, 'dateString' => '19980102T090000', 'message' => '2nd occurrence: '),
+                array('index' => 2, 'dateString' => '19980103T090000', 'message' => '3rd occurrence: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19980101T090000',
+                    'RRULE:FREQ=DAILY;UNTIL=20000131T140000Z;BYMONTH=1',
+                ),
+                93,
+                $checks
+            );
+        }
+    */
 
     // Page 124, Test 4 :: Weekly, 10 occurrences
     public function test_page124_test4()
@@ -651,32 +676,32 @@ class rfc5545RecurrenceExamplesTest extends TestCase
         );
     }
 
-/*  Requires support for BYMONTHDAY and BYDAY in the same MONTHLY RRULE [No ticket]
- *
-    // Page 129, Test 4 :: Every Friday 13th, forever
-    //
-    // COUNT rule does not exist in original example.
-    public function test_page129_test4()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19980213T090000', 'message' => '1st occurrence: '),
-            array('index' => 1, 'dateString' => '19980313T090000', 'message' => '2nd occurrence: '),
-            array('index' => 2, 'dateString' => '19981113T090000', 'message' => '3rd occurrence: '),
-            array('index' => 3, 'dateString' => '19990813T090000', 'message' => '4th occurrence: '),
-            array('index' => 4, 'dateString' => '20001013T090000', 'message' => '5th occurrence: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'EXDATE;TZID=America/New_York:19970902T090000',
-                'RRULE:FREQ=MONTHLY;BYDAY=FR;BYMONTHDAY=13;COUNT=5',
-            ),
-            5,
-            $checks
-        );
-    }
-*/
+    /*  Requires support for BYMONTHDAY and BYDAY in the same MONTHLY RRULE [No ticket]
+     *
+        // Page 129, Test 4 :: Every Friday 13th, forever
+        //
+        // COUNT rule does not exist in original example.
+        public function test_page129_test4()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19980213T090000', 'message' => '1st occurrence: '),
+                array('index' => 1, 'dateString' => '19980313T090000', 'message' => '2nd occurrence: '),
+                array('index' => 2, 'dateString' => '19981113T090000', 'message' => '3rd occurrence: '),
+                array('index' => 3, 'dateString' => '19990813T090000', 'message' => '4th occurrence: '),
+                array('index' => 4, 'dateString' => '20001013T090000', 'message' => '5th occurrence: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'EXDATE;TZID=America/New_York:19970902T090000',
+                    'RRULE:FREQ=MONTHLY;BYDAY=FR;BYMONTHDAY=13;COUNT=5',
+                ),
+                5,
+                $checks
+            );
+        }
+    */
 
     // Page 130, Test 1 :: The first Saturday that follows the first Sunday of the month, forever:
     //
@@ -761,131 +786,131 @@ class rfc5545RecurrenceExamplesTest extends TestCase
         );
     }
 
-/*  Requires support of HOURLY frequency [#101]
- *
-    // Page 131, Test 1 :: Every 3 hours from 09:00 to 17:00 on a specific day
-    public function test_page131_test1()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
-            array('index' => 1, 'dateString' => '19970902T120000', 'message' => '2nd occurrence: '),
-            array('index' => 2, 'dateString' => '19970902T150000', 'message' => '3rd occurrence: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T170000Z',
-            ),
-            3,
-            $checks
-        );
-    }
-*/
+    /*  Requires support of HOURLY frequency [#101]
+     *
+        // Page 131, Test 1 :: Every 3 hours from 09:00 to 17:00 on a specific day
+        public function test_page131_test1()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
+                array('index' => 1, 'dateString' => '19970902T120000', 'message' => '2nd occurrence: '),
+                array('index' => 2, 'dateString' => '19970902T150000', 'message' => '3rd occurrence: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T170000Z',
+                ),
+                3,
+                $checks
+            );
+        }
+    */
 
-/*  Requires support of MINUTELY frequency [#101]
- *
-    // Page 131, Test 2 :: Every 15 minutes for 6 occurrences
-    public function test_page131_test2()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
-            array('index' => 1, 'dateString' => '19970902T091500', 'message' => '2nd occurrence: '),
-            array('index' => 2, 'dateString' => '19970902T093000', 'message' => '3rd occurrence: '),
-            array('index' => 3, 'dateString' => '19970902T094500', 'message' => '4th occurrence: '),
-            array('index' => 4, 'dateString' => '19970902T100000', 'message' => '5th occurrence: '),
-            array('index' => 5, 'dateString' => '19970902T101500', 'message' => '6th occurrence: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'RRULE:FREQ=MINUTELY;INTERVAL=15;COUNT=6',
-            ),
-            6,
-            $checks
-        );
-    }
-*/
+    /*  Requires support of MINUTELY frequency [#101]
+     *
+        // Page 131, Test 2 :: Every 15 minutes for 6 occurrences
+        public function test_page131_test2()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
+                array('index' => 1, 'dateString' => '19970902T091500', 'message' => '2nd occurrence: '),
+                array('index' => 2, 'dateString' => '19970902T093000', 'message' => '3rd occurrence: '),
+                array('index' => 3, 'dateString' => '19970902T094500', 'message' => '4th occurrence: '),
+                array('index' => 4, 'dateString' => '19970902T100000', 'message' => '5th occurrence: '),
+                array('index' => 5, 'dateString' => '19970902T101500', 'message' => '6th occurrence: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'RRULE:FREQ=MINUTELY;INTERVAL=15;COUNT=6',
+                ),
+                6,
+                $checks
+            );
+        }
+    */
 
-/*  Requires support of MINUTELY frequency [#101]
- *
-    // Page 131, Test 3 :: Every hour and a half for 4 occurrences
-    public function test_page131_test3()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
-            array('index' => 1, 'dateString' => '19970902T103000', 'message' => '2nd occurrence: '),
-            array('index' => 2, 'dateString' => '19970902T120000', 'message' => '3rd occurrence: '),
-            array('index' => 3, 'dateString' => '19970902T133000', 'message' => '4th occurrence: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'RRULE:FREQ=MINUTELY;INTERVAL=90;COUNT=4',
-            ),
-            4,
-            $checks
-        );
-    }
-*/
+    /*  Requires support of MINUTELY frequency [#101]
+     *
+        // Page 131, Test 3 :: Every hour and a half for 4 occurrences
+        public function test_page131_test3()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence: '),
+                array('index' => 1, 'dateString' => '19970902T103000', 'message' => '2nd occurrence: '),
+                array('index' => 2, 'dateString' => '19970902T120000', 'message' => '3rd occurrence: '),
+                array('index' => 3, 'dateString' => '19970902T133000', 'message' => '4th occurrence: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'RRULE:FREQ=MINUTELY;INTERVAL=90;COUNT=4',
+                ),
+                4,
+                $checks
+            );
+        }
+    */
 
-/*  Requires support of BYHOUR and BYMINUTE under DAILY [#11]
- *
-    // Page 131, Test 4a :: Every 20 minutes from 9:00 to 16:40 every day, using DAILY
-    //
-    // UNTIL rule does not exist in original example
-    public function test_page131_test4a()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence, Day 1: '),
-            array('index' => 1, 'dateString' => '19970902T092000', 'message' => '2nd occurrence, Day 1: '),
-            array('index' => 2, 'dateString' => '19970902T094000', 'message' => '3rd occurrence, Day 1: '),
-            array('index' => 3, 'dateString' => '19970902T100000', 'message' => '4th occurrence, Day 1: '),
-            array('index' => 20, 'dateString' => '19970902T164000', 'message' => 'Last occurrence, Day 1: '),
-            array('index' => 21, 'dateString' => '19970903T090000', 'message' => '1st occurrence, Day 2: '),
-            array('index' => 41, 'dateString' => '19970903T164000', 'message' => 'Last occurrence, Day 2: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'RRULE:FREQ=DAILY;BYHOUR=9,10,11,12,13,14,15,16;BYMINUTE=0,20,40;UNTIL=19970904T000000Z',
-            ),
-            42,
-            $checks
-        );
-    }
-*/
+    /*  Requires support of BYHOUR and BYMINUTE under DAILY [#11]
+     *
+        // Page 131, Test 4a :: Every 20 minutes from 9:00 to 16:40 every day, using DAILY
+        //
+        // UNTIL rule does not exist in original example
+        public function test_page131_test4a()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence, Day 1: '),
+                array('index' => 1, 'dateString' => '19970902T092000', 'message' => '2nd occurrence, Day 1: '),
+                array('index' => 2, 'dateString' => '19970902T094000', 'message' => '3rd occurrence, Day 1: '),
+                array('index' => 3, 'dateString' => '19970902T100000', 'message' => '4th occurrence, Day 1: '),
+                array('index' => 20, 'dateString' => '19970902T164000', 'message' => 'Last occurrence, Day 1: '),
+                array('index' => 21, 'dateString' => '19970903T090000', 'message' => '1st occurrence, Day 2: '),
+                array('index' => 41, 'dateString' => '19970903T164000', 'message' => 'Last occurrence, Day 2: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'RRULE:FREQ=DAILY;BYHOUR=9,10,11,12,13,14,15,16;BYMINUTE=0,20,40;UNTIL=19970904T000000Z',
+                ),
+                42,
+                $checks
+            );
+        }
+    */
 
-/*  Requires support of MINUTELY frequency [#101]
- *
-    // Page 131, Test 4b :: Every 20 minutes from 9:00 to 16:40 every day, using MINUTELY
-    //
-    // UNTIL rule does not exist in original example
-    public function test_page131_test4b()
-    {
-        $checks = array(
-            array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence, Day 1: '),
-            array('index' => 1, 'dateString' => '19970902T092000', 'message' => '2nd occurrence, Day 1: '),
-            array('index' => 2, 'dateString' => '19970902T094000', 'message' => '3rd occurrence, Day 1: '),
-            array('index' => 3, 'dateString' => '19970902T100000', 'message' => '4th occurrence, Day 1: '),
-            array('index' => 20, 'dateString' => '19970902T164000', 'message' => 'Last occurrence, Day 1: '),
-            array('index' => 21, 'dateString' => '19970903T090000', 'message' => '1st occurrence, Day 2: '),
-            array('index' => 41, 'dateString' => '19970903T164000', 'message' => 'Last occurrence, Day 2: '),
-        );
-        $this->assertVEVENT(
-            'America/New_York',
-            array(
-                'DTSTART;TZID=America/New_York:19970902T090000',
-                'RRULE:FREQ=MINUTELY;INTERVAL=20;BYHOUR=9,10,11,12,13,14,15,16;UNTIL=19970904T000000Z',
-            ),
-            42,
-            $checks
-        );
-    }
-*/
+    /*  Requires support of MINUTELY frequency [#101]
+     *
+        // Page 131, Test 4b :: Every 20 minutes from 9:00 to 16:40 every day, using MINUTELY
+        //
+        // UNTIL rule does not exist in original example
+        public function test_page131_test4b()
+        {
+            $checks = array(
+                array('index' => 0, 'dateString' => '19970902T090000', 'message' => '1st occurrence, Day 1: '),
+                array('index' => 1, 'dateString' => '19970902T092000', 'message' => '2nd occurrence, Day 1: '),
+                array('index' => 2, 'dateString' => '19970902T094000', 'message' => '3rd occurrence, Day 1: '),
+                array('index' => 3, 'dateString' => '19970902T100000', 'message' => '4th occurrence, Day 1: '),
+                array('index' => 20, 'dateString' => '19970902T164000', 'message' => 'Last occurrence, Day 1: '),
+                array('index' => 21, 'dateString' => '19970903T090000', 'message' => '1st occurrence, Day 2: '),
+                array('index' => 41, 'dateString' => '19970903T164000', 'message' => 'Last occurrence, Day 2: '),
+            );
+            $this->assertVEVENT(
+                'America/New_York',
+                array(
+                    'DTSTART;TZID=America/New_York:19970902T090000',
+                    'RRULE:FREQ=MINUTELY;INTERVAL=20;BYHOUR=9,10,11,12,13,14,15,16;UNTIL=19970904T000000Z',
+                ),
+                42,
+                $checks
+            );
+        }
+    */
 
     // Page 131, Test 5a :: Changing the passed WKST rule, before...
     public function test_page131_test5a()
@@ -948,9 +973,9 @@ class rfc5545RecurrenceExamplesTest extends TestCase
         );
     }
 
-    public function assertVEVENT($defaultTimezone, $veventParts, $count, $checks)
+    public function assertVEVENT($defaultTimeZone, $veventParts, $count, $checks)
     {
-        $options = $this->getOptions($defaultTimezone);
+        $options = $this->getOptions($defaultTimeZone);
 
         $testIcal  = implode(PHP_EOL, $this->getIcalHeader());
         $testIcal .= PHP_EOL;
@@ -966,7 +991,7 @@ class rfc5545RecurrenceExamplesTest extends TestCase
         $this->assertCount($count, $events);
 
         foreach ($checks as $check) {
-            $this->assertEvent($events[$check['index']], $check['dateString'], $check['message'], isset($check['timezone']) ? $check['timezone'] : $defaultTimezone);
+            $this->assertEvent($events[$check['index']], $check['dateString'], $check['message'], isset($check['timezone']) ? $check['timezone'] : $defaultTimeZone);
         }
     }
 
@@ -978,19 +1003,20 @@ class rfc5545RecurrenceExamplesTest extends TestCase
 
         $expectedTimeStamp = strtotime($expectedDateString);
 
-        $this->assertEquals($expectedTimeStamp, $event->dtstart_array[2], $message . 'timestamp mismatch (expected ' . $expectedDateString . ' vs actual ' . $event->dtstart . ')');
-        $this->assertAttributeEquals($expectedDateString, 'dtstart', $event, $message . 'dtstart mismatch (timestamp is okay)');
+        $this->assertSame($expectedTimeStamp, $event->dtstart_array[2], $message . 'timestamp mismatch (expected ' . $expectedDateString . ' vs actual ' . $event->dtstart . ')');
+        $this->assertSame($expectedDateString, $event->dtstart, $message . 'dtstart mismatch (timestamp is okay)');
     }
 
-    public function getOptions($defaultTimezone)
+    public function getOptions($defaultTimeZone)
     {
         $options = array(
             'defaultSpan'                 => 2,                // Default value: 2
-            'defaultTimeZone'             => $defaultTimezone, // Default value: UTC
+            'defaultTimeZone'             => $defaultTimeZone, // Default value: UTC
             'defaultWeekStart'            => 'MO',             // Default value
             'disableCharacterReplacement' => false,            // Default value
             'filterDaysAfter'             => null,             // Default value
             'filterDaysBefore'            => null,             // Default value
+            'httpUserAgent'               => null,             // Default value
             'skipRecurrence'              => false,            // Default value
         );
 
