@@ -150,3 +150,22 @@ test('a Weather Info block is written with its mode and settings', () => {
   assert.match(line, /width:4/);
   assert.doesNotMatch(line, /type:/);
 });
+
+// Block keys and property names come from the editors. Plain names keep the
+// existing output, anything else must not be able to end the string or the
+// object literal of the generated CONFIG.js line.
+test('block lines keep plain names and quote hostile keys', () => {
+  assert.equal(
+    runPhp(
+      `echo configwriter_emit_block_line('weather_1', ['width' => 6, 'title' => 'T']);`
+    ),
+    "blocks['weather_1'] = {width:6, title:'T'};\n"
+  );
+  const hostile = runPhp(
+    `echo configwriter_emit_block_line("x'] = alert(1); blocks['y", ['a:1}); alert(2); ({b' => 1]);`
+  );
+  assert.equal(
+    hostile,
+    `blocks['x\\'] = alert(1); blocks[\\'y'] = {"a:1}); alert(2); ({b":1};\n`
+  );
+});

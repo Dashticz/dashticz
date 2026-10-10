@@ -613,6 +613,11 @@ function configwriter_format_props($props)
         if ($value === null) {
             continue;
         }
+        // Plain identifiers stay unquoted (the existing output); anything else
+        // becomes a quoted JSON string so a key can never end the object literal.
+        $key = preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', (string)$key)
+            ? (string)$key
+            : json_encode((string)$key, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (is_bool($value)) {
             $parts[] = $key . ':' . ($value ? 'true' : 'false');
             continue;
@@ -655,7 +660,7 @@ function configwriter_restore_editor_value($value, $depth = 0)
 
 function configwriter_emit_block_line($key, $props)
 {
-    return "blocks['" . $key . "'] = " . configwriter_format_props($props) . ";\n";
+    return "blocks['" . configwriter_js_string_escape((string)$key) . "'] = " . configwriter_format_props($props) . ";\n";
 }
 
 function configwriter_emit_column_line($key, $blockKeys, $width)
@@ -1199,7 +1204,7 @@ function configwriter_build_layout_section($blockLines, $items, $screenNumber = 
         }
         $ref = $item['ref'];
         if (isset($blockLines[$ref]) && !isset($usedRefs[$ref])) {
-            $section .= "blocks['" . $ref . "'] = " . $blockLines[$ref] . "\n";
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = " . $blockLines[$ref] . "\n";
             $usedRefs[$ref] = true;
         }
     }
@@ -1259,7 +1264,7 @@ function configwriter_build_standby_layout_section($blockLines, $items, $width =
         $ref = $item['ref'];
         $blockKeys[] = $ref;
         if (isset($blockLines[$ref]) && !isset($usedRefs[$ref])) {
-            $section .= "blocks['" . $ref . "'] = " . $blockLines[$ref] . "\n";
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = " . $blockLines[$ref] . "\n";
             $usedRefs[$ref] = true;
         }
     }
@@ -1367,9 +1372,9 @@ function configwriter_build_grid_layout_section(
         );
         $inlineGrid = configwriter_format_props($position);
         if (isset($item['propsLiteral']) && is_string($item['propsLiteral'])) {
-            $section .= "blocks['" . $ref . "'] = "
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = "
                 . $item['propsLiteral'] . ";\n";
-            $section .= "blocks['" . $ref . "']['grid'] = "
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "']['grid'] = "
                 . $inlineGrid . ";\n";
         } elseif (isset($item['props']) && is_array($item['props'])) {
             $props = $item['props'];
