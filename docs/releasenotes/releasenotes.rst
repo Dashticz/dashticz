@@ -1,6 +1,44 @@
 Release Notes
 =============
 
+v4.1.6 (7-10-2026)
+----------------------
+
+* **Fixes**
+
+- Weather Info now gets all its data from one source, Buienradar: the current
+  weather (temperature, description, icon and wind) comes from the nearest
+  Buienradar weather station instead of Open-Meteo, so it no longer
+  contradicts the rain radar. A value the nearest station does not measure
+  comes from the next nearest one; within 75 km.
+- The Weather Info icon and description follow the rain status: while
+  Buienradar reports rain right now and the station still reports a dry sky
+  (clear, cloudy or fog), the icon becomes a rain cloud and the description
+  light rain, rain or heavy rain by intensity. Snow and thunderstorm are kept.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 203.
+
+v4.1.5 (6-10-2026)
+----------------------
+
+* **Enhancements**
+
+- New Weather Info widget (Widgets menu, multiple per screen), based on the
+  domoticz_weatherinfo plugin: the Buienradar rain forecast (raining now, rain
+  expected, rain expected at a time or dry for now) and the current weather of
+  Open-Meteo (temperature, description, wind and a weather icon). The options
+  of the plugin are settings of the widget: the location (empty = the location
+  of Domoticz), the poll interval, the language (Dutch or English) and the
+  parts of the text (each shown or hidden, in the order you drag them). An extra row can show the current rain intensity in
+  mm/h, and the weather icons are animated (or the plugin's emoji). Both feeds are read through the new bridge
+  ``vendor/dashticz/weatherinfo/index.php``.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 202.
+
 v4.1.4 (5-10-2026)
 ----------------------
 
@@ -43,6 +81,11 @@ v4.1.4 (5-10-2026)
   functions.
 - The unused ``radars`` option of Traffic info is removed.
 - ``_DASHTICZ_VERSION`` raised to 194.
+- Faster Playwright CI jobs: 4 parallel workers against a PHP test server with
+  4 workers (``PHP_CLI_SERVER_WORKERS``), the browser jobs no longer wait for
+  the quality job, the downloaded browsers are cached, and
+  ``tests/domoticzblock.spec.js`` waits for the loader instead of a fixed
+  second.
 
 v4.1.3 (1-10-2026)
 ----------------------

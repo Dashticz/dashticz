@@ -84,7 +84,6 @@ jobs:
   browsers:
     name: Playwright ${{ matrix.browser }}
     runs-on: ubuntu-latest
-    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -102,10 +101,21 @@ jobs:
           coverage: none
       - run: npm ci
       - run: npm run build
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.browser }}
       - name: Start PHP test server
+        # PHP's built-in server handles one request at a time unless it gets
+        # workers; the parallel Playwright workers would queue behind it.
         run: |
-          php -S 127.0.0.1:8082 -t . > php-server.log 2>&1 &
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8082 -t . > php-server.log 2>&1 &
           for attempt in {1..30}; do
             curl --fail --silent http://127.0.0.1:8082/ >/dev/null && exit 0
             sleep 1

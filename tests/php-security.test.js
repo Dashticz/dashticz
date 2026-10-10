@@ -732,6 +732,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
       'f1',
       'tvgids',
       'fullykiosk',
+      'weatherinfo',
     ].sort(
       (a, b) =>
         Object.keys(manifest.kinds).indexOf(a) -
@@ -1527,4 +1528,107 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
   assert.match(source, /Cache-Control: no-store/);
   assert.match(source, /dashticz_normalize_host_input\(/);
   assert.match(source, /CURLOPT_FOLLOWLOCATION => false/);
+});
+
+/* The Weather Info bridge (vendor/dashticz/weatherinfo/weatherinfo.php) parses
+   the two Buienradar feeds of the domoticz_weatherinfo plugin. */
+test('Weather Info bridge validates the location and parses both feeds', () => {
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const rain = '077|12:00\r\n000|12:05\r\nfoo|12:10\r\n255|12:15\r\n';
+  const feed = JSON.stringify({
+    actual: {
+      stationmeasurements: [
+        {
+          stationname: 'Meetstation Schiphol',
+          lat: 52.3,
+          lon: 4.77,
+          iconurl: 'https://x.nl/image/weather-icons/cc.png',
+          weatherdescription: 'Zwaar bewolkt',
+          temperature: 19.7,
+          windspeedBft: 3,
+          winddirectiondegrees: 310,
+        },
+        {
+          stationname: 'Meetstation Zonder',
+          lat: 52.4,
+          lon: 4.8,
+          iconurl: 'https://x.nl/image/weather-icons/bad.png',
+          weatherdescription: 'Bewolkt',
+        },
+        { stationname: 'Geen positie' },
+      ],
+    },
+  });
+  const script =
+    `require '${dir}/weatherinfo/weatherinfo.php';` +
+    ` echo json_encode(array(` +
+    `dashticz_weatherinfo_coordinate('52,3712', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('91', -90, 90),` +
+    `dashticz_weatherinfo_coordinate('abc', -180, 180),` +
+    `dashticz_weatherinfo_parse_rain(${JSON.stringify(rain)}),` +
+    `dashticz_weatherinfo_pick(dashticz_weatherinfo_parse_stations(${JSON.stringify(feed)}), 52.35, 4.78),` +
+    `dashticz_weatherinfo_pick(dashticz_weatherinfo_parse_stations(${JSON.stringify(feed)}), 52.45, 4.8)));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), [
+    '52.37',
+    null,
+    null,
+    null,
+    [
+      [77, '12:00'],
+      [0, '12:05'],
+      [255, '12:15'],
+    ],
+    {
+      station: 'Schiphol',
+      distance: 6,
+      icon: 'cc',
+      description: 'Zwaar bewolkt',
+      isDay: false,
+      temperature: 19.7,
+      windBft: 3,
+      windDirection: 310,
+    },
+    {
+      station: 'Zonder',
+      distance: 6,
+      icon: '',
+      description: 'Bewolkt',
+      temperature: 19.7,
+      windBft: 3,
+      windDirection: 310,
+    },
+  ]);
+  for (const bad of [
+    "dashticz_weatherinfo_parse_rain('nothing here')",
+    "dashticz_weatherinfo_parse_stations('{}')",
+    "dashticz_weatherinfo_pick(array(array('name' => 'x', 'lat' => 0, 'lon' => 0, 'icon' => '', 'description' => '')), 52, 5)",
+  ]) {
+    const failed = spawnSync(
+      'php',
+      ['-r', `require '${dir}/weatherinfo/weatherinfo.php'; ${bad};`],
+      { encoding: 'utf8' }
+    );
+    assert.notEqual(failed.status, 0, bad);
+  }
+});
+
+test('Weather Info bridge only downloads the two Buienradar feeds of the plugin', () => {
+  const index = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/weatherinfo/index.php'),
+    'utf8'
+  );
+  const helpers = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/weatherinfo/weatherinfo.php'),
+    'utf8'
+  );
+  assert.match(index, /dashticz_require_same_origin\(\)/);
+  assert.match(helpers, /gpsgadget\.buienradar\.nl\/data\/raintext/);
+  assert.match(helpers, /data\.buienradar\.nl\/2\.0\/feed\/json/);
+  assert.match(helpers, /dashticz_fetch_remote\(/);
+  assert.match(helpers, /dashticz_cached_json\(/);
+  // The request only supplies numbers, never a URL.
+  assert.doesNotMatch(index, /\$input\['url'\]/);
 });

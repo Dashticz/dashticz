@@ -1360,6 +1360,21 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && definition.wimode === 'forecast') {
+      // Repeatable Weather Info block (js/deviceeditor.js's
+      // _showWeatherinfoPopup()), dispatched purely on wimode
+      // (js/components/weatherinfo.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'weatherinfo',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && typeof definition.tvgids === 'string' && definition.tvgids) {
       // Repeatable TVgids block (js/deviceeditor.js's _showTvgidsPopup()),
       // dispatched purely on a truthy tvgids channel list
