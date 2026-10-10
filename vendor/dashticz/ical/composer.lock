@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bbd42b7edc9d1e4ac51493eac46c07ed",
+    "content-hash": "62043c1594362b9328fb868ac99f4077",
     "packages": [
         {
             "name": "johngrogg/ics-parser",
@@ -63,32 +63,34 @@
         },
         {
             "name": "om/icalparser",
-            "version": "v1.0.1",
+            "version": "v5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/OzzyCzech/icalparser.git",
-                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948"
+                "reference": "0d35a7e7ffa583c4ec69411731a19ec2adca88ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e180dea8447c9e78f92306f892f809d5f5ad2948",
-                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948",
+                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/0d35a7e7ffa583c4ec69411731a19ec2adca88ed",
+                "reference": "0d35a7e7ffa583c4ec69411731a19ec2adca88ed",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2.0"
+                "php": "^8.4"
             },
             "require-dev": {
-                "nette/tester": "*"
+                "friendsofphp/php-cs-fixer": "^3",
+                "nette/tester": "^2.6.1",
+                "phpstan/phpstan": "^2.1"
             },
             "suggest": {
                 "ext-dom": "for timezone tool"
             },
             "type": "library",
             "autoload": {
-                "classmap": [
-                    "src/"
-                ]
+                "psr-4": {
+                    "om\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -97,24 +99,29 @@
             "authors": [
                 {
                     "name": "Roman Ožana",
-                    "email": "roman@omdesign.cz"
+                    "email": "roman@ozana.cz"
                 }
             ],
-            "description": "Simple ical parser",
+            "description": "Simple iCal parser",
             "keywords": [
                 "calendar",
                 "ical",
                 "parser"
             ],
-            "time": "2020-09-21T09:20:40+00:00"
+            "support": {
+                "issues": "https://github.com/OzzyCzech/icalparser/issues",
+                "source": "https://github.com/OzzyCzech/icalparser/tree/v5.0.0"
+            },
+            "time": "2026-09-29T07:23:47+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }
