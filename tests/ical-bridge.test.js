@@ -73,12 +73,11 @@ function runBridge(url, method) {
 }
 
 /* Method 0 is the legacy SG_iCal parser: it is only checked for the first
-   occurrence (its recurrence expansion differs) and, on PHP 8.1+, reports
-   deprecations in "_errors". Methods 1
+   occurrence (its recurrence expansion differs). Methods 1
    (om/icalparser) and 2 (johngrogg/ics-parser, the vendored copy kept up to
    date with Composer) expand the series and honour the inclusive UNTIL.
-   Method 2 must not put PHP warnings into the JSON (method 1 reports a
-   harmless "Timezone ID 'Z'" warning for UTC times). */
+   Methods 0 and 2 must not put PHP warnings or deprecations into the JSON
+   (method 1 reports a harmless "Timezone ID 'Z'" warning for UTC times). */
 test('ical bridge returns the events of every parser method', async () => {
   const server = await serveIcs();
   try {
@@ -105,8 +104,8 @@ test('ical bridge returns the events of every parser method', async () => {
       } else {
         assert.deepEqual(starts, weekly, `method ${method} occurrences`);
       }
-      if (method === 2) {
-        assert.deepEqual(events._errors || [], [], 'method 2 _errors');
+      if (method !== 1) {
+        assert.deepEqual(events._errors || [], [], `method ${method} _errors`);
       }
     }
   } finally {
