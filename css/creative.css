@@ -23,6 +23,12 @@
   --text-inactive: rgba(255, 255, 255, 0.5);
   --warning-red: red;
   --success-green: green;
+  /* Status colours of the widgets (PostNL, HP iLO, TVgids, F1); a theme can
+     override them. */
+  --dt-ok: #2e9e5b;
+  --dt-info: #3a86d8;
+  --dt-warn: #e0a800;
+  --dt-error: #d9534f;
   --selector-bg: #292b2c;
   --blocktitle: rgba(0, 0, 0, 0.5);
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
@@ -3096,6 +3102,26 @@ h6.de-section-title .fas {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Device Config / F1 quick-add -> F1 section (js/deviceeditor.js
+   _f1FieldsHtml()): two columns, one on a phone; image and calendar URLs
+   span both. */
+.de-f1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-f1-grid > .de-f1-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-f1-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Widget Config -> Settings (js/widgeteditor.js _buildConfigModalHtml()):
    one shared two-column grid for every widget's own fields, one column on a
    phone. Headings, help paragraphs, lists, add buttons and the existing
@@ -3106,6 +3132,7 @@ h6.de-section-title .fas {
 .we-settings-grid > .we-weather-group,
 .we-settings-grid > .we-clock-group,
 .we-settings-grid > .we-clock-size-group,
+.we-settings-grid > .we-traffic-group,
 .we-row-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3147,6 +3174,7 @@ h6.de-section-title .fas {
   .we-settings-grid > .we-weather-group,
   .we-settings-grid > .we-clock-group,
   .we-settings-grid > .we-clock-size-group,
+  .we-settings-grid > .we-traffic-group,
   .we-row-fields {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -5028,11 +5056,11 @@ img.icon {
 }
 
 .postnl-icon-in {
-  color: #2e9e5b;
+  color: var(--dt-ok);
 }
 
 .postnl-icon-out {
-  color: #3a86d8;
+  color: var(--dt-info);
 }
 
 .postnl-row-delivered {
@@ -5098,7 +5126,7 @@ img.icon {
   font-size: 1em;
   line-height: 1;
   text-align: center;
-  color: #3a86d8;
+  color: var(--dt-info);
 }
 
 .hpilo-label {
@@ -5114,11 +5142,11 @@ img.icon {
 }
 
 .hpilo-warning .hpilo-value {
-  color: #e0a800;
+  color: var(--dt-warn);
 }
 
 .hpilo-critical .hpilo-value {
-  color: #d9534f;
+  color: var(--dt-error);
 }
 
 .hpilo-error {
@@ -8777,6 +8805,14 @@ canvas {
   opacity: 0.5;
 }
 
+.f1-error {
+  color: var(--dt-error);
+}
+
+.f1-empty {
+  opacity: 0.8;
+}
+
 .f1-next {
   display: flex;
   align-items: center;
@@ -8792,15 +8828,224 @@ canvas {
   object-fit: contain;
 }
 
-/* Grid screens: cap the F1 tile at its row's height and clip the excess, like
-   .frame/.waqi/.log above - min-height alone lets a tile with more rows than
-   fit grow past its row, and .dt-grid-item's own overflow: auto then shows a
-   scrollbar on the grid item. */
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1,
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .f1-block {
+/* TVgids widget (js/components/tvgids.js): one column per channel. The
+   columns have a minimum width (set inline from tvgidscolumnwidth) and fill
+   the block, so a wider block shows more of them next to each other. */
+.tvgids-block .dt_state {
+  display: block;
+  height: auto;
+  padding: 4px 0;
+  text-align: left;
+  font-size: var(--tvgids-font-size, 0.85em);
+  line-height: 1.35;
+}
+
+.tvgids-grid {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+.tvgids-channel {
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.tvgids-head {
+  display: flex;
+  align-items: center;
+  min-height: 31px;
+  margin-bottom: 4px;
+}
+
+/* Many channel logos are black, so every logo sits in a small frame, white
+   by default (works on light and dark themes alike). The frame colour is
+   tvgidslogobg, set as --tvgids-logo-bg; it may be transparent. */
+.tvgids-logo,
+.de-tvgids-tile img {
+  box-sizing: content-box;
+  width: 51px;
+  height: 27px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: var(--tvgids-logo-bg, #fff);
+  object-fit: contain;
+}
+
+/* 2px larger than the programmes, also with a custom tvgidsfontsize. */
+.tvgids-name {
+  font-size: calc(1em + 2px);
+  font-weight: bold;
+}
+
+/* With a logo the name is only the fallback for a missing image. */
+.tvgids-name-fallback,
+.tvgids-nologo .tvgids-logo {
+  display: none;
+}
+
+.tvgids-nologo .tvgids-name-fallback {
+  display: inline;
+}
+
+.tvgids-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tvgids-item {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 8px;
+  padding: 1px 0;
+}
+
+.tvgids-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.tvgids-title {
+  overflow-wrap: anywhere;
+}
+
+.tvgids-now {
+  font-weight: bold;
+}
+
+.tvgids-now .tvgids-time {
+  opacity: 1;
+}
+
+.tvgids-past {
+  opacity: 0.5;
+}
+
+.tvgids-empty,
+.tvgids-error {
+  padding: 2px 0;
+  opacity: 0.8;
+}
+
+.tvgids-error {
+  color: var(--dt-error);
+  opacity: 1;
+}
+
+/* Grid screens: a list widget (containerClass 'dt-widget-rows': F1, TVgids,
+   Traffic info) follows its row height and clips the excess; a longer list
+   scrolls inside the tile. Without this, min-height alone lets the tile grow
+   past its row, and .dt-grid-item's own overflow: auto then shows a scrollbar
+   on the grid item. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt-widget-rows {
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
+}
+
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .dt-widget-rows
+  .dt_content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt-widget-rows .dt_state {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* TVgids section of the quick-add and Device Config popups
+   (js/deviceeditor.js _tvgidsFieldsHtml): the channel logos as tiles, per
+   channel group. */
+.de-tvgids-picker {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 2px 4px 2px 0;
+}
+
+.de-tvgids-group + .de-tvgids-group {
+  margin-top: 10px;
+}
+
+.de-tvgids-group-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.de-tvgids-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 6px;
+}
+
+.de-tvgids-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 4px 4px;
+  border: 2px solid var(--bs-border-color, #dee2e6);
+  border-radius: 6px;
+  background: rgba(127, 127, 127, 0.08);
+  color: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.de-tvgids-tile-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.de-tvgids-tile.active {
+  border-color: var(--bs-primary, #0d6efd);
+  background: rgba(13, 110, 253, 0.15);
+}
+
+/* The position of a chosen channel in the block. */
+.de-tvgids-order {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: none;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 18px;
+}
+
+.de-tvgids-tile.active .de-tvgids-order {
+  display: block;
+}
+
+.de-tvgids-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+@media (max-width: 575px) {
+  .de-tvgids-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Device Config -> Text: per-device font size and alignment, set by
@@ -8831,4 +9076,216 @@ canvas {
 .mh.dt-align-right .col-data,
 .mh.dt-align-right .col-data > * {
   text-align: right !important;
+}
+
+/* Shared widget button (.dt-btn): a rounded, themed button for the controls of
+   a widget, used by the LMS control and the Fully Kiosk widget. Add .on for
+   the active state of a power or toggle button. The size is set by the widget
+   itself. */
+.dt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  border-radius: var(--radius-selector, 4px);
+  background: var(--main-bg-dark);
+  color: var(--text-normal);
+  font-size: var(--font-small);
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dt-btn:hover {
+  background: var(--main-bg-dark-hover, var(--main-bg-dark));
+}
+
+.dt-btn:active {
+  transform: scale(0.94);
+}
+
+.dt-btn:focus-visible {
+  outline: 2px solid var(--button-active);
+  outline-offset: 1px;
+}
+
+.dt-btn.on {
+  background: var(--button-active);
+  color: var(--main-bg, #fff);
+}
+
+/* The themes give every .transbg (so these buttons too) their panel
+   background and edge with !important; the active state has to win from
+   that, with the theme's active border colour as the edge. */
+.transbg.dt-btn.on:not(.dial) {
+  background: var(--button-active) !important;
+  box-shadow: inset 0 0 0 var(--main-border-width, 1px)
+    var(--border-color-active) !important;
+  color: #fff;
+}
+
+/* Fully Kiosk widget (js/components/fullykiosk.js): battery, next switch
+   percentage and the charger switch, painted into .dt_state like the HP iLO
+   widget above. Every row has two columns: the switch (or button) and the
+   data; no margin or padding to the left of the rows. */
+.fullykiosk-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.fullykiosk-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.fullykiosk-row {
+  display: grid;
+  grid-template-columns: 25% minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+}
+
+.fullykiosk-data {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* margin: 0 !important - same reasoning as .hpilo-icon above. */
+.fullykiosk-block .dt_state .fullykiosk-icon {
+  flex: none;
+  width: 1.4em;
+  margin: 0 !important;
+  font-size: 1em;
+  line-height: 1;
+  text-align: center;
+  color: var(--dt-info);
+}
+
+.fullykiosk-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fullykiosk-value {
+  flex: none;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fullykiosk-battery .fullykiosk-value {
+  font-weight: bold;
+}
+
+/* The buttons of column 1 are shared .dt-btn buttons (see above). A power button shows its state (filled when on); side by side when a row
+   has two. */
+.fullykiosk-control {
+  display: flex;
+  gap: 6px;
+  /* 10 px free from the left, and 10% narrower than the column */
+  margin-left: 10px;
+  width: calc(90% - 10px);
+}
+
+.fullykiosk-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3.4em;
+}
+
+/* The charger button runs over the rows of the charge data. */
+.fullykiosk-group {
+  align-items: stretch;
+}
+
+.fullykiosk-group .fullykiosk-btn {
+  height: auto;
+}
+
+/* A power button that is off has a grey icon. */
+.fullykiosk-btn[role='switch']:not(.on) {
+  color: var(--text-muted);
+}
+
+.fullykiosk-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.fullykiosk-error {
+  font-size: inherit;
+  color: var(--dt-error);
+}
+
+/* Device Config / quick-add -> Fully Kiosk section
+   (js/deviceeditor.js _fullyFieldsHtml()): two columns, one on a phone. */
+.de-fully-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-fully-grid > .de-fully-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-fully-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The icon in a button: absolute size, legacy per-icon rules further up
+   (.fas.fa-power-off, ...) would otherwise enlarge or shift it. */
+.fullykiosk-block .fullykiosk-btn .fas {
+  margin: 0 !important;
+  font-size: calc(var(--font-small) + 4px) !important;
+  line-height: 1;
+}
+
+/* Fully Kiosk widget: no scrollbars. A tile that is too small for its rows
+   still scrolls (touch or wheel), but without a visible scrollbar. */
+.fullykiosk-block,
+.fullykiosk-block .dt_content,
+.fullykiosk-block .dt_state {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fullykiosk-block::-webkit-scrollbar,
+.fullykiosk-block .dt_content::-webkit-scrollbar,
+.fullykiosk-block .dt_state::-webkit-scrollbar {
+  display: none;
+}
+
+/* The icon of the charger button is 2px bigger than the other buttons'. */
+.fullykiosk-block .fullykiosk-group .fullykiosk-btn .fas {
+  font-size: calc(var(--font-small) + 6px) !important;
+}
+
+/* Fully Kiosk widget: the brightness dimmer slider and its value. */
+.fullykiosk-brightness-input {
+  width: 8em;
+  max-width: 60%;
+  margin-right: 8px;
+  vertical-align: middle;
+  accent-color: var(--button-active);
+}
+
+.fullykiosk-brightness-value {
+  display: inline-block;
+  min-width: 3em;
+  text-align: right;
 }

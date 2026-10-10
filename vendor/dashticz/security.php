@@ -1,5 +1,26 @@
 <?php
 
+/* js/widgets.json: the special block kinds and their flags, shared with the
+   editors (js/dt_function.js). Returns the kinds that have $flag. */
+function dashticz_widget_kinds($flag)
+{
+    $manifest = json_decode((string) @file_get_contents(dirname(__DIR__, 2) . '/js/widgets.json'), true);
+    $kinds = array();
+    foreach (isset($manifest['kinds']) && is_array($manifest['kinds']) ? $manifest['kinds'] : array() as $kind => $entry) {
+        if (!empty($entry[$flag])) {
+            $kinds[] = $kind;
+        }
+    }
+    return $kinds;
+}
+
+// Columns of a new block of this kind without a width.
+function dashticz_widget_default_width($kind)
+{
+    $manifest = json_decode((string) @file_get_contents(dirname(__DIR__, 2) . '/js/widgets.json'), true);
+    return isset($manifest['kinds'][$kind]['defaultWidth']) ? (int) $manifest['kinds'][$kind]['defaultWidth'] : 3;
+}
+
 function dashticz_json_error($status, $message)
 {
     http_response_code($status);
@@ -270,6 +291,112 @@ function dashticz_atomic_write_file($path, $contents, $mode = 0664)
 
     @chmod($path, $mode);
     return true;
+}
+
+// Directory for a PHP proxy's server-side cache: custom/cache/<name>, or a
+// folder in the system temp directory when that isn't writable. Returns null
+// when neither can be used. custom/cache gets an .htaccess that keeps the
+// cache files away from browsers on Apache (docker/default.conf does the same
+// for nginx). Cache files that earlier versions wrote to the wrong place,
+// vendor/custom/cache/<name>, are removed.
+function dashticz_cache_dir($name)
+{
+    $name = preg_replace('/[^a-z0-9_-]/', '', strtolower((string) $name));
+    if ($name === '') {
+        return null;
+    }
+    dashticz_remove_misplaced_cache($name);
+
+    // This file is vendor/dashticz/security.php: two levels up is the
+    // Dashticz folder.
+    $root = dirname(__DIR__, 2) . '/custom/cache';
+    $baseDir = $root . '/' . $name;
+    if (!is_dir($baseDir)) {
+        @mkdir($baseDir, 0775, true);
+    }
+    if (is_dir($baseDir) && is_writable($baseDir)) {
+        dashticz_protect_cache_root($root);
+        return $baseDir;
+    }
+
+    $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-' . $name . '-cache';
+    if (!is_dir($baseDir)) {
+        @mkdir($baseDir, 0775, true);
+    }
+    return is_dir($baseDir) && is_writable($baseDir) ? $baseDir : null;
+}
+
+/* JSON cache shared by the PHP proxies: $producer() returns the data to
+   cache (and throws a RuntimeException when it can't).
+   - A cache file younger than $ttl seconds, with the same $tag, is returned.
+   - When $producer() fails, stale data is returned instead of an error.
+   - Without stale data the error is remembered for $failTtl seconds, so a
+     site that is down isn't asked again by every dashboard refresh.
+   $file may be null (no writable cache folder): then nothing is cached. */
+function dashticz_cached_json($file, $ttl, $producer, $tag = '', $failTtl = 0)
+{
+    $cached = null;
+    if ($file && is_file($file)) {
+        $cached = json_decode((string) @file_get_contents($file), true);
+        if (!is_array($cached)) {
+            $cached = null;
+        }
+    }
+    $hasData = $cached !== null && array_key_exists('data', $cached) && isset($cached['fetchedAt']);
+    if ($hasData && ($cached['tag'] ?? '') === $tag && time() - $cached['fetchedAt'] < $ttl) {
+        return $cached['data'];
+    }
+    if ($failTtl > 0 && $cached !== null && !$hasData && isset($cached['failedAt'], $cached['error'])
+        && time() - $cached['failedAt'] < $failTtl) {
+        throw new RuntimeException($cached['error']);
+    }
+    try {
+        $data = $producer();
+    } catch (RuntimeException $error) {
+        if ($hasData) {
+            return $cached['data'];
+        }
+        if ($file && $failTtl > 0) {
+            dashticz_atomic_write_file($file, json_encode(array('failedAt' => time(), 'error' => $error->getMessage())));
+        }
+        throw $error;
+    }
+    if ($file) {
+        dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'tag' => $tag, 'data' => $data)));
+    }
+    return $data;
+}
+
+function dashticz_protect_cache_root($root)
+{
+    $file = $root . '/.htaccess';
+    if (is_file($file)) {
+        return;
+    }
+    @file_put_contents(
+        $file,
+        "# Written by Dashticz: server-side cache of the PHP proxies, never served.\n"
+        . "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n"
+        . "<IfModule !mod_authz_core.c>\n    Order deny,allow\n    Deny from all\n</IfModule>\n",
+        LOCK_EX
+    );
+}
+
+function dashticz_remove_misplaced_cache($name)
+{
+    $oldDir = dirname(__DIR__) . '/custom/cache/' . $name;
+    if (!is_dir($oldDir)) {
+        return;
+    }
+    foreach (scandir($oldDir) ?: array() as $entry) {
+        if (preg_match('/\.(json|xml|tmp)$/', $entry) && is_file($oldDir . '/' . $entry)) {
+            @unlink($oldDir . '/' . $entry);
+        }
+    }
+    // The folders go when they are empty (rmdir fails otherwise).
+    @rmdir($oldDir);
+    @rmdir(dirname($oldDir));
+    @rmdir(dirname($oldDir, 2));
 }
 
 function dashticz_resolve_redirect_url($baseUrl, $location)

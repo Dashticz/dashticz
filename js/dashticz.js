@@ -40,6 +40,8 @@ var Dashticz = (function () {
     'postnl',
     'hpilo',
     'f1',
+    'tvgids',
+    'fullykiosk',
     'group',
     'cluster',
     'waqi',

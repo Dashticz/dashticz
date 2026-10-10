@@ -1875,6 +1875,36 @@ function configwriter_special_block_props($block)
         // check, which only ever suppresses the global default when this
         // property is present and explicitly false.
         $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'tvgids') {
+        // js/components/tvgids.js dispatches on a truthy tvgids (the channel
+        // list) alone - no `type` of its own, same convention as F1 below.
+        // tvgids and every other TVgids setting are carried through
+        // custom_fields (saveblocks.php validates the channel list).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'fullykiosk') {
+        // js/components/fullykiosk.js dispatches on fullymode alone - no
+        // `type` of its own, same convention as F1 below. fullymode and every
+        // other Fully Kiosk setting are carried through custom_fields
+        // (saveblocks.php validates the mode, host, port and switch idx).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'f1') {
         // js/components/f1.js dispatches on a truthy f1mode alone - no
         // `type` of its own, same convention as news/graph below. f1mode and

@@ -462,13 +462,18 @@ var DashticzWidgetEditor = (function () {
       // just drops off the block on the next save instead of showing up
       // as a stray "Extra fields" row with nothing to edit it.
       provider: true,
+      // Like provider: no field, an old radars property just drops off the
+      // block (the RWS API has no speed-camera category).
+      radars: true,
       trafficJams: true,
       roadWorks: true,
-      radars: true,
       results: true,
       maxDistance: true,
       latitude: true,
       longitude: true,
+      filter: true,
+      road: true,
+      showemptyroads: true,
     },
     camera: { imageUrl: true, videoUrl: true, cameras: true },
     alarmmeldingen: { rss: true, filter: true },
@@ -1140,9 +1145,11 @@ var DashticzWidgetEditor = (function () {
       trafficinfo: {
         trafficJams: 1,
         roadWorks: 1,
-        radars: 1,
         results: 5,
         maxDistance: 40,
+        filter: 'distance',
+        road: '',
+        showemptyroads: 0,
       },
       map: {
         gm_api: _s('gm_api'),
@@ -1436,9 +1443,6 @@ var DashticzWidgetEditor = (function () {
           if (typeof definition.roadWorks !== 'undefined') {
             widgetConfigs.trafficinfo.roadWorks = definition.roadWorks ? 1 : 0;
           }
-          if (typeof definition.radars !== 'undefined') {
-            widgetConfigs.trafficinfo.radars = definition.radars ? 1 : 0;
-          }
           if (typeof definition.results !== 'undefined') {
             widgetConfigs.trafficinfo.results = definition.results;
           }
@@ -1451,6 +1455,7 @@ var DashticzWidgetEditor = (function () {
           if (typeof definition.longitude !== 'undefined') {
             widgetConfigs.trafficinfo.longitude = definition.longitude;
           }
+          _hydrateTrafficRoadFilter(definition);
         }
         if (item.id === 'camera') {
           if (Array.isArray(definition.cameras) && definition.cameras.length) {
@@ -1892,7 +1897,6 @@ var DashticzWidgetEditor = (function () {
       [
         ['trafficJams', 1],
         ['roadWorks', 1],
-        ['radars', 1],
       ].forEach(function (mapping) {
         var prop = mapping[0];
         widgetConfigs.trafficinfo[prop] =
@@ -1914,6 +1918,7 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.longitude !== 'undefined') {
         widgetConfigs.trafficinfo.longitude = definition.longitude;
       }
+      _hydrateTrafficRoadFilter(definition);
     } else if (item.id === 'camera') {
       if (Array.isArray(definition.cameras) && definition.cameras.length) {
         widgetConfigs.camera.cameras = definition.cameras;
@@ -2206,6 +2211,8 @@ var DashticzWidgetEditor = (function () {
     html += _lmsWidgetCardHtml();
     html += _graphWidgetCardHtml();
     html += _f1WidgetCardHtml();
+    html += _tvgidsWidgetCardHtml();
+    html += _fullykioskWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2691,6 +2698,71 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  /* TVgids (docs/blocks/specials/tvgids.rst, js/components/tvgids.js) is,
+     like F1, only ever a repeatable card: it opens the TVgids quick-add
+     popup (DashticzDeviceEditor.openTvgids()), where the channels are
+     picked from their logos. */
+  function _tvgidsWidgetCardHtml() {
+    var itemTitle = _t('tvgids_title', 'TVgids24');
+    return (
+      '<div class="we-widget-card we-widget-card-tvgids" data-special-widget="tvgids" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-tv" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'tvgids_description',
+        "Today's TV programme of the chosen channels (tvgids24.nl)."
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openTvgidsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openTvgids();
+    });
+  }
+
+  /* Fully Kiosk (docs/blocks/specials/fullykiosk.rst,
+     js/components/fullykiosk.js) is also only a repeatable card: it opens the
+     Fully Kiosk quick-add popup (DashticzDeviceEditor.openFullykiosk()). */
+  function _fullykioskWidgetCardHtml() {
+    var itemTitle = _t('fullykiosk_title', 'Fully Kiosk');
+    return (
+      '<div class="we-widget-card we-widget-card-fullykiosk" data-special-widget="fullykiosk" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-tablet-screen-button" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'fullykiosk_description',
+        'Battery of a Fully Kiosk tablet with charge control (domoticz_fullykiosk plugin).'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openFullykioskFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openFullykiosk();
+    });
+  }
+
   function _openGraphFromWidgets() {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
@@ -2811,6 +2883,33 @@ var DashticzWidgetEditor = (function () {
     }
     html += '</div>';
     return html;
+  }
+
+  // Traffic info: the Distance/Roads filter, the road list and the
+  // show-empty-roads option of an existing block. A hand-written block with
+  // a `road` list and no `filter` of its own is a Roads block (the 3.x
+  // behaviour, see js/components/trafficinfo.js). showemptyroads may be a
+  // custom text; it is kept so saving doesn't turn it back into `true`.
+  function _hydrateTrafficRoadFilter(definition) {
+    var cfg = widgetConfigs.trafficinfo;
+    var road = Array.isArray(definition.road)
+      ? definition.road.join(', ')
+      : typeof definition.road === 'string' ||
+          typeof definition.road === 'number'
+        ? String(definition.road)
+        : '';
+    cfg.road = road;
+    cfg.filter =
+      definition.filter === 'roads' || definition.filter === 'distance'
+        ? definition.filter
+        : road.trim()
+          ? 'roads'
+          : 'distance';
+    cfg.showemptyroads = definition.showemptyroads ? 1 : 0;
+    cfg.showemptyroadsText =
+      typeof definition.showemptyroads === 'string'
+        ? definition.showemptyroads
+        : '';
   }
 
   // Add button below a repeatable list (Calendar, Camera, Radio, Timegraph):
@@ -4167,7 +4266,7 @@ var DashticzWidgetEditor = (function () {
       // Rijkswaterstaat only - no provider choice (see AGENTS.md-tracked
       // history: ANWB no longer issues API keys, and a Custom endpoint
       // added no real value without a second built-in provider to compare
-      // against). trafficJams/roadWorks/radars/results/maxDistance/
+      // against). trafficJams/roadWorks/results/maxDistance/
       // latitude/longitude are per-block CONFIG.js properties (see
       // managedWidgetPropertiesById.trafficinfo and the hydration in
       // _readConfiguredWidgets()/_hydrateGridWidget() above).
@@ -4190,15 +4289,20 @@ var DashticzWidgetEditor = (function () {
         null,
         lwgt.traffic_roadworks_help || ''
       );
-      fields += _cfgField(
-        'radars',
-        lwgt.traffic_radars || 'Radars',
-        'checkbox',
-        typeof tcfg.radars === 'undefined' ? 1 : tcfg.radars,
-        null,
-        lwgt.traffic_radars_help || ''
-      );
       fields += '</div>';
+      var trafficFilter = tcfg.filter === 'roads' ? 'roads' : 'distance';
+      fields += _cfgField(
+        'filter',
+        lwgt.traffic_filter || 'Show',
+        'select',
+        trafficFilter,
+        {
+          distance:
+            lwgt.traffic_filter_distance || 'Everything within a distance',
+          roads: lwgt.traffic_filter_roads || 'Selected roads',
+        },
+        lwgt.traffic_filter_help || ''
+      );
       fields += _cfgField(
         'results',
         lwgt.traffic_results || 'Max results',
@@ -4207,6 +4311,33 @@ var DashticzWidgetEditor = (function () {
         { min: 1, step: 1 },
         lwgt.traffic_results_help || ''
       );
+      // Roads: only the listed roads, in that order (Distance is ignored).
+      fields +=
+        '<div class="we-traffic-group" data-traffic-filter="roads"' +
+        (trafficFilter === 'roads' ? '' : ' style="display:none"') +
+        '>';
+      fields += _cfgField(
+        'road',
+        lwgt.traffic_roads || 'Roads',
+        'text',
+        tcfg.road || '',
+        null,
+        lwgt.traffic_roads_help || ''
+      );
+      fields += _cfgField(
+        'showemptyroads',
+        lwgt.traffic_showemptyroads || 'Show roads without announcements',
+        'checkbox',
+        tcfg.showemptyroads ? 1 : 0,
+        null,
+        lwgt.traffic_showemptyroads_help || ''
+      );
+      fields += '</div>';
+      // Distance: everything within maxDistance of latitude/longitude.
+      fields +=
+        '<div class="we-traffic-group" data-traffic-filter="distance"' +
+        (trafficFilter === 'distance' ? '' : ' style="display:none"') +
+        '>';
       fields += _cfgField(
         'maxDistance',
         lwgt.traffic_max_distance || 'Max distance (km)',
@@ -4231,6 +4362,7 @@ var DashticzWidgetEditor = (function () {
         null,
         lwgt.traffic_location_help || ''
       );
+      fields += '</div>';
     } else if (item.id === 'alarmmeldingen') {
       var acfg = widgetConfigs.alarmmeldingen || {};
       fields +=
@@ -4873,6 +5005,15 @@ var DashticzWidgetEditor = (function () {
       });
     });
 
+    $cfgModal.on('change', '#we-cfg-filter', function () {
+      var trafficFilter = $(this).val() === 'roads' ? 'roads' : 'distance';
+      $cfgModal.find('.we-traffic-group').each(function () {
+        $(this).toggle(
+          String($(this).data('traffic-filter')) === trafficFilter
+        );
+      });
+    });
+
     $cfgModal.on('change', '#we-cfg-clock-type', function () {
       var type = $(this).val() || 'basicclock';
       $cfgModal.find('.we-clock-group').each(function () {
@@ -5375,6 +5516,8 @@ var DashticzWidgetEditor = (function () {
           station: $.trim($('#we-cfg-pt-station').val() || '') || 'UT',
         };
       } else if (widgetId === 'trafficinfo') {
+        collected.showemptyroadsText =
+          (widgetConfigs.trafficinfo || {}).showemptyroadsText || '';
         widgetConfigs.trafficinfo = collected;
       } else if (widgetId === 'alarmmeldingen') {
         var rss = $.trim($('#we-cfg-alarm-rss').val() || '');
@@ -5732,6 +5875,14 @@ var DashticzWidgetEditor = (function () {
         _openF1FromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'tvgids') {
+        _openTvgidsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'fullykiosk') {
+        _openFullykioskFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5777,6 +5928,14 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'f1') {
         _openF1FromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'tvgids') {
+        _openTvgidsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'fullykiosk') {
+        _openFullykioskFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));
@@ -6045,17 +6204,19 @@ var DashticzWidgetEditor = (function () {
       )
         ? 1
         : 0;
-      entry.radars = Number(
-        typeof trcfg.radars === 'undefined' ? 1 : trcfg.radars
-      )
-        ? 1
-        : 0;
       entry.results = parseInt(trcfg.results, 10) || 5;
       entry.maxDistance = parseFloat(trcfg.maxDistance) || 40;
       if (trcfg.latitude !== '' && typeof trcfg.latitude !== 'undefined')
         entry.latitude = parseFloat(trcfg.latitude);
       if (trcfg.longitude !== '' && typeof trcfg.longitude !== 'undefined')
         entry.longitude = parseFloat(trcfg.longitude);
+      entry.filter = trcfg.filter === 'roads' ? 'roads' : 'distance';
+      entry.road = String(trcfg.road || '').trim();
+      // A custom "no announcements" text from CONFIG.js is kept as long as
+      // the option stays switched on.
+      entry.showemptyroads = Number(trcfg.showemptyroads)
+        ? trcfg.showemptyroadsText || true
+        : false;
     }
     if (item.id === 'iframe') {
       var icfg = widgetConfigs.iframe || {};

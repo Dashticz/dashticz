@@ -54,7 +54,8 @@ from the default.
     - ICS feed for Dutch. Default:
       ``https://files-f1.motorsportcalendars.com/nl/f1-calendar_p1_p2_p3_qualifying_sprint_gp.ics``
   * - f1utcoffset
-    - Hours added to the (UTC) session times. Default: 1
+    - Optional: fixed hours added to the (UTC) session times. Default: empty,
+      which uses the time zone of the browser (so summer time is followed)
   * - f1pollminutes
     - How often the calendar is downloaded, in minutes. Minimum 5. Default: 60
   * - f1sessions

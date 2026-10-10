@@ -573,8 +573,6 @@ foreach ($data['widgets'] as $entry) {
             || (bool)$entry['trafficJams'];
         $widget['roadWorks'] = !array_key_exists('roadWorks', $entry)
             || (bool)$entry['roadWorks'];
-        $widget['radars'] = !array_key_exists('radars', $entry)
-            || (bool)$entry['radars'];
         $results = isset($entry['results']) && is_numeric($entry['results'])
             ? (int)$entry['results']
             : 5;
@@ -588,6 +586,34 @@ foreach ($data['widgets'] as $entry) {
         }
         if (isset($entry['longitude']) && is_numeric($entry['longitude'])) {
             $widget['longitude'] = (float)$entry['longitude'];
+        }
+        // Distance (everything within maxDistance) or Roads (only the
+        // road numbers in `road`, e.g. "A4, A17").
+        $widget['filter'] = isset($entry['filter']) && $entry['filter'] === 'roads'
+            ? 'roads'
+            : 'distance';
+        $road = isset($entry['road']) && is_string($entry['road'])
+            ? $entry['road']
+            : '';
+        $road = trim(preg_replace('/[^A-Za-z0-9 ,;\-]/', '', $road));
+        if (strlen($road) > 200) {
+            dashticz_json_error(400, 'The road list is too long.');
+        }
+        $widget['road'] = $road;
+        // true/false, or a custom "no announcements" text kept from
+        // CONFIG.js.
+        $showEmptyRoads = isset($entry['showemptyroads'])
+            ? $entry['showemptyroads']
+            : false;
+        if (is_string($showEmptyRoads) && $showEmptyRoads !== ''
+            && !in_array(strtolower($showEmptyRoads), ['0', '1', 'true', 'false'], true)
+        ) {
+            $widget['showemptyroads'] = substr(strip_tags($showEmptyRoads), 0, 100);
+        } else {
+            $widget['showemptyroads'] = filter_var(
+                $showEmptyRoads,
+                FILTER_VALIDATE_BOOLEAN
+            );
         }
     }
 
@@ -1166,7 +1192,6 @@ function _widgetBlockProps($widget)
             $props['title'] = 'Traffic';
             $props['trafficJams'] = $widget['trafficJams'];
             $props['roadWorks'] = $widget['roadWorks'];
-            $props['radars'] = $widget['radars'];
             $props['results'] = $widget['results'];
             $props['maxDistance'] = $widget['maxDistance'];
             if (isset($widget['latitude'])) {
@@ -1174,6 +1199,13 @@ function _widgetBlockProps($widget)
             }
             if (isset($widget['longitude'])) {
                 $props['longitude'] = $widget['longitude'];
+            }
+            $props['filter'] = $widget['filter'];
+            if ($widget['road'] !== '') {
+                $props['road'] = $widget['road'];
+            }
+            if ($widget['showemptyroads'] !== false) {
+                $props['showemptyroads'] = $widget['showemptyroads'];
             }
             break;
         case 'alarmmeldingen':

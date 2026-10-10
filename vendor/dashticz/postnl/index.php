@@ -63,7 +63,8 @@ register_shutdown_function(function () {
  * process, this stops working until it's ported again.
  *
  * A successful login's refresh_token, plus the last fetched shipment list,
- * are cached server-side (custom/cache/postnl/<sha1(username)>.json) for
+ * are cached server-side (custom/cache/postnl/<hash>.json, see
+ * dashticz_postnl_cache_file()) for
  * postnl_pollminutes (default 60, minimum 15) - both to avoid repeating the
  * heavy ~10-request login flow on every browser poll from every connected
  * dashboard, and because PostNL has been known to flag accounts polled too
@@ -122,30 +123,29 @@ function dashticz_postnl_read_input()
 }
 
 // ---------------------------------------------------------------- caching
-// Mirrors vendor/dashticz/xmltv.php's own cache helpers: custom/cache/<name>
-// with a system-temp fallback when that directory isn't writable.
+// custom/cache/postnl, with a system-temp fallback (dashticz_cache_dir()).
 
 function dashticz_postnl_cache_dir()
 {
-    $baseDir = dirname(__DIR__, 2) . '/custom/cache/postnl';
-    if (!is_dir($baseDir)) {
-        @mkdir($baseDir, 0775, true);
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
-        $baseDir = rtrim(sys_get_temp_dir(), '/\\') . '/dashticz-postnl-cache';
-        if (!is_dir($baseDir)) {
-            @mkdir($baseDir, 0775, true);
-        }
-    }
-    if (!is_dir($baseDir) || !is_writable($baseDir)) {
+    $baseDir = dashticz_cache_dir('postnl');
+    if ($baseDir === null) {
         throw new RuntimeException('PostNL cache directory is not writable.');
     }
     return $baseDir;
 }
 
-function dashticz_postnl_cache_file($username)
+// The file name is keyed with the password, so it can't be derived from the
+// e-mail address alone: the file holds the refresh token. A changed password
+// starts a new cache file (and a new login).
+function dashticz_postnl_cache_file($username, $password)
 {
-    return dashticz_postnl_cache_dir() . '/' . sha1(strtolower($username)) . '.json';
+    $dir = dashticz_postnl_cache_dir();
+    // Earlier versions named the file after sha1(username).
+    $oldFile = $dir . '/' . sha1(strtolower($username)) . '.json';
+    if (is_file($oldFile)) {
+        @unlink($oldFile);
+    }
+    return $dir . '/' . hash_hmac('sha256', strtolower($username), (string) $password) . '.json';
 }
 
 function dashticz_postnl_read_cache($cacheFile)
@@ -173,11 +173,8 @@ function dashticz_postnl_write_cache($cacheFile, $refreshToken, $days, $incoming
         'incoming' => $incoming,
         'sent' => $sent,
     );
-    $tmpFile = $cacheFile . '.tmp';
-    if (@file_put_contents($tmpFile, json_encode($data), LOCK_EX) === false) {
-        return;
-    }
-    @rename($tmpFile, $cacheFile);
+    // The file holds the refresh token: owner only.
+    dashticz_atomic_write_file($cacheFile, json_encode($data), 0600);
 }
 
 // -------------------------------------------------------------- http/curl
@@ -672,7 +669,7 @@ function dashticz_postnl_recent_delivered($entries, $days)
 
 function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
 {
-    $cacheFile = dashticz_postnl_cache_file($username);
+    $cacheFile = dashticz_postnl_cache_file($username, $password);
     $cache = dashticz_postnl_read_cache($cacheFile);
 
     // A changed "days shown" setting must not keep serving the old list until

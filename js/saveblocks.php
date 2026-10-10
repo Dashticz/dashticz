@@ -101,9 +101,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
+$specialBlockKinds = dashticz_widget_kinds('saved');
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph', 'f1'];
+$titleOptionalBlockKinds = array_merge(dashticz_widget_kinds('titleOptional'), ['slidebutton']);
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -160,17 +160,8 @@ foreach ($data['devices'] as $entry) {
         if ($title === '' && !in_array($kind, $titleOptionalBlockKinds, true)) {
             dashticz_json_error(400, 'A special block title is required.');
         }
-        $defaultWidth = 3;
-        if ($kind === 'title' || $kind === 'slidebutton') {
-            $defaultWidth = 12;
-        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster') {
-            // Cover (100x100) + artist/title/album (lms), an embedded page
-            // (iframe), an agenda/calendar table (calendar), a chart
-            // (timegraph, graph), a programme guide (xmltvguide), or a
-            // stacked list of device rows (cluster), needs more room than
-            // the generic 3-column default other special blocks start at.
-            $defaultWidth = 6;
-        }
+        // The default width of a kind is in js/widgets.json.
+        $defaultWidth = dashticz_widget_default_width($kind);
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
         $width = max(1, min(12, $width));
         $height = $kind === 'title' ? 120 : null;
@@ -219,8 +210,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph' || $kind === 'f1') {
-            // Only Icon and Last update apply to these eleven (no Data/Switch/
+        } elseif (in_array($kind, dashticz_widget_kinds('simpleIconPayload'), true)) {
+            // Only Icon and Last update apply to these twelve (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -388,6 +379,36 @@ foreach ($data['devices'] as $entry) {
                             || strlen($customFields[$f1UrlField]) > 2048)) {
                         dashticz_json_error(400, 'Enter a valid F1 calendar URL.');
                     }
+                }
+            } elseif ($kind === 'fullykiosk') {
+                // fullymode is otherwise just another custom field, but
+                // js/components/fullykiosk.js dispatches on it, so it is
+                // required here. The host is only used by
+                // vendor/dashticz/fullykiosk/index.php; reject anything that
+                // is not a plain host name or address already here.
+                if (!isset($customFields['fullymode']) || $customFields['fullymode'] !== 'charge') {
+                    dashticz_json_error(400, 'A Fully Kiosk block requires a mode.');
+                }
+                if (isset($customFields['fullyhost'])
+                    && (!is_string($customFields['fullyhost'])
+                        || ($customFields['fullyhost'] !== ''
+                            && !preg_match('/^[A-Za-z0-9.\-_:\[\]]{1,253}$/', dashticz_normalize_host_input($customFields['fullyhost']))))) {
+                    dashticz_json_error(400, 'Enter a valid host for the Fully Kiosk tablet.');
+                }
+                if (isset($customFields['fullyswitch'])
+                    && !preg_match('/^\d{1,9}$/', (string) $customFields['fullyswitch'])) {
+                    dashticz_json_error(400, 'Choose a valid Domoticz switch for the Fully Kiosk charger.');
+                }
+            } elseif ($kind === 'tvgids') {
+                // tvgids (the channel list) is otherwise just another custom
+                // field, but js/components/tvgids.js dispatches on it, so it
+                // is required here: channel ids as in
+                // vendor/dashticz/tvgids/channels.json, comma separated.
+                if (!isset($customFields['tvgids'])
+                    || !is_string($customFields['tvgids'])
+                    || !preg_match('/^[a-z0-9_]{1,40}(,[a-z0-9_]{1,40}){0,49}$/', $customFields['tvgids'])
+                ) {
+                    dashticz_json_error(400, 'Choose the TV channels of the TVgids block.');
                 }
             } elseif ($kind === 'graph') {
                 // devices is otherwise just another custom field (see
