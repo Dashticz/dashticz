@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+v4.1.7 (10-10-2026)
+----------------------
+
+* **Code**
+
+- Dependency updates: swiper 14.3.0, ``@babel/core`` and
+  ``@babel/preset-env`` 8.0.7, ``@types/node`` 26.6.4, sass 1.105.1,
+  johngrogg/ics-parser 3.6.0 (lock file) and newer versions of the GitHub
+  Actions used in the CI workflow.
+
 v4.1.6 (7-10-2026)
 ----------------------
 
