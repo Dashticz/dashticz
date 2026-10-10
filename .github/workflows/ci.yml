@@ -47,6 +47,9 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      - name: dist/ is up to date
+        if: matrix.node == 22
+        run: git diff --exit-code -- dist
 
   php:
     name: PHP ${{ matrix.php }}

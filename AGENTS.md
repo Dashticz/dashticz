@@ -90,6 +90,6 @@ A real example: extending Custom Device's idx to also accept `'v<idx>'` (a Domot
 
 When adding a new special block kind, or extending what idx shapes an existing kind accepts, verify the cog icon and its config popup still work in **all** of: the plain dashboard (Wizard/Custom mode), the Device Editor's own managed-items list, and the (grid) Layout Editor. Grep both files above for the existing kind/pattern being extended — chances are it needs the identical change in both places.
 
-## Known outstanding issues
+## Built bundle (dist/)
 
-- `vendor/dashticz/garbage/index.php`: the `curlGetJson()` helper (added for the HVC waste-collection provider) unconditionally disables `CURLOPT_SSL_VERIFYPEER`, unlike the rest of the file, which only disables SSL verification when the user opts in via `?ignoressl=1`. Left as-is per maintainer decision — flag it again if touching this file.
+`dist/` is committed and `js/loader.js` loads `dist/bundle.js`, so a change to `src/`, `package.json` or a bundled dependency only reaches users after `npm run build`, committing `dist/`, and raising `_DASHTICZ_VERSION` in `js/loader.js` (together with the `?v=` of `dist/bundle.css` in `index.html`). CI fails when `npm run build` produces a different `dist/` than the one committed.
