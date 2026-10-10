@@ -8,13 +8,7 @@ header("Pragma: no-cache");
 
 try {
     $response = dashticz_fetch_remote($_SERVER['QUERY_STRING']);
-    if ($response['contentType']) {
-        header('Content-Type: ' . $response['contentType']);
-    }
-    if ($response['contentEncoding']) {
-        header('Content-Encoding: ' . $response['contentEncoding']);
-    }
-    echo $response['body'];
+    dashticz_send_remote_response($response, true);
 } catch (RuntimeException $error) {
     dashticz_json_error(400, $error->getMessage());
 }
