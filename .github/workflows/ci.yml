@@ -33,7 +33,7 @@ jobs:
       matrix:
         node: ${{ fromJSON(github.event_name == 'pull_request' && '[22]' || '[20,22,24]') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -56,7 +56,7 @@ jobs:
       matrix:
         php: ${{ fromJSON(github.event_name == 'pull_request' && '["8.4"]' || '["7.4","8.1","8.2","8.3","8.4","8.5"]') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -73,7 +73,7 @@ jobs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           # Same Python and packages as .readthedocs.yaml.
@@ -89,7 +89,7 @@ jobs:
       matrix:
         browser: ${{ fromJSON(github.event_name == 'pull_request' && '["chromium","webkit"]' || '["chromium","firefox","webkit"]') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: live-integrations
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
