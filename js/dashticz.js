@@ -42,6 +42,7 @@ var Dashticz = (function () {
     'f1',
     'tvgids',
     'fullykiosk',
+    'weatherinfo',
     'group',
     'cluster',
     'waqi',

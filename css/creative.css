@@ -9130,8 +9130,8 @@ canvas {
 
 /* Fully Kiosk widget (js/components/fullykiosk.js): battery, next switch
    percentage and the charger switch, painted into .dt_state like the HP iLO
-   widget above. Every row has two columns: the switch (or button) and the
-   data; no margin or padding to the left of the rows. */
+   widget above. Every row has two columns: the data and the switch (or
+   button) at the right; no margin or padding to the left of the rows. */
 .fullykiosk-block .dt_state {
   display: flex;
   flex-direction: column;
@@ -9149,7 +9149,7 @@ canvas {
 
 .fullykiosk-row {
   display: grid;
-  grid-template-columns: 25% minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 25%;
   align-items: center;
   column-gap: 10px;
 }
@@ -9193,9 +9193,12 @@ canvas {
 .fullykiosk-control {
   display: flex;
   gap: 6px;
-  /* 10 px free from the left, and 10% narrower than the column */
+  /* Column 2, at the right of the data: 20 px from the data (10 px column
+     gap + 10 px margin) and 5 px free from the right edge */
+  order: 2;
   margin-left: 10px;
-  width: calc(90% - 10px);
+  margin-right: 5px;
+  width: calc(100% - 15px);
 }
 
 .fullykiosk-btn {
@@ -9288,4 +9291,270 @@ canvas {
   display: inline-block;
   min-width: 3em;
   text-align: right;
+}
+
+/* Device Config / quick-add -> Weather Info section
+   (js/deviceeditor.js _weatherinfoFieldsHtml()): two columns, one on a
+   phone. */
+.de-weatherinfo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.de-weatherinfo-grid > .de-weatherinfo-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 575px) {
+  .de-weatherinfo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Weather Info widget (js/components/weatherinfo.js): the rain status, and
+   below it the temperature, description, wind and icon, centered like the
+   F1 'next' tile. */
+/* The text is centered horizontally and vertically in the block. */
+.weatherinfo-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weatherinfo-block .dt_content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  text-align: center;
+}
+
+.weatherinfo-block .dt_state,
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .weatherinfo-block
+  .dt_state {
+  /* No scrollbar: the text is centered in the block. */
+  overflow: hidden !important;
+  scrollbar-width: none;
+}
+
+.weatherinfo-block .dt_state::-webkit-scrollbar {
+  display: none;
+}
+
+.weatherinfo-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+  /* The cluster's font size option sets --font-device-title on the tile. */
+  font-size: var(--font-device-title);
+}
+
+.weatherinfo-rows {
+  padding: 4px 0;
+  text-align: center;
+}
+
+.weatherinfo-row {
+  padding: 2px 0;
+}
+
+.weatherinfo-hl {
+  color: var(--dt-warn);
+  font-weight: bold;
+}
+
+.weatherinfo-dot {
+  color: var(--dt-ok);
+  white-space: pre;
+}
+
+.weatherinfo-icon {
+  vertical-align: middle;
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+.weatherinfo-rainfall {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.weatherinfo-error {
+  color: var(--dt-error);
+}
+
+/* Weather Info settings: the parts of the text, shown or hidden and dragged
+   into order (js/deviceeditor.js, type 'parts'). */
+.de-parts-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border: 1px solid var(--bs-border-color, #ced4da);
+  border-radius: 6px;
+  background: var(--bs-body-bg, #fff);
+}
+
+.de-parts-handle {
+  cursor: grab;
+  opacity: 0.6;
+  touch-action: none;
+}
+
+.de-parts-item.ui-sortable-helper {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Weather Info animated icons (js/components/weatherinfo.js, SVG_ICONS). */
+.weatherinfo-svg {
+  width: 2.6em;
+  height: 2.6em;
+  vertical-align: middle;
+  /* The icon must not make the row taller than the text. */
+  margin: -0.6em 0;
+  overflow: visible;
+}
+
+.weatherinfo-svg * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.weatherinfo-svg .wi-spin {
+  animation: wi-spin 24s linear infinite;
+}
+
+.weatherinfo-svg .wi-drift {
+  animation: wi-drift 3s ease-in-out infinite alternate;
+}
+
+.weatherinfo-svg .wi-glow {
+  animation: wi-glow 4s ease-in-out infinite alternate;
+}
+
+.weatherinfo-svg .wi-twinkle {
+  animation: wi-twinkle 2.4s ease-in-out infinite;
+}
+
+.weatherinfo-svg .wi-fall {
+  animation: wi-fall 1s linear infinite;
+}
+
+.weatherinfo-svg .wi-snowfall {
+  animation: wi-snowfall 2.4s linear infinite;
+}
+
+.weatherinfo-svg .wi-flash {
+  animation: wi-flash 2.2s ease-in-out infinite;
+}
+
+.weatherinfo-svg .wi-slide {
+  animation: wi-slide 4s ease-in-out infinite alternate;
+}
+
+.weatherinfo-svg .wi-d2 {
+  animation-delay: -0.4s;
+}
+
+.weatherinfo-svg .wi-d3 {
+  animation-delay: -0.8s;
+}
+
+@keyframes wi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wi-drift {
+  from {
+    transform: translate(-5px, 1px);
+  }
+  to {
+    transform: translate(5px, -2px);
+  }
+}
+
+@keyframes wi-glow {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wi-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes wi-fall {
+  0% {
+    transform: translateY(-3px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+@keyframes wi-snowfall {
+  0% {
+    transform: translate(-1px, -4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(2px, 6px);
+    opacity: 0;
+  }
+}
+
+@keyframes wi-flash {
+  0%,
+  55%,
+  100% {
+    opacity: 0.25;
+  }
+  60%,
+  70% {
+    opacity: 1;
+  }
+  65% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes wi-slide {
+  from {
+    transform: translateX(-3px);
+  }
+  to {
+    transform: translateX(3px);
+  }
 }

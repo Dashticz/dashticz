@@ -1905,6 +1905,21 @@ function configwriter_special_block_props($block)
             $props['icon'] = (string)$block['icon'];
         }
         $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'weatherinfo') {
+        // js/components/weatherinfo.js dispatches on wimode alone - no `type`
+        // of its own, same convention as F1 below. wimode and every other
+        // Weather Info setting are carried through custom_fields
+        // (saveblocks.php validates the mode and the location).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'f1') {
         // js/components/f1.js dispatches on a truthy f1mode alone - no
         // `type` of its own, same convention as news/graph below. f1mode and

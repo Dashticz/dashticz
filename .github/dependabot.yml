@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: composer
+    directory: /vendor/dashticz/ical
+    schedule:
+      interval: weekly
+    groups:
+      composer-minor-patch:
+        update-types:
+          - minor
+          - patch
