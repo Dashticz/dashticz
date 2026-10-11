@@ -1257,7 +1257,10 @@ var DashticzWidgetEditor = (function () {
             ? blocks[reference]
             : {};
         var item = _catalogItemForDefinition(reference, definition);
-        if (!item) return;
+        // Only the first block of a kind is managed here. Repeatable blocks
+        // (a second iframe, camera, ...) map to the same catalog item; they
+        // stay untouched so the layout never gets two blocks with one ref.
+        if (!item || selectedWidgets[item.id]) return;
 
         selectedWidgets[item.id] = true;
         // Keep an existing custom reference, while new widgets use the stable
@@ -1757,6 +1760,15 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  // A layout item belongs to a managed widget only when it is the block this
+  // editor tracks for that kind; any other block of the same kind is passed
+  // through unchanged.
+  function _isManagedLayoutItem(item) {
+    if (!item.widgetId) return false;
+    var tracked = widgetBlockRefs[item.widgetId];
+    return !tracked || tracked === item.ref;
+  }
+
   function _readGridConfig() {
     var $grid = _activeScreenDom().children('.dt-grid-layout').first();
     function number(property, fallback) {
@@ -1796,6 +1808,8 @@ var DashticzWidgetEditor = (function () {
             ? blocks[reference]
             : {};
         var item = _catalogItemForDefinition(reference, definition);
+        // See the column-mode reader: a repeated kind stays an unmanaged block.
+        if (item && selectedWidgets[item.id]) item = null;
         var grid = {
           x: _gridValue(this, '--dt-grid-x', 1),
           y: _gridValue(this, '--dt-grid-y', index + 1),
@@ -6599,7 +6613,7 @@ var DashticzWidgetEditor = (function () {
             });
             var gridItems = [];
             layoutOrder.forEach(function (item) {
-              if (item.widgetId) {
+              if (_isManagedLayoutItem(item)) {
                 if (!selectedWidgets[item.widgetId]) return;
                 includedWidgets[item.widgetId] = true;
                 gridItems.push({
@@ -6657,7 +6671,7 @@ var DashticzWidgetEditor = (function () {
           }
           var layoutItems = [];
           layoutOrder.forEach(function (item) {
-            if (item.widgetId) {
+            if (_isManagedLayoutItem(item)) {
               if (!selectedWidgets[item.widgetId]) return;
               includedWidgets[item.widgetId] = true;
               var widgetEntry = {
