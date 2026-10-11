@@ -36,7 +36,7 @@
   "devDependencies": {
     "@babel/core": "^8.0.7",
     "@babel/preset-env": "^8.0.7",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^26.6.4",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.5",
