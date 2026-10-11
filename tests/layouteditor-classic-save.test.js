@@ -84,3 +84,23 @@ test('a pending separator gets a free Title_N key', () => {
   assert.equal(second.key, 'Title_4');
   assert.equal(second.title, 'Title');
 });
+
+test('a hand-keyed block with a device idx is a custom device, like in the Device Editor', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(
+    functionSource('_isCustomDeviceBlock') + 'this._is = _isCustomDeviceBlock;',
+    context
+  );
+  const is = context._is;
+  assert.equal(is('klok', { idx: 5, htmlfile: 'x.html' }), true);
+  assert.equal(is('klok', { idx: '7_1', frameurl: 'http://x' }), true);
+  assert.equal(is('klok', { idx: 'v3' }), true);
+  assert.equal(is('klok', { idx: 's4' }), true);
+  assert.equal(is('s4', { idx: 's4' }), false);
+  assert.equal(is('klok', { idx: 5, type: 'dial' }), true);
+  assert.equal(is('klok', { idx: 5, type: 'group' }), false);
+  assert.equal(is('klok', { htmlfile: 'x.html' }), false);
+  assert.equal(is('device_5', { idx: 5 }), false);
+  assert.equal(is('my-clock', { idx: 5 }), false);
+});

@@ -1161,6 +1161,17 @@ var DashticzLayoutEditor = (function () {
 
     if (
       key &&
+      _isCustomDeviceBlock(key, definition) &&
+      !_widgetIdFromReference(ref, definition)
+    ) {
+      // Same order as deviceeditor.js's _specialFromReference(): a block with
+      // a hand-picked key and a device idx is a Custom device, also when it
+      // carries a htmlfile, frameurl or other special property.
+      return _resolveDeviceBlock(ref, definition, key);
+    }
+
+    if (
+      key &&
       !definition.type &&
       typeof definition.htmlfile === 'string' &&
       definition.htmlfile !== ''
@@ -1555,6 +1566,25 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    return _resolveDeviceBlock(ref, definition, key);
+  }
+
+  function _isCustomDeviceBlock(key, definition) {
+    var type = String(definition.type || '');
+    var idx = definition.idx;
+    return (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) &&
+      !/^device_\d+(?:_\d+)?$/.test(key) &&
+      (!definition.type || type === 'dial' || type === 'bar' || type === key) &&
+      (parseInt(idx, 10) > 0 ||
+        /^v\d+$/.test(String(idx)) ||
+        (/^s\d+$/.test(String(idx)) && !/^s\d+$/.test(key)))
+    );
+  }
+
+  /* The device part of _resolveBlock(): a block backed by a Domoticz idx,
+     a 's<idx>'/'v<idx>' scene or variable, or '<idx>_<subidx>'. */
+  function _resolveDeviceBlock(ref, definition, key) {
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
     // 's<idx>' (scene/group) and 'v<idx>' (Domoticz variable, see
     // js/domoticz-api.js's _setAllVariables() and
