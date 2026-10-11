@@ -1159,6 +1159,47 @@ next css sets the default height of the frame popup
   border-bottom: 1px solid rgba(0, 0, 0, 0.055);
 }
 
+/* Config menu, tabs General and Display: the rows are laid out in two
+   columns. Per row the info icon sits between the label and the field, and
+   the fields are about 30 characters wide instead of 40. */
+.settings-two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.settings-two-col .settings-static {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 991.98px) {
+  .settings-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .settings-two-col .settings-row {
+    grid-template-columns: minmax(0, 1fr) 26px minmax(0, 30ch);
+  }
+
+  .settings-two-col .settings-row .settings-help-slot {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .settings-two-col .settings-row .settings-control {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #settingspopup .settings-two-col .settings-control .form-control,
+  #settingspopup .settings-two-col .settings-control .form-select {
+    width: 30ch;
+    max-width: 100%;
+  }
+}
+
 .settings-label {
   margin: 0;
   color: #343a40;
