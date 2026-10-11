@@ -2238,36 +2238,51 @@ function bindThemeCssVarControls() {
   var $popup = $('#settingspopup');
   if (!$popup.length) return;
 
-  var storedOverrides = _getStoredCssVarOverrides();
-
   // Populate each text input with stored override or computed theme value.
-  $popup.find('.settings-cssvar-input').each(function () {
-    var $input = $(this);
-    var varName = String($input.data('cssvar') || '');
-    if (!varName) return;
-    var value = storedOverrides[varName] || _getComputedCssVar(varName);
-    if (_THEME_PX_VARS.indexOf(varName) !== -1) {
-      value = value.replace(/px\s*$/i, '').trim();
-    }
-    $input.val(value);
-    // Remember what the panel showed and whether it was a saved override, so
-    // saveSettings only persists values the user actually changed.
-    $input.data('initialValue', value);
-    $input.data('storedOverride', !!storedOverrides[varName]);
-    // Sync swatch if color input is present.
-    var $swatch = $popup.find(
-      '#' + $.escapeSelector($input.attr('id') + '-swatch')
+  // Runs again when the Theme panel opens and when the theme stylesheet has
+  // loaded: the settings dialog can be built before the stylesheet is applied,
+  // which left the fields empty. Fields the user already edited stay as is.
+  function populateThemeCssVarInputs() {
+    var storedOverrides = _getStoredCssVarOverrides();
+    $popup.find('.settings-cssvar-input').each(function () {
+      var $input = $(this);
+      var varName = String($input.data('cssvar') || '');
+      if (!varName) return;
+      var initial = $input.data('initialValue');
+      if (initial !== undefined && $input.val() !== initial) return;
+      var value = storedOverrides[varName] || _getComputedCssVar(varName);
+      if (_THEME_PX_VARS.indexOf(varName) !== -1) {
+        value = value.replace(/px\s*$/i, '').trim();
+      }
+      $input.val(value);
+      // Remember what the panel showed and whether it was a saved override, so
+      // saveSettings only persists values the user actually changed.
+      $input.data('initialValue', value);
+      $input.data('storedOverride', !!storedOverrides[varName]);
+      // Sync swatch if color input is present.
+      var $swatch = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-swatch')
+      );
+      if ($swatch.length) {
+        _syncSwatchFromText($swatch, value);
+      }
+      var $alpha = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-alpha')
+      );
+      if ($alpha.length) {
+        $alpha.val(Math.round(_extractCssAlpha(value) * 100));
+      }
+    });
+  }
+  populateThemeCssVarInputs();
+  $popup
+    .off('click.cssvarpopulate')
+    .on(
+      'click.cssvarpopulate',
+      '.settings-tile[data-settings-category="theme"]',
+      populateThemeCssVarInputs
     );
-    if ($swatch.length) {
-      _syncSwatchFromText($swatch, value);
-    }
-    var $alpha = $popup.find(
-      '#' + $.escapeSelector($input.attr('id') + '-alpha')
-    );
-    if ($alpha.length) {
-      $alpha.val(Math.round(_extractCssAlpha(value) * 100));
-    }
-  });
+  $('link[href^="themes/"]').one('load', populateThemeCssVarInputs);
 
   // Swatch → text input sync.
   $popup
