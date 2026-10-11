@@ -771,15 +771,24 @@ if ($generatedCss !== '') {
     $updatedCss = device_rules_append_managed_block($updatedCss, $cssBlock);
 }
 
-// Write CSS first. If the following custom.js write fails, restore the original
-// CSS best-effort so rules and styling do not intentionally diverge.
-if (!dashticz_atomic_write_file($cssPath, rtrim($updatedCss) . "\n", 0664)) {
+// Write CSS first. If the following custom.js write fails, put the CSS back as
+// it was (a file that did not exist is removed again) so rules and styling do
+// not intentionally diverge. An unchanged CSS file is left alone.
+$cssExisted = file_exists($cssPath);
+$cssChanged = rtrim($updatedCss) !== rtrim($originalCss);
+if ($cssChanged && !dashticz_atomic_write_file($cssPath, rtrim($updatedCss) . "\n", 0664)) {
     dashticz_release_file_update_lock($cssLock);
     dashticz_release_file_update_lock($jsLock);
     dashticz_json_error(500, 'Unable to write ' . $cssFile . '.');
 }
 if (!dashticz_atomic_write_file($customJsPath, rtrim($updatedJs) . "\n", 0664)) {
-    dashticz_atomic_write_file($cssPath, rtrim($originalCss) . "\n", 0664);
+    if ($cssChanged) {
+        if ($cssExisted) {
+            dashticz_atomic_write_file($cssPath, $originalCss, 0664);
+        } else {
+            @unlink($cssPath);
+        }
+    }
     dashticz_release_file_update_lock($cssLock);
     dashticz_release_file_update_lock($jsLock);
     dashticz_json_error(500, 'Unable to write custom.js.');
