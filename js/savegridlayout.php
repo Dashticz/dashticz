@@ -107,7 +107,7 @@ foreach ($data['items'] as $index => $entry) {
     $requestedRef =
         isset($entry['ref'])
         && is_string($entry['ref'])
-        && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['ref'])
+        && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['ref'])
             ? $entry['ref']
             : '';
     $ref = $requestedRef;
@@ -153,7 +153,7 @@ foreach ($data['items'] as $index => $entry) {
         }
         $create = $entry['create'];
         $name = isset($create['name']) && is_string($create['name'])
-            ? trim(substr($create['name'], 0, 100))
+            ? trim(configwriter_cut_bytes($create['name'], 100))
             : ($requestedRef !== '' ? $requestedRef : ('Grid block ' . ($index + 1)));
         if (($create['kind'] ?? '') === 'device') {
             $idx = isset($create['idx']) ? (int)$create['idx'] : 0;

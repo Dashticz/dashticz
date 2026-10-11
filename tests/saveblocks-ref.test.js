@@ -120,3 +120,58 @@ test('a new separator entry is written as a title block', () => {
     fs.rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+test('a block key with a trailing newline is refused', () => {
+  const fixture = makeFixture();
+  try {
+    const result = post(fixture, {
+      devices: [{ kind: 'title', key: 'Title_1\n', title: 'Rij', width: 12 }],
+    });
+    assert.equal(result.json.error, 'Invalid special block key.');
+    assert.equal(readConfig(fixture), '');
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('a long title is cut on a character boundary', () => {
+  const fixture = makeFixture();
+  try {
+    // 99 ASCII bytes and then a 2-byte character: byte 100 is half a character.
+    const title = 'a'.repeat(99) + 'é' + 'b';
+    const result = post(fixture, {
+      devices: [{ kind: 'title', key: 'Title_1', title, width: 12 }],
+    });
+    assert.equal(result.json.success, true, JSON.stringify(result.json));
+    const config = readConfig(fixture);
+    assert.ok(config.includes('a'.repeat(99) + "'"));
+    assert.ok(!config.includes('�'));
+    assert.doesNotThrow(() =>
+      new TextDecoder('utf-8', { fatal: true }).decode(
+        fs.readFileSync(path.join(fixture, 'custom', 'CONFIG.js'))
+      )
+    );
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('custom fields cannot overwrite the validated LMS settings', () => {
+  const fixture = makeFixture();
+  try {
+    const result = post(fixture, {
+      devices: [
+        {
+          kind: 'lms',
+          key: 'lms_1',
+          title: 'Muziek',
+          server: '192.168.1.5',
+          custom_fields: { port: 'abc' },
+        },
+      ],
+    });
+    assert.equal(result.json.error, 'Invalid or reserved custom device field.');
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});

@@ -180,6 +180,10 @@ if (isset($data['settings']) && is_array($data['settings'])) {
                 $clearedSettings[$key] = true;
                 continue;
             }
+            if (is_numeric($value) && !is_finite((float)$value)) {
+                $clearedSettings[$key] = true;
+                continue;
+            }
             $configSettings[$key] = is_numeric($value) ? (float)$value : 0;
             if ($configSettings[$key] == (int)$configSettings[$key]) {
                 $configSettings[$key] = (int)$configSettings[$key];
@@ -334,7 +338,7 @@ foreach ($data['widgets'] as $entry) {
         'id' => $id,
         'key' => isset($entry['key'])
             && is_string($entry['key'])
-            && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
+            && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['key'])
                 ? $entry['key']
                 : $catalog[$id]['key'],
         'width' => isset($entry['width'])
@@ -379,7 +383,7 @@ foreach ($data['widgets'] as $entry) {
         $seenCustomFields = [];
         foreach ($entry['custom_fields'] as $field => $value) {
             if (!is_string($field) ||
-                !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $field)) {
+                !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', $field)) {
                 dashticz_json_error(400, 'Invalid custom widget field.');
             }
             $fieldKey = strtolower($field);
@@ -615,7 +619,7 @@ foreach ($data['widgets'] as $entry) {
         if (is_string($showEmptyRoads) && $showEmptyRoads !== ''
             && !in_array(strtolower($showEmptyRoads), ['0', '1', 'true', 'false'], true)
         ) {
-            $widget['showemptyroads'] = substr(strip_tags($showEmptyRoads), 0, 100);
+            $widget['showemptyroads'] = configwriter_cut_bytes(strip_tags($showEmptyRoads), 100);
         } else {
             $widget['showemptyroads'] = filter_var(
                 $showEmptyRoads,
