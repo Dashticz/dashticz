@@ -547,7 +547,8 @@ function configwriter_extract_section_config_settings($config, $startMarker, $en
 
     $section = substr($config, $startPos, $endPos - $startPos);
     if (!preg_match_all(
-        "/config\\[(['\\\"])([A-Za-z0-9_]+)\\1\\]\\s*=\\s*([^;]+);/",
+        // The value may hold quoted strings, which can contain a ';'.
+        "/config\\[(['\\\"])([A-Za-z0-9_]+)\\1\\]\\s*=\\s*((?:\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|[^;\"'])+);/",
         $section,
         $matches,
         PREG_SET_ORDER

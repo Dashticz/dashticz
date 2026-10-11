@@ -169,3 +169,18 @@ test('block lines keep plain names and quote hostile keys', () => {
     `blocks['x\\'] = alert(1); blocks[\\'y'] = {"a:1}); alert(2); ({b":1};\n`
   );
 });
+
+// A setting whose value holds a ';' (a password, say) must survive being read
+// back from CONFIG.js and written again unchanged.
+test('settings with a semicolon in a string value survive a rewrite', () => {
+  const output = runPhp(
+    `$config = "// START\\n" . configwriter_emit_config_settings(['pw' => 'pa;ss "q"', 'n' => 5]) . "config['raw'] = 'a;b';\\n// END\\n";
+$settings = configwriter_extract_section_config_settings($config, '// START', '// END');
+echo json_encode($settings);`
+  );
+  assert.deepEqual(JSON.parse(output), {
+    pw: '"pa;ss \\"q\\""',
+    n: '5',
+    raw: "'a;b'",
+  });
+});
