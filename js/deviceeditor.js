@@ -7847,6 +7847,7 @@ var DashticzDeviceEditor = (function () {
     });
     html += '</div></div><div class="de-f1-grid">';
     F1_SETTINGS.forEach(function (setting) {
+      if (setting.key === 'fontsize') return;
       html += _settingHtml(F1_SECTION, prefix, setting, v[setting.key], t);
     });
     return html + '</div></div>';
@@ -7967,6 +7968,7 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
+    html += _f1FontsizeHtml('f1', {});
     html +=
       '<div class="mb-3"><label class="form-label" for="f1-device-title">' +
       _esc(t.html_block_title) +
@@ -8155,6 +8157,7 @@ var DashticzDeviceEditor = (function () {
       '</div></div></div>';
     html += '<div class="de-tvgids-grid">';
     TVGIDS_SETTINGS.forEach(function (setting) {
+      if (setting.key === 'fontsize') return;
       html += _settingHtml(TVGIDS_SECTION, prefix, setting, v[setting.key], t);
     });
     return html + '</div></div>';
@@ -8290,6 +8293,7 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
+    html += _tvgidsFontsizeHtml('tvgids', {});
     html +=
       '<div class="mb-3"><label class="form-label" for="tvgids-device-title">' +
       _esc(t.html_block_title) +
@@ -8446,25 +8450,38 @@ var DashticzDeviceEditor = (function () {
     return html;
   }
 
-  // The font size field, shown in the Display options below the icons
-  // instead of in the Fully Kiosk section (same field id, so
-  // _readFullyFields() reads it as before).
-  function _fullyFontsizeHtml(prefix, values) {
-    var v = $.extend(_fullyValuesFromRows([]), values || {});
-    var setting = FULLY_SETTINGS.filter(function (item) {
+  // The font size field of a section, shown in the Display options below the
+  // icons instead of in the widget's own section (same field id, so the
+  // section's reader finds it as before).
+  function _sectionFontsizeHtml(section, prefix, value) {
+    var setting = section.settings.filter(function (item) {
       return item.key === 'fontsize';
     })[0];
     return (
-      '<div class="de-fully-fontsize">' +
-      _settingHtml(
-        FULLY_SECTION,
-        prefix,
-        setting,
-        v.fontsize,
-        _translations()
-      ) +
+      '<div class="de-section-fontsize">' +
+      _settingHtml(section, prefix, setting, value, _translations()) +
       '</div>'
     );
+  }
+
+  function _fullyFontsizeHtml(prefix, values) {
+    var v = $.extend(_fullyValuesFromRows([]), values || {});
+    return _sectionFontsizeHtml(FULLY_SECTION, prefix, v.fontsize);
+  }
+
+  function _f1FontsizeHtml(prefix, values) {
+    var v = $.extend(_f1ValuesFromRows([]), values || {});
+    return _sectionFontsizeHtml(F1_SECTION, prefix, v.fontsize);
+  }
+
+  function _tvgidsFontsizeHtml(prefix, values) {
+    var v = $.extend(_tvgidsValuesFromRows([]), values || {});
+    return _sectionFontsizeHtml(TVGIDS_SECTION, prefix, v.fontsize);
+  }
+
+  function _weatherinfoFontsizeHtml(prefix, values) {
+    var v = $.extend(_weatherinfoValuesFromRows([]), values || {});
+    return _sectionFontsizeHtml(WEATHERINFO_SECTION, prefix, v.fontsize);
   }
 
   // The Fully Kiosk section's fields -> values. Numbers are clamped to their
@@ -8698,6 +8715,7 @@ var DashticzDeviceEditor = (function () {
       '<h6 class="de-section-title">' + _esc(t.weatherinfo_block) + '</h6>';
     html += '<div class="de-weatherinfo-grid">';
     WEATHERINFO_SETTINGS.forEach(function (setting) {
+      if (setting.key === 'fontsize') return;
       html += _settingHtml(
         WEATHERINFO_SECTION,
         prefix,
@@ -8782,6 +8800,7 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
+    html += _weatherinfoFontsizeHtml('weatherinfo', {});
     html +=
       '<div class="mb-3"><label class="form-label" for="weatherinfo-device-title">' +
       _esc(t.html_block_title) +
@@ -9799,6 +9818,10 @@ var DashticzDeviceEditor = (function () {
     }
     html += '</div>';
     if (isFullyBlock) html += _fullyFontsizeHtml('de-config', fullyValues);
+    if (isF1Block) html += _f1FontsizeHtml('de-config', f1Values);
+    if (isTvgidsBlock) html += _tvgidsFontsizeHtml('de-config', tvgidsValues);
+    if (isWeatherinfoBlock)
+      html += _weatherinfoFontsizeHtml('de-config', weatherinfoValues);
 
     if (hasDial) {
       var currentBarSteps =

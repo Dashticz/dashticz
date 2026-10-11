@@ -2839,7 +2839,10 @@ var DashticzWidgetEditor = (function () {
     var id = 'we-cfg-' + key.replace(/_/g, '-');
     // we-cfg-field: one uniform field spacing in every Widget Config (see
     // css/creative.css); mb-3 stays for code that looks fields up by it.
-    var html = '<div class="mb-3 we-cfg-field">';
+    var html =
+      '<div class="mb-3 we-cfg-field' +
+      (type === 'checkbox' ? ' we-cfg-switch' : '') +
+      '">';
     html +=
       '<label class="form-label we-field-label" for="' +
       _esc(id) +
@@ -3587,6 +3590,7 @@ var DashticzWidgetEditor = (function () {
 
   function _buildConfigModalHtml(item) {
     var fields = '';
+    var fontFieldHtml = '';
     var lng =
       typeof language !== 'undefined' && language.settings
         ? language.settings
@@ -4174,7 +4178,7 @@ var DashticzWidgetEditor = (function () {
         lp.postnl_pollminutes_help ||
           'Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60.'
       );
-      fields += _cfgField(
+      fontFieldHtml = _cfgField(
         'postnl_fontsize',
         lp.postnl_fontsize || 'Font size (px)',
         'number',
@@ -4260,7 +4264,7 @@ var DashticzWidgetEditor = (function () {
         lh.hpilo_pollseconds_help ||
           'Minimum 30 seconds; the iLO is a slow management processor. Default: 300.'
       );
-      fields += _cfgField(
+      fontFieldHtml = _cfgField(
         'hpilo_fontsize',
         lh.hpilo_fontsize || 'Font size (px)',
         'number',
@@ -4860,6 +4864,7 @@ var DashticzWidgetEditor = (function () {
     // .we-settings-grid), then Custom fields last.
     fields =
       _widgetBlockOptionsHtml(item) +
+      fontFieldHtml +
       (fields
         ? _cfgHeading(_t('settings', 'Settings')) +
           '<div class="we-settings-grid">' +

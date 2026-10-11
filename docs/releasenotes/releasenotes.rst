@@ -14,6 +14,10 @@ v4.20.0 (11-10-2026)
   a phone).
 - Fully Kiosk settings: the font size field is now in the Display options,
   below the icons.
+- The font size field of the F1, TVgids, Weather Info, HP iLO and PostNL
+  widgets is now in the Display options below the icons, switches in the
+  Widget Config show their label next to the switch, and the Selector Switch
+  compact option shows the icon per level in two columns.
 - Info in Config no longer shows ``undefined`` after the version number, and
   the update check falls back to the ``master`` branch when ``version.txt``
   does not name a branch.

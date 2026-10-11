@@ -9280,7 +9280,7 @@ canvas {
    (js/deviceeditor.js _fullyFieldsHtml()): three columns, two on a narrow
    popup, one on a phone. */
 /* A switch setting shows its label right next to the switch (switch first)
-   instead of above it. */
+   instead of above it (Device Config sections and Widget Config). */
 .de-setting-switch > .mb-3 {
   display: flex;
   flex-flow: row-reverse wrap;
@@ -9289,11 +9289,22 @@ canvas {
   column-gap: 10px;
 }
 
+.we-cfg-switch {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.we-cfg-switch .form-label,
+.we-cfg-switch .form-switch,
 .de-setting-switch .form-label,
 .de-setting-switch .form-switch {
   margin-bottom: 0;
 }
 
+.we-cfg-switch .form-text,
 .de-setting-switch .form-text {
   flex: 0 0 100%;
   order: 3;
@@ -9628,5 +9639,23 @@ canvas {
   }
   to {
     transform: translateX(3px);
+  }
+}
+
+/* Device Config -> Selector Switch compact option: the icon per level in two
+   columns (one on a narrow popup); the heading spans both. */
+.de-compact-icons:not(.d-none) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+.de-compact-icons > .form-label {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 479px) {
+  .de-compact-icons:not(.d-none) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
