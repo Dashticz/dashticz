@@ -182,7 +182,7 @@ var DT_simpleblock = (function () {
       $('<div>').text(title).html() +
       '</span>' +
       (typeof dashticz_version !== 'undefined' && dashticz_version
-        ? '<span class="logo-version">' +
+        ? '<span class="logo-version">v' +
           $('<div>').text(dashticz_version).html() +
           '</span>'
         : '') +
