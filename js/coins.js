@@ -1,116 +1,72 @@
-/* global _CORS_PATH number_format*/
+/* global number_format*/
 
 var coinsvalue = [];
 
+var COIN_REFRESH_MS = 60000;
+var COIN_SYMBOLS = { EUR: '€', GBP: '£', USD: '$' };
+
 // eslint-disable-next-line no-unused-vars
 function getCoin(coin) {
-  if (coin['source'] == 'litebit') {
-    appendLiteBit(coin);
-  } else {
-    appendCoinMarketCap(coin);
-  }
+  appendCoin(coin);
   setTimeout(function () {
     getCoin(coin);
-  }, 15000);
+  }, COIN_REFRESH_MS);
 }
 
-function appendLiteBit(coin) {
-  $.getJSON(
-    _CORS_PATH + 'https://www.litebit.eu/system/live-updates',
-    function (data) {
-      var symbol = '€';
-      var varname = coin['key'] + 'RateBuyRound';
-      var html = '';
+function coinEscape(text) {
+  return $('<div>').text(String(text)).html();
+}
 
+/* Prices come from the CoinGecko public API. coin.key is the CoinGecko coin
+   id (for example 'bitcoin'); the former CoinMarketCap v1 ticker and LiteBit
+   endpoints no longer exist, so coin.source is ignored. */
+function appendCoin(coin) {
+  var currency = String(coin['currency'] || 'USD').toUpperCase();
+  var symbol = COIN_SYMBOLS[currency] || currency + ' ';
+  $.getJSON(
+    'https://api.coingecko.com/api/v3/simple/price?ids=' +
+      encodeURIComponent(coin['key']) +
+      '&vs_currencies=' +
+      encodeURIComponent(currency.toLowerCase()),
+    function (data) {
+      var entry = data && data[coin['key']];
+      var price = entry && entry[currency.toLowerCase()];
+      if (typeof price !== 'number') return;
+
+      var name = coinEscape(String(coin['key']).toUpperCase());
+      var html;
       if (
         typeof coin['amount'] !== 'undefined' &&
         parseFloat(coin['amount']) > 0
       ) {
         html =
           '<div class="col-xs-6 col-data">' +
-          coin['key'].toUpperCase() +
+          name +
           '<br /><strong class="title">' +
           symbol +
-          number_format(data[varname], 2) +
-          '</strong><br>';
-        html += '<span class="state">' + coin['amount'] + '</span>';
-        html += '</div>';
-        html +=
+          number_format(price, 2) +
+          '</strong><br>' +
+          '<span class="state">' +
+          coinEscape(coin['amount']) +
+          '</span>' +
+          '</div>' +
           '<div class="col-xs-6 col-data col-currency">' +
           symbol +
-          number_format(
-            data[coin['key'] + 'RateSellRound'] * coin['amount'],
-            2
-          ) +
+          number_format(price * coin['amount'], 2) +
           '</div>';
       } else {
         html =
           '<div class="col-xs-12 col-data">' +
-          coin['key'].toUpperCase() +
+          name +
           '<br /><strong class="title">' +
           symbol +
-          number_format(data[varname], 2) +
-          '</strong><br>';
-        html += '</div>';
+          number_format(price, 2) +
+          '</strong><br>' +
+          '</div>';
       }
 
-      coinsvalue[coin['key']] = data[varname];
+      coinsvalue[coin['key']] = price;
       $('.coins-' + coin['key']).html(html);
-    }
-  );
-}
-
-function appendCoinMarketCap(coin) {
-  $.getJSON(
-    'https://api.coinmarketcap.com/v1/ticker/' +
-      coin['key'] +
-      '/?convert=' +
-      coin['currency'],
-    function (data) {
-      var symbol = '$';
-      var varname = 'price_usd';
-      switch (coin['currency']) {
-        case 'EUR':
-          symbol = '€';
-          varname = 'price_eur';
-          break;
-        case 'GBP':
-          symbol = '£';
-          varname = 'price_gbp';
-          break;
-      }
-
-      if (
-        typeof coin['amount'] !== 'undefined' &&
-        parseFloat(coin['amount']) > 0
-      ) {
-        var html =
-          '<div class="col-xs-6 col-data">' +
-          data[0]['symbol'] +
-          '<br /><strong class="title">' +
-          symbol +
-          number_format(data[0][varname], 2) +
-          '</strong><br>';
-        html += '<span class="state">' + coin['amount'] + '</span>';
-        html += '</div>';
-        html +=
-          '<div class="col-xs-6 col-data col-currency">' +
-          symbol +
-          number_format(data[0][varname] * coin['amount'], 2) +
-          '</div>';
-      } else {
-        html =
-          '<div class="col-xs-12 col-data">' +
-          data[0]['symbol'] +
-          '<br /><strong class="title">' +
-          symbol +
-          number_format(data[0][varname], 2) +
-          '</strong><br>';
-        html += '</div>';
-      }
-
-      coinsvalue[coin['key']] = data[0][varname];
-      $('.coins-' + data[0]['id']).html(html);
     }
   );
 }
