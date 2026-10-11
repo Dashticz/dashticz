@@ -107,7 +107,7 @@ foreach ($data['items'] as $index => $entry) {
     $requestedRef =
         isset($entry['ref'])
         && is_string($entry['ref'])
-        && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['ref'])
+        && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['ref'])
             ? $entry['ref']
             : '';
     $ref = $requestedRef;
@@ -153,7 +153,7 @@ foreach ($data['items'] as $index => $entry) {
         }
         $create = $entry['create'];
         $name = isset($create['name']) && is_string($create['name'])
-            ? trim(substr($create['name'], 0, 100))
+            ? trim(configwriter_cut_bytes($create['name'], 100))
             : ($requestedRef !== '' ? $requestedRef : ('Grid block ' . ($index + 1)));
         if (($create['kind'] ?? '') === 'device') {
             $idx = isset($create['idx']) ? (int)$create['idx'] : 0;
@@ -190,6 +190,22 @@ foreach ($data['items'] as $index => $entry) {
                 || !is_object($decodedProps)
             ) {
                 dashticz_json_error(400, 'Inline grid block properties are invalid.');
+            }
+            // Same checks saveblocks.php makes for html and iframe blocks, so
+            // an inline block cannot carry what the Device Editor refuses.
+            if (property_exists($decodedProps, 'htmlfile')
+                && (!is_string($decodedProps->htmlfile)
+                    || strpos($decodedProps->htmlfile, '..') !== false
+                    || !preg_match('/^[A-Za-z0-9_\-.\/ ]+\.html?$/iD', $decodedProps->htmlfile))
+            ) {
+                dashticz_json_error(400, 'Enter a valid html filename (relative to custom/).');
+            }
+            if (property_exists($decodedProps, 'frameurl')
+                && (!is_string($decodedProps->frameurl)
+                    || trim($decodedProps->frameurl) === ''
+                    || strlen($decodedProps->frameurl) > 2048)
+            ) {
+                dashticz_json_error(400, 'Enter a valid iFrame URL.');
             }
             $propsLiteral = $propsJson;
         } else {
@@ -237,10 +253,13 @@ foreach ($data['items'] as $index => $entry) {
     }
 }
 
-/* An empty Wizard conversion bootstraps a clean CONFIG.js (or an empty
- * existing screen). Only the explicit screen-delete flow may interpret an
- * empty item list as a request to remove and compact a numbered screen. */
-if ($screenNumber > 0 && empty($items) && !isset($data['configMode'])) {
+/* An empty item list only empties the screen (a Layout Editor save with all
+ * tiles removed, or an empty Wizard conversion). Removing and compacting a
+ * numbered screen, which renumbers the later ones, needs the explicit
+ * deleteScreen flag. */
+if ($screenNumber > 0 && empty($items)
+    && isset($data['deleteScreen']) && $data['deleteScreen'] === true
+) {
     $numberedScreens = configwriter_extract_numbered_screens($config);
     if (count($numberedScreens) > 1
         && in_array($screenNumber, $numberedScreens, true)

@@ -21,8 +21,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* The tests are independent (every test mocks its own endpoints), and the
+     GitHub runners have 4 vCPUs. The PHP test server must be started with
+     PHP_CLI_SERVER_WORKERS=4 too, or it serializes the requests. */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Allow a small fraction of differing pixels in toHaveScreenshot() comparisons, so

@@ -835,7 +835,11 @@ settingList['about']['title'] = language.settings.about.title;
 
 settingList['about']['about_text'] = {};
 settingList['about']['about_text']['title'] =
-  'Dashticz V' + dashticz_version + ' ' + dashticz_branch + '<br>' + newVersion;
+  'Dashticz V' +
+  dashticz_version +
+  (dashticz_branch ? ' ' + dashticz_branch : '') +
+  '<br>' +
+  newVersion;
 /*
 settingList['about']['about_text2'] = {};
 settingList['about']['about_text2']['title'] =

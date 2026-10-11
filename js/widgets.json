@@ -8,6 +8,7 @@
     },
     "slidebutton": {
       "idxLess": true,
+      "noDial": true,
       "defaultWidth": 12
     },
     "dummy": {
@@ -138,6 +139,15 @@
       "defaultWidth": 12
     },
     "fullykiosk": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    },
+    "weatherinfo": {
       "idxLess": true,
       "titleOptional": true,
       "noDial": true,

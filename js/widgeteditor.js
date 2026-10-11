@@ -571,7 +571,8 @@ var DashticzWidgetEditor = (function () {
       // widgets already saved.
       iconValue: explicitDefaultIcon,
       hide_data: false,
-      last_update: false,
+      // undefined: the block follows the global last_update setting
+      last_update: undefined,
       show_title: true,
       customFields: [{ field: 'title', setting: '', system: true }],
       preservedFields: {},
@@ -658,7 +659,17 @@ var DashticzWidgetEditor = (function () {
         return '';
       }
     }
-    return String(value);
+    var text = String(value);
+    if (value === '') return '""'; // an empty row would block the popup
+    if (typeof value === 'string') {
+      // A text value that would read back as another type ('007', 'true') is
+      // shown as a JSON string, so a save keeps it a string.
+      var parsed = _parseCustomSetting(text);
+      if (!parsed.valid || parsed.value !== value || /^"/.test(text)) {
+        return JSON.stringify(value);
+      }
+    }
+    return text;
   }
 
   function _hydrateWidgetBlockOptions(item, definition) {
@@ -677,8 +688,12 @@ var DashticzWidgetEditor = (function () {
       typeof definition.icon === 'string' && definition.icon !== ''
         ? definition.icon
         : null;
-    options.hide_data = definition.hide_data === true;
-    options.last_update = definition.last_update === true;
+    options.hide_data = !!definition.hide_data;
+    // Keep an explicit false; undefined stays undefined (global setting).
+    options.last_update =
+      typeof definition.last_update === 'undefined'
+        ? undefined
+        : !!definition.last_update;
     options.show_title = definition.hide_title !== true;
     options.customFields = [
       {
@@ -781,6 +796,15 @@ var DashticzWidgetEditor = (function () {
     if (text === 'false') return { valid: true, value: false };
     if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
       return { valid: true, value: Number(text) };
+    }
+    if (/^".*"$/.test(text)) {
+      try {
+        var quoted = JSON.parse(text);
+        if (typeof quoted === 'string') return { valid: true, value: quoted };
+      } catch (ignore) {
+        /* not a JSON string: keep the text as typed */
+      }
+      return { valid: true, value: text };
     }
     if (/^[\[{]/.test(text)) {
       try {
@@ -1257,7 +1281,10 @@ var DashticzWidgetEditor = (function () {
             ? blocks[reference]
             : {};
         var item = _catalogItemForDefinition(reference, definition);
-        if (!item) return;
+        // Only the first block of a kind is managed here. Repeatable blocks
+        // (a second iframe, camera, ...) map to the same catalog item; they
+        // stay untouched so the layout never gets two blocks with one ref.
+        if (!item || selectedWidgets[item.id]) return;
 
         selectedWidgets[item.id] = true;
         // Keep an existing custom reference, while new widgets use the stable
@@ -1757,6 +1784,15 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  // A layout item belongs to a managed widget only when it is the block this
+  // editor tracks for that kind; any other block of the same kind is passed
+  // through unchanged.
+  function _isManagedLayoutItem(item) {
+    if (!item.widgetId) return false;
+    var tracked = widgetBlockRefs[item.widgetId];
+    return !tracked || tracked === item.ref;
+  }
+
   function _readGridConfig() {
     var $grid = _activeScreenDom().children('.dt-grid-layout').first();
     function number(property, fallback) {
@@ -1796,6 +1832,8 @@ var DashticzWidgetEditor = (function () {
             ? blocks[reference]
             : {};
         var item = _catalogItemForDefinition(reference, definition);
+        // See the column-mode reader: a repeated kind stays an unmanaged block.
+        if (item && selectedWidgets[item.id]) item = null;
         var grid = {
           x: _gridValue(this, '--dt-grid-x', 1),
           y: _gridValue(this, '--dt-grid-y', index + 1),
@@ -2213,6 +2251,7 @@ var DashticzWidgetEditor = (function () {
     html += _f1WidgetCardHtml();
     html += _tvgidsWidgetCardHtml();
     html += _fullykioskWidgetCardHtml();
+    html += _weatherinfoWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2763,6 +2802,38 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  /* Weather Info (docs/blocks/specials/weatherinfo.rst,
+     js/components/weatherinfo.js) is also only a repeatable card: it opens
+     the Weather Info quick-add popup (DashticzDeviceEditor.openWeatherinfo()). */
+  function _weatherinfoWidgetCardHtml() {
+    var itemTitle = _t('weatherinfo_title', 'Weather info');
+    return (
+      '<div class="we-widget-card we-widget-card-weatherinfo" data-special-widget="weatherinfo" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-cloud-sun-rain" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'weatherinfo_description',
+        'Rain forecast and current weather (Buienradar, domoticz_weatherinfo plugin).'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openWeatherinfoFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openWeatherinfo();
+    });
+  }
+
   function _openGraphFromWidgets() {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
@@ -2774,7 +2845,10 @@ var DashticzWidgetEditor = (function () {
     var id = 'we-cfg-' + key.replace(/_/g, '-');
     // we-cfg-field: one uniform field spacing in every Widget Config (see
     // css/creative.css); mb-3 stays for code that looks fields up by it.
-    var html = '<div class="mb-3 we-cfg-field">';
+    var html =
+      '<div class="mb-3 we-cfg-field' +
+      (type === 'checkbox' ? ' we-cfg-switch' : '') +
+      '">';
     html +=
       '<label class="form-label we-field-label" for="' +
       _esc(id) +
@@ -3522,6 +3596,7 @@ var DashticzWidgetEditor = (function () {
 
   function _buildConfigModalHtml(item) {
     var fields = '';
+    var fontFieldHtml = '';
     var lng =
       typeof language !== 'undefined' && language.settings
         ? language.settings
@@ -4109,7 +4184,7 @@ var DashticzWidgetEditor = (function () {
         lp.postnl_pollminutes_help ||
           'Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60.'
       );
-      fields += _cfgField(
+      fontFieldHtml = _cfgField(
         'postnl_fontsize',
         lp.postnl_fontsize || 'Font size (px)',
         'number',
@@ -4195,7 +4270,7 @@ var DashticzWidgetEditor = (function () {
         lh.hpilo_pollseconds_help ||
           'Minimum 30 seconds; the iLO is a slow management processor. Default: 300.'
       );
-      fields += _cfgField(
+      fontFieldHtml = _cfgField(
         'hpilo_fontsize',
         lh.hpilo_fontsize || 'Font size (px)',
         'number',
@@ -4795,6 +4870,7 @@ var DashticzWidgetEditor = (function () {
     // .we-settings-grid), then Custom fields last.
     fields =
       _widgetBlockOptionsHtml(item) +
+      fontFieldHtml +
       (fields
         ? _cfgHeading(_t('settings', 'Settings')) +
           '<div class="we-settings-grid">' +
@@ -5289,7 +5365,7 @@ var DashticzWidgetEditor = (function () {
         hide_data: $hideDataButton.length
           ? !$hideDataButton.hasClass('active')
           : existingBlockOptions.hide_data === true,
-        last_update: existingBlockOptions.last_update === true,
+        last_update: existingBlockOptions.last_update,
         show_title: $cfgModal
           .find('[data-block-option="show_title"]')
           .hasClass('active'),
@@ -5883,6 +5959,10 @@ var DashticzWidgetEditor = (function () {
         _openFullykioskFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'weatherinfo') {
+        _openWeatherinfoFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -5936,6 +6016,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'fullykiosk') {
         _openFullykioskFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'weatherinfo') {
+        _openWeatherinfoFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));
@@ -6089,7 +6173,9 @@ var DashticzWidgetEditor = (function () {
       entry.icon = blockOptions.iconValue;
     }
     entry.hide_data = blockOptions.hide_data === true;
-    entry.last_update = blockOptions.last_update === true;
+    if (typeof blockOptions.last_update !== 'undefined') {
+      entry.last_update = blockOptions.last_update === true;
+    }
     if (blockOptions.show_title === false) entry.hide_title = true;
     entry.custom_fields = {};
     Object.keys(blockOptions.preservedFields || {}).forEach(function (field) {
@@ -6558,7 +6644,7 @@ var DashticzWidgetEditor = (function () {
             });
             var gridItems = [];
             layoutOrder.forEach(function (item) {
-              if (item.widgetId) {
+              if (_isManagedLayoutItem(item)) {
                 if (!selectedWidgets[item.widgetId]) return;
                 includedWidgets[item.widgetId] = true;
                 gridItems.push({
@@ -6616,7 +6702,7 @@ var DashticzWidgetEditor = (function () {
           }
           var layoutItems = [];
           layoutOrder.forEach(function (item) {
-            if (item.widgetId) {
+            if (_isManagedLayoutItem(item)) {
               if (!selectedWidgets[item.widgetId]) return;
               includedWidgets[item.widgetId] = true;
               var widgetEntry = {

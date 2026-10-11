@@ -13,10 +13,11 @@ try {
         'disableCharacterReplacement' => false, // Default value
         'filterDaysAfter'             => null,  // Default value
         'filterDaysBefore'            => null,  // Default value
+        'httpUserAgent'               => null,  // Default value
         'skipRecurrence'              => false, // Default value
     ));
     // $ical->initFile('ICal.ics');
-    // $ical->initUrl('https://raw.githubusercontent.com/u01jmg3/ics-parser/master/examples/ICal.ics', $username = null, $password = null, $userAgent = null);
+    // $ical->initUrl('https://raw.githubusercontent.com/u01jmg3/ics-parser/main/examples/ICal.ics', $username = null, $password = null, $userAgent = null);
 } catch (\Exception $e) {
     die($e);
 }
@@ -26,29 +27,29 @@ try {
 <head>
     <meta charset="utf-8">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <title>PHP ICS Parser example</title>
-    <style>body { background-color: #eee } .caption { overflow-x: auto }</style>
+    <style>body { background-color: #eee }</style>
 </head>
 <body>
 <div class="container-fluid">
-    <h3>PHP ICS Parser example</h3>
+    <h4 class="mt-3 mb-2">PHP ICS Parser example</h3>
     <ul class="list-group">
         <li class="list-group-item">
-            <span class="badge"><?php echo $ical->eventCount ?></span>
             The number of events
+            <span class="badge rounded-pill bg-secondary float-end"><?php echo $ical->eventCount ?></span>
         </li>
         <li class="list-group-item">
-            <span class="badge"><?php echo $ical->freeBusyCount ?></span>
             The number of free/busy time slots
+            <span class="badge rounded-pill bg-secondary float-end"><?php echo $ical->freeBusyCount ?></span>
         </li>
         <li class="list-group-item">
-            <span class="badge"><?php echo $ical->todoCount ?></span>
             The number of todos
+            <span class="badge rounded-pill bg-secondary float-end"><?php echo $ical->todoCount ?></span>
         </li>
         <li class="list-group-item">
-            <span class="badge"><?php echo $ical->alarmCount ?></span>
             The number of alarms
+            <span class="badge rounded-pill bg-secondary float-end"><?php echo $ical->alarmCount ?></span>
         </li>
     </ul>
 
@@ -65,7 +66,7 @@ try {
             $events = $ical->eventsFromInterval('1 week');
 
             if ($events) {
-                echo '<h4>Events in the next 7 days:</h4>';
+                echo '<h4 class="mt-3 mb-2">Events in the next 7 days:</h4>';
             }
 
             $count = 1;
@@ -74,9 +75,9 @@ try {
     <?php
     foreach ($events as $event) : ?>
         <div class="col-md-4">
-            <div class="thumbnail">
-                <div class="caption">
-                    <h3><?php
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="mt-3 mb-2"><?php
                         $dtstart = $ical->iCalDateToDateTime($event->dtstart_array[3]);
                         echo $event->summary . ' (' . $dtstart->format('d-m-Y H:i') . ')';
                     ?></h3>
@@ -102,7 +103,7 @@ try {
             $events = $ical->eventsFromRange('2017-03-01 12:00:00', '2017-04-31 17:00:00');
 
             if ($events) {
-                echo '<h4>Events March through April:</h4>';
+                echo '<h4 class="mt-3 mb-2">Events March through April:</h4>';
             }
 
             $count = 1;
@@ -111,9 +112,9 @@ try {
     <?php
     foreach ($events as $event) : ?>
         <div class="col-md-4">
-            <div class="thumbnail">
-                <div class="caption">
-                    <h3><?php
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="mt-3 mb-2"><?php
                         $dtstart = $ical->iCalDateToDateTime($event->dtstart_array[3]);
                         echo $event->summary . ' (' . $dtstart->format('d-m-Y H:i') . ')';
                     ?></h3>
@@ -139,7 +140,7 @@ try {
             $events = $ical->sortEventsWithOrder($ical->events());
 
             if ($events) {
-                echo '<h4>All Events:</h4>';
+                echo '<h4 class="mt-3 mb-2">All Events:</h4>';
             }
     ?>
     <div class="row">
@@ -147,9 +148,9 @@ try {
     $count = 1;
     foreach ($events as $event) : ?>
         <div class="col-md-4">
-            <div class="thumbnail">
-                <div class="caption">
-                    <h3><?php
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="mt-3 mb-2"><?php
                         $dtstart = $ical->iCalDateToDateTime($event->dtstart_array[3]);
                         echo $event->summary . ' (' . $dtstart->format('d-m-Y H:i') . ')';
                     ?></h3>

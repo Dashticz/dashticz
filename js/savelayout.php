@@ -63,7 +63,7 @@ foreach ($data['items'] as $entry) {
     if (!is_array($entry)
         || !isset($entry['ref'])
         || !is_string($entry['ref'])
-        || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['ref'])
+        || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['ref'])
     ) {
         dashticz_json_error(400, 'Each layout item requires a safe block reference.');
     }

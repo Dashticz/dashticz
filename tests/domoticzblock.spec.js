@@ -31,7 +31,7 @@ test.describe('Basic testing', () => {
   test('block tests', async ({ page }) => {
     // Expect a title "to contain" a substring.
     await expect(page).toHaveTitle(/Dashticz/);
-    await page.waitForTimeout(1000);
+    await waitForDashboard(page);
     if (compareScreenshots) {
       await expectIsolatedScreenshot(
         page,
@@ -135,7 +135,7 @@ test.describe('Basic testing', () => {
   test('device title typography is independent from data and heading text', async ({
     page,
   }) => {
-    await page.waitForTimeout(1000);
+    await waitForDashboard(page);
 
     const title = page.locator('[data-id="tc2"] .title');
     const value = page.locator('[data-id="tc2"] .value');
@@ -159,7 +159,7 @@ test.describe('Basic testing', () => {
   });
 
   test('legacy column block boxes do not overlap', async ({ page }) => {
-    await page.waitForTimeout(1000);
+    await waitForDashboard(page);
 
     const overlaps = await page
       .locator('.screen .row [data-colindex] .mh[data-id]')
@@ -228,7 +228,7 @@ test.describe('Basic testing', () => {
   });
 
   test('hideimageonempty block option', async ({ page }) => {
-    await page.waitForTimeout(1000);
+    await waitForDashboard(page);
 
     // 1. hideimageonempty absent: image stays visible even with empty Data.
     await expect(imageOf(page, 'hi_missing')).toHaveAttribute(
@@ -298,7 +298,7 @@ test.describe('Basic testing', () => {
   });
 
   test('automation indicator block option', async ({ page }) => {
-    await page.waitForTimeout(1000);
+    await waitForDashboard(page);
 
     // 1. A block with an enabled Automation rule (see tests/custom.js) shows
     // the indicator dot.
@@ -409,4 +409,12 @@ async function setDeviceData(page, idx, data) {
     },
     { idx, data }
   );
+}
+
+// Wait for the dashboard to finish loading instead of sleeping a fixed second.
+async function waitForDashboard(page) {
+  await page.locator('#loaderHolder').waitFor({
+    state: 'hidden',
+    timeout: 15000,
+  });
 }
