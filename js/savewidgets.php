@@ -350,7 +350,12 @@ foreach ($data['widgets'] as $entry) {
         'hide_title' => !empty($entry['hide_title']),
         'icon' => null,
         'hide_data' => !empty($entry['hide_data']),
-        'last_update' => !empty($entry['last_update']),
+        // null = the block has no last_update of its own and follows the
+        // global setting; an explicit false must survive a save.
+        'last_update' => array_key_exists('last_update', $entry)
+            && $entry['last_update'] !== null
+            ? !empty($entry['last_update'])
+            : null,
     ];
     if (isset($entry['icon']) && is_string($entry['icon'])) {
         $icon = trim($entry['icon']);
@@ -1390,8 +1395,8 @@ function _widgetBlockProps($widget)
     if (!empty($widget['hide_data'])) {
         $props['hide_data'] = true;
     }
-    if (!empty($widget['last_update'])) {
-        $props['last_update'] = true;
+    if (isset($widget['last_update'])) {
+        $props['last_update'] = $widget['last_update'] === true;
     }
     if (!empty($widget['custom_fields'])) {
         // Custom fields are merged last so users can intentionally override a
