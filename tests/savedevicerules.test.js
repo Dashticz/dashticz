@@ -258,3 +258,59 @@ test('an enabled text action requires a target and at least one text value', () 
     fs.rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+test('the custom folder cannot be a program folder', () => {
+  const fixture = makeFixture();
+  try {
+    const encode = (post) =>
+      Buffer.from(JSON.stringify(post)).toString('base64');
+    for (const folder of ['js', 'vendor', 'dist', 'JS']) {
+      const result = spawnSync(
+        'php',
+        [
+          path.join(fixture, 'runner.php'),
+          encode({
+            source: 'device_123',
+            schema_version: 2,
+            rules: '[]',
+            custom_folder: folder,
+            css_file: 'custom.css',
+          }),
+        ],
+        { encoding: 'utf8', cwd: fixture }
+      );
+      assert.match(result.stdout, /Invalid custom folder/, folder);
+    }
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('saving without rules does not create a CSS file', () => {
+  const fixture = makeFixture();
+  try {
+    const post = {
+      source: 'device_123',
+      schema_version: 2,
+      rules: '[]',
+      custom_js_handler: '',
+      css_file: 'nieuw.css',
+      custom_folder: 'custom',
+    };
+    const result = spawnSync(
+      'php',
+      [
+        path.join(fixture, 'runner.php'),
+        Buffer.from(JSON.stringify(post)).toString('base64'),
+      ],
+      { encoding: 'utf8', cwd: fixture }
+    );
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(
+      fs.existsSync(path.join(fixture, 'custom', 'nieuw.css')),
+      false
+    );
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});

@@ -166,6 +166,32 @@ function lmsConnectErrorReason(errno) {
   }
 }
 
+/* cors.php / nocache.php relay untrusted remote bodies. Opened as a page, a
+   remote text/html or image/svg+xml document must not run scripts in the
+   dashboard origin, so the response carries nosniff and a sandbox CSP. */
+test('remote proxy responses are sandboxed and cannot inject headers', () => {
+  const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+  const script = `require '${securityPhp}'; echo json_encode(array(
+    dashticz_remote_response_headers("text/html\r\nX-Evil: 1", "gzip"),
+    dashticz_remote_response_headers("image/png", "gzip"),
+  ));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const [injected, png] = JSON.parse(result.stdout);
+  assert.ok(injected.includes('X-Content-Type-Options: nosniff'));
+  assert.ok(injected.some((h) => /^Content-Security-Policy: sandbox;/.test(h)));
+  assert.ok(!injected.some((h) => /^Content-Type:/.test(h)));
+  assert.ok(!injected.some((h) => /X-Evil/.test(h)));
+  assert.ok(png.includes('Content-Type: image/png'));
+  assert.ok(png.includes('Content-Encoding: gzip'));
+  for (const file of ['cors.php', 'nocache.php']) {
+    assert.match(
+      read('vendor/dashticz/' + file),
+      /dashticz_send_remote_response\(/
+    );
+  }
+});
+
 test('remote proxy endpoints use the validated fetch helper', () => {
   for (const file of [
     'vendor/dashticz/cors.php',
@@ -998,7 +1024,7 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /configwriter_normalise_grid_position/);
   assert.match(source, /configwriter_build_grid_layout_section/);
   assert.match(source, /configwriter_editor_markers\(\s*'grid-layout'/);
-  assert.match(source, /empty\(\$items\) && !isset\(\$data\['configMode'\]\)/);
+  assert.match(source, /\$data\['deleteScreen'\] === true/);
   assert.match(source, /configwriter_extract_numbered_screens/);
   assert.match(source, /configwriter_remove_numbered_screen_and_compact/);
   assert.match(source, /'removedScreen'\s*=>\s*\$screenNumber/);

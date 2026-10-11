@@ -28,6 +28,40 @@ function dashticz_json_error($status, $message)
     die(json_encode(array('error' => $message)));
 }
 
+/* Headers for a response that relays a remote body (cors.php, nocache.php).
+   The body is untrusted: when it is opened as a page (typed URL, a browser
+   without Fetch Metadata) a remote text/html or image/svg+xml document would
+   otherwise run its scripts in the dashboard origin. nosniff stops the browser
+   from guessing a script/HTML type, and the sandbox CSP gives such a document
+   an opaque origin without script execution. Images, JSON and text fetched by
+   the dashboard itself are not affected. */
+function dashticz_remote_response_headers($contentType = null, $contentEncoding = null)
+{
+    $headers = array(
+        'X-Content-Type-Options: nosniff',
+        "Content-Security-Policy: sandbox; default-src 'none'; img-src * data:; media-src *; style-src 'unsafe-inline'",
+    );
+    if ($contentType && !preg_match('/[\r\n]/', $contentType)) {
+        $headers[] = 'Content-Type: ' . $contentType;
+    }
+    if ($contentEncoding && !preg_match('/[\r\n]/', $contentEncoding)) {
+        $headers[] = 'Content-Encoding: ' . $contentEncoding;
+    }
+    return $headers;
+}
+
+function dashticz_send_remote_response($response, $relayEncoding = false)
+{
+    $headers = dashticz_remote_response_headers(
+        $response['contentType'],
+        $relayEncoding ? $response['contentEncoding'] : null
+    );
+    foreach ($headers as $header) {
+        header($header);
+    }
+    echo $response['body'];
+}
+
 function dashticz_request_origin()
 {
     if (empty($_SERVER['HTTP_ORIGIN'])) {

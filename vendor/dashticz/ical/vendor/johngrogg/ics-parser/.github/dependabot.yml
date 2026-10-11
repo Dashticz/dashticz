@@ -4,6 +4,16 @@ updates:
   directory: "/"
   schedule:
     interval: daily
+  cooldown:
+    default-days: 5
   open-pull-requests-limit: 10
-  reviewers:
-  - u01jmg3
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: weekly
+  cooldown:
+    default-days: 5
+  groups:
+    github-actions:
+      patterns:
+        - "*"

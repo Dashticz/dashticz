@@ -48,6 +48,7 @@ class SG_iCal_VCalendar implements IteratorAggregate {
 	/**
 	 * @see IteratorAggregate.getIterator()
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		return new ArrayIterator($this->data);
 	}

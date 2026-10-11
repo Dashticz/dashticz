@@ -9140,18 +9140,47 @@ canvas {
   padding-left: 0;
 }
 
+/* The rows are laid out in 3 columns: every switch has its label right
+   next to it on the same line. The charger group (charge data and its
+   button), the brightness slider and the error text use the full width. */
 .fullykiosk-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
   padding: 4px 0;
 }
 
 .fullykiosk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fullykiosk-group,
+.fullykiosk-row.fullykiosk-battery,
+.fullykiosk-brightness-row,
+.fullykiosk-error {
+  grid-column: 1 / -1;
+}
+
+.fullykiosk-group,
+.fullykiosk-row.fullykiosk-battery {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 25%;
-  align-items: center;
   column-gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .fullykiosk-rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
+  .fullykiosk-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .fullykiosk-data {
@@ -9193,23 +9222,39 @@ canvas {
 .fullykiosk-control {
   display: flex;
   gap: 6px;
-  /* Column 2, at the right of the data: 20 px from the data (10 px column
-     gap + 10 px margin) and 5 px free from the right edge */
+  /* In a switch row the switch comes first, its label right next to it. */
+  flex: none;
+  order: 0;
+}
+
+.fullykiosk-control:empty {
+  display: none;
+}
+
+.fullykiosk-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 3.4em;
+  height: 3.4em;
+}
+
+/* The charger button runs over the rows of the charge data, at the right of
+   the data in column 2. */
+.fullykiosk-group {
+  align-items: stretch;
+}
+
+.fullykiosk-group .fullykiosk-control,
+.fullykiosk-row.fullykiosk-battery .fullykiosk-control {
   order: 2;
   margin-left: 10px;
   margin-right: 5px;
   width: calc(100% - 15px);
 }
 
-.fullykiosk-btn {
+.fullykiosk-group .fullykiosk-btn {
   flex: 1 1 0;
-  min-width: 0;
-  height: 3.4em;
-}
-
-/* The charger button runs over the rows of the charge data. */
-.fullykiosk-group {
-  align-items: stretch;
+  width: auto;
 }
 
 .fullykiosk-group .fullykiosk-btn {
@@ -9232,10 +9277,42 @@ canvas {
 }
 
 /* Device Config / quick-add -> Fully Kiosk section
-   (js/deviceeditor.js _fullyFieldsHtml()): two columns, one on a phone. */
+   (js/deviceeditor.js _fullyFieldsHtml()): three columns, two on a narrow
+   popup, one on a phone. */
+/* A switch setting shows its label right next to the switch (switch first)
+   instead of above it (Device Config sections and Widget Config). */
+.de-setting-switch > .mb-3 {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.we-cfg-switch {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.we-cfg-switch .form-label,
+.we-cfg-switch .form-switch,
+.de-setting-switch .form-label,
+.de-setting-switch .form-switch {
+  margin-bottom: 0;
+}
+
+.we-cfg-switch .form-text,
+.de-setting-switch .form-text {
+  flex: 0 0 100%;
+  order: 3;
+}
+
 .de-fully-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 16px;
   align-items: start;
 }
@@ -9244,7 +9321,13 @@ canvas {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 767px) {
+  .de-fully-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
   .de-fully-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -9556,5 +9639,23 @@ canvas {
   }
   to {
     transform: translateX(3px);
+  }
+}
+
+/* Device Config -> Selector Switch compact option: the icon per level in two
+   columns (one on a narrow popup); the heading spans both. */
+.de-compact-icons:not(.d-none) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+.de-compact-icons > .form-label {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 479px) {
+  .de-compact-icons:not(.d-none) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

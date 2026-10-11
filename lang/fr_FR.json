@@ -1204,7 +1204,31 @@
       "title": "Thème",
       "colors": "Couleurs",
       "fonts": "Taille de police",
-      "icons": "Taille des icônes"
+      "icons": "Taille des icônes",
+      "vars": {
+        "--main-bg": "Arrière-plan de la page (--main-bg)",
+        "--home-bg": "Arrière-plan de l'accueil (--home-bg)",
+        "--border-color-inactive": "Bordure inactive (--border-color-inactive)",
+        "--border-color-active": "Bordure active (--border-color-active)",
+        "--border-color-block": "Bordure du bloc (--border-color-block)",
+        "--button-bg": "Arrière-plan du bouton (--button-bg)",
+        "--button-hover": "Bouton survolé (--button-hover)",
+        "--button-active": "Bouton actif (--button-active)",
+        "--text-light": "Texte clair (--text-light)",
+        "--text-normal": "Texte normal (--text-normal)",
+        "--text-inactive": "Texte inactif (--text-inactive)",
+        "--selector-bg": "Arrière-plan du sélecteur (--selector-bg)",
+        "--blocktitle": "Titre du bloc (--blocktitle)",
+        "--text-title": "Texte du titre (--text-title)",
+        "--text-status": "Texte du statut (--text-status)",
+        "--font-small": "Texte des données (--font-small)",
+        "--font-large": "Texte de l'en-tête/barre de titre (--font-large)",
+        "--font-device-title": "Texte du titre de l'appareil (--font-device-title)",
+        "--font-update": "Texte de mise à jour (--font-update)",
+        "--icon-font-size": "Icône (--icon-font-size)",
+        "--icon-image-size": "Image (--icon-image-size)",
+        "--icon-column-width": "Largeur de la colonne d'icônes (--icon-column-width)"
+      }
     },
     "haymanclock": {
       "day": "jour",
@@ -1219,14 +1243,515 @@
       "alreadyUsed": "Déjà ajouté",
       "type": "Type",
       "defaultValue": "Par défaut",
-      "example": "Exemple"
+      "example": "Exemple",
+      "categories": {
+        "visual": "Image / icône",
+        "data": "Données / affichage",
+        "behaviour": "Comportement",
+        "actions": "Actions lors d'un changement",
+        "navigation": "Popup / navigation",
+        "background": "Arrière-plan",
+        "advanced": "Avancé"
+      },
+      "presets": {
+        "hideimageonempty": {
+          "description": "Masque l'image configurée lorsque Data/sValue de l'appareil est vide."
+        },
+        "iconOn": {
+          "description": "Icône Font Awesome à utiliser lorsque l'appareil est allumé."
+        },
+        "iconOff": {
+          "description": "Icône Font Awesome à utiliser lorsque l'appareil est éteint."
+        },
+        "imageOn": {
+          "description": "Image du dossier img/ à utiliser lorsque l'appareil est allumé."
+        },
+        "imageOff": {
+          "description": "Image du dossier img/ à utiliser lorsque l'appareil est éteint."
+        },
+        "addClass": {
+          "description": "Ajoute une classe CSS personnalisée au bloc."
+        },
+        "textOn": {
+          "description": "Texte affiché lorsque l'appareil est allumé."
+        },
+        "textOff": {
+          "description": "Texte affiché lorsque l'appareil est éteint."
+        },
+        "unit": {
+          "description": "Texte placé après la valeur affichée de l'appareil."
+        },
+        "decimals": {
+          "description": "Nombre de décimales utilisé pour la valeur affichée."
+        },
+        "scale": {
+          "description": "Multiplicateur appliqué à la valeur de l'appareil avant l'affichage."
+        },
+        "values": {
+          "description": "Définit quelles valeurs de l'appareil ou sous-appareil sont affichées. Saisir du JSON valide."
+        },
+        "multi_line": {
+          "description": "Affiche plusieurs sous-valeurs sur des lignes séparées."
+        },
+        "single_line": {
+          "description": "Affiche plusieurs sous-valeurs sur une seule ligne."
+        },
+        "showsubtitles": {
+          "description": "Affiche les sous-titres des sous-valeurs. Les variantes prises en charge sont 1 et 2."
+        },
+        "showvalues": {
+          "description": "Tableau des numéros de sous-valeurs à afficher. Saisir du JSON valide."
+        },
+        "sortOrder": {
+          "description": "Tri du sélecteur : 0 aucun, 1 croissant, -1 décroissant."
+        },
+        "batteryThreshold": {
+          "description": "Affiche l'avertissement de batterie en dessous de ce pourcentage."
+        },
+        "flash": {
+          "description": "Fait clignoter le bloc après un changement de valeur pendant ce nombre de millisecondes."
+        },
+        "hide_stop": {
+          "description": "Masque le bouton Stop pour les appareils pris en charge, comme les volets."
+        },
+        "protected": {
+          "description": "Empêche la commande manuelle depuis Dashticz."
+        },
+        "confirmation": {
+          "description": "Demande une confirmation avant de modifier un appareil de type interrupteur."
+        },
+        "password": {
+          "description": "Protège par mot de passe les actions d'interrupteur prises en charge."
+        },
+        "playsound": {
+          "description": "Joue un son lorsque l'appareil change."
+        },
+        "playsoundOn": {
+          "description": "Joue un son lorsque l'appareil passe à On."
+        },
+        "playsoundOff": {
+          "description": "Joue un son lorsque l'appareil passe à Off."
+        },
+        "speak": {
+          "description": "Prononce un texte lorsque l'appareil change."
+        },
+        "speakOn": {
+          "description": "Prononce un texte lorsque l'appareil passe à On."
+        },
+        "speakOff": {
+          "description": "Prononce un texte lorsque l'appareil passe à Off."
+        },
+        "gotoslide": {
+          "description": "Passe à cet écran lorsque l'appareil change."
+        },
+        "gotoslideOn": {
+          "description": "Passe à cet écran lorsque l'appareil passe à On."
+        },
+        "gotoslideOff": {
+          "description": "Passe à cet écran lorsque l'appareil passe à Off."
+        },
+        "openpopup": {
+          "description": "Ouvre un popup configuré lorsque l'appareil change."
+        },
+        "openpopupOn": {
+          "description": "Ouvre un popup configuré lorsque l'appareil passe à On."
+        },
+        "openpopupOff": {
+          "description": "Ouvre un popup configuré lorsque l'appareil passe à Off."
+        },
+        "popup": {
+          "description": "Utilise une définition de popup configurée pour ce bloc."
+        },
+        "graph": {
+          "description": "Active ou désactive le graphique au clic pour les appareils pris en charge."
+        },
+        "url": {
+          "description": "URL ouverte lors d'un clic sur un bloc pris en charge."
+        },
+        "newwindow": {
+          "description": "Mode de clic sur l'URL : 0 même fenêtre, 1 onglet, 2 cadre, 3 GET, 4 POST, 5 fenêtre."
+        },
+        "backgroundimage": {
+          "description": "URL de l'image d'arrière-plan ou idx d'un appareil texte Domoticz contenant l'URL."
+        },
+        "backgroundsize": {
+          "description": "Dimensionnement de l'arrière-plan, par exemple cover, contain ou 80 %."
+        },
+        "backgroundopacity": {
+          "description": "Opacité de l'image d'arrière-plan configurée."
+        },
+        "colorpicker": {
+          "description": "Mode du sélecteur de couleur RVB : 0 désactivé, 1 ancien style, 2 nouveau style."
+        },
+        "colorpickerscale": {
+          "description": "Échelle relative du sélecteur de couleur en mode 2."
+        },
+        "mode": {
+          "description": "Mode propre à l'appareil ; à utiliser uniquement si la documentation du bloc concerné l'exige."
+        },
+        "switchMode": {
+          "description": "Pour les appareils RVB pris en charge, ouvre le sélecteur de couleur au lieu de basculer On/Off."
+        }
+      }
     },
     "customfieldsetoptions": {
       "title": "Valeurs possibles",
       "strictHint": "Choisissez l’une de ces valeurs prises en charge.",
       "freeHint": "Valeurs suggérées. Vous pouvez aussi saisir une autre valeur valide.",
       "current": "Actuelle",
-      "exampleValue": "Exemple de valeur"
+      "exampleValue": "Exemple de valeur",
+      "options": {
+        "hideimageonempty": [
+          {
+            "value": "true",
+            "description": "Masquer l'image si Data est vide"
+          },
+          {
+            "value": "false",
+            "description": "Toujours afficher l'image"
+          }
+        ],
+        "multi_line": [
+          {
+            "value": "true",
+            "description": "Afficher les valeurs sur des lignes séparées"
+          },
+          {
+            "value": "false",
+            "description": "Ne pas forcer plusieurs lignes"
+          }
+        ],
+        "single_line": [
+          {
+            "value": "true",
+            "description": "Afficher les valeurs sur une seule ligne"
+          },
+          {
+            "value": "false",
+            "description": "Ne pas forcer une seule ligne"
+          }
+        ],
+        "hide_stop": [
+          {
+            "value": "true",
+            "description": "Masquer le bouton Stop"
+          },
+          {
+            "value": "false",
+            "description": "Afficher le bouton Stop"
+          }
+        ],
+        "protected": [
+          {
+            "value": "true",
+            "description": "Empêcher la commande manuelle"
+          },
+          {
+            "value": "false",
+            "description": "Autoriser la commande manuelle"
+          }
+        ],
+        "graph": [
+          {
+            "value": "true",
+            "description": "Activer le graphique"
+          },
+          {
+            "value": "false",
+            "description": "Désactiver le graphique"
+          }
+        ],
+        "confirmation": [
+          {
+            "value": "0",
+            "description": "Aucune confirmation"
+          },
+          {
+            "value": "1",
+            "description": "Demander avant de commuter"
+          }
+        ],
+        "sortorder": [
+          {
+            "value": "-1",
+            "description": "Décroissant"
+          },
+          {
+            "value": "0",
+            "description": "Aucun tri"
+          },
+          {
+            "value": "1",
+            "description": "Croissant"
+          }
+        ],
+        "showsubtitles": [
+          {
+            "value": "0",
+            "description": "Masquer les sous-titres"
+          },
+          {
+            "value": "1",
+            "description": "Afficher le sous-titre avec le titre"
+          },
+          {
+            "value": "2",
+            "description": "Afficher le sous-titre avec la valeur"
+          }
+        ],
+        "newwindow": [
+          {
+            "value": "0",
+            "description": "Ouvrir dans la fenêtre actuelle"
+          },
+          {
+            "value": "1",
+            "description": "Ouvrir dans un nouvel onglet"
+          },
+          {
+            "value": "2",
+            "description": "Ouvrir dans un popup/cadre"
+          },
+          {
+            "value": "3",
+            "description": "HTTP GET sans fenêtre"
+          },
+          {
+            "value": "4",
+            "description": "HTTP POST sans fenêtre"
+          },
+          {
+            "value": "5",
+            "description": "Ouvrir dans une fenêtre de navigateur séparée"
+          }
+        ],
+        "colorpicker": [
+          {
+            "value": "0",
+            "description": "Désactivé"
+          },
+          {
+            "value": "1",
+            "description": "Ancien sélecteur de couleur"
+          },
+          {
+            "value": "2",
+            "description": "Nouveau sélecteur de couleur"
+          }
+        ],
+        "switchmode": [
+          {
+            "value": "color",
+            "description": "Ouvrir le sélecteur de couleur au lieu de On/Off"
+          }
+        ],
+        "backgroundsize": [
+          {
+            "value": "cover",
+            "description": "Remplir tout le bloc"
+          },
+          {
+            "value": "contain",
+            "description": "Faire tenir toute l'image dans le bloc"
+          },
+          {
+            "value": "80%",
+            "description": "Exemple de pourcentage personnalisé"
+          },
+          {
+            "value": "100%",
+            "description": "Exemple de pourcentage original/complet"
+          }
+        ],
+        "backgroundopacity": [
+          {
+            "value": "1",
+            "description": "100 % visible"
+          },
+          {
+            "value": "0.75",
+            "description": "75 % visible"
+          },
+          {
+            "value": "0.5",
+            "description": "50 % visible"
+          },
+          {
+            "value": "0.25",
+            "description": "25 % visible"
+          },
+          {
+            "value": "0",
+            "description": "Transparent"
+          }
+        ],
+        "colorpickerscale": [
+          {
+            "value": "1",
+            "description": "100 %"
+          },
+          {
+            "value": "1.25",
+            "description": "125 %"
+          },
+          {
+            "value": "1.5",
+            "description": "150 %"
+          },
+          {
+            "value": "2",
+            "description": "200 %"
+          }
+        ],
+        "decimals": [
+          {
+            "value": "0",
+            "description": "Aucune décimale"
+          },
+          {
+            "value": "1",
+            "description": "Une décimale"
+          },
+          {
+            "value": "2",
+            "description": "Deux décimales"
+          },
+          {
+            "value": "3",
+            "description": "Trois décimales"
+          }
+        ],
+        "batterythreshold": [
+          {
+            "value": "10",
+            "description": "Avertir sous 10 %"
+          },
+          {
+            "value": "15",
+            "description": "Avertir sous 15 %"
+          },
+          {
+            "value": "20",
+            "description": "Avertir sous 20 %"
+          },
+          {
+            "value": "30",
+            "description": "Seuil courant/par défaut"
+          }
+        ],
+        "flash": [
+          {
+            "value": "0",
+            "description": "Pas de clignotement"
+          },
+          {
+            "value": "250",
+            "description": "250 ms"
+          },
+          {
+            "value": "500",
+            "description": "500 ms"
+          },
+          {
+            "value": "1000",
+            "description": "1000 ms"
+          }
+        ],
+        "scale": [
+          {
+            "value": "0.001",
+            "description": "Diviser par 1000"
+          },
+          {
+            "value": "0.01",
+            "description": "Diviser par 100"
+          },
+          {
+            "value": "0.1",
+            "description": "Diviser par 10"
+          },
+          {
+            "value": "1",
+            "description": "Aucune mise à l'échelle"
+          },
+          {
+            "value": "10",
+            "description": "Multiplier par 10"
+          },
+          {
+            "value": "100",
+            "description": "Multiplier par 100"
+          },
+          {
+            "value": "1000",
+            "description": "Multiplier par 1000"
+          }
+        ],
+        "mode": [
+          {
+            "value": "1",
+            "description": "Exemple : mode 1 propre à l'appareil"
+          }
+        ],
+        "texton": [
+          {
+            "value": "On",
+            "description": "Exemple de texte On"
+          },
+          {
+            "value": "Aan",
+            "description": "Exemple néerlandais"
+          },
+          {
+            "value": "Open",
+            "description": "Exemple de texte d'état"
+          }
+        ],
+        "textoff": [
+          {
+            "value": "Off",
+            "description": "Exemple de texte Off"
+          },
+          {
+            "value": "Uit",
+            "description": "Exemple néerlandais"
+          },
+          {
+            "value": "Closed",
+            "description": "Exemple de texte d'état"
+          },
+          {
+            "value": "Dicht",
+            "description": "Exemple d'état en néerlandais"
+          }
+        ],
+        "unit": [
+          {
+            "value": "°C",
+            "description": "Température"
+          },
+          {
+            "value": "%",
+            "description": "Pourcentage"
+          },
+          {
+            "value": "W",
+            "description": "Watt"
+          },
+          {
+            "value": "kW",
+            "description": "Kilowatt"
+          },
+          {
+            "value": "V",
+            "description": "Volt"
+          },
+          {
+            "value": "A",
+            "description": "Ampère"
+          }
+        ]
+      }
     },
     "postnl": {
       "title": "PostNL",

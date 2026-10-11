@@ -42,6 +42,7 @@ function compareVersions(left, right) {
 }
 
 function getUpdateSource() {
+  var fallbackBranch = dashticz_branch || 'master';
   var phpPath =
     (typeof config !== 'undefined' && config['dashticz_php_path']) ||
     './vendor/dashticz/';
@@ -55,14 +56,14 @@ function getUpdateSource() {
         return {
           owner: gitInfo.owner,
           repository: gitInfo.repository,
-          branch: gitInfo.branch || dashticz_branch,
+          branch: gitInfo.branch || fallbackBranch,
           remote: gitInfo.remote || '',
         };
       }
       return {
         owner: 'Dashticz',
         repository: 'dashticz',
-        branch: dashticz_branch,
+        branch: fallbackBranch,
         remote: '',
       };
     },
@@ -70,7 +71,7 @@ function getUpdateSource() {
       return {
         owner: 'Dashticz',
         repository: 'dashticz',
-        branch: dashticz_branch,
+        branch: fallbackBranch,
         remote: '',
       };
     }
@@ -85,7 +86,7 @@ function initVersion() {
     cache: false,
     success: function (localdata) {
       dashticz_version = localdata.version;
-      dashticz_branch = localdata.branch;
+      dashticz_branch = localdata.branch || '';
       $('.loaderVersion').text('Version ' + dashticz_version);
     },
   })
