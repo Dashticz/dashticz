@@ -44,6 +44,11 @@ function functionSource(source, name) {
     assert.equal(JSON.stringify(roundTrip({ a: [1, 'b'] })), '{"a":[1,"b"]}');
   });
 
+  test(`${file}: an empty text value is shown as "" and kept`, () => {
+    assert.equal(context.toText(''), '""');
+    assert.strictEqual(roundTrip(''), '');
+  });
+
   test(`${file}: a typed JSON string is read as a string`, () => {
     assert.equal(
       JSON.stringify(context.parse('"007"')),

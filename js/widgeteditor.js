@@ -659,6 +659,7 @@ var DashticzWidgetEditor = (function () {
       }
     }
     var text = String(value);
+    if (value === '') return '""'; // an empty row would block the popup
     if (typeof value === 'string') {
       // A text value that would read back as another type ('007', 'true') is
       // shown as a JSON string, so a save keeps it a string.
