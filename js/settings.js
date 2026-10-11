@@ -2243,6 +2243,10 @@ function bindThemeCssVarControls() {
       value = value.replace(/px\s*$/i, '').trim();
     }
     $input.val(value);
+    // Remember what the panel showed and whether it was a saved override, so
+    // saveSettings only persists values the user actually changed.
+    $input.data('initialValue', value);
+    $input.data('storedOverride', !!storedOverrides[varName]);
     // Sync swatch if color input is present.
     var $swatch = $popup.find(
       '#' + $.escapeSelector($input.attr('id') + '-swatch')
@@ -3061,6 +3065,16 @@ function saveSettings() {
     var varName = $(this).data('cssvar');
     if (varName) {
       var varValue = String($(this).val() || '').trim();
+      // A value that only mirrors the active theme (it was filled in from the
+      // computed style) is not an override. Writing it would pin the theme's
+      // current values into custom.css on every save, which then keep
+      // shadowing the theme after it changes or fails to load.
+      if (
+        !$(this).data('storedOverride') &&
+        varValue === $(this).data('initialValue')
+      ) {
+        return;
+      }
       if (
         varValue !== '' &&
         _THEME_PX_VARS.indexOf(varName) !== -1 &&
