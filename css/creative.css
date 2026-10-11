@@ -1624,6 +1624,11 @@ next css sets the default height of the frame popup
   text-overflow: ellipsis;
 }
 
+.colbar.transbg .logo .logo-version {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .colbar.transbg .fab,
 .colbar.transbg .fas,
 .colbar.transbg .far {
