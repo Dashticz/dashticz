@@ -128,6 +128,32 @@ if (!is_array($data['devices'])) {
 
 $devices = [];
 foreach ($data['devices'] as $entry) {
+    if (is_array($entry)
+        && isset($entry['ref'])
+        && !isset($entry['kind'])
+        && !isset($entry['idx'])
+    ) {
+        /* Reference only: the classic Layout Editor moves or resizes a block
+         * that is already defined in CONFIG.js. Its definition stays exactly
+         * as it is; only its place in the layout changes. */
+        if (!is_string($entry['ref'])
+            || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['ref'])
+        ) {
+            dashticz_json_error(400, 'Invalid block reference.');
+        }
+        $refWidth = isset($entry['width']) ? (int)$entry['width'] : 3;
+        $refHeight = null;
+        if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+            $refHeight = max(50, min(2000, (int)(round((int)$entry['height'] / 10) * 10)));
+        }
+        $devices[] = [
+            'isRef' => true,
+            'key' => $entry['ref'],
+            'width' => max(1, min(12, $refWidth)),
+            'height' => $refHeight,
+        ];
+        continue;
+    }
     $customFields = _normalise_custom_device_fields($entry);
     if (is_array($entry)
         && isset($entry['kind'])
@@ -835,6 +861,19 @@ if ($readError !== null) {
 
 $screenNumber = configwriter_parse_screen_number($data, 1);
 list($startMarker, $endMarker) = configwriter_editor_markers('device', $screenNumber);
+
+/* A reference-only entry keeps its block as it is. The block must exist, and
+ * when it sits in this screen's device section (which is replaced below) its
+ * definition is written back unchanged. */
+$declaredBlocks = configwriter_extract_block_lines($config);
+$ownSectionBlocks = configwriter_extract_block_lines(
+    configwriter_extract_wrapped_section($config, $startMarker, $endMarker)
+);
+foreach ($devices as $device) {
+    if (!empty($device['isRef']) && !isset($declaredBlocks[$device['key']])) {
+        dashticz_json_error(400, 'Unknown block reference.');
+    }
+}
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 
@@ -880,7 +919,12 @@ if (!empty($devices)) {
     );
     $requestKeys = [];
     foreach ($devices as &$device) {
-        if (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
+        if (!empty($device['isRef'])) {
+            if (isset($requestKeys[$device['key']])) {
+                dashticz_json_error(409, 'Block reference used twice.');
+            }
+            $requestKeys[$device['key']] = true;
+        } elseif (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
             /* The browser generates stable numbered keys for special blocks. */
             if (isset($requestKeys[$device['key']])) {
                 dashticz_json_error(409, 'Special block key already exists.');
@@ -930,6 +974,13 @@ if (!empty($devices)) {
     $section = configwriter_section_header('BLOCKS') . "\n";
     $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
     foreach ($devices as $device) {
+        if (!empty($device['isRef'])) {
+            if (isset($ownSectionBlocks[$device['key']])) {
+                $section .= "blocks['" . configwriter_js_string_escape($device['key'])
+                    . "'] = " . $ownSectionBlocks[$device['key']] . "\n";
+            }
+            continue;
+        }
         if (!empty($device['preserveExisting'])) {
             continue;
         }

@@ -53,6 +53,7 @@ var DashticzLayoutEditor = (function () {
   // items (see addPendingItems). Never reset - a monotonic counter across
   // the page's lifetime can't collide with itself.
   var pendingKeyCounter = 0;
+  var _titleReferencesIssued = {};
   // Devices removed via the remove button during this editing round (see
   // _removeItem) - their saved Device Rules, if any, are deleted only once
   // the removal is actually confirmed with Save (_save), never on Cancel.
@@ -2672,6 +2673,7 @@ var DashticzLayoutEditor = (function () {
      out as a plain payload; the screen the user is actually looking at is
      restored once every session has been read. */
   function _buildSavePayloads() {
+    _titleReferencesIssued = {};
     var activeKey = currentSessionKey;
     sessions[activeKey] = _captureSession();
 
@@ -2723,12 +2725,7 @@ var DashticzLayoutEditor = (function () {
           return;
         }
 
-        var deviceEntry = {
-          idx: item.idx,
-          name: item.name,
-          width: item.width,
-        };
-        if (item.subidx) deviceEntry.subidx = item.subidx;
+        var deviceEntry = _classicDeviceEntry(item);
         if (item.height !== null) deviceEntry.height = item.height;
         devices.push(deviceEntry);
       });
@@ -2745,6 +2742,46 @@ var DashticzLayoutEditor = (function () {
     _restoreSession(sessions[activeKey]);
     currentSessionKey = activeKey;
     return payloads;
+  }
+
+  /* The saveblocks.php entry of one non-widget tile on a classic screen.
+     A block that is already defined in CONFIG.js is sent as a reference
+     only, so its icon, title, custom fields and so on stay as they are; only
+     a tile that is still pending, or a bare device idx, is described in full. */
+  function _classicDeviceEntry(item) {
+    if (
+      !item.isPending &&
+      /^[A-Za-z_][A-Za-z0-9_]*$/.test(item.reference) &&
+      typeof blocks !== 'undefined' &&
+      blocks[item.reference]
+    ) {
+      return { ref: item.reference, width: item.width };
+    }
+    if (item.isPending && item.kind === 'separator') {
+      return {
+        kind: 'title',
+        key: _nextTitleReference(),
+        title: item.name || 'Title',
+        width: item.width,
+      };
+    }
+    var entry = { idx: item.idx, name: item.name, width: item.width };
+    if (item.subidx) entry.subidx = item.subidx;
+    return entry;
+  }
+
+  function _nextTitleReference() {
+    var number = 1;
+    var taken = {};
+    items.forEach(function (item) {
+      taken[item.reference] = true;
+    });
+    var used = function (key) {
+      return taken[key] || (typeof blocks !== 'undefined' && blocks[key]);
+    };
+    while (used('Title_' + number) || _titleReferencesIssued[number]) number++;
+    _titleReferencesIssued[number] = true;
+    return 'Title_' + number;
   }
 
   function _saveScreenPayload(screenPayload, token) {
