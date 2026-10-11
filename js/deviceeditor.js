@@ -8439,10 +8439,32 @@ var DashticzDeviceEditor = (function () {
     html += '<h6 class="de-section-title">' + _esc(t.fully_block) + '</h6>';
     html += '<div class="de-fully-grid">';
     FULLY_SETTINGS.forEach(function (setting) {
+      if (setting.key === 'fontsize') return;
       html += _settingHtml(FULLY_SECTION, prefix, setting, v[setting.key], t);
     });
     html += '</div></div>';
     return html;
+  }
+
+  // The font size field, shown in the Display options below the icons
+  // instead of in the Fully Kiosk section (same field id, so
+  // _readFullyFields() reads it as before).
+  function _fullyFontsizeHtml(prefix, values) {
+    var v = $.extend(_fullyValuesFromRows([]), values || {});
+    var setting = FULLY_SETTINGS.filter(function (item) {
+      return item.key === 'fontsize';
+    })[0];
+    return (
+      '<div class="de-fully-fontsize">' +
+      _settingHtml(
+        FULLY_SECTION,
+        prefix,
+        setting,
+        v.fontsize,
+        _translations()
+      ) +
+      '</div>'
+    );
   }
 
   // The Fully Kiosk section's fields -> values. Numbers are clamped to their
@@ -8495,6 +8517,7 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
+    html += _fullyFontsizeHtml('fullykiosk', {});
     html +=
       '<div class="mb-3"><label class="form-label" for="fullykiosk-device-title">' +
       _esc(t.html_block_title) +
@@ -9775,6 +9798,7 @@ var DashticzDeviceEditor = (function () {
       html += '</div>';
     }
     html += '</div>';
+    if (isFullyBlock) html += _fullyFontsizeHtml('de-config', fullyValues);
 
     if (hasDial) {
       var currentBarSteps =

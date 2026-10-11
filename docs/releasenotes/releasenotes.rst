@@ -12,6 +12,8 @@ v4.20.0 (11-10-2026)
 - Fully Kiosk settings: the label of every switch is shown right next to the
   switch, and the fields are laid out in 3 columns (2 on a narrow popup, 1 on
   a phone).
+- Fully Kiosk settings: the font size field is now in the Display options,
+  below the icons.
 - Info in Config no longer shows ``undefined`` after the version number, and
   the update check falls back to the ``master`` branch when ``version.txt``
   does not name a branch.
