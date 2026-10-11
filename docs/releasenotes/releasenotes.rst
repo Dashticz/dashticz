@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.1 (11-10-2026)
+----------------------
+
+* **Enhancements**
+
+- The version number is shown in the top bar, behind the app title.
+- Config menu: the General and Display settings are laid out in two columns,
+  with narrower fields and the info icon before the field.
+
 v4.20.0 (11-10-2026)
 ----------------------
 
