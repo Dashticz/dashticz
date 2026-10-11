@@ -1026,6 +1026,95 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     expect(tvgids[0].custom_fields.tvgidsmaxitems).toBe(5);
   });
 
+  test('Weather Info quick-add shows the text parts as a list: tick to show, drag to order', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'weatherinfo-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: blocksRequest.devices.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page
+      .locator('.we-widget-card[data-special-widget="weatherinfo"]')
+      .click();
+    const popup = page.locator('#weatherinfoblockpopup');
+    await expect(popup).toBeVisible();
+    // A list with a checkbox and a drag handle per part, not a menu.
+    const items = popup.locator('.de-parts-item');
+    await expect(items).toHaveCount(5);
+    await expect(popup.locator('select[id$="-parts"]')).toHaveCount(0);
+    await expect(items.locator('.de-parts-check:checked')).toHaveCount(5);
+
+    // Hide the description and drag the logo to the top.
+    await popup.locator('.de-parts-item[data-part="desc"] label').click();
+    // jQuery UI sortable follows the pointer, so move it in steps to the top
+    // edge of the first item instead of jumping there (dragTo), which can
+    // drop the logo one place too low.
+    const handle = await popup
+      .locator('.de-parts-item[data-part="logo"] .de-parts-handle')
+      .boundingBox();
+    const first = await popup
+      .locator('.de-parts-item[data-part="status"]')
+      .boundingBox();
+    await page.mouse.move(
+      handle.x + handle.width / 2,
+      handle.y + handle.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(first.x + 40, first.y + first.height / 2, {
+      steps: 20,
+    });
+    await page.mouse.move(first.x + 40, first.y + 2, { steps: 5 });
+    await page.mouse.up();
+    await expect(items.first()).toHaveAttribute('data-part', 'logo');
+    await page.locator('#weatherinfo-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const blocks = blocksRequest.devices.filter(
+      (entry) => entry.kind === 'weatherinfo'
+    );
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0].custom_fields.wimode).toBe('forecast');
+    expect(blocks[0].custom_fields.wiparts).toBe('logo,status,temp,wind');
+  });
+
   test('TVgids block shows one column per channel, as many next to each other as fit', async ({
     page,
   }) => {

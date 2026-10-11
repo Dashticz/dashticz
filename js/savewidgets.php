@@ -164,6 +164,9 @@ $allowedHpiloRows = [
 
 // Process optional config settings
 $configSettings = [];
+// Number settings sent empty: no value (so no 0 in CONFIG.js, which would pin
+// e.g. a map zoom of 0); any value saved earlier is removed.
+$clearedSettings = [];
 if (isset($data['settings']) && is_array($data['settings'])) {
     foreach ($data['settings'] as $key => $value) {
         if (!preg_match('/^[A-Za-z0-9_]+$/', $key) || !isset($allowedSettings[$key])) {
@@ -173,6 +176,14 @@ if (isset($data['settings']) && is_array($data['settings'])) {
         if ($type === 'bool') {
             $configSettings[$key] = (int)(bool)$value;
         } elseif ($type === 'number') {
+            if ($value === null || (is_string($value) && trim($value) === '')) {
+                $clearedSettings[$key] = true;
+                continue;
+            }
+            if (is_numeric($value) && !is_finite((float)$value)) {
+                $clearedSettings[$key] = true;
+                continue;
+            }
             $configSettings[$key] = is_numeric($value) ? (float)$value : 0;
             if ($configSettings[$key] == (int)$configSettings[$key]) {
                 $configSettings[$key] = (int)$configSettings[$key];
@@ -327,7 +338,7 @@ foreach ($data['widgets'] as $entry) {
         'id' => $id,
         'key' => isset($entry['key'])
             && is_string($entry['key'])
-            && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
+            && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['key'])
                 ? $entry['key']
                 : $catalog[$id]['key'],
         'width' => isset($entry['width'])
@@ -339,7 +350,12 @@ foreach ($data['widgets'] as $entry) {
         'hide_title' => !empty($entry['hide_title']),
         'icon' => null,
         'hide_data' => !empty($entry['hide_data']),
-        'last_update' => !empty($entry['last_update']),
+        // null = the block has no last_update of its own and follows the
+        // global setting; an explicit false must survive a save.
+        'last_update' => array_key_exists('last_update', $entry)
+            && $entry['last_update'] !== null
+            ? !empty($entry['last_update'])
+            : null,
     ];
     if (isset($entry['icon']) && is_string($entry['icon'])) {
         $icon = trim($entry['icon']);
@@ -372,7 +388,7 @@ foreach ($data['widgets'] as $entry) {
         $seenCustomFields = [];
         foreach ($entry['custom_fields'] as $field => $value) {
             if (!is_string($field) ||
-                !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $field)) {
+                !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', $field)) {
                 dashticz_json_error(400, 'Invalid custom widget field.');
             }
             $fieldKey = strtolower($field);
@@ -458,7 +474,9 @@ foreach ($data['widgets'] as $entry) {
         } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
             $widget['icalurl'] = [];
             foreach ($icalurl as $name => $source) {
-                if (!is_string($name) || $name === '' || strlen($name) > 100 ||
+                // json_decode turns a name such as "1" into an integer key.
+                $name = (string)$name;
+                if ($name === '' || strlen($name) > 100 ||
                     preg_match('/[\x00-\x1F]/', $name) ||
                     in_array(strtolower($name), ['__proto__', 'prototype', 'constructor'], true)) {
                     dashticz_json_error(400, 'Each calendar requires a valid unique name.');
@@ -469,7 +487,7 @@ foreach ($data['widgets'] as $entry) {
                 $ics = isset($source['ics']) && is_string($source['ics'])
                     ? trim($source['ics'])
                     : '';
-                if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^(?:https?|webcal)://[^\s]+$#i', $ics)) {
                     dashticz_json_error(400, 'Calendar ' . $name . ' requires a valid http(s) ICS URL.');
                 }
                 $color = isset($source['color']) && is_string($source['color'])
@@ -608,7 +626,7 @@ foreach ($data['widgets'] as $entry) {
         if (is_string($showEmptyRoads) && $showEmptyRoads !== ''
             && !in_array(strtolower($showEmptyRoads), ['0', '1', 'true', 'false'], true)
         ) {
-            $widget['showemptyroads'] = substr(strip_tags($showEmptyRoads), 0, 100);
+            $widget['showemptyroads'] = configwriter_cut_bytes(strip_tags($showEmptyRoads), 100);
         } else {
             $widget['showemptyroads'] = filter_var(
                 $showEmptyRoads,
@@ -1010,7 +1028,7 @@ $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 $blocksOnly = !empty($data['blocksOnly']);
 
-if (!empty($widgets) || !empty($configSettings)) {
+if (!empty($widgets) || !empty($configSettings) || !empty($clearedSettings)) {
     // TAAK1: never let a widget silently take over a block key that a
     // different screen already owns; clone it (screen-prefixed) instead.
     // configwriter_ensure_screen_owned_key() exempts radio/log/sunrise from
@@ -1069,9 +1087,9 @@ if (!empty($widgets) || !empty($configSettings)) {
         }
     }
 
-    if (!empty($configSettings)) {
+    if (!empty($configSettings) || !empty($clearedSettings)) {
         // Keep the previously saved settings this save does not touch.
-        $merged = array_diff_key($existingSettings, $configSettings);
+        $merged = array_diff_key($existingSettings, $configSettings, $clearedSettings);
         foreach ($configSettings as $key => $value) {
             $merged[$key] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
@@ -1377,8 +1395,8 @@ function _widgetBlockProps($widget)
     if (!empty($widget['hide_data'])) {
         $props['hide_data'] = true;
     }
-    if (!empty($widget['last_update'])) {
-        $props['last_update'] = true;
+    if (isset($widget['last_update'])) {
+        $props['last_update'] = $widget['last_update'] === true;
     }
     if (!empty($widget['custom_fields'])) {
         // Custom fields are merged last so users can intentionally override a

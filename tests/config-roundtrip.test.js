@@ -137,3 +137,62 @@ test('a Fully Kiosk block is written with its mode and settings', () => {
   assert.match(line, /width:4/);
   assert.doesNotMatch(line, /type:/);
 });
+
+// A Weather Info block (js/components/weatherinfo.js) is dispatched on wimode;
+// the location and the other settings arrive as custom fields.
+test('a Weather Info block is written with its mode and settings', () => {
+  const line = specialLine(
+    "['kind' => 'weatherinfo', 'name' => 'Weather info', 'width' => 4, 'icon' => 'fas fa-cloud-sun-rain', 'custom_fields' => ['wimode' => 'forecast', 'wilat' => '52.37', 'wilanguage' => 'en']]"
+  );
+  assert.match(line, /wimode:'forecast'/);
+  assert.match(line, /wilat:/);
+  assert.match(line, /wilanguage:'en'/);
+  assert.match(line, /width:4/);
+  assert.doesNotMatch(line, /type:/);
+});
+
+// Block keys and property names come from the editors. Plain names keep the
+// existing output, anything else must not be able to end the string or the
+// object literal of the generated CONFIG.js line.
+test('block lines keep plain names and quote hostile keys', () => {
+  assert.equal(
+    runPhp(
+      `echo configwriter_emit_block_line('weather_1', ['width' => 6, 'title' => 'T']);`
+    ),
+    "blocks['weather_1'] = {width:6, title:'T'};\n"
+  );
+  const hostile = runPhp(
+    `echo configwriter_emit_block_line("x'] = alert(1); blocks['y", ['a:1}); alert(2); ({b' => 1]);`
+  );
+  assert.equal(
+    hostile,
+    `blocks['x\\'] = alert(1); blocks[\\'y'] = {"a:1}); alert(2); ({b":1};\n`
+  );
+});
+
+// A setting whose value holds a ';' (a password, say) must survive being read
+// back from CONFIG.js and written again unchanged.
+test('settings with a semicolon in a string value survive a rewrite', () => {
+  const output = runPhp(
+    `$config = "// START\\n" . configwriter_emit_config_settings(['pw' => 'pa;ss "q"', 'n' => 5]) . "config['raw'] = 'a;b';\\n// END\\n";
+$settings = configwriter_extract_section_config_settings($config, '// START', '// END');
+echo json_encode($settings);`
+  );
+  assert.deepEqual(JSON.parse(output), {
+    pw: '"pa;ss \\"q\\""',
+    n: '5',
+    raw: "'a;b'",
+  });
+});
+
+test('a property that is no JavaScript literal is left out of a block', () => {
+  const line = runPhp(
+    "echo configwriter_format_props(['a' => 1, 'b' => INF, 'c' => NAN, 'd' => [1, NAN], 'e' => 'x']);"
+  );
+  assert.equal(line, "{a:1, e:'x'}");
+});
+
+test('a key with a trailing newline is quoted, not written as it is', () => {
+  const line = runPhp('echo configwriter_format_props(["ab\\n" => 1]);');
+  assert.equal(line, '{"ab\\n":1}');
+});

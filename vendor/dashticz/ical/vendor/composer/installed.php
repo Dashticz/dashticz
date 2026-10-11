@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => '__root__',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => 'a0a79a34dbc659d17dcdab696f1871cf9f1fa1d6',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'a0a79a34dbc659d17dcdab696f1871cf9f1fa1d6',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'johngrogg/ics-parser' => array(
+            'pretty_version' => 'v3.6.0',
+            'version' => '3.6.0.0',
+            'reference' => 'e9749984dcd795020ae5e7c403e92e8fec67782f',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../johngrogg/ics-parser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'om/icalparser' => array(
+            'pretty_version' => 'v1.0.1',
+            'version' => '1.0.1.0',
+            'reference' => 'e180dea8447c9e78f92306f892f809d5f5ad2948',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../om/icalparser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);

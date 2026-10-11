@@ -9,7 +9,12 @@ if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST')
 }
 
 $customFolder = isset($_POST['custom_folder']) ? trim((string) $_POST['custom_folder']) : 'custom';
-if (!preg_match('/^[A-Za-z0-9_-]+$/', $customFolder)) {
+// A custom folder is a user folder next to js/, never one of the program folders.
+$programFolders = ['build', 'css', 'dist', 'docker', 'docs', 'font', 'img', 'js', 'lang',
+    'node_modules', 'sounds', 'src', 'tests', 'themes', 'tools', 'tpl', 'vendor'];
+if (!preg_match('/^[A-Za-z0-9_-]+$/D', $customFolder)
+    || in_array(strtolower($customFolder), $programFolders, true)
+) {
     dashticz_json_error(400, 'Invalid custom folder.');
 }
 
@@ -25,13 +30,13 @@ $cssFile = isset($_POST['css_file']) ? trim((string) $_POST['css_file']) : 'cust
 if ($source === '' || strlen($source) > 200 || preg_match('/[\x00-\x1F\x7F]/', $source)) {
     dashticz_json_error(400, 'Invalid Device Rules source block.');
 }
-if (!preg_match('/^[A-Za-z0-9_-]+\.css$/', $cssFile)) {
+if (!preg_match('/^[A-Za-z0-9_-]+\.css$/D', $cssFile)) {
     dashticz_json_error(400, 'Invalid custom CSS filename.');
 }
 if (strlen($rulesJson) > 32768 || strlen($handler) > 100) {
     dashticz_json_error(413, 'Device Rules payload is too large.');
 }
-if ($handler !== '' && !preg_match('/^(?:getStatus_)?[A-Za-z_$][A-Za-z0-9_$]*$/', $handler)) {
+if ($handler !== '' && !preg_match('/^(?:getStatus_)?[A-Za-z_$][A-Za-z0-9_$]*$/D', $handler)) {
     dashticz_json_error(400, 'Invalid custom.js handler name.');
 }
 
@@ -766,15 +771,24 @@ if ($generatedCss !== '') {
     $updatedCss = device_rules_append_managed_block($updatedCss, $cssBlock);
 }
 
-// Write CSS first. If the following custom.js write fails, restore the original
-// CSS best-effort so rules and styling do not intentionally diverge.
-if (!dashticz_atomic_write_file($cssPath, rtrim($updatedCss) . "\n", 0664)) {
+// Write CSS first. If the following custom.js write fails, put the CSS back as
+// it was (a file that did not exist is removed again) so rules and styling do
+// not intentionally diverge. An unchanged CSS file is left alone.
+$cssExisted = file_exists($cssPath);
+$cssChanged = rtrim($updatedCss) !== rtrim($originalCss);
+if ($cssChanged && !dashticz_atomic_write_file($cssPath, rtrim($updatedCss) . "\n", 0664)) {
     dashticz_release_file_update_lock($cssLock);
     dashticz_release_file_update_lock($jsLock);
     dashticz_json_error(500, 'Unable to write ' . $cssFile . '.');
 }
 if (!dashticz_atomic_write_file($customJsPath, rtrim($updatedJs) . "\n", 0664)) {
-    dashticz_atomic_write_file($cssPath, rtrim($originalCss) . "\n", 0664);
+    if ($cssChanged) {
+        if ($cssExisted) {
+            dashticz_atomic_write_file($cssPath, $originalCss, 0664);
+        } else {
+            @unlink($cssPath);
+        }
+    }
     dashticz_release_file_update_lock($cssLock);
     dashticz_release_file_update_lock($jsLock);
     dashticz_json_error(500, 'Unable to write custom.js.');

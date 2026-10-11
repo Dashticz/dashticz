@@ -1256,17 +1256,11 @@ test('device and widget config editors share full widget config and preserve hid
     widgetEditor,
     /hide_data: \$hideDataButton\.length\s*\n\s*\? !\$hideDataButton\.hasClass\('active'\)\s*\n\s*: existingBlockOptions\.hide_data === true,/
   );
+  assert.match(widgetEditor, /last_update: existingBlockOptions\.last_update,/);
+  assert.match(widgetEditor, /options\.hide_data = !!definition\.hide_data/);
   assert.match(
     widgetEditor,
-    /last_update: existingBlockOptions\.last_update === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.hide_data = definition\.hide_data === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.last_update = definition\.last_update === true/
+    /options\.last_update =\s*typeof definition\.last_update === 'undefined'/
   );
   assert.match(
     widgetEditor,
@@ -1274,11 +1268,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetEditor,
-    /entry\.last_update = blockOptions\.last_update === true/
+    /if \(typeof blockOptions\.last_update !== 'undefined'\) \{\s*entry\.last_update = blockOptions\.last_update === true/
   );
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
-  assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
+  assert.match(saveWidgets, /if \(isset\(\$widget\['last_update'\]\)\)/);
   // Icon/Data/Updated/Title/Background render as a plain flex-wrap row of
   // icon buttons now (#195), not a switch grid - .de-config-options and its
   // -three/-four/-five column-count modifiers are gone from both the source
@@ -1451,7 +1445,7 @@ test('device and widget config editors share full widget config and preserve hid
   // SEPARATOR_DEFAULT_ICON to it.
   assert.match(
     deviceEditor,
-    /\(kind === 'title'\s*\n\s*\? typeof definition\.icon === 'string' && definition\.icon !== ''/
+    /\(kind === 'title' \|\| kind === 'slidebutton'\s*\n\s*\? typeof definition\.icon === 'string' && definition\.icon !== ''/
   );
   assert.doesNotMatch(
     deviceEditor,
@@ -5569,14 +5563,17 @@ test('Lyrion Music Server Title/Artist/Station text style (size/color) is config
     deviceEditor,
     /id="' \+\s*\n?\s*prefix \+ '-lms-' \+ line\.key \+ '-color"/
   );
+  // An empty size or an untouched colour is read as undefined, so the
+  // form defaults are not pinned into CONFIG.js (DE-203).
   assert.match(
     deviceEditor,
-    /titleSize:[\s\S]{0,20}parseInt\(\$popup\.find\('#' \+ prefix \+ '-lms-title-size'\)\.val\(\), 10\)[\s\S]{0,10}\|\|[\s\S]{0,10}16,/
+    /titleSize: _readLmsSize\(\$popup, prefix \+ '-lms-title-size'\),/
   );
   assert.match(
     deviceEditor,
-    /titleColor: String\([\s\S]{0,80}\$popup\.find\('#' \+ prefix \+ '-lms-title-color'\)\.val\(\) \|\| '#ffffff'[\s\S]{0,10}\),/
+    /titleColor: _readLmsColor\(\$popup, prefix \+ '-lms-title-color'\),/
   );
+  assert.match(deviceEditor, /defaultColor: '#ffffff'/);
   // Both save paths (the quick-add popup's managedSpecials[orderKey] entry,
   // and the edit popup's special.lmsXxx = pendingLms.xxx assignment) carry
   // the 6 new fields through to the specialEntry the rest of _save() posts.
@@ -5936,7 +5933,7 @@ test('a saved Cluster block can actually be re-opened and saved from the Layout 
   // saved Cluster block impossible to edit.
   assert.match(
     deviceEditor,
-    /if \(isClusterBlock\) \{[\s\S]{0,2200}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
+    /if \(isClusterBlock\) \{[\s\S]{0,2800}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
   );
 
   // A dedicated add/remove device picker (mirroring _showClusterPopup's own)
@@ -8402,4 +8399,341 @@ test('LMS and Fully Kiosk share the .dt-btn button style of creative.css', () =>
   assert.match(fully, /transbg hover dt-btn fullykiosk-btn/);
   // The Fully Kiosk widget does not depend on LMS.
   assert.doesNotMatch(fully, /lms\.css|lms-btn/);
+});
+
+function loadWeatherinfoModule(extra) {
+  const context = Object.assign(
+    {
+      language: { misc: {} },
+      settings: { dashticz_php_path: 'vendor/dashticz/' },
+      Dashticz: { register: () => {} },
+      Domoticz: { getAllDevices: () => ({}) },
+    },
+    extra
+  );
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/weatherinfo.js'), 'utf8'),
+    context
+  );
+  return context.DT_weatherinfo;
+}
+
+test('Weather Info rain status follows the domoticz_weatherinfo plugin', () => {
+  const wi = loadWeatherinfoModule();
+  assert.equal(wi.canHandle({ wimode: 'forecast' }), true);
+  assert.equal(wi.canHandle({ wimode: '' }), false);
+  assert.equal(wi.canHandle({ fullymode: 'charge' }), false);
+  // Raw Buienradar value -> mm/h: 0 is dry, 109 is 1 mm/h.
+  assert.equal(wi.rawToMm(0), 0);
+  assert.equal(wi.rawToMm(109), 1);
+  const strip = (html) => html.replace(/<[^>]+>/g, '');
+  const status = (rows, language) =>
+    strip(wi.rainStatus(wi.parseRain(rows), language));
+  // Dry: no rain in the whole forecast.
+  assert.equal(
+    status(
+      [
+        [0, '12:00'],
+        [0, '12:05'],
+      ],
+      'nl'
+    ),
+    'Voorlopig droog'
+  );
+  assert.equal(status([[0, '12:00']], 'en'), 'Dry for now');
+  // Raining now: the first two values decide; a range when it gets heavier.
+  assert.equal(
+    status(
+      [
+        [109, '12:00'],
+        [0, '12:05'],
+      ],
+      'en'
+    ),
+    'Raining now 1.0 mm/h'
+  );
+  assert.equal(
+    status(
+      [
+        [109, '12:00'],
+        [0, '12:05'],
+        [141, '12:10'],
+      ],
+      'nl'
+    ),
+    'Het regent nu 1,0 tot 10,0 mm/u'
+  );
+  // Rain within the next 20 minutes.
+  assert.equal(
+    status(
+      [
+        [0, '12:00'],
+        [0, '12:05'],
+        [109, '12:10'],
+      ],
+      'en'
+    ),
+    'Rain expected 1.0 mm/h'
+  );
+  // Later: the amount and the time of the first rain.
+  assert.equal(
+    status(
+      [
+        [0, '12:00'],
+        [0, '12:05'],
+        [0, '12:10'],
+        [0, '12:15'],
+        [0, '12:20'],
+        [109, '12:25'],
+      ],
+      'en'
+    ),
+    '1.0 mm/h rain expected at 12:25'
+  );
+});
+
+test('Weather Info weather line: wind, icon and text format', () => {
+  const wi = loadWeatherinfoModule();
+  // The compass of the plugin, per language.
+  assert.equal(wi.compass(310, 'nl'), 'NW');
+  assert.equal(wi.compass(100, 'nl'), 'O');
+  assert.equal(wi.compass(100, 'en'), 'E');
+  assert.equal(wi.compass(359, 'en'), 'N');
+  // Buienradar icon letter -> icon, day or night (doubled letter).
+  assert.equal(wi.weatherIcon({ icon: 'a', isDay: true })[0], 'sun');
+  assert.equal(wi.weatherIcon({ icon: 'aa', isDay: false })[0], 'moon');
+  assert.equal(wi.weatherIcon({ icon: 'q' })[0], 'rain_cloud');
+  assert.equal(wi.weatherIcon({ icon: 'zz' })[0], 'cloud');
+  assert.equal(wi.weatherIcon({})[0], 'cloud');
+  // No usable icon: guessed from the Dutch text.
+  assert.equal(wi.weatherIcon({ description: 'Onweersbuien' })[0], 'lightning');
+  assert.equal(wi.weatherIcon({ description: 'Zonnig' })[0], 'sun');
+  // Raining right now (Buienradar): a dry icon becomes a rain cloud, snow and
+  // lightning stay.
+  assert.equal(wi.weatherIcon({ icon: 'c' }, true)[0], 'rain_cloud');
+  assert.equal(
+    wi.weatherIcon({ icon: 'aa', isDay: false }, true)[0],
+    'rain_cloud'
+  );
+  assert.equal(wi.weatherIcon({ icon: 't' }, true)[0], 'snow');
+  assert.equal(wi.weatherIcon({ icon: 'g' }, true)[0], 'lightning');
+  // The description follows: light rain, rain or heavy rain by intensity.
+  const desc = (icon, text, raw, language) =>
+    wi
+      .partsHtml(
+        { weather: { icon, description: text }, rain: [[raw, '12:00']] },
+        { wiparts: 'desc', wilanguage: language }
+      )
+      .replace(/<[^>]+>/g, '');
+  assert.equal(desc('c', 'Bewolkt', 109, 'nl'), 'Lichte regen');
+  assert.equal(desc('c', 'Bewolkt', 130, 'en'), 'Rain');
+  assert.equal(desc('c', 'Bewolkt', 160, 'en'), 'Heavy rain');
+  assert.equal(desc('c', 'Zwaar bewolkt', 0, 'nl'), 'Zwaar bewolkt');
+  assert.equal(desc('c', 'Zwaar bewolkt', 0, 'en'), 'Cloudy');
+  assert.equal(desc('t', 'Sneeuw', 109, 'nl'), 'Sneeuw');
+  assert.match(
+    wi.partsHtml(
+      { weather: { icon: 'c' }, rain: [[109, '12:00']] },
+      { wiparts: 'logo' }
+    ),
+    /class="wi-fall/
+  );
+  assert.doesNotMatch(
+    wi.partsHtml(
+      { weather: { icon: 'c' }, rain: [[0, '12:00']] },
+      { wiparts: 'logo' }
+    ),
+    /class="wi-fall/
+  );
+  const plain = (value) => JSON.parse(JSON.stringify(value));
+  const res = {
+    weather: {
+      temperature: 19.74,
+      windBft: 4,
+      windDirection: 310,
+      icon: 'c',
+      description: 'Bewolkt',
+      isDay: true,
+    },
+    rain: [[0, '12:00']],
+  };
+  const strip = (html) => html.replace(/<[^>]+>/g, '');
+  const rows = (block) =>
+    wi
+      .partsHtml(res, block)
+      .split('</div>')
+      .filter(Boolean)
+      .map((row) => strip(row));
+  // Default: all parts after each other on one row.
+  assert.deepEqual(plain(wi.partsList({})), [
+    'status',
+    'temp',
+    'desc',
+    'wind',
+    'logo',
+  ]);
+  assert.equal(rows({}).length, 1);
+  assert.match(rows({})[0], /^Voorlopig droog ● 19,7°C ● Bewolkt ● NW4 ● /);
+  assert.match(
+    rows({ wilanguage: 'en' })[0],
+    /^Dry for now ● 19\.7°C ● Cloudy ● NW4 ● /
+  );
+  // Parts can be left out and put in any order; unknown parts are ignored.
+  assert.deepEqual(plain(wi.partsList({ wiparts: 'wind, temp,wind,foo' })), [
+    'wind',
+    'temp',
+  ]);
+  assert.deepEqual(
+    plain(wi.partsList({ wiparts: '' })),
+    plain(wi.partsList({}))
+  );
+  assert.deepEqual(rows({ wiparts: 'status,temp' }), [
+    'Voorlopig droog ● 19,7°C',
+  ]);
+  assert.deepEqual(rows({ wiparts: 'wind,temp' }), ['NW4 ● 19,7°C']);
+  assert.deepEqual(rows({ wiparts: 'temp,status,wind' }), [
+    '19,7°C ● Voorlopig droog ● NW4',
+  ]);
+  // Wind is left out when the direction is not known; no weather = no parts.
+  assert.deepEqual(
+    wi
+      .partsHtml(
+        { weather: { temperature: 3, windBft: 3 } },
+        { wiparts: 'temp,wind' }
+      )
+      .match(/NW|\d+ ●/),
+    null
+  );
+  assert.equal(wi.partsHtml({ weather: null }, { wiparts: 'temp,logo' }), '');
+  // The location: a comma is accepted; nothing set means Domoticz'.
+  assert.equal(wi.parseCoordinate('52,37'), 52.37);
+  assert.equal(wi.parseCoordinate(''), null);
+  assert.equal(wi.parseCoordinate('abc'), null);
+});
+
+test('Weather Info block renders its rows and the optional rainfall row', () => {
+  let html = '';
+  const chain = {
+    css: () => chain,
+    html: (value) => {
+      html = value;
+      return chain;
+    },
+    find: () => chain,
+  };
+  const wi = loadWeatherinfoModule();
+  const me = {
+    block: { wimode: 'forecast', wilanguage: 'en', wishowrainfall: true },
+    $mountPoint: chain,
+  };
+  wi.render(me, {
+    rain: [
+      [109, '12:00'],
+      [0, '12:05'],
+    ],
+    weather: { temperature: 12, icon: 'q', description: 'Regen', isDay: true },
+  });
+  assert.match(html, /weatherinfo-weather[^>]*>Raining now/);
+  assert.match(html, /weatherinfo-weather/);
+  assert.match(html, /weatherinfo-rainfall/);
+  assert.match(html, /1\.0 mm\/h/);
+  me.block.wishowrainfall = false;
+  wi.render(me, { rain: [[0, '12:00']], weather: null, errors: ['Oops'] });
+  assert.doesNotMatch(html, /weatherinfo-rainfall/);
+  assert.match(html, /Dry for now/);
+  assert.match(html, /weatherinfo-error[^>]*>Oops/);
+});
+
+test('Weather Info is a repeatable Widgets card with its own settings table', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assertReferenceBasedKind(layout, 'weatherinfo');
+  assert.match(widgets, /html \+= _weatherinfoWidgetCardHtml\(\);/);
+  assert.equal(
+    (
+      widgets.match(
+        /=== 'weatherinfo'\) \{\s*_openWeatherinfoFromWidgets\(\);/g
+      ) || []
+    ).length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openWeatherinfo\(\);/);
+  assert.match(editor, /openWeatherinfo: openWeatherinfo,/);
+  assert.match(editor, /weatherinfo: 'weatherinfo_',/);
+  assert.match(editor, /kind = 'weatherinfo';/);
+  assert.match(
+    editor,
+    /html \+= _weatherinfoFieldsHtml\('de-config', weatherinfoValues\);/
+  );
+  assert.match(layout, /kind: 'weatherinfo',/);
+  assert.match(dashticz, /'fullykiosk',\s*'weatherinfo',/);
+  assert.match(save, /\$kind === 'weatherinfo'/);
+  assert.match(writer, /\$kind === 'weatherinfo'/);
+
+  // Every option of the plugin has a setting.
+  for (const key of [
+    'lat',
+    'lon',
+    'pollminutes',
+    'language',
+    'icons',
+    'parts',
+    'showrainfall',
+    'fontsize',
+  ]) {
+    assert.match(editor, new RegExp(`\\{\\s*key: '${key}'`), key);
+  }
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const key of [
+      'weatherinfo_block',
+      'weatherinfo_block_lat',
+      'weatherinfo_block_lon',
+      'weatherinfo_block_pollminutes',
+      'weatherinfo_block_language',
+      'weatherinfo_block_parts',
+      'weatherinfo_block_icons_animated',
+      'weatherinfo_block_part_status',
+      'weatherinfo_block_part_temp',
+      'weatherinfo_block_part_desc',
+      'weatherinfo_block_part_wind',
+      'weatherinfo_block_part_logo',
+      'weatherinfo_block_showrainfall',
+      'weatherinfo_block_fontsize',
+      'invalid_weatherinfo_block_location',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.weatherinfo_title,
+      `${locale} weatherinfo_title`
+    );
+    for (const key of [
+      'weatherinfo_rainfall',
+      'weatherinfo_nolocation',
+      'weatherinfo_error',
+    ]) {
+      assert.ok(lang.misc[key], `${locale} ${key}`);
+    }
+  }
 });

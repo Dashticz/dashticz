@@ -1,6 +1,149 @@
 Release Notes
 =============
 
+v4.20.0 (11-10-2026)
+----------------------
+
+* **Fixes**
+
+- Layout Editor (classic screens): moving or resizing a tile keeps the icon,
+  title and custom fields of its block, and a new separator can be saved.
+- Layout Editor: a block with a hand-picked key and a device idx is treated as
+  a Custom device, as in the Device Editor.
+- Editors: a key with a trailing newline is refused, a title is no longer cut
+  in the middle of a character, the LMS settings cannot be overwritten by a
+  custom field, and an empty text value of a custom field no longer blocks the
+  popup.
+- Widget Editor: a block with ``last_update: false`` keeps it when the Widget
+  Editor saves, and ``hide_data`` set to ``1`` is read as on.
+- Layout Editor (grid): an inline block with an invalid ``htmlfile`` or
+  ``frameurl`` is refused, like in the Device Editor.
+- CONFIG.js: a number that is not finite (``INF``, ``NaN``) is left out
+  instead of breaking the file.
+- Device Rules: the custom folder cannot be a program folder, and an
+  unchanged CSS file is left alone.
+- Fully Kiosk widget: the label of every switch is shown right next to the
+  switch, and the switches are laid out in 3 columns (2 columns on a narrow
+  screen, 1 on a phone).
+- Fully Kiosk settings: the label of every switch is shown right next to the
+  switch, and the fields are laid out in 3 columns (2 on a narrow popup, 1 on
+  a phone).
+- Fully Kiosk settings: the font size field is now in the Display options,
+  below the icons.
+- The font size field of the F1, TVgids, Weather Info, HP iLO and PostNL
+  widgets is now in the Display options below the icons, switches in the
+  Widget Config show their label next to the switch, and the Selector Switch
+  compact option shows the icon per level in two columns.
+- Info in Config no longer shows ``undefined`` after the version number, and
+  the update check falls back to the ``master`` branch when ``version.txt``
+  does not name a branch.
+- Widget Editor: only the first block of a kind (iframe, camera, ...) is
+  managed as a widget, so a screen with several of them can be saved again.
+- Widget Editor: an empty number setting is no longer written as ``0`` (a map
+  with zoom level 0 showed the whole world).
+- Layout Editor: no config icon for a special block whose key the Device
+  Editor cannot open.
+- A setting with a ``;`` in its text (a password, for example) is no longer
+  cut off when CONFIG.js is rewritten.
+- Saving a grid screen without tiles empties the screen instead of deleting
+  it and renumbering the later screens.
+- A text value of a custom field that looks like a number or ``true``
+  (``007``) stays a string in the Device and Widget Editor.
+- The garbage, cors and nocache bridges check the origin of a request; the
+  moon phase calculation and its quarter functions work again; the graph
+  header expression only takes numeric values.
+- The Coins block uses the CoinGecko API (the CoinMarketCap v1 and LiteBit
+  endpoints are gone); ``key`` is the CoinGecko coin id.
+
+- Device Editor, review of ``deviceeditor.js``: a block that was saved before
+  can be edited again on a classic screen, the same device on two classic
+  screens keeps its own block per screen, and the width and height of a
+  device are read from the screen being edited.
+- Device Editor: the height of the iFrame, Timegraph and Camera quick-add
+  popups no longer makes the whole save fail, and the iFrame scrollbars and
+  Camera cache switches can be switched off.
+- Device Editor: a Timegraph (or another ``widget_*`` block with an idx) stays a
+  widget, the topbar and the standby columns are no longer read twice, blocks
+  that the editor does not manage are kept on classic and grid screens, and a
+  device with its own key is not added a second time on standby.
+- Device Editor: the fields ``refresh``, ``server``, ``port``, ``username``,
+  ``password`` and ``player`` are only reserved on a Lyrion Music Server
+  block, so an iFrame, XMLTV or Camera block keeps its ``refresh``. The
+  Lyrion refresh interval and text style are no longer replaced by defaults,
+  and a pasted ``:port`` goes to the port field.
+- Device Editor: a Calendar with named sources keeps its names and colours,
+  accepts numeric names and ``webcal://`` sources and shows the same limits as
+  the server; a legacy ``calendars`` widget no longer blocks the save. Graph
+  legend, graph type and group by, the F1 UTC offset (half hours) and
+  switches written as ``1`` keep their value.
+- Device Editor: a Multi Device row keeps its other properties and its
+  ``v``, ``s`` and ``12_1`` idx forms, the slide button target is checked,
+  the Updated switch is not offered where it has no effect, and the Icon
+  switch of a slide button without icon reads as off.
+- Device Editor: a second click on Save in a quick-add popup, or on the
+  cogwheel, no longer adds a block or a popup twice; a failed save of a
+  Layout Editor cogwheel change is rolled back; a save that only half
+  succeeded says so; and adding a device while the Layout Editor is open no
+  longer loses edits made in the same session.
+- Layout Editor cogwheel: the change is written under the key the block
+  already has instead of ``device_<idx>``.
+- Saving a block with a ``$`` in its key is refused before anything is
+  written, and a Calendar widget accepts numeric names and ``webcal://``.
+
+* **Code**
+
+- ics-parser 3.6.0 and PHP 8.1+ deprecation fixes in the iCal bridge.
+- New tests for the iCal and garbage bridges, the moon phase, the thermostat
+  block, the editors and the language files.
+
+v4.1.7 (10-10-2026)
+----------------------
+
+* **Code**
+
+- Dependency updates: swiper 14.3.0, ``@babel/core`` and
+  ``@babel/preset-env`` 8.0.7, ``@types/node`` 26.6.4, sass 1.105.1,
+  johngrogg/ics-parser 3.6.0 (lock file) and newer versions of the GitHub
+  Actions used in the CI workflow.
+
+v4.1.6 (7-10-2026)
+----------------------
+
+* **Fixes**
+
+- Weather Info now gets all its data from one source, Buienradar: the current
+  weather (temperature, description, icon and wind) comes from the nearest
+  Buienradar weather station instead of Open-Meteo, so it no longer
+  contradicts the rain radar. A value the nearest station does not measure
+  comes from the next nearest one; within 75 km.
+- The Weather Info icon and description follow the rain status: while
+  Buienradar reports rain right now and the station still reports a dry sky
+  (clear, cloudy or fog), the icon becomes a rain cloud and the description
+  light rain, rain or heavy rain by intensity. Snow and thunderstorm are kept.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 203.
+
+v4.1.5 (6-10-2026)
+----------------------
+
+* **Enhancements**
+
+- New Weather Info widget (Widgets menu, multiple per screen), based on the
+  domoticz_weatherinfo plugin: the Buienradar rain forecast (raining now, rain
+  expected, rain expected at a time or dry for now) and the current weather of
+  Open-Meteo (temperature, description, wind and a weather icon). The options
+  of the plugin are settings of the widget: the location (empty = the location
+  of Domoticz), the poll interval, the language (Dutch or English) and the
+  parts of the text (each shown or hidden, in the order you drag them). An extra row can show the current rain intensity in
+  mm/h, and the weather icons are animated (or the plugin's emoji). Both feeds are read through the new bridge
+  ``vendor/dashticz/weatherinfo/index.php``.
+
+* **Code**
+
+- ``_DASHTICZ_VERSION`` raised to 202.
+
 v4.1.4 (5-10-2026)
 ----------------------
 
@@ -43,6 +186,11 @@ v4.1.4 (5-10-2026)
   functions.
 - The unused ``radars`` option of Traffic info is removed.
 - ``_DASHTICZ_VERSION`` raised to 194.
+- Faster Playwright CI jobs: 4 parallel workers against a PHP test server with
+  4 workers (``PHP_CLI_SERVER_WORKERS``), the browser jobs no longer wait for
+  the quality job, the downloaded browsers are cached, and
+  ``tests/domoticzblock.spec.js`` waits for the loader instead of a fixed
+  second.
 
 v4.1.3 (1-10-2026)
 ----------------------

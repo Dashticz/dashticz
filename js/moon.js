@@ -84,15 +84,14 @@ function MoonPhase(dateparam) {
   // store result
   this._phase = fixangle(moonAge) / 360; // Phase (0 to 1)
   this._illum = moonPhase; // Illuminated fraction (0 to 1)
-  this._age = synmonth * this.phase; // Age of moon (days)
+  this._age = synmonth * this._phase; // Age of moon (days)
   this._dist = moonDist; // Distance (kilometres)
   this._angdia = moonAng; // Angular diameter (degrees)
   this._sundist = sunDist; // Distance to Sun (kilometres)
   this._sunangdia = sunAng; // Sun's angular diameter (degrees)
-  //phaseHunt()
   this._date = dateparam;
+  phaseHunt.call(this); // fills this._quarters
 
-  // eslint-disable-next-line no-unused-vars
   function phaseHunt() {
     var sdate = utcToJulian(this._timespace);
     var adate = sdate - 45;
@@ -107,12 +106,12 @@ function MoonPhase(dateparam) {
     adate = nt1;
     var nt2, k2;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    // The start is more than a month before the date, so a few steps are
+    // enough; the bound keeps a wrong start from looping forever.
+    for (var step = 0; step < 6; step++) {
       adate += synmonth;
       k2 = k1 + 1;
       nt2 = meanPhase(adate, k2);
-      console.log(nt2);
       if (Math.abs(nt2 - sdate) < 0.75) {
         nt2 = truePhase(k2, 0.0);
       }
@@ -315,7 +314,7 @@ function MoonPhase(dateparam) {
   };
 
   this.nextFirstQuarter = function () {
-    return this._quarters[1];
+    return this._quarters[5];
   };
 
   this.nextFullMoon = function () {

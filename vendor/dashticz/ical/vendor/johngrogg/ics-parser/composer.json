@@ -30,21 +30,15 @@
         }
     ],
     "require": {
-        "php": ">=5.3.9",
+        "php": ">=5.6.40",
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "~3.6.0",
-        "phpunit/phpunit": "^5"
+        "phpunit/phpunit": "^5|^9|^10"
     },
     "autoload": {
         "psr-0": {
             "ICal": "src/"
-        }
-    },
-    "config": {
-        "platform": {
-            "php": "5.6"
         }
     },
     "scripts": {

@@ -444,7 +444,7 @@ var DT_fullykiosk = (function () {
       // A dimmer slider (0-100) in the data column, sent when released.
       var level = info ? info.brightness : 0;
       return rowHtml(
-        'fullykiosk-extra',
+        'fullykiosk-extra fullykiosk-brightness-row',
         '',
         row.icon,
         label,
