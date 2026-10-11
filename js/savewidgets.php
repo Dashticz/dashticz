@@ -164,6 +164,9 @@ $allowedHpiloRows = [
 
 // Process optional config settings
 $configSettings = [];
+// Number settings sent empty: no value (so no 0 in CONFIG.js, which would pin
+// e.g. a map zoom of 0); any value saved earlier is removed.
+$clearedSettings = [];
 if (isset($data['settings']) && is_array($data['settings'])) {
     foreach ($data['settings'] as $key => $value) {
         if (!preg_match('/^[A-Za-z0-9_]+$/', $key) || !isset($allowedSettings[$key])) {
@@ -173,6 +176,10 @@ if (isset($data['settings']) && is_array($data['settings'])) {
         if ($type === 'bool') {
             $configSettings[$key] = (int)(bool)$value;
         } elseif ($type === 'number') {
+            if ($value === null || (is_string($value) && trim($value) === '')) {
+                $clearedSettings[$key] = true;
+                continue;
+            }
             $configSettings[$key] = is_numeric($value) ? (float)$value : 0;
             if ($configSettings[$key] == (int)$configSettings[$key]) {
                 $configSettings[$key] = (int)$configSettings[$key];
@@ -1010,7 +1017,7 @@ $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 $blocksOnly = !empty($data['blocksOnly']);
 
-if (!empty($widgets) || !empty($configSettings)) {
+if (!empty($widgets) || !empty($configSettings) || !empty($clearedSettings)) {
     // TAAK1: never let a widget silently take over a block key that a
     // different screen already owns; clone it (screen-prefixed) instead.
     // configwriter_ensure_screen_owned_key() exempts radio/log/sunrise from
@@ -1069,9 +1076,9 @@ if (!empty($widgets) || !empty($configSettings)) {
         }
     }
 
-    if (!empty($configSettings)) {
+    if (!empty($configSettings) || !empty($clearedSettings)) {
         // Keep the previously saved settings this save does not touch.
-        $merged = array_diff_key($existingSettings, $configSettings);
+        $merged = array_diff_key($existingSettings, $configSettings, $clearedSettings);
         foreach ($configSettings as $key => $value) {
             $merged[$key] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
