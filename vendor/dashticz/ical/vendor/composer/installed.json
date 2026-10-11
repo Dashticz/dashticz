@@ -1,108 +1,123 @@
-[
-    {
-        "name": "johngrogg/ics-parser",
-        "version": "v3.1.1",
-        "version_normalized": "3.1.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/u01jmg3/ics-parser.git",
-            "reference": "8fd2099ed361cf1065d280e97b656726778b0779"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/u01jmg3/ics-parser/zipball/8fd2099ed361cf1065d280e97b656726778b0779",
-            "reference": "8fd2099ed361cf1065d280e97b656726778b0779",
-            "shasum": ""
-        },
-        "require": {
-            "ext-mbstring": "*",
-            "php": ">=5.3.9"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "^5",
-            "squizlabs/php_codesniffer": "~3.6.0"
-        },
-        "time": "2022-03-08T12:57:56+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "ICal": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
+{
+        "packages": [
+                {
+                        "name": "johngrogg/ics-parser",
+                        "version": "v3.6.0",
+                        "version_normalized": "3.6.0.0",
+                        "source": {
+                                "type": "git",
+                                "url": "https://github.com/u01jmg3/ics-parser.git",
+                                "reference": "e9749984dcd795020ae5e7c403e92e8fec67782f"
+                        },
+                        "dist": {
+                                "type": "zip",
+                                "url": "https://api.github.com/repos/u01jmg3/ics-parser/zipball/e9749984dcd795020ae5e7c403e92e8fec67782f",
+                                "reference": "e9749984dcd795020ae5e7c403e92e8fec67782f",
+                                "shasum": ""
+                        },
+                        "require": {
+                                "ext-mbstring": "*",
+                                "php": ">=5.6.40"
+                        },
+                        "require-dev": {
+                                "phpunit/phpunit": "^5|^9|^10"
+                        },
+                        "time": "2026-09-30T10:46:46+00:00",
+                        "type": "library",
+                        "installation-source": "source",
+                        "autoload": {
+                                "psr-0": {
+                                        "ICal": "src/"
+                                }
+                        },
+                        "notification-url": "https://packagist.org/downloads/",
+                        "license": [
+                                "MIT"
+                        ],
+                        "authors": [
+                                {
+                                        "name": "Jonathan Goode",
+                                        "role": "Developer/Owner"
+                                },
+                                {
+                                        "name": "John Grogg",
+                                        "email": "john.grogg@gmail.com",
+                                        "role": "Developer/Prior Owner"
+                                }
+                        ],
+                        "description": "ICS Parser",
+                        "homepage": "https://github.com/u01jmg3/ics-parser",
+                        "keywords": [
+                                "iCalendar",
+                                "ical",
+                                "ical-parser",
+                                "ics",
+                                "ics-parser",
+                                "ifb"
+                        ],
+                        "support": {
+                                "issues": "https://github.com/u01jmg3/ics-parser/issues",
+                                "source": "https://github.com/u01jmg3/ics-parser/tree/v3.6.0"
+                        },
+                        "funding": [
+                                {
+                                        "url": "https://github.com/sponsors/u01jmg3",
+                                        "type": "github"
+                                }
+                        ],
+                        "install-path": "../johngrogg/ics-parser"
+                },
+                {
+                        "name": "om/icalparser",
+                        "version": "v1.0.1",
+                        "version_normalized": "1.0.1.0",
+                        "source": {
+                                "type": "git",
+                                "url": "https://github.com/OzzyCzech/icalparser.git",
+                                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948"
+                        },
+                        "dist": {
+                                "type": "zip",
+                                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e180dea8447c9e78f92306f892f809d5f5ad2948",
+                                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948",
+                                "shasum": ""
+                        },
+                        "require": {
+                                "php": ">=7.2.0"
+                        },
+                        "require-dev": {
+                                "nette/tester": "*"
+                        },
+                        "suggest": {
+                                "ext-dom": "for timezone tool"
+                        },
+                        "time": "2020-09-21T09:20:40+00:00",
+                        "type": "library",
+                        "installation-source": "dist",
+                        "autoload": {
+                                "classmap": [
+                                        "src/"
+                                ]
+                        },
+                        "notification-url": "https://packagist.org/downloads/",
+                        "license": [
+                                "BSD-3-Clause"
+                        ],
+                        "authors": [
+                                {
+                                        "name": "Roman Ožana",
+                                        "email": "roman@omdesign.cz"
+                                }
+                        ],
+                        "description": "Simple ical parser",
+                        "keywords": [
+                                "calendar",
+                                "ical",
+                                "parser"
+                        ],
+                        "install-path": "../om/icalparser"
+                }
         ],
-        "authors": [
-            {
-                "name": "Jonathan Goode",
-                "role": "Developer/Owner"
-            },
-            {
-                "name": "John Grogg",
-                "email": "john.grogg@gmail.com",
-                "role": "Developer/Prior Owner"
-            }
-        ],
-        "description": "ICS Parser",
-        "homepage": "https://github.com/u01jmg3/ics-parser",
-        "keywords": [
-            "iCalendar",
-            "ical",
-            "ical-parser",
-            "ics",
-            "ics-parser",
-            "ifb"
-        ]
-    },
-    {
-        "name": "om/icalparser",
-        "version": "v1.0.1",
-        "version_normalized": "1.0.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/OzzyCzech/icalparser.git",
-            "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e180dea8447c9e78f92306f892f809d5f5ad2948",
-            "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=7.2.0"
-        },
-        "require-dev": {
-            "nette/tester": "*"
-        },
-        "suggest": {
-            "ext-dom": "for timezone tool"
-        },
-        "time": "2020-09-21T09:20:40+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Roman Ožana",
-                "email": "roman@omdesign.cz"
-            }
-        ],
-        "description": "Simple ical parser",
-        "keywords": [
-            "calendar",
-            "ical",
-            "parser"
-        ]
-    }
-]
+        "dev": true,
+        "dev-package-names": []
+}

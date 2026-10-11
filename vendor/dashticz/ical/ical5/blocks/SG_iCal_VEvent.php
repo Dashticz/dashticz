@@ -16,6 +16,10 @@
 class SG_iCal_VEvent {
 	const DEFAULT_CONFIRMED = true;
 
+	// Set while a TZID is applied to the default timezone (see __destruct).
+	public $previous_tz;
+	public $tzid;
+
 	protected $uid;
 
 	protected $start;

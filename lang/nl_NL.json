@@ -1878,7 +1878,8 @@
     "state_armedhome": "Armed Home",
     "state_armhome": "Arm Home",
     "state_disarm": "Disarm",
-    "state_disarmed": "Disarmed"
+    "state_disarmed": "Disarmed",
+    "state_mixed": "Gemengd"
   },
   "weekdays": {
     "entire_day": "Hele dag",

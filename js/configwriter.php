@@ -547,7 +547,8 @@ function configwriter_extract_section_config_settings($config, $startMarker, $en
 
     $section = substr($config, $startPos, $endPos - $startPos);
     if (!preg_match_all(
-        "/config\\[(['\\\"])([A-Za-z0-9_]+)\\1\\]\\s*=\\s*([^;]+);/",
+        // The value may hold quoted strings, which can contain a ';'.
+        "/config\\[(['\\\"])([A-Za-z0-9_]+)\\1\\]\\s*=\\s*((?:\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|[^;\"'])+);/",
         $section,
         $matches,
         PREG_SET_ORDER
@@ -584,6 +585,14 @@ function configwriter_emit_config_settings($settings, $raw = false)
     return $out;
 }
 
+/** Cut $value to at most $bytes bytes without splitting a UTF-8 character. */
+function configwriter_cut_bytes($value, $bytes)
+{
+    return function_exists('mb_strcut')
+        ? mb_strcut((string)$value, 0, $bytes, 'UTF-8')
+        : substr((string)$value, 0, $bytes);
+}
+
 function configwriter_js_string_escape($value)
 {
     return str_replace(
@@ -613,19 +622,31 @@ function configwriter_format_props($props)
         if ($value === null) {
             continue;
         }
+        // Plain identifiers stay unquoted (the existing output); anything else
+        // becomes a quoted JSON string so a key can never end the object literal.
+        $key = preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', (string)$key)
+            ? (string)$key
+            : json_encode((string)$key, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (is_bool($value)) {
             $parts[] = $key . ':' . ($value ? 'true' : 'false');
             continue;
+        }
+        if (is_float($value) && !is_finite($value)) {
+            continue; // INF and NAN are no JavaScript literals
         }
         if (is_int($value) || is_float($value)) {
             $parts[] = $key . ':' . $value;
             continue;
         }
         if (is_array($value) || is_object($value)) {
-            $parts[] = $key . ':' . json_encode(
+            $encoded = json_encode(
                 $value,
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
+            if ($encoded === false) {
+                continue; // too deep or not encodable: leave the property out
+            }
+            $parts[] = $key . ':' . $encoded;
             continue;
         }
         $parts[] = $key . ":'" . configwriter_js_string_escape((string)$value) . "'";
@@ -655,7 +676,7 @@ function configwriter_restore_editor_value($value, $depth = 0)
 
 function configwriter_emit_block_line($key, $props)
 {
-    return "blocks['" . $key . "'] = " . configwriter_format_props($props) . ";\n";
+    return "blocks['" . configwriter_js_string_escape((string)$key) . "'] = " . configwriter_format_props($props) . ";\n";
 }
 
 function configwriter_emit_column_line($key, $blockKeys, $width)
@@ -1199,7 +1220,7 @@ function configwriter_build_layout_section($blockLines, $items, $screenNumber = 
         }
         $ref = $item['ref'];
         if (isset($blockLines[$ref]) && !isset($usedRefs[$ref])) {
-            $section .= "blocks['" . $ref . "'] = " . $blockLines[$ref] . "\n";
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = " . $blockLines[$ref] . "\n";
             $usedRefs[$ref] = true;
         }
     }
@@ -1259,7 +1280,7 @@ function configwriter_build_standby_layout_section($blockLines, $items, $width =
         $ref = $item['ref'];
         $blockKeys[] = $ref;
         if (isset($blockLines[$ref]) && !isset($usedRefs[$ref])) {
-            $section .= "blocks['" . $ref . "'] = " . $blockLines[$ref] . "\n";
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = " . $blockLines[$ref] . "\n";
             $usedRefs[$ref] = true;
         }
     }
@@ -1367,9 +1388,9 @@ function configwriter_build_grid_layout_section(
         );
         $inlineGrid = configwriter_format_props($position);
         if (isset($item['propsLiteral']) && is_string($item['propsLiteral'])) {
-            $section .= "blocks['" . $ref . "'] = "
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "'] = "
                 . $item['propsLiteral'] . ";\n";
-            $section .= "blocks['" . $ref . "']['grid'] = "
+            $section .= "blocks['" . configwriter_js_string_escape((string)$ref) . "']['grid'] = "
                 . $inlineGrid . ";\n";
         } elseif (isset($item['props']) && is_array($item['props'])) {
             $props = $item['props'];
@@ -2077,7 +2098,8 @@ function configwriter_special_block_props($block)
 function configwriter_extract_screen_block_owners($config, $excludeScreenNumber = null)
 {
     $owners = [];
-    $kinds = ['device', 'widget', 'grid-layout'];
+    // 'dashboard' and 'layout' hold the blocks a classic screen kept after its last save.
+    $kinds = ['device', 'widget', 'grid-layout', 'layout', 'dashboard'];
     $screenNumbers = array_merge([0], configwriter_extract_numbered_screens($config));
 
     foreach ($screenNumbers as $screenNumber) {

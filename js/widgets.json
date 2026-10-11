@@ -8,6 +8,7 @@
     },
     "slidebutton": {
       "idxLess": true,
+      "noDial": true,
       "defaultWidth": 12
     },
     "dummy": {

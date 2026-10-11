@@ -17,6 +17,7 @@ class ComposerStaticInit68d7828faead4c2881739c005f6735df
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'om\\Freq' => __DIR__ . '/..' . '/om/icalparser/src/Freq.php',
         'om\\IcalParser' => __DIR__ . '/..' . '/om/icalparser/src/IcalParser.php',
         'om\\Recurrence' => __DIR__ . '/..' . '/om/icalparser/src/Recurrence.php',

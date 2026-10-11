@@ -1256,17 +1256,11 @@ test('device and widget config editors share full widget config and preserve hid
     widgetEditor,
     /hide_data: \$hideDataButton\.length\s*\n\s*\? !\$hideDataButton\.hasClass\('active'\)\s*\n\s*: existingBlockOptions\.hide_data === true,/
   );
+  assert.match(widgetEditor, /last_update: existingBlockOptions\.last_update,/);
+  assert.match(widgetEditor, /options\.hide_data = !!definition\.hide_data/);
   assert.match(
     widgetEditor,
-    /last_update: existingBlockOptions\.last_update === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.hide_data = definition\.hide_data === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.last_update = definition\.last_update === true/
+    /options\.last_update =\s*typeof definition\.last_update === 'undefined'/
   );
   assert.match(
     widgetEditor,
@@ -1274,11 +1268,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetEditor,
-    /entry\.last_update = blockOptions\.last_update === true/
+    /if \(typeof blockOptions\.last_update !== 'undefined'\) \{\s*entry\.last_update = blockOptions\.last_update === true/
   );
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
-  assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
+  assert.match(saveWidgets, /if \(isset\(\$widget\['last_update'\]\)\)/);
   // Icon/Data/Updated/Title/Background render as a plain flex-wrap row of
   // icon buttons now (#195), not a switch grid - .de-config-options and its
   // -three/-four/-five column-count modifiers are gone from both the source
@@ -1451,7 +1445,7 @@ test('device and widget config editors share full widget config and preserve hid
   // SEPARATOR_DEFAULT_ICON to it.
   assert.match(
     deviceEditor,
-    /\(kind === 'title'\s*\n\s*\? typeof definition\.icon === 'string' && definition\.icon !== ''/
+    /\(kind === 'title' \|\| kind === 'slidebutton'\s*\n\s*\? typeof definition\.icon === 'string' && definition\.icon !== ''/
   );
   assert.doesNotMatch(
     deviceEditor,
@@ -5569,14 +5563,17 @@ test('Lyrion Music Server Title/Artist/Station text style (size/color) is config
     deviceEditor,
     /id="' \+\s*\n?\s*prefix \+ '-lms-' \+ line\.key \+ '-color"/
   );
+  // An empty size or an untouched colour is read as undefined, so the
+  // form defaults are not pinned into CONFIG.js (DE-203).
   assert.match(
     deviceEditor,
-    /titleSize:[\s\S]{0,20}parseInt\(\$popup\.find\('#' \+ prefix \+ '-lms-title-size'\)\.val\(\), 10\)[\s\S]{0,10}\|\|[\s\S]{0,10}16,/
+    /titleSize: _readLmsSize\(\$popup, prefix \+ '-lms-title-size'\),/
   );
   assert.match(
     deviceEditor,
-    /titleColor: String\([\s\S]{0,80}\$popup\.find\('#' \+ prefix \+ '-lms-title-color'\)\.val\(\) \|\| '#ffffff'[\s\S]{0,10}\),/
+    /titleColor: _readLmsColor\(\$popup, prefix \+ '-lms-title-color'\),/
   );
+  assert.match(deviceEditor, /defaultColor: '#ffffff'/);
   // Both save paths (the quick-add popup's managedSpecials[orderKey] entry,
   // and the edit popup's special.lmsXxx = pendingLms.xxx assignment) carry
   // the 6 new fields through to the specialEntry the rest of _save() posts.
@@ -5936,7 +5933,7 @@ test('a saved Cluster block can actually be re-opened and saved from the Layout 
   // saved Cluster block impossible to edit.
   assert.match(
     deviceEditor,
-    /if \(isClusterBlock\) \{[\s\S]{0,2200}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
+    /if \(isClusterBlock\) \{[\s\S]{0,2800}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale' &&\s*field !== 'fontsize' &&\s*field !== 'icons'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
   );
 
   // A dedicated add/remove device picker (mirroring _showClusterPopup's own)

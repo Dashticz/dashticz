@@ -28,10 +28,21 @@ test('savewidgets.php saves settings without widgets and keeps other settings', 
   const source = read('js/savewidgets.php');
   assert.match(
     source,
-    /if \(!empty\(\$widgets\) \|\| !empty\(\$configSettings\)\)/
+    /if \(!empty\(\$widgets\) \|\| !empty\(\$configSettings\) \|\|/
   );
   assert.match(
     source,
-    /array_diff_key\(\$existingSettings, \$configSettings\)/
+    /array_diff_key\(\s*\$existingSettings,\s*\$configSettings,\s*\$clearedSettings\s*\)/
+  );
+});
+
+// An empty number setting (for example gm_zoomlevel, which has no default and
+// no field) must not become 0 in CONFIG.js; it is left out and a value saved
+// earlier is removed.
+test('savewidgets.php does not write 0 for an empty number setting', () => {
+  const source = read('js/savewidgets.php');
+  assert.match(
+    source,
+    /\$type === 'number'\) \{\s*if \(\$value === null \|\| \(is_string\(\$value\) && trim\(\$value\) === ''\)\) \{\s*\$clearedSettings\[\$key\] = true;\s*continue;/
   );
 });
