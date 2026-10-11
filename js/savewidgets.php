@@ -469,7 +469,9 @@ foreach ($data['widgets'] as $entry) {
         } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
             $widget['icalurl'] = [];
             foreach ($icalurl as $name => $source) {
-                if (!is_string($name) || $name === '' || strlen($name) > 100 ||
+                // json_decode turns a name such as "1" into an integer key.
+                $name = (string)$name;
+                if ($name === '' || strlen($name) > 100 ||
                     preg_match('/[\x00-\x1F]/', $name) ||
                     in_array(strtolower($name), ['__proto__', 'prototype', 'constructor'], true)) {
                     dashticz_json_error(400, 'Each calendar requires a valid unique name.');
@@ -480,7 +482,7 @@ foreach ($data['widgets'] as $entry) {
                 $ics = isset($source['ics']) && is_string($source['ics'])
                     ? trim($source['ics'])
                     : '';
-                if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^(?:https?|webcal)://[^\s]+$#i', $ics)) {
                     dashticz_json_error(400, 'Calendar ' . $name . ' requires a valid http(s) ICS URL.');
                 }
                 $color = isset($source['color']) && is_string($source['color'])

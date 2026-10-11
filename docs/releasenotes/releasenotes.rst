@@ -51,6 +51,41 @@ v4.20.0 (11-10-2026)
 - The Coins block uses the CoinGecko API (the CoinMarketCap v1 and LiteBit
   endpoints are gone); ``key`` is the CoinGecko coin id.
 
+- Device Editor, review of ``deviceeditor.js``: a block that was saved before
+  can be edited again on a classic screen, the same device on two classic
+  screens keeps its own block per screen, and the width and height of a
+  device are read from the screen being edited.
+- Device Editor: the height of the iFrame, Timegraph and Camera quick-add
+  popups no longer makes the whole save fail, and the iFrame scrollbars and
+  Camera cache switches can be switched off.
+- Device Editor: a Timegraph (or another ``widget_*`` block with an idx) stays a
+  widget, the topbar and the standby columns are no longer read twice, blocks
+  that the editor does not manage are kept on classic and grid screens, and a
+  device with its own key is not added a second time on standby.
+- Device Editor: the fields ``refresh``, ``server``, ``port``, ``username``,
+  ``password`` and ``player`` are only reserved on a Lyrion Music Server
+  block, so an iFrame, XMLTV or Camera block keeps its ``refresh``. The
+  Lyrion refresh interval and text style are no longer replaced by defaults,
+  and a pasted ``:port`` goes to the port field.
+- Device Editor: a Calendar with named sources keeps its names and colours,
+  accepts numeric names and ``webcal://`` sources and shows the same limits as
+  the server; a legacy ``calendars`` widget no longer blocks the save. Graph
+  legend, graph type and group by, the F1 UTC offset (half hours) and
+  switches written as ``1`` keep their value.
+- Device Editor: a Multi Device row keeps its other properties and its
+  ``v``, ``s`` and ``12_1`` idx forms, the slide button target is checked,
+  the Updated switch is not offered where it has no effect, and the Icon
+  switch of a slide button without icon reads as off.
+- Device Editor: a second click on Save in a quick-add popup, or on the
+  cogwheel, no longer adds a block or a popup twice; a failed save of a
+  Layout Editor cogwheel change is rolled back; a save that only half
+  succeeded says so; and adding a device while the Layout Editor is open no
+  longer loses edits made in the same session.
+- Layout Editor cogwheel: the change is written under the key the block
+  already has instead of ``device_<idx>``.
+- Saving a block with a ``$`` in its key is refused before anything is
+  written, and a Calendar widget accepts numeric names and ``webcal://``.
+
 * **Code**
 
 - ics-parser 3.6.0 and PHP 8.1+ deprecation fixes in the iCal bridge.

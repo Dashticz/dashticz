@@ -2098,7 +2098,8 @@ function configwriter_special_block_props($block)
 function configwriter_extract_screen_block_owners($config, $excludeScreenNumber = null)
 {
     $owners = [];
-    $kinds = ['device', 'widget', 'grid-layout'];
+    // 'dashboard' and 'layout' hold the blocks a classic screen kept after its last save.
+    $kinds = ['device', 'widget', 'grid-layout', 'layout', 'dashboard'];
     $screenNumbers = array_merge([0], configwriter_extract_numbered_screens($config));
 
     foreach ($screenNumbers as $screenNumber) {

@@ -66,6 +66,10 @@ function _normalise_custom_device_fields($entry)
         'text_alignment', 'text_align', 'custom_fields',
         '__proto__', 'prototype', 'constructor',
     ];
+    if (isset($entry['kind']) && $entry['kind'] === 'slidebutton') {
+        // The target screen and the button key are validated for the block itself.
+        $protectedFields = array_merge($protectedFields, ['slide', 'button_key']);
+    }
     if (isset($entry['kind']) && $entry['kind'] === 'lms') {
         // These are validated for the LMS block itself.
         $protectedFields = array_merge(
@@ -177,9 +181,13 @@ foreach ($data['devices'] as $entry) {
         } elseif ($kind === 'title') {
             // Existing hand-written blocktitle keys remain editable; new
             // separators still use the editor-generated Title_N convention.
-            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/D';
+            // Same pattern as savelayout.php and savegridlayout.php: a key they
+            // would refuse must fail here, before anything is written.
+            $keyPattern = '/^[A-Za-z_][A-Za-z0-9_]*$/D';
         } else {
-            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/D';
+            // Same pattern as savelayout.php and savegridlayout.php: a key they
+            // would refuse must fail here, before anything is written.
+            $keyPattern = '/^[A-Za-z_][A-Za-z0-9_]*$/D';
         }
         if (!isset($entry['key'])
             || !is_string($entry['key'])
@@ -314,7 +322,9 @@ foreach ($data['devices'] as $entry) {
                     }
                 } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
                     foreach ($icalurl as $calName => $source) {
-                        if (!is_string($calName) || $calName === '' || strlen($calName) > 100 ||
+                        // json_decode() turns a name like "1" into an integer key.
+                        $calName = (string)$calName;
+                        if ($calName === '' || strlen($calName) > 100 ||
                             preg_match('/[\x00-\x1F]/', $calName) ||
                             in_array(strtolower($calName), ['__proto__', 'prototype', 'constructor'], true)) {
                             dashticz_json_error(400, 'Each calendar requires a valid unique name.');
@@ -325,7 +335,7 @@ foreach ($data['devices'] as $entry) {
                         $ics = isset($source['ics']) && is_string($source['ics'])
                             ? trim($source['ics'])
                             : '';
-                        if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                        if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^(?:https?|webcal)://[^\s]+$#i', $ics)) {
                             dashticz_json_error(400, 'Calendar ' . $calName . ' requires a valid http(s) ICS URL.');
                         }
                         $color = isset($source['color']) && is_string($source['color'])
@@ -887,32 +897,32 @@ $config = rtrim($config);
 $blockKeys = [];
 $blocksOnly = !empty($data['blocksOnly']);
 if (!empty($devices)) {
-    $keyCollisionConfig = $config;
-    if ($blocksOnly) {
-        /* The active screen's editor sections are replaced by savegridlayout.php
-         * immediately after this request. Ignore their keys for collision
-         * detection so device_1498 is reused instead of becoming device_1498_2.
-         * Hand-written blocks outside these sections still reserve their keys. */
-        $keyCollisionConfig = configwriter_remove_editor_sections(
-            $keyCollisionConfig,
-            $screenNumber
-        );
-        list($gridStartMarker, $gridEndMarker) = configwriter_editor_markers(
-            'grid-layout',
-            $screenNumber
-        );
+    /* The active screen's editor sections are replaced by this request and
+     * by savelayout.php/savegridlayout.php right after it. Ignore their keys
+     * for collision detection, so device_1498 is reused instead of becoming
+     * device_1498_2, and so a special block (title, dummy, custom, slide
+     * button) that the editor saved before is written again with the edits
+     * of this request instead of being kept as if it were hand-written.
+     * Hand-written blocks outside these sections still reserve their keys. */
+    $keyCollisionConfig = configwriter_remove_editor_sections(
+        $config,
+        $screenNumber
+    );
+    list($gridStartMarker, $gridEndMarker) = configwriter_editor_markers(
+        'grid-layout',
+        $screenNumber
+    );
+    $keyCollisionConfig = configwriter_remove_section(
+        $keyCollisionConfig,
+        $gridStartMarker,
+        $gridEndMarker
+    );
+    if ($screenNumber === 0) {
         $keyCollisionConfig = configwriter_remove_section(
             $keyCollisionConfig,
-            $gridStartMarker,
-            $gridEndMarker
+            '// [standby-editor-start]',
+            '// [standby-editor-end]'
         );
-        if ($screenNumber === 0) {
-            $keyCollisionConfig = configwriter_remove_section(
-                $keyCollisionConfig,
-                '// [standby-editor-start]',
-                '// [standby-editor-end]'
-            );
-        }
     }
     $usedKeys = array_keys(
         configwriter_extract_declared_block_refs($keyCollisionConfig)
