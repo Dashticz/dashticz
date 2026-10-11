@@ -9277,10 +9277,31 @@ canvas {
 }
 
 /* Device Config / quick-add -> Fully Kiosk section
-   (js/deviceeditor.js _fullyFieldsHtml()): two columns, one on a phone. */
+   (js/deviceeditor.js _fullyFieldsHtml()): three columns, two on a narrow
+   popup, one on a phone. */
+/* A switch setting shows its label right next to the switch (switch first)
+   instead of above it. */
+.de-setting-switch > .mb-3 {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.de-setting-switch .form-label,
+.de-setting-switch .form-switch {
+  margin-bottom: 0;
+}
+
+.de-setting-switch .form-text {
+  flex: 0 0 100%;
+  order: 3;
+}
+
 .de-fully-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 16px;
   align-items: start;
 }
@@ -9289,7 +9310,13 @@ canvas {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 767px) {
+  .de-fully-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
   .de-fully-grid {
     grid-template-columns: minmax(0, 1fr);
   }
