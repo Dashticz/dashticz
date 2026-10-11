@@ -1941,7 +1941,8 @@ var DashticzLayoutEditor = (function () {
         !item.isPending &&
         (item.kind === 'device' ||
           item.kind === 'widget' ||
-          REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) > -1);
+          REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) > -1) &&
+        _hasOpenableConfig(item);
       var configureLabel =
         item.kind === 'widget'
           ? _t('configure_widget')
@@ -2054,12 +2055,21 @@ var DashticzLayoutEditor = (function () {
       });
   }
 
+  // js/deviceeditor.js's _specialFromReference() only recognises special
+  // blocks stored under a plain identifier key. For any other key (for example
+  // 'my-clock') its config popup cannot open, so such a tile gets no cog.
+  function _hasOpenableConfig(item) {
+    if (REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) < 0) return true;
+    return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(String(item.reference));
+  }
+
   function _openItemConfig(item) {
     if (!item) return;
     if (
       (item.kind === 'device' ||
         REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) > -1) &&
-      item.reference
+      item.reference &&
+      _hasOpenableConfig(item)
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {
         if (
