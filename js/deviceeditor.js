@@ -1599,7 +1599,16 @@ var DashticzDeviceEditor = (function () {
         return '';
       }
     }
-    return String(value);
+    var text = String(value);
+    if (typeof value === 'string') {
+      // A text value that would read back as another type ('007', 'true') is
+      // shown as a JSON string, so a save keeps it a string.
+      var parsed = _parseCustomSetting(text);
+      if (!parsed.valid || parsed.value !== value || /^"/.test(text)) {
+        return JSON.stringify(value);
+      }
+    }
+    return text;
   }
 
   function _normaliseCustomFieldName(value) {
@@ -1614,6 +1623,15 @@ var DashticzDeviceEditor = (function () {
     if (text === 'false') return { valid: true, value: false };
     if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
       return { valid: true, value: Number(text) };
+    }
+    if (/^".*"$/.test(text)) {
+      try {
+        var quoted = JSON.parse(text);
+        if (typeof quoted === 'string') return { valid: true, value: quoted };
+      } catch (ignore) {
+        /* not a JSON string: keep the text as typed */
+      }
+      return { valid: true, value: text };
     }
     if (/^[\[{]/.test(text)) {
       try {
