@@ -184,3 +184,15 @@ echo json_encode($settings);`
     raw: "'a;b'",
   });
 });
+
+test('a property that is no JavaScript literal is left out of a block', () => {
+  const line = runPhp(
+    "echo configwriter_format_props(['a' => 1, 'b' => INF, 'c' => NAN, 'd' => [1, NAN], 'e' => 'x']);"
+  );
+  assert.equal(line, "{a:1, e:'x'}");
+});
+
+test('a key with a trailing newline is quoted, not written as it is', () => {
+  const line = runPhp('echo configwriter_format_props(["ab\\n" => 1]);');
+  assert.equal(line, '{"ab\\n":1}');
+});

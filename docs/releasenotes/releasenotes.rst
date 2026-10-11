@@ -6,6 +6,18 @@ v4.20.0 (11-10-2026)
 
 * **Fixes**
 
+- Layout Editor (classic screens): moving or resizing a tile keeps the icon,
+  title and custom fields of its block, and a new separator can be saved.
+- Layout Editor: a block with a hand-picked key and a device idx is treated as
+  a Custom device, as in the Device Editor.
+- Editors: a key with a trailing newline is refused, a title is no longer cut
+  in the middle of a character, the LMS settings cannot be overwritten by a
+  custom field, and an empty text value of a custom field no longer blocks the
+  popup.
+- CONFIG.js: a number that is not finite (``INF``, ``NaN``) is left out
+  instead of breaking the file.
+- Device Rules: the custom folder cannot be a program folder, and an
+  unchanged CSS file is left alone.
 - Fully Kiosk widget: the label of every switch is shown right next to the
   switch, and the switches are laid out in 3 columns (2 columns on a narrow
   screen, 1 on a phone).

@@ -66,12 +66,19 @@ function _normalise_custom_device_fields($entry)
         'text_alignment', 'text_align', 'custom_fields',
         '__proto__', 'prototype', 'constructor',
     ];
+    if (isset($entry['kind']) && $entry['kind'] === 'lms') {
+        // These are validated for the LMS block itself.
+        $protectedFields = array_merge(
+            $protectedFields,
+            ['server', 'port', 'username', 'password', 'player', 'refresh']
+        );
+    }
     $customFields = [];
     $seen = [];
     foreach ($entry['custom_fields'] as $field => $value) {
         $fieldKey = is_string($field) ? strtolower($field) : '';
         if (!is_string($field)
-            || !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $field)
+            || !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', $field)
             || in_array($fieldKey, $protectedFields, true)
             || stripos($field, '_dashticz') === 0
         ) {
@@ -128,6 +135,32 @@ if (!is_array($data['devices'])) {
 
 $devices = [];
 foreach ($data['devices'] as $entry) {
+    if (is_array($entry)
+        && isset($entry['ref'])
+        && !isset($entry['kind'])
+        && !isset($entry['idx'])
+    ) {
+        /* Reference only: the classic Layout Editor moves or resizes a block
+         * that is already defined in CONFIG.js. Its definition stays exactly
+         * as it is; only its place in the layout changes. */
+        if (!is_string($entry['ref'])
+            || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['ref'])
+        ) {
+            dashticz_json_error(400, 'Invalid block reference.');
+        }
+        $refWidth = isset($entry['width']) ? (int)$entry['width'] : 3;
+        $refHeight = null;
+        if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+            $refHeight = max(50, min(2000, (int)(round((int)$entry['height'] / 10) * 10)));
+        }
+        $devices[] = [
+            'isRef' => true,
+            'key' => $entry['ref'],
+            'width' => max(1, min(12, $refWidth)),
+            'height' => $refHeight,
+        ];
+        continue;
+    }
     $customFields = _normalise_custom_device_fields($entry);
     if (is_array($entry)
         && isset($entry['kind'])
@@ -140,13 +173,13 @@ foreach ($data['devices'] as $entry) {
          selected from the normal Domoticz device list. Keep their explicit key. */
         $kind = $entry['kind'];
         if ($kind === 'dummy') {
-            $keyPattern = '/^dummyblock_\d+$/';
+            $keyPattern = '/^dummyblock_\d+$/D';
         } elseif ($kind === 'title') {
             // Existing hand-written blocktitle keys remain editable; new
             // separators still use the editor-generated Title_N convention.
-            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/';
+            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/D';
         } else {
-            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/';
+            $keyPattern = '/^[A-Za-z_$][A-Za-z0-9_$]*$/D';
         }
         if (!isset($entry['key'])
             || !is_string($entry['key'])
@@ -155,7 +188,7 @@ foreach ($data['devices'] as $entry) {
             dashticz_json_error(400, 'Invalid special block key.');
         }
         $title = isset($entry['title']) && is_string($entry['title'])
-            ? substr(trim($entry['title']), 0, 100)
+            ? configwriter_cut_bytes(trim($entry['title']), 100)
             : '';
         if ($title === '' && !in_array($kind, $titleOptionalBlockKinds, true)) {
             dashticz_json_error(400, 'A special block title is required.');
@@ -198,7 +231,7 @@ foreach ($data['devices'] as $entry) {
             }
             $idx = $entry['idx'];
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr($entry['icon'], 0, 100)
+                ? configwriter_cut_bytes($entry['icon'], 100)
                 : null;
             $hideData = !empty($entry['hide_data']);
             $lastUpdate = _dashticz_editor_last_update($entry);
@@ -208,13 +241,13 @@ foreach ($data['devices'] as $entry) {
             // A separator/title bar has no data value or idx, but it can still
             // show a leading icon like any other block.
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr($entry['icon'], 0, 100)
+                ? configwriter_cut_bytes($entry['icon'], 100)
                 : null;
         } elseif (in_array($kind, dashticz_widget_kinds('simpleIconPayload'), true)) {
             // Only Icon and Last update apply to these twelve (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr($entry['icon'], 0, 100)
+                ? configwriter_cut_bytes($entry['icon'], 100)
                 : null;
             $lastUpdate = _dashticz_editor_last_update($entry);
             if ($kind === 'group') {
@@ -574,7 +607,7 @@ foreach ($data['devices'] as $entry) {
             }
             $idx = $entry['idx'];
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr($entry['icon'], 0, 100)
+                ? configwriter_cut_bytes($entry['icon'], 100)
                 : null;
             $lastUpdate = _dashticz_editor_last_update($entry);
         } elseif ($kind === 'lms') {
@@ -582,7 +615,7 @@ foreach ($data['devices'] as $entry) {
             // uses the cover artwork as its visual, like an HTML Block), but is
             // still available like every other special block.
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr($entry['icon'], 0, 100)
+                ? configwriter_cut_bytes($entry['icon'], 100)
                 : null;
         }
         $lmsServer = null;
@@ -610,10 +643,10 @@ foreach ($data['devices'] as $entry) {
                 dashticz_json_error(400, 'Enter a valid Lyrion Music Server port.');
             }
             $lmsUsername = isset($entry['username']) && is_string($entry['username'])
-                ? substr($entry['username'], 0, 100)
+                ? configwriter_cut_bytes($entry['username'], 100)
                 : '';
             $lmsPassword = isset($entry['password']) && is_string($entry['password'])
-                ? substr($entry['password'], 0, 200)
+                ? configwriter_cut_bytes($entry['password'], 200)
                 : '';
             $lmsPlayer = isset($entry['player']) && is_string($entry['player'])
                 ? trim($entry['player'])
@@ -656,13 +689,13 @@ foreach ($data['devices'] as $entry) {
                 dashticz_json_error(400, 'A slide button requires a positive target screen number.');
             }
             $buttonKey = isset($entry['button_key']) && is_string($entry['button_key'])
-                ? substr(trim($entry['button_key']), 0, 100)
+                ? configwriter_cut_bytes(trim($entry['button_key']), 100)
                 : '';
             if ($buttonKey === '') {
                 $buttonKey = $title !== '' ? $title : $entry['key'];
             }
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-                ? substr(trim($entry['icon']), 0, 100)
+                ? configwriter_cut_bytes(trim($entry['icon']), 100)
                 : null;
         }
         $devices[] = [
@@ -712,7 +745,7 @@ foreach ($data['devices'] as $entry) {
         && isset($entry['idx']) && is_int($entry['idx']) && $entry['idx'] > 0
     ) {
         $name = (isset($entry['name']) && is_string($entry['name']))
-            ? substr(trim($entry['name']), 0, 100)
+            ? configwriter_cut_bytes(trim($entry['name']), 100)
             : 'Device ' . $entry['idx'];
         if ($name === '') {
             $name = 'Device ' . $entry['idx'];
@@ -744,9 +777,9 @@ foreach ($data['devices'] as $entry) {
             }
         }
         $title = isset($entry['title']) && is_string($entry['title'])
-            ? substr(trim($entry['title']), 0, 100) : '';
+            ? configwriter_cut_bytes(trim($entry['title']), 100) : '';
         $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-            ? substr($entry['icon'], 0, 100) : null;
+            ? configwriter_cut_bytes($entry['icon'], 100) : null;
         $devices[] = [
             'idx' => $entry['idx'],
             'isGroup' => false,
@@ -764,7 +797,7 @@ foreach ($data['devices'] as $entry) {
             'custom_fields' => $customFields,
             'key' => isset($entry['key'])
                 && is_string($entry['key'])
-                && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
+                && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $entry['key'])
                     ? $entry['key']
                     : null,
         ];
@@ -776,7 +809,7 @@ foreach ($data['devices'] as $entry) {
         /* Domoticz group/scene — the idx is the scene key e.g. 's1' */
         $groupKey = $entry['idx'];
         $name = (isset($entry['name']) && is_string($entry['name']))
-            ? substr(trim($entry['name']), 0, 100)
+            ? configwriter_cut_bytes(trim($entry['name']), 100)
             : $groupKey;
         if ($name === '') {
             $name = $groupKey;
@@ -801,9 +834,9 @@ foreach ($data['devices'] as $entry) {
             }
         }
         $title = isset($entry['title']) && is_string($entry['title'])
-            ? substr(trim($entry['title']), 0, 100) : '';
+            ? configwriter_cut_bytes(trim($entry['title']), 100) : '';
         $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
-            ? substr($entry['icon'], 0, 100) : null;
+            ? configwriter_cut_bytes($entry['icon'], 100) : null;
         $devices[] = [
             'idx' => $groupKey,
             'isGroup' => true,
@@ -835,6 +868,19 @@ if ($readError !== null) {
 
 $screenNumber = configwriter_parse_screen_number($data, 1);
 list($startMarker, $endMarker) = configwriter_editor_markers('device', $screenNumber);
+
+/* A reference-only entry keeps its block as it is. The block must exist, and
+ * when it sits in this screen's device section (which is replaced below) its
+ * definition is written back unchanged. */
+$declaredBlocks = configwriter_extract_block_lines($config);
+$ownSectionBlocks = configwriter_extract_block_lines(
+    configwriter_extract_wrapped_section($config, $startMarker, $endMarker)
+);
+foreach ($devices as $device) {
+    if (!empty($device['isRef']) && !isset($declaredBlocks[$device['key']])) {
+        dashticz_json_error(400, 'Unknown block reference.');
+    }
+}
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 
@@ -880,7 +926,12 @@ if (!empty($devices)) {
     );
     $requestKeys = [];
     foreach ($devices as &$device) {
-        if (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
+        if (!empty($device['isRef'])) {
+            if (isset($requestKeys[$device['key']])) {
+                dashticz_json_error(409, 'Block reference used twice.');
+            }
+            $requestKeys[$device['key']] = true;
+        } elseif (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
             /* The browser generates stable numbered keys for special blocks. */
             if (isset($requestKeys[$device['key']])) {
                 dashticz_json_error(409, 'Special block key already exists.');
@@ -930,6 +981,13 @@ if (!empty($devices)) {
     $section = configwriter_section_header('BLOCKS') . "\n";
     $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
     foreach ($devices as $device) {
+        if (!empty($device['isRef'])) {
+            if (isset($ownSectionBlocks[$device['key']])) {
+                $section .= "blocks['" . configwriter_js_string_escape($device['key'])
+                    . "'] = " . $ownSectionBlocks[$device['key']] . "\n";
+            }
+            continue;
+        }
         if (!empty($device['preserveExisting'])) {
             continue;
         }

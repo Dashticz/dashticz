@@ -585,6 +585,14 @@ function configwriter_emit_config_settings($settings, $raw = false)
     return $out;
 }
 
+/** Cut $value to at most $bytes bytes without splitting a UTF-8 character. */
+function configwriter_cut_bytes($value, $bytes)
+{
+    return function_exists('mb_strcut')
+        ? mb_strcut((string)$value, 0, $bytes, 'UTF-8')
+        : substr((string)$value, 0, $bytes);
+}
+
 function configwriter_js_string_escape($value)
 {
     return str_replace(
@@ -616,22 +624,29 @@ function configwriter_format_props($props)
         }
         // Plain identifiers stay unquoted (the existing output); anything else
         // becomes a quoted JSON string so a key can never end the object literal.
-        $key = preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', (string)$key)
+        $key = preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', (string)$key)
             ? (string)$key
             : json_encode((string)$key, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (is_bool($value)) {
             $parts[] = $key . ':' . ($value ? 'true' : 'false');
             continue;
         }
+        if (is_float($value) && !is_finite($value)) {
+            continue; // INF and NAN are no JavaScript literals
+        }
         if (is_int($value) || is_float($value)) {
             $parts[] = $key . ':' . $value;
             continue;
         }
         if (is_array($value) || is_object($value)) {
-            $parts[] = $key . ':' . json_encode(
+            $encoded = json_encode(
                 $value,
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
+            if ($encoded === false) {
+                continue; // too deep or not encodable: leave the property out
+            }
+            $parts[] = $key . ':' . $encoded;
             continue;
         }
         $parts[] = $key . ":'" . configwriter_js_string_escape((string)$value) . "'";
