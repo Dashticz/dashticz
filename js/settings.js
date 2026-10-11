@@ -1460,6 +1460,8 @@ function renderSettingsCategoryHome() {
     } else if (id === 'theme') {
       html += renderThemeSettingsPanel();
     } else {
+      var twoColumns = id === 'general' || id === 'screen';
+      if (twoColumns) html += '<div class="settings-two-col">';
       for (var s in settingList[id]) {
         if (s !== 'title') {
           // Standby path field is rendered as part of the background picker.
@@ -1473,6 +1475,7 @@ function renderSettingsCategoryHome() {
           html += renderSettingsRow(s, settingList[id][s]);
         }
       }
+      if (twoColumns) html += '</div>';
       if (id === 'standby') {
         html += renderBackgroundPicker(
           'standby_background',
