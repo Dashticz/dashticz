@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.2 (11-10-2026)
+----------------------
+
+* **Fixes**
+
+- Fully Kiosk settings: the label of every switch is shown right next to the
+  switch, and the fields are laid out in 3 columns (2 on a narrow popup, 1 on
+  a phone).
+
 v4.20.1 (11-10-2026)
 ----------------------
 

@@ -7720,6 +7720,7 @@ var DashticzDeviceEditor = (function () {
       '<div class="' +
       section.fieldClass +
       (setting.full ? ' ' + section.fieldClass + '-full' : '') +
+      (setting.type === 'switch' ? ' de-setting-switch' : '') +
       '"><div class="mb-3"><label class="form-label" for="' +
       id +
       '">' +
