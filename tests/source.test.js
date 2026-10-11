@@ -1256,17 +1256,11 @@ test('device and widget config editors share full widget config and preserve hid
     widgetEditor,
     /hide_data: \$hideDataButton\.length\s*\n\s*\? !\$hideDataButton\.hasClass\('active'\)\s*\n\s*: existingBlockOptions\.hide_data === true,/
   );
+  assert.match(widgetEditor, /last_update: existingBlockOptions\.last_update,/);
+  assert.match(widgetEditor, /options\.hide_data = !!definition\.hide_data/);
   assert.match(
     widgetEditor,
-    /last_update: existingBlockOptions\.last_update === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.hide_data = definition\.hide_data === true/
-  );
-  assert.match(
-    widgetEditor,
-    /options\.last_update = definition\.last_update === true/
+    /options\.last_update =\s*typeof definition\.last_update === 'undefined'/
   );
   assert.match(
     widgetEditor,
@@ -1274,11 +1268,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetEditor,
-    /entry\.last_update = blockOptions\.last_update === true/
+    /if \(typeof blockOptions\.last_update !== 'undefined'\) \{\s*entry\.last_update = blockOptions\.last_update === true/
   );
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
-  assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
+  assert.match(saveWidgets, /if \(isset\(\$widget\['last_update'\]\)\)/);
   // Icon/Data/Updated/Title/Background render as a plain flex-wrap row of
   // icon buttons now (#195), not a switch grid - .de-config-options and its
   // -three/-four/-five column-count modifiers are gone from both the source

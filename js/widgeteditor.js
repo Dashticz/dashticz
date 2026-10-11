@@ -571,7 +571,8 @@ var DashticzWidgetEditor = (function () {
       // widgets already saved.
       iconValue: explicitDefaultIcon,
       hide_data: false,
-      last_update: false,
+      // undefined: the block follows the global last_update setting
+      last_update: undefined,
       show_title: true,
       customFields: [{ field: 'title', setting: '', system: true }],
       preservedFields: {},
@@ -687,8 +688,12 @@ var DashticzWidgetEditor = (function () {
       typeof definition.icon === 'string' && definition.icon !== ''
         ? definition.icon
         : null;
-    options.hide_data = definition.hide_data === true;
-    options.last_update = definition.last_update === true;
+    options.hide_data = !!definition.hide_data;
+    // Keep an explicit false; undefined stays undefined (global setting).
+    options.last_update =
+      typeof definition.last_update === 'undefined'
+        ? undefined
+        : !!definition.last_update;
     options.show_title = definition.hide_title !== true;
     options.customFields = [
       {
@@ -5360,7 +5365,7 @@ var DashticzWidgetEditor = (function () {
         hide_data: $hideDataButton.length
           ? !$hideDataButton.hasClass('active')
           : existingBlockOptions.hide_data === true,
-        last_update: existingBlockOptions.last_update === true,
+        last_update: existingBlockOptions.last_update,
         show_title: $cfgModal
           .find('[data-block-option="show_title"]')
           .hasClass('active'),
@@ -6168,7 +6173,9 @@ var DashticzWidgetEditor = (function () {
       entry.icon = blockOptions.iconValue;
     }
     entry.hide_data = blockOptions.hide_data === true;
-    entry.last_update = blockOptions.last_update === true;
+    if (typeof blockOptions.last_update !== 'undefined') {
+      entry.last_update = blockOptions.last_update === true;
+    }
     if (blockOptions.show_title === false) entry.hide_title = true;
     entry.custom_fields = {};
     Object.keys(blockOptions.preservedFields || {}).forEach(function (field) {

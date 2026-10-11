@@ -14,6 +14,10 @@ v4.20.0 (11-10-2026)
   in the middle of a character, the LMS settings cannot be overwritten by a
   custom field, and an empty text value of a custom field no longer blocks the
   popup.
+- Widget Editor: a block with ``last_update: false`` keeps it when the Widget
+  Editor saves, and ``hide_data`` set to ``1`` is read as on.
+- Layout Editor (grid): an inline block with an invalid ``htmlfile`` or
+  ``frameurl`` is refused, like in the Device Editor.
 - CONFIG.js: a number that is not finite (``INF``, ``NaN``) is left out
   instead of breaking the file.
 - Device Rules: the custom folder cannot be a program folder, and an

@@ -191,6 +191,22 @@ foreach ($data['items'] as $index => $entry) {
             ) {
                 dashticz_json_error(400, 'Inline grid block properties are invalid.');
             }
+            // Same checks saveblocks.php makes for html and iframe blocks, so
+            // an inline block cannot carry what the Device Editor refuses.
+            if (property_exists($decodedProps, 'htmlfile')
+                && (!is_string($decodedProps->htmlfile)
+                    || strpos($decodedProps->htmlfile, '..') !== false
+                    || !preg_match('/^[A-Za-z0-9_\-.\/ ]+\.html?$/iD', $decodedProps->htmlfile))
+            ) {
+                dashticz_json_error(400, 'Enter a valid html filename (relative to custom/).');
+            }
+            if (property_exists($decodedProps, 'frameurl')
+                && (!is_string($decodedProps->frameurl)
+                    || trim($decodedProps->frameurl) === ''
+                    || strlen($decodedProps->frameurl) > 2048)
+            ) {
+                dashticz_json_error(400, 'Enter a valid iFrame URL.');
+            }
             $propsLiteral = $propsJson;
         } else {
             dashticz_json_error(400, 'Unsupported converted block type.');
