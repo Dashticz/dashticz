@@ -237,10 +237,13 @@ foreach ($data['items'] as $index => $entry) {
     }
 }
 
-/* An empty Wizard conversion bootstraps a clean CONFIG.js (or an empty
- * existing screen). Only the explicit screen-delete flow may interpret an
- * empty item list as a request to remove and compact a numbered screen. */
-if ($screenNumber > 0 && empty($items) && !isset($data['configMode'])) {
+/* An empty item list only empties the screen (a Layout Editor save with all
+ * tiles removed, or an empty Wizard conversion). Removing and compacting a
+ * numbered screen, which renumbers the later ones, needs the explicit
+ * deleteScreen flag. */
+if ($screenNumber > 0 && empty($items)
+    && isset($data['deleteScreen']) && $data['deleteScreen'] === true
+) {
     $numberedScreens = configwriter_extract_numbered_screens($config);
     if (count($numberedScreens) > 1
         && in_array($screenNumber, $numberedScreens, true)
