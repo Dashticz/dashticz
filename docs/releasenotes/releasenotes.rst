@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.1 (11-10-2026)
+----------------------
+
+* **Fixes**
+
+- Fully Kiosk widget: the label of every switch is shown right next to the
+  switch, and the switches are laid out in 3 columns (2 columns on a narrow
+  screen, 1 on a phone).
+
 v4.20.0 (11-10-2026)
 ----------------------
 
