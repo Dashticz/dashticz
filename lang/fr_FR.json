@@ -366,6 +366,8 @@
       "compact_icons": "Icône par niveau",
       "compact_icon_auto": "Automatique",
       "compact_icon_custom": "Classe Font Awesome personnalisée...",
+      "reverseicon": "Inverser",
+      "reverseicon_help": "Inverser l'atténuation : icône ou image à pleine intensité à l'arrêt et atténuée à l'état allumé.",
       "text_style": "Texte",
       "text_fontsize_title": "Taille du titre",
       "text_fontsize_value": "Taille de la valeur",

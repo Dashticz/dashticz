@@ -4444,6 +4444,17 @@ img.icon {
   opacity: 1;
 }
 
+/* Reverse icon (block.reverseicon, Device Config -> Reverse): swap which
+   state dims the icon/image. Normally Off is dimmed; with the option the
+   icon is shown at full strength while Off and dimmed while On. */
+.dt-icon-reverse .off.icon {
+  opacity: 1 !important;
+}
+
+.dt-icon-reverse .on.icon {
+  opacity: 0.4 !important;
+}
+
 .blinds .fas.fa-arrow-up,
 .blinds .fas.fa-arrow-down,
 .blinds .fas.fa-stop-circle {
