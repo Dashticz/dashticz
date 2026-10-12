@@ -1,4 +1,4 @@
-/* global language dashticz_version dashticz_branch newVersion config isNumeric Domoticz*/
+/* global language getAboutTitle config isNumeric Domoticz*/
 var settingList = {};
 settingList.general = {
   title: language.settings.general.title,
@@ -834,12 +834,7 @@ settingList['about'] = {};
 settingList['about']['title'] = language.settings.about.title;
 
 settingList['about']['about_text'] = {};
-settingList['about']['about_text']['title'] =
-  'Dashticz V' +
-  dashticz_version +
-  (dashticz_branch ? ' ' + dashticz_branch : '') +
-  '<br>' +
-  newVersion;
+settingList['about']['about_text']['title'] = getAboutTitle();
 /*
 settingList['about']['about_text2'] = {};
 settingList['about']['about_text2']['title'] =

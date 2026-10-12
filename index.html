@@ -40,6 +40,28 @@
       type="image/png"
     />
     <link rel="stylesheet" type="text/css" href="./dist/bundle.css?v=210" />
+    <!-- creative.css and config-typography.css used to be added by
+         js/main.js, which only ran after dist/bundle.js was downloaded and
+         executed. Starting them here lets the browser fetch them in parallel
+         with the bundle. They keep the per-page-load cache bust of js/loader.js
+         (which reuses this timestamp). plugins.css and helpers.css are pulled
+         in by creative.css through @import, so they are preloaded too. -->
+    <link rel="preload" href="css/plugins.css" as="style" />
+    <link rel="preload" href="css/helpers.css" as="style" />
+    <script>
+      (function () {
+        window._LOADER_CACHE_BUST = new Date().getTime();
+        ['css/creative.css', 'css/config-typography.css'].forEach(
+          function (href) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href + '?_=' + window._LOADER_CACHE_BUST;
+            link.setAttribute('data-dashticz-styling', '');
+            document.head.appendChild(link);
+          }
+        );
+      })();
+    </script>
     <title>Dashticz</title>
   </head>
 

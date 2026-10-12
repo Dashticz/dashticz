@@ -60,11 +60,11 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 
 Do not bump the version on your own initiative — not per commit, not once a day, not because a session's work feels "done". Only do the bookkeeping below when the user explicitly asks for a version bump/release. Absent that request, push code changes without touching `version.txt`, `package.json`'s `version`, `index.html`'s version strings, or `docs/releasenotes/releasenotes.rst`.
 
-When the user does ask for a bump: if a bump already exists for today (i.e. `version.txt`'s current `changelog` entry is already dated today), amend that same version's `changelog`/`last_changes`/release-notes entry with the new change instead of creating another version bump. Otherwise create a new one.
+When the user does ask for a bump: if a bump already exists for today (i.e. the newest entry in `changelog.json` is already dated today), amend that same version's `changelog.json`/`last_changes`/release-notes entry with the new change instead of creating another version bump. Otherwise create a new one.
 
 When a bump does apply, it must include:
 
-- Bump `version.txt`'s `version` field and add a matching `changelog` entry.
+- Bump `version.txt`'s `version` field (and its `last_changes`) and add a matching entry at the top of `changelog.json`. The changelog lives in its own file so that the small `version.txt`, which every dashboard start fetches, stays small.
 - Mirror the same version in `package.json`'s `version` field and in
   `index.html`'s `<meta name="description">` content and `.loaderVersion`
   placeholder (the loading screen's static text before

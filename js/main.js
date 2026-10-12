@@ -76,6 +76,10 @@ function createErrorHandler() {
 }
 
 function loadStyling() {
+  // index.html normally adds these stylesheets itself so that they download in
+  // parallel with dist/bundle.js. This is the fallback for a customised
+  // index.html that does not.
+  if ($('link[data-dashticz-styling]').length) return;
   // Bust on js/loader.js's per-page-load timestamp, like the scripts: the
   // static _DASHTICZ_VERSION only changes on a bundle rebuild, so a browser
   // kept serving a stale cached creative.css/config-typography.css after
@@ -84,21 +88,18 @@ function loadStyling() {
     typeof _LOADER_CACHE_BUST !== 'undefined'
       ? _LOADER_CACHE_BUST
       : _DASHTICZ_VERSION;
-  $(
-    '<link href="' +
-      'css/creative.css?_=' +
-      cssCacheBust +
-      '" rel="stylesheet">'
-  ).appendTo('head');
-  // Loaded after creative.css so the config/editor typography rules in it
-  // win the cascade for any selector that shares the same specificity,
-  // without needing to touch creative.css itself.
-  $(
-    '<link href="' +
-      'css/config-typography.css?_=' +
-      cssCacheBust +
-      '" rel="stylesheet">'
-  ).appendTo('head');
+  // config-typography.css is loaded after creative.css so the config/editor
+  // typography rules in it win the cascade for any selector that shares the
+  // same specificity, without needing to touch creative.css itself.
+  ['css/creative.css', 'css/config-typography.css'].forEach(function (href) {
+    $(
+      '<link href="' +
+        href +
+        '?_=' +
+        cssCacheBust +
+        '" rel="stylesheet" data-dashticz-styling>'
+    ).appendTo('head');
+  });
 }
 
 function loadLogRocket() {
