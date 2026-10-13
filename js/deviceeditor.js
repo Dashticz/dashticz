@@ -121,6 +121,9 @@ var DashticzDeviceEditor = (function () {
         hide_data: 'Hide data',
         last_update: 'Last update',
         switch: 'Switch',
+        reverseicon: 'Reverse',
+        reverseicon_help:
+          'Reverse the dimming: show the icon or image at full strength when Off and dimmed when On.',
         dial: 'Dial',
         dial_hint:
           'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
@@ -1348,6 +1351,8 @@ var DashticzDeviceEditor = (function () {
         needle: definition.needle === true,
         // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
         compactSelector: definition.compactSelector === true,
+        // Reverse icon dimming (js/blocks.js applyBlockIconStyle()).
+        reverseicon: definition.reverseicon === true,
         fontsizeTitle: _parseTextFontSize(definition.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(definition.fontsize_value, true),
         textalign: _parseTextAlign(definition.textalign),
@@ -1583,6 +1588,8 @@ var DashticzDeviceEditor = (function () {
     fontsize_title: true,
     fontsize_value: true,
     textalign: true,
+    // Reverse icon dimming - the Reverse toggle in Display options.
+    reverseicon: true,
     __proto__: true,
     prototype: true,
     constructor: true,
@@ -1903,6 +1910,11 @@ var DashticzDeviceEditor = (function () {
   function _parseTextAlign(value) {
     value = String(value || '').toLowerCase();
     return TEXT_ALIGN_VALUES.indexOf(value) > -1 ? value : '';
+  }
+
+  function _applyReverseIconField(customFields, options) {
+    delete customFields.reverseicon;
+    if (options.reverseicon === true) customFields.reverseicon = true;
   }
 
   function _applyTextStyleFields(customFields, options) {
@@ -2568,6 +2580,7 @@ var DashticzDeviceEditor = (function () {
         needle: configured.needle === true,
         // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
         compactSelector: configured.compactSelector === true,
+        reverseicon: configured.reverseicon === true,
         fontsizeTitle: _parseTextFontSize(configured.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(configured.fontsize_value, true),
         textalign: _parseTextAlign(configured.textalign),
@@ -10098,6 +10111,10 @@ var DashticzDeviceEditor = (function () {
         : isNoDialSpecial
           ? ['icon', 'last_update', 'show_title']
           : ['icon', 'hide_data', 'last_update', 'show_title'];
+    // Reverse swaps which state dims the icon/image. Same block kinds as the
+    // Text section: only blocks rendered by js/blocks.js (plain devices and
+    // idx-backed Custom devices) have an On/Off state to dim.
+    if (supportsTextStyle) configOptions.push('reverseicon');
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
 
     // Icon/Data/Updated/Title/Background: independent toggle buttons, never
@@ -10110,6 +10127,7 @@ var DashticzDeviceEditor = (function () {
       hide_data: 'fas fa-align-left',
       last_update: 'fas fa-clock',
       show_title: 'fas fa-heading',
+      reverseicon: 'fas fa-adjust',
     };
     var optionsHtml = '';
     configOptions.forEach(function (option) {
@@ -10136,7 +10154,7 @@ var DashticzDeviceEditor = (function () {
         '" aria-pressed="' +
         (checked ? 'true' : 'false') +
         '" title="' +
-        _esc(t[option]) +
+        _esc(t[option + '_help'] || t[option]) +
         '" style="min-width:72px;">' +
         '<i class="' +
         OPTION_ICONS[option] +
@@ -12665,6 +12683,7 @@ var DashticzDeviceEditor = (function () {
               specialCustomFields.compactIcons = specialOptions.compactIcons;
           }
           _applyTextStyleFields(specialCustomFields, specialOptions);
+          _applyReverseIconField(specialCustomFields, specialOptions);
           if (Object.keys(specialCustomFields).length)
             specialEntry.custom_fields = specialCustomFields;
           else delete specialEntry.custom_fields;
@@ -12849,6 +12868,7 @@ var DashticzDeviceEditor = (function () {
           customFields.compactIcons = options.compactIcons;
       }
       _applyTextStyleFields(customFields, options);
+      _applyReverseIconField(customFields, options);
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.

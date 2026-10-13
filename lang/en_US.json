@@ -315,6 +315,8 @@
       "compact_icons": "Icon per level",
       "compact_icon_auto": "Automatic",
       "compact_icon_custom": "Custom Font Awesome class...",
+      "reverseicon": "Reverse",
+      "reverseicon_help": "Reverse the dimming: show the icon or image at full strength when Off and dimmed when On.",
       "text_style": "Text",
       "text_fontsize_title": "Title size",
       "text_fontsize_value": "Value size",

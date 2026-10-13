@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v4.20.1 (11-10-2026)
+----------------------
+
+* **Enhancements**
+
+- The version number is shown in the top bar, behind the app title.
+- Config menu: the General and Display settings are laid out in two columns,
+  with narrower fields and the info icon before the field.
+- Device Config: the new **Reverse** display option swaps which state dims the
+  icon or image of a tile. By default the icon is dimmed when the device is
+  Off; with Reverse (``reverseicon: true``) it is dimmed when On instead.
+
 v4.20.0 (11-10-2026)
 ----------------------
 

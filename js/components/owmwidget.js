@@ -73,7 +73,11 @@ var DT_owmwidget = (function () {
         .html('<div id="' + me.containerid + '"></div>');
     },
     refresh: function (me) {
-      var w = parseInt(me.$mountPoint.width() * me.block.scale);
+      // The mount point can be a display:contents wrapper (creative.css), which
+      // has no box and reports a width of 0. Fall back to the parent column.
+      var mountWidth =
+        me.$mountPoint.width() || me.$mountPoint.parent().width();
+      var w = parseInt(mountWidth * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
 
