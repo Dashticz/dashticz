@@ -1,4 +1,4 @@
-/* global language dashticz_version dashticz_branch newVersion config isNumeric Domoticz*/
+/* global language getAboutTitle config isNumeric Domoticz*/
 var settingList = {};
 settingList.general = {
   title: language.settings.general.title,
@@ -834,12 +834,7 @@ settingList['about'] = {};
 settingList['about']['title'] = language.settings.about.title;
 
 settingList['about']['about_text'] = {};
-settingList['about']['about_text']['title'] =
-  'Dashticz V' +
-  dashticz_version +
-  (dashticz_branch ? ' ' + dashticz_branch : '') +
-  '<br>' +
-  newVersion;
+settingList['about']['about_text']['title'] = getAboutTitle();
 /*
 settingList['about']['about_text2'] = {};
 settingList['about']['about_text2']['title'] =
@@ -1460,6 +1455,8 @@ function renderSettingsCategoryHome() {
     } else if (id === 'theme') {
       html += renderThemeSettingsPanel();
     } else {
+      var twoColumns = id === 'general' || id === 'screen';
+      if (twoColumns) html += '<div class="settings-two-col">';
       for (var s in settingList[id]) {
         if (s !== 'title') {
           // Standby path field is rendered as part of the background picker.
@@ -1473,6 +1470,7 @@ function renderSettingsCategoryHome() {
           html += renderSettingsRow(s, settingList[id][s]);
         }
       }
+      if (twoColumns) html += '</div>';
       if (id === 'standby') {
         html += renderBackgroundPicker(
           'standby_background',
@@ -2235,32 +2233,51 @@ function bindThemeCssVarControls() {
   var $popup = $('#settingspopup');
   if (!$popup.length) return;
 
-  var storedOverrides = _getStoredCssVarOverrides();
-
   // Populate each text input with stored override or computed theme value.
-  $popup.find('.settings-cssvar-input').each(function () {
-    var $input = $(this);
-    var varName = String($input.data('cssvar') || '');
-    if (!varName) return;
-    var value = storedOverrides[varName] || _getComputedCssVar(varName);
-    if (_THEME_PX_VARS.indexOf(varName) !== -1) {
-      value = value.replace(/px\s*$/i, '').trim();
-    }
-    $input.val(value);
-    // Sync swatch if color input is present.
-    var $swatch = $popup.find(
-      '#' + $.escapeSelector($input.attr('id') + '-swatch')
+  // Runs again when the Theme panel opens and when the theme stylesheet has
+  // loaded: the settings dialog can be built before the stylesheet is applied,
+  // which left the fields empty. Fields the user already edited stay as is.
+  function populateThemeCssVarInputs() {
+    var storedOverrides = _getStoredCssVarOverrides();
+    $popup.find('.settings-cssvar-input').each(function () {
+      var $input = $(this);
+      var varName = String($input.data('cssvar') || '');
+      if (!varName) return;
+      var initial = $input.data('initialValue');
+      if (initial !== undefined && $input.val() !== initial) return;
+      var value = storedOverrides[varName] || _getComputedCssVar(varName);
+      if (_THEME_PX_VARS.indexOf(varName) !== -1) {
+        value = value.replace(/px\s*$/i, '').trim();
+      }
+      $input.val(value);
+      // Remember what the panel showed and whether it was a saved override, so
+      // saveSettings only persists values the user actually changed.
+      $input.data('initialValue', value);
+      $input.data('storedOverride', !!storedOverrides[varName]);
+      // Sync swatch if color input is present.
+      var $swatch = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-swatch')
+      );
+      if ($swatch.length) {
+        _syncSwatchFromText($swatch, value);
+      }
+      var $alpha = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-alpha')
+      );
+      if ($alpha.length) {
+        $alpha.val(Math.round(_extractCssAlpha(value) * 100));
+      }
+    });
+  }
+  populateThemeCssVarInputs();
+  $popup
+    .off('click.cssvarpopulate')
+    .on(
+      'click.cssvarpopulate',
+      '.settings-tile[data-settings-category="theme"]',
+      populateThemeCssVarInputs
     );
-    if ($swatch.length) {
-      _syncSwatchFromText($swatch, value);
-    }
-    var $alpha = $popup.find(
-      '#' + $.escapeSelector($input.attr('id') + '-alpha')
-    );
-    if ($alpha.length) {
-      $alpha.val(Math.round(_extractCssAlpha(value) * 100));
-    }
-  });
+  $('link[href^="themes/"]').one('load', populateThemeCssVarInputs);
 
   // Swatch → text input sync.
   $popup
@@ -3065,6 +3082,16 @@ function saveSettings() {
     var varName = $(this).data('cssvar');
     if (varName) {
       var varValue = String($(this).val() || '').trim();
+      // A value that only mirrors the active theme (it was filled in from the
+      // computed style) is not an override. Writing it would pin the theme's
+      // current values into custom.css on every save, which then keep
+      // shadowing the theme after it changes or fails to load.
+      if (
+        !$(this).data('storedOverride') &&
+        varValue === $(this).data('initialValue')
+      ) {
+        return;
+      }
       if (
         varValue !== '' &&
         _THEME_PX_VARS.indexOf(varName) !== -1 &&

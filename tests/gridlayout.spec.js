@@ -105,6 +105,62 @@ screens[2]['background_night'] = '';
       .toContain('img/bg2.jpg');
   });
 
+  test('does not pin the active theme values into custom.css when saving settings', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body: (await response.text()) + "\nconfig['theme'] = 'modern-dark';\n",
+      });
+    });
+    await page.route('**/info.php?get=csrf*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'theme-save-token' }),
+      })
+    );
+    /** @type {Record<string, string>[]} */
+    const savedVars = [];
+    await page.route('**/js/savecustomcss.php*', (route) => {
+      savedVars.push(JSON.parse(route.request().postData() || '{}').vars);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+    await page.route('**/js/savesettings.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.mouse.move(10, 10);
+    await page.getByRole('button', { name: 'Open settings' }).first().click();
+    await expect(page.locator('#settingspopup')).toBeVisible();
+    await page.locator('[data-settings-category="theme"]').click();
+    // The panel shows the theme's computed values ...
+    await expect(
+      page.locator('[data-cssvar="--icon-column-width"]')
+    ).toHaveValue('45');
+
+    // ... but a save without edits must not write them back as overrides.
+    const reloaded = page.waitForEvent('framenavigated', {
+      predicate: (frame) => frame === page.mainFrame(),
+    });
+    await page.locator('#settingspopup .btn-save').click();
+    await reloaded;
+    expect(savedVars).toEqual([{}]);
+  });
+
   test('keeps legacy iframe iconless, lets a classic dial fill its column, and gives Sunrise a default icon', async ({
     page,
   }) => {

@@ -115,8 +115,10 @@ var DT_weather = (function () {
           return getLatLon(me).catch(function (res) {
             //      var errorTxt = 'Error getting latlon data from OWM. Check API key';
             var errorTxt =
-              'Status ' + res.status + ': ' + res.responseJSON &&
-              res.responseJSON.message;
+              'Status ' +
+              res.status +
+              ': ' +
+              ((res.responseJSON && res.responseJSON.message) || '');
             console.log(errorTxt);
             infoMessage('Weather', errorTxt);
             me.$mountPoint
@@ -137,7 +139,11 @@ var DT_weather = (function () {
       var widthFactor = me.$mountPoint.hasClass('dt-grid-item')
         ? 1
         : me.block.width / 12;
-      var w = parseInt(me.$mountPoint.width() * widthFactor * me.block.scale);
+      // The mount point can be a display:contents wrapper (creative.css), which
+      // has no box and reports a width of 0. Fall back to the parent column.
+      var mountWidth =
+        me.$mountPoint.width() || me.$mountPoint.parent().width();
+      var w = parseInt(mountWidth * widthFactor * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {

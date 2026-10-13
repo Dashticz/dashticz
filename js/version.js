@@ -1,4 +1,4 @@
-/* global config infoMessage language */
+/* global config infoMessage language settingList */
 /*
   Check the latest version of dashticz on github.
   Check domoticz version
@@ -50,6 +50,7 @@ function getUpdateSource() {
     url: phpPath + 'info.php?get=gitinfo',
     dataType: 'json',
     cache: false,
+    timeout: 5000,
   }).then(
     function (gitInfo) {
       if (gitInfo && gitInfo.available && gitInfo.owner && gitInfo.repository) {
@@ -78,6 +79,22 @@ function getUpdateSource() {
   );
 }
 
+// Text of the About section in the settings: current version plus the
+// outcome of the update check (empty until that check has finished).
+// eslint-disable-next-line no-unused-vars
+function getAboutTitle() {
+  return (
+    'Dashticz V' +
+    dashticz_version +
+    (dashticz_branch ? ' ' + dashticz_branch : '') +
+    '<br>' +
+    newVersion
+  );
+}
+
+// Reads the local version.txt only. The update check (an extra PHP call and a
+// request to GitHub) runs after the dashboard has started, so a slow or
+// unreachable internet connection can no longer delay the startup.
 // eslint-disable-next-line no-unused-vars
 function initVersion() {
   return $.ajax({
@@ -93,97 +110,104 @@ function initVersion() {
     .then(function () {
       if (
         typeof config === 'undefined' ||
-        (typeof config !== 'undefined' &&
-          (typeof config['disable_update_check'] === 'undefined' ||
-            !config['disable_update_check']))
+        typeof config['disable_update_check'] === 'undefined' ||
+        !config['disable_update_check']
       ) {
-        return getUpdateSource().then(function (source) {
-          var sourceLabel =
-            source.owner + '/' + source.repository + ' (' + source.branch + ')';
-          return $.ajax({
-            url:
-              'https://raw.githubusercontent.com/' +
-              encodeURIComponent(source.owner) +
-              '/' +
-              encodeURIComponent(source.repository) +
-              '/' +
-              encodeURIComponent(source.branch) +
-              '/version.txt',
-            dataType: 'json',
-            success: function (data) {
-              var message =
-                (language.misc.latest_changes || 'Latest changes') +
-                ': ' +
-                data.last_changes;
-
-              var versionComparison = compareVersions(
-                data.version,
-                dashticz_version
-              );
-
-              if (versionComparison > 0) {
-                moved = true;
-                newVersion =
-                  '<br><i>' +
-                  (language.misc.version || 'Version') +
-                  ' ' +
-                  data.version +
-                  ' ' +
-                  (language.misc.is_available || 'is available') +
-                  '! <a href="https://github.com/' +
-                  encodeURIComponent(source.owner) +
-                  '/' +
-                  encodeURIComponent(source.repository) +
-                  '/tree/' +
-                  encodeURIComponent(source.branch) +
-                  '" target="_blank">' +
-                  language.misc.download +
-                  '</a></i><br><i>' +
-                  message +
-                  '</i>';
-              } else {
-                moved = false;
-                newVersion =
-                  versionComparison < 0
-                    ? '<br><i>' +
-                      (language.misc.newer_local_version ||
-                        'Your local version is newer than') +
-                      ' ' +
-                      sourceLabel +
-                      '.</i>'
-                    : '<br><i>' +
-                      (language.misc.latest_version ||
-                        'You are running the latest version from') +
-                      ' ' +
-                      sourceLabel +
-                      '.</i>';
-              }
-              if (moved == true) {
-                infoMessage(
-                  language.misc.new_version + '! (V' + data.version + ')',
-                  '<a href="https://github.com/' +
-                    encodeURIComponent(source.owner) +
-                    '/' +
-                    encodeURIComponent(source.repository) +
-                    '/tree/' +
-                    encodeURIComponent(source.branch) +
-                    '" target="_blank">' +
-                    language.misc.download +
-                    '</a>',
-                  0
-                );
-              }
-            },
-          }).then(null, function () {
-            console.log('Error loading git info. Probably no internet');
-            return $.Deferred().resolve();
-          });
-        });
+        // Deliberately not returned: do not wait for the update check.
+        checkForUpdate();
       }
     })
     .then(null, function () {
       console.log('Error loading version info. Skipping version check');
       return $.Deferred().resolve();
+    });
+}
+
+function checkForUpdate() {
+  return getUpdateSource()
+    .then(function (source) {
+      var sourceLabel =
+        source.owner + '/' + source.repository + ' (' + source.branch + ')';
+      return $.ajax({
+        url:
+          'https://raw.githubusercontent.com/' +
+          encodeURIComponent(source.owner) +
+          '/' +
+          encodeURIComponent(source.repository) +
+          '/' +
+          encodeURIComponent(source.branch) +
+          '/version.txt',
+        dataType: 'json',
+        timeout: 8000,
+      }).then(function (data) {
+        var message =
+          (language.misc.latest_changes || 'Latest changes') +
+          ': ' +
+          data.last_changes;
+
+        var versionComparison = compareVersions(data.version, dashticz_version);
+        var downloadLink =
+          '<a href="https://github.com/' +
+          encodeURIComponent(source.owner) +
+          '/' +
+          encodeURIComponent(source.repository) +
+          '/tree/' +
+          encodeURIComponent(source.branch) +
+          '" target="_blank">' +
+          language.misc.download +
+          '</a>';
+
+        if (versionComparison > 0) {
+          moved = true;
+          newVersion =
+            '<br><i>' +
+            (language.misc.version || 'Version') +
+            ' ' +
+            data.version +
+            ' ' +
+            (language.misc.is_available || 'is available') +
+            '! ' +
+            downloadLink +
+            '</i><br><i>' +
+            message +
+            '</i>';
+        } else {
+          moved = false;
+          newVersion =
+            versionComparison < 0
+              ? '<br><i>' +
+                (language.misc.newer_local_version ||
+                  'Your local version is newer than') +
+                ' ' +
+                sourceLabel +
+                '.</i>'
+              : '<br><i>' +
+                (language.misc.latest_version ||
+                  'You are running the latest version from') +
+                ' ' +
+                sourceLabel +
+                '.</i>';
+        }
+        // settings.js may already have built the About text without the
+        // result of this check; refresh it.
+        if (
+          typeof settingList !== 'undefined' &&
+          settingList['about'] &&
+          settingList['about']['about_text']
+        ) {
+          settingList['about']['about_text']['title'] = getAboutTitle();
+        }
+        if (moved == true) {
+          infoMessage(
+            language.misc.new_version + '! (V' + data.version + ')',
+            downloadLink,
+            0
+          );
+        }
+      });
+    })
+    .then(null, function () {
+      console.log('Error loading git info. Probably no internet');
     });
 }
 

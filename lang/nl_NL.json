@@ -315,6 +315,8 @@
       "compact_icons": "Icoon per level",
       "compact_icon_auto": "Automatisch",
       "compact_icon_custom": "Eigen Font Awesome-klasse...",
+      "reverseicon": "Omgekeerd",
+      "reverseicon_help": "Draai het dimmen om: toon het icoon of de afbeelding volledig bij Uit en gedimd bij Aan.",
       "text_style": "Tekst",
       "text_fontsize_title": "Grootte titel",
       "text_fontsize_value": "Grootte waarde",

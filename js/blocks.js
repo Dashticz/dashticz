@@ -202,6 +202,12 @@ function applyBlockTextStyle($div, block) {
   }
 }
 
+/* Device Config -> Reverse (block.reverseicon): swaps which state dims the
+   icon/image. css/creative.css's .dt-icon-reverse rules do the work. */
+function applyBlockIconStyle($div, block) {
+  $div.toggleClass('dt-icon-reverse', block.reverseicon === true);
+}
+
 // eslint-disable-next-line no-unused-vars
 function deviceUpdateHandler(block) {
   var selector = block.mountPoint;
@@ -351,6 +357,7 @@ function deviceUpdateHandler(block) {
   else $div.removeClass('timeout');
 
   applyBlockTextStyle($div, block);
+  applyBlockIconStyle($div, block);
   addBatteryLevel($div, block);
   addAutomationIndicator($div, block);
   triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely
