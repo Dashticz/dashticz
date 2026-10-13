@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify loadSpotifyApi DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment */
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify loadSpotifyApi DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment dashticz_version */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -180,7 +180,13 @@ var DT_simpleblock = (function () {
       '">' +
       '<span class="logo-title">' +
       $('<div>').text(title).html() +
-      '</span></div>'
+      '</span>' +
+      (typeof dashticz_version !== 'undefined' && dashticz_version
+        ? '<span class="logo-version">v' +
+          $('<div>').text(dashticz_version).html() +
+          '</span>'
+        : '') +
+      '</div>'
     );
   }
 

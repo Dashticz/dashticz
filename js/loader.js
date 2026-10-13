@@ -42,11 +42,41 @@ function showLoaderError(message) {
 // bumped) on a real release - busting on that same static number left a
 // tablet that had already loaded the dashboard today stuck on a stale cached
 // copy of these files after any same-day fix, with no visible sign anything
-// was wrong. Bust on a per-page-load timestamp instead, same as the theme
-// CSS already does.
-var _LOADER_CACHE_BUST = new Date().getTime();
+// was wrong. A per-page-load timestamp (the theme CSS does the same) fixed
+// that, but also made the browser download every one of these files in full on
+// every page load. Where fetch() is available they are now requested without
+// a query string and with cache: 'no-cache' instead: the browser always asks
+// the server whether the file changed, and a web server that sends an ETag or
+// Last-Modified header (nginx and Apache do by default) answers with a tiny
+// 304 response when it did not.
+// index.html already created the timestamp for the stylesheets it adds.
+var _LOADER_CACHE_BUST = window._LOADER_CACHE_BUST || new Date().getTime();
 
 function loadScript(script) {
+  if (typeof window.fetch !== 'function') return loadScriptTimestamped(script);
+  var deferred = $.Deferred();
+  window
+    .fetch(script, { cache: 'no-cache' })
+    .then(function (response) {
+      if (!response.ok) throw new Error(response.status + ' ' + script);
+      return response.text();
+    })
+    .then(function (source) {
+      var element = document.createElement('script');
+      element.text =
+        source.indexOf('sourceURL=') === -1
+          ? source + '\n//# sourceURL=' + script
+          : source;
+      document.head.appendChild(element);
+      deferred.resolve();
+    })
+    .catch(function (err) {
+      deferred.reject(err);
+    });
+  return deferred.promise();
+}
+
+function loadScriptTimestamped(script) {
   return $.ajax({
     url: script + '?v=' + _LOADER_CACHE_BUST,
     dataType: 'script',

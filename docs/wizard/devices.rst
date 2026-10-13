@@ -123,6 +123,12 @@ Each button switches one part of the tile on or off. A green button is on.
       button shows what the tile currently does.
   * - Title
     - Show the title of the device.
+  * - Reverse
+    - Swap which state dims the icon or image. Normally the icon is dimmed
+      when the device is Off; with **Reverse** it is shown at full strength
+      when Off and dimmed when On. Stored in ``CONFIG.js`` as
+      ``reverseicon: true``; in Custom mode you can add it to a block
+      yourself.
   * - Background
     - Show the tile background. Switch it off for a transparent tile.
 

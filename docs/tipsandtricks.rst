@@ -200,3 +200,27 @@ Add the following to ``custom.css``::
     .alerthigh .col-icon {
         color: red !important;
     }
+
+Faster loading
+--------------
+
+Dashticz downloads about a hundred files when it starts. A few settings on the web server make that a lot faster, especially on a tablet or on a slow network.
+
+- Enable gzip compression for ``.js``, ``.css``, ``.json`` and ``.tpl`` files. This reduces the download to about a third.
+- Let the browser revalidate scripts and stylesheets instead of downloading them again: send ``Cache-Control: no-cache`` for them. The web server (Apache and nginx do this by default) sends an ``ETag`` or ``Last-Modified`` header, and answers with a small ``304 Not Modified`` when a file did not change.
+- Let the browser keep fonts for a long time, and images for a day or so.
+
+The Docker image already contains these settings (see ``docker/default.conf`` and ``docker/nginx.conf``). For Apache, with ``mod_deflate``, ``mod_headers`` and ``mod_expires`` enabled::
+
+    AddOutputFilterByType DEFLATE text/css application/javascript application/json
+    <FilesMatch "\.(js|css|json|tpl|html)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <FilesMatch "\.(woff2?|ttf|otf|eot)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    <FilesMatch "\.(png|jpe?g|gif|svg|ico|webp)$">
+        Header set Cache-Control "public, max-age=86400"
+    </FilesMatch>
+
+Dashticz checks on startup whether a newer version is available. This check runs in the background after the dashboard has started and has a time-out of a few seconds. If you do not want it at all, enable the setting ``disable_update_check``.
