@@ -304,6 +304,10 @@ var Dashticz = (function () {
       'dt-hide-title',
       !!(me.block && me.block.hide_title)
     );
+    me.$mountPoint.toggleClass(
+      'dt-icon-reverse',
+      !!(me.block && me.block.reverseicon === true)
+    );
   }
 
   function renderStateDiv() {

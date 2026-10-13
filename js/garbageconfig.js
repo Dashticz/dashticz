@@ -484,6 +484,14 @@
     document.head.appendChild(style);
   }
 
+  function hasNonDefaultTheme() {
+    var theme =
+      typeof window.settings !== 'undefined' && window.settings
+        ? window.settings['theme']
+        : '';
+    return !!theme && theme !== 'default';
+  }
+
   function applyRuntimeStyles() {
     ensureRuntimeStyleSheet();
     var images = document.querySelectorAll('img.trashcan');
@@ -504,8 +512,15 @@
       var title = block.querySelector('.dt_title');
       if (title) title.style.setProperty('text-align', 'left', 'important');
 
-      image.style.setProperty('position', 'relative', 'important');
-      image.style.setProperty('left', '70px', 'important');
+      // The 70px shift is meant for the non-default themes. In the default
+      // theme it would push the icon over the table text.
+      if (hasNonDefaultTheme()) {
+        image.style.setProperty('position', 'relative', 'important');
+        image.style.setProperty('left', '70px', 'important');
+      } else {
+        image.style.removeProperty('position');
+        image.style.removeProperty('left');
+      }
 
       var scale = positiveNumber(definition[SCALE_FIELD]);
       if (scale) {
