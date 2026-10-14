@@ -1964,7 +1964,10 @@ function getYlabels(g) {
         l.push(label);
     }
   });
-  return l;
+  //Chart.js ignores an axis with an empty id, so a device without unit/axis label would not render
+  return l.map(function (lbl) {
+    return isDefined(lbl) && lbl !== '' ? lbl : ' ';
+  });
 }
 
 function groupByDevice(me) {
