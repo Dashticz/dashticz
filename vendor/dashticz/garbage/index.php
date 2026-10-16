@@ -313,7 +313,7 @@ function getCalendar() {
 					case 'dar'; $baseUrl = 'https://afvalkalender.dar.nl'; break;
 					case 'waalre'; $baseUrl = 'https://afvalkalender.waalre.nl'; break;
 					case 'avalex'; $baseUrl = 'https://www.avalex.nl'; break;
-					case 'hvc'; $baseUrl = 'https://apps.hvcgroep.nl'; break;
+					case 'hvc'; $baseUrl = 'https://inzamelkalender.hvcgroep.nl'; break;
 				}
 			}
 			
