@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.20.2 (16-10-2026)
+----------------------
+
+* **Fixes**
+
+- Garbage: the HVC option uses the new host ``inzamelkalender.hvcgroep.nl``,
+  because ``apps.hvcgroep.nl`` no longer resolves (#1352).
+- Calendar: an event that repeats on the last weekday of the month (for
+  example ``BYDAY=-1FR``) shows the last one instead of the second-to-last
+  one in months with five of that weekday (#1353).
+
 v4.20.1 (11-10-2026)
 ----------------------
 
