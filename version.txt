@@ -1,4 +1,4 @@
 {
-    "version": "4.20.1",
-    "last_changes": "The version number is shown in the top bar behind the app title, and the General and Display settings in the Config menu are laid out in two columns with narrower fields and the info icon before the field. Device Config has a Reverse option that swaps which state (On or Off) dims the icon or image of a tile."
+    "version": "4.20.2",
+    "last_changes": "The HVC garbage option uses the new host inzamelkalender.hvcgroep.nl, because apps.hvcgroep.nl no longer resolves (#1352). Calendar events that repeat on the last weekday of the month (for example BYDAY=-1FR) now show the last one instead of the second-to-last one in months with five of that weekday (#1353)."
 }
