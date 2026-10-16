@@ -547,7 +547,12 @@ class Freq {
 				$this->freq = 'monthly';
 			}
 			if ($dir == -1) {
-				$_t = $this->findEndOfPeriod($t);
+				if ($this->freq === 'monthly') {
+					// upper bound is the first day of the next month; '+1 months' from $t can land before the end of the month
+					$_t = mktime(date('H', $t), date('i', $t), date('s', $t), date('m', $t) + 1, 1, date('Y', $t));
+				} else {
+					$_t = $this->findEndOfPeriod($t);
+				}
 			} else {
 				$_t = $this->truncateToPeriod($t, $this->freq);
 			}
