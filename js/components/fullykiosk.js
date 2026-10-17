@@ -365,8 +365,8 @@ var DT_fullykiosk = (function () {
           'fa-arrows-up-down',
           esc(
             charger === 'On'
-              ? DT_function.t('fullykiosk_next_stop', 'Stops charging at')
-              : DT_function.t('fullykiosk_next_start', 'Starts charging at')
+              ? DT_function.t('fullykiosk_next_stop', 'Charge until')
+              : DT_function.t('fullykiosk_next_start', 'Charge from')
           ),
           esc(nextSwitchPercentage(charger, me.targets) + ' %')
         );
