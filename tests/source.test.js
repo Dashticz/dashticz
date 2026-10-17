@@ -8355,7 +8355,7 @@ test('Fully Kiosk block renders its rows: switches in column 1, data in column 2
   context.DT_fullykiosk.render(me);
   assert.match(html, /fullykiosk-battery/);
   assert.match(html, /49 %/);
-  assert.match(html, /Starts charging at.*27 %/);
+  assert.match(html, /Charge from.*27 %/);
   // Every row has the control column and the data column.
   const rows = html.match(/class="fullykiosk-row /g) || [];
   // The charger button spans the battery and next switch rows (one group).
@@ -8367,7 +8367,7 @@ test('Fully Kiosk block renders its rows: switches in column 1, data in column 2
   // next switch percentage is the data of that row. No sliders.
   assert.match(html, /data-action="charger"/);
   assert.doesNotMatch(html, />Charging</);
-  assert.match(html, /Starts charging at/);
+  assert.match(html, /Charge from/);
   // The brightness is a dimmer slider, without minus and plus buttons.
   assert.match(html, /type="range" class="fullykiosk-brightness-input"/);
   assert.doesNotMatch(html, /data-step|fa-minus|fa-plus/);
