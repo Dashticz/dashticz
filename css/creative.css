@@ -9554,6 +9554,15 @@ canvas {
   touch-action: none;
 }
 
+.cl-pending-item.ui-sortable-helper {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.cl-pending-handle {
+  align-self: center;
+  margin-right: 0.5rem;
+}
+
 .de-parts-item.ui-sortable-helper {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }

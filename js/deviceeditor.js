@@ -3989,6 +3989,32 @@ var DashticzDeviceEditor = (function () {
     return html + '</span></span>';
   }
 
+  // Drag the device rows into the order they are shown in. The list element
+  // itself is kept when the rows are re-rendered, so this is wired once;
+  // getList/setList give access to the (re-assignable) pending device array.
+  function _wireClusterSort($list, getList, setList) {
+    if (!$.fn.sortable) return;
+    $list.sortable({
+      items: '.cl-pending-item',
+      handle: '.cl-pending-handle',
+      axis: 'y',
+      tolerance: 'pointer',
+      containment: 'parent',
+      update: function () {
+        var current = getList();
+        var sorted = [];
+        $list.find('.cl-pending-item').each(function () {
+          var idx = parseInt($(this).attr('data-idx'), 10);
+          var found = current.find(function (d) {
+            return d.idx === idx;
+          });
+          if (found) sorted.push(found);
+        });
+        if (sorted.length === current.length) setList(sorted);
+      },
+    });
+  }
+
   function _clusterPendingListHtml(t, pendingDevices, usageList) {
     if (!pendingDevices.length) {
       return '<div class="de-empty">' + _esc(t.cluster_no_devices) + '</div>';
@@ -4014,6 +4040,7 @@ var DashticzDeviceEditor = (function () {
           '<div class="de-device-item cl-pending-item" data-idx="' +
           _esc(d.idx) +
           '">' +
+          '<span class="cl-pending-handle de-parts-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>' +
           '<span class="cl-pending-name-group">' +
           '<input type="text" class="form-control form-control-sm cl-name-input" data-idx="' +
           _esc(d.idx) +
@@ -4495,6 +4522,16 @@ var DashticzDeviceEditor = (function () {
     var $popup = $('#clusterblockpopup');
     _wireQuickOptions('cl', $popup);
     _wireBackButton('clusterblockpopup');
+
+    _wireClusterSort(
+      $('#cl-device-pending'),
+      function () {
+        return pendingDevices;
+      },
+      function (list) {
+        pendingDevices = list;
+      }
+    );
 
     $('#cl-add-device-btn').on('click', function () {
       var $select = $('#cl-device-select');
@@ -10488,6 +10525,15 @@ var DashticzDeviceEditor = (function () {
           _clusterUsesSwitchRows(clusterMode) ? clusterUsageList : null
         );
       }
+      _wireClusterSort(
+        $popup.find('#de-config-cluster-pending'),
+        function () {
+          return clusterPendingDevices;
+        },
+        function (list) {
+          clusterPendingDevices = list;
+        }
+      );
       $popup.on('click', '#de-config-cluster-add-btn', function () {
         var $select = $popup.find('#de-config-cluster-select');
         var idx = parseInt($select.val(), 10);
