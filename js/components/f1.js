@@ -194,6 +194,11 @@ var DT_f1 = (function () {
     return /grand prix/i.test(event.session);
   }
 
+  // "Grand Prix van Azerbeidzjan" -> "GP van Azerbeidzjan" to keep the heading short.
+  function shortHeading(text) {
+    return String(text || '').replace(/\bGrand Prix\b/gi, 'GP');
+  }
+
   function passesFilter(block, event) {
     var mode = block.f1sessions;
     if (mode === 'race') return isRace(event);
@@ -239,7 +244,7 @@ var DT_f1 = (function () {
   }
 
   function weekendHtml(block, weekend, now, titleHasLocation) {
-    var head = weekend[0].gp || weekend[0].location;
+    var head = shortHeading(weekend[0].gp || weekend[0].location);
     return (
       '<div class="f1-rows f1-list">' +
       (head && !titleHasLocation
@@ -275,7 +280,7 @@ var DT_f1 = (function () {
 
   // Grand Prix name, and below it "Do 24 Sep 10:30 : Vrije Training 1".
   function eventHtml(block, event) {
-    var head = event.gp || event.location;
+    var head = shortHeading(event.gp || event.location);
     return (
       '<div class="f1-next">' +
       imageHtml(block) +
