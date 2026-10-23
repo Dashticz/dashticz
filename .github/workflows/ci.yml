@@ -87,6 +87,9 @@ jobs:
   browsers:
     name: Playwright ${{ matrix.browser }}
     runs-on: ubuntu-latest
+    # A healthy run takes about 2 minutes. install-deps (apt) can hang on a
+    # bad mirror/runner; fail after 15 minutes instead of the 6 hour default.
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -110,6 +113,14 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+      - name: Use a faster apt mirror
+        # The runner's default azure.archive.ubuntu.com mirror is sometimes
+        # slow enough (~30 s per MB) that installing the browser's system
+        # packages takes longer than the whole test run. mirror:// picks
+        # nearby mirrors, and the timeout makes a stalled download retry.
+        run: |
+          sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|mirror+http://mirrors.ubuntu.com/mirrors.txt|g' /etc/apt/sources.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
+          echo 'Acquire::http::Timeout "20"; Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/99ci-timeouts
       - if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - if: steps.playwright-cache.outputs.cache-hit == 'true'

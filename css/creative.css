@@ -3442,6 +3442,16 @@ a.playlist {
   margin: auto;
 }
 
+/* Center the +/- (and chevron) symbols of the setpoint/blinds buttons both
+   horizontally and vertically inside their button. */
+.col-button1 .btn-number,
+.col-button2 .btn-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .col-dots {
   display: flex;
   justify-content: center;
