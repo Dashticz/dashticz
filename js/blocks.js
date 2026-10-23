@@ -183,6 +183,7 @@ function applyBlockTextStyle($div, block) {
   var titleSize = parseInt(block.fontsize_title, 10);
   var valueSize = parseInt(block.fontsize_value, 10);
   var align = String(block.textalign || '').toLowerCase();
+  var valign = String(block.textvalign || '').toLowerCase();
   $div.each(function () {
     this.style.setProperty(
       '--dt-fs-title',
@@ -196,9 +197,14 @@ function applyBlockTextStyle($div, block) {
   $div
     .toggleClass('dt-fs-title', titleSize > 0)
     .toggleClass('dt-fs-value', valueSize > 0)
-    .removeClass('dt-align-left dt-align-center dt-align-right');
+    .removeClass(
+      'dt-align-left dt-align-center dt-align-right dt-valign-top dt-valign-middle dt-valign-bottom'
+    );
   if (['left', 'center', 'right'].indexOf(align) > -1) {
     $div.addClass('dt-align-' + align);
+  }
+  if (['top', 'middle', 'bottom'].indexOf(valign) > -1) {
+    $div.addClass('dt-valign-' + valign);
   }
 }
 

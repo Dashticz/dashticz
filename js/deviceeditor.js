@@ -142,7 +142,11 @@ var DashticzDeviceEditor = (function () {
         text_style: 'Text',
         text_fontsize_title: 'Title size',
         text_fontsize_value: 'Value size',
-        text_align: 'Alignment',
+        text_align: 'Horizontal',
+        text_valign: 'Vertical',
+        text_valign_top: 'Top',
+        text_valign_middle: 'Middle',
+        text_valign_bottom: 'Bottom',
         text_align_default: 'Theme default',
         text_align_left: 'Left',
         text_align_center: 'Center',
@@ -1356,6 +1360,7 @@ var DashticzDeviceEditor = (function () {
         fontsizeTitle: _parseTextFontSize(definition.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(definition.fontsize_value, true),
         textalign: _parseTextAlign(definition.textalign),
+        textvalign: _parseTextVAlign(definition.textvalign),
         compactIcons:
           definition.compactIcons && typeof definition.compactIcons === 'object'
             ? $.extend({}, definition.compactIcons)
@@ -1588,6 +1593,7 @@ var DashticzDeviceEditor = (function () {
     fontsize_title: true,
     fontsize_value: true,
     textalign: true,
+    textvalign: true,
     // Reverse icon dimming - the Reverse toggle in Display options.
     reverseicon: true,
     __proto__: true,
@@ -1898,6 +1904,7 @@ var DashticzDeviceEditor = (function () {
   // applyBlockTextStyle(). Stored as fontsize_title/fontsize_value/textalign
   // custom fields, like compactSelector.
   var TEXT_ALIGN_VALUES = ['left', 'center', 'right'];
+  var TEXT_VALIGN_VALUES = ['top', 'middle', 'bottom'];
 
   // keepOutOfRange: a stored size outside 6-100 (the components accept any
   // positive size) is passed on as it is until the user changes the field.
@@ -1912,6 +1919,11 @@ var DashticzDeviceEditor = (function () {
     return TEXT_ALIGN_VALUES.indexOf(value) > -1 ? value : '';
   }
 
+  function _parseTextVAlign(value) {
+    value = String(value || '').toLowerCase();
+    return TEXT_VALIGN_VALUES.indexOf(value) > -1 ? value : '';
+  }
+
   function _applyReverseIconField(customFields, options) {
     delete customFields.reverseicon;
     if (options.reverseicon === true) customFields.reverseicon = true;
@@ -1921,11 +1933,13 @@ var DashticzDeviceEditor = (function () {
     delete customFields.fontsize_title;
     delete customFields.fontsize_value;
     delete customFields.textalign;
+    delete customFields.textvalign;
     if (options.fontsizeTitle)
       customFields.fontsize_title = options.fontsizeTitle;
     if (options.fontsizeValue)
       customFields.fontsize_value = options.fontsizeValue;
     if (options.textalign) customFields.textalign = options.textalign;
+    if (options.textvalign) customFields.textvalign = options.textvalign;
   }
 
   function _devicePreservedFieldValues(definition) {
@@ -2584,6 +2598,7 @@ var DashticzDeviceEditor = (function () {
         fontsizeTitle: _parseTextFontSize(configured.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(configured.fontsize_value, true),
         textalign: _parseTextAlign(configured.textalign),
+        textvalign: _parseTextVAlign(configured.textvalign),
         compactIcons:
           configured.compactIcons && typeof configured.compactIcons === 'object'
             ? $.extend({}, configured.compactIcons)
@@ -9633,34 +9648,56 @@ var DashticzDeviceEditor = (function () {
         '"><span>px</span></span>'
       );
     };
-    var align = _parseTextAlign(options.textalign);
-    var alignButtons = [
-      { value: '', icon: 'fa-ban', label: t.text_align_default },
-      { value: 'left', icon: 'fa-align-left', label: t.text_align_left },
-      { value: 'center', icon: 'fa-align-center', label: t.text_align_center },
-      { value: 'right', icon: 'fa-align-right', label: t.text_align_right },
-    ]
-      .map(function (button) {
-        var id = 'de-config-textalign-' + (button.value || 'default');
-        return (
-          '<input type="radio" class="btn-check" name="de-config-textalign" id="' +
-          id +
-          '" value="' +
-          button.value +
-          '" autocomplete="off"' +
-          (align === button.value ? ' checked' : '') +
-          '><label class="btn btn-outline-secondary btn-sm" for="' +
-          id +
-          '" title="' +
-          _esc(button.label) +
-          '" aria-label="' +
-          _esc(button.label) +
-          '"><i class="fas ' +
-          button.icon +
-          '"></i></label>'
-        );
-      })
-      .join('');
+    var alignButtonRow = function (name, current, buttons) {
+      return buttons
+        .map(function (button) {
+          var id = name + '-' + (button.value || 'default');
+          return (
+            '<input type="radio" class="btn-check" name="' +
+            name +
+            '" id="' +
+            id +
+            '" value="' +
+            button.value +
+            '" autocomplete="off"' +
+            (current === button.value ? ' checked' : '') +
+            '><label class="btn btn-outline-secondary btn-sm" for="' +
+            id +
+            '" title="' +
+            _esc(button.label) +
+            '" aria-label="' +
+            _esc(button.label) +
+            '"><i class="fas ' +
+            button.icon +
+            '"></i></label>'
+          );
+        })
+        .join('');
+    };
+    var alignButtons = alignButtonRow(
+      'de-config-textalign',
+      _parseTextAlign(options.textalign),
+      [
+        { value: '', icon: 'fa-ban', label: t.text_align_default },
+        { value: 'left', icon: 'fa-align-left', label: t.text_align_left },
+        {
+          value: 'center',
+          icon: 'fa-align-center',
+          label: t.text_align_center,
+        },
+        { value: 'right', icon: 'fa-align-right', label: t.text_align_right },
+      ]
+    );
+    var valignButtons = alignButtonRow(
+      'de-config-textvalign',
+      _parseTextVAlign(options.textvalign),
+      [
+        { value: '', icon: 'fa-ban', label: t.text_align_default },
+        { value: 'top', icon: 'fa-arrow-up', label: t.text_valign_top },
+        { value: 'middle', icon: 'fa-arrows-v', label: t.text_valign_middle },
+        { value: 'bottom', icon: 'fa-arrow-down', label: t.text_valign_bottom },
+      ]
+    );
     return (
       '<div class="mb-3 de-text-style-row">' +
       '<div class="form-label">' +
@@ -9681,6 +9718,11 @@ var DashticzDeviceEditor = (function () {
       _esc(t.text_align) +
       '</span><span class="btn-group de-text-align-group" role="group">' +
       alignButtons +
+      '</span></span>' +
+      '<span class="d-flex align-items-center gap-2"><span>' +
+      _esc(t.text_valign) +
+      '</span><span class="btn-group de-text-align-group" role="group">' +
+      valignButtons +
       '</span></span></div>' +
       '<div class="form-text">' +
       _esc(t.text_style_help) +
@@ -11145,6 +11187,9 @@ var DashticzDeviceEditor = (function () {
         );
         updated.textalign = _parseTextAlign(
           $popup.find('input[name="de-config-textalign"]:checked').val()
+        );
+        updated.textvalign = _parseTextVAlign(
+          $popup.find('input[name="de-config-textvalign"]:checked').val()
         );
       }
       if (supportsCompactSelector) {
