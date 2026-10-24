@@ -921,7 +921,7 @@ next css sets the default height of the frame popup
 
 .settings-update-label {
   margin: 0;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1023,7 +1023,7 @@ next css sets the default height of the frame popup
   margin: 18px 0 8px;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: #495057;
   letter-spacing: 0.03em;
@@ -1136,7 +1136,7 @@ next css sets the default height of the frame popup
 
 .settings-cssvar-px-suffix {
   color: #6c757d;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 @media (max-width: 767.98px) {
@@ -1346,7 +1346,7 @@ next css sets the default height of the frame popup
 .settings-static {
   padding: 12px 0;
   color: #343a40;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 @media (max-width: 767.98px) {
@@ -1812,7 +1812,7 @@ next css sets the default height of the frame popup
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.35);
   color: var(--text-light);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -1868,7 +1868,7 @@ next css sets the default height of the frame popup
 /* Font Awesome icons inside screen-switcher buttons */
 .dt-screen-btn i[aria-hidden] {
   pointer-events: none;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -2173,7 +2173,7 @@ body.dle-active {
 .dle-pending-name {
   max-width: 100%;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2258,7 +2258,7 @@ h6.de-section-title .fas {
   border-radius: 4px;
   background: #f8f9fa;
   border: 1px solid #e9ecef;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .de-device-identity {
@@ -2918,7 +2918,7 @@ h6.de-section-title .fas {
 
 .de-add-row .de-device-select {
   flex: 1 1 auto;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .de-add-row .de-width-input {
@@ -2944,7 +2944,7 @@ h6.de-section-title .fas {
 }
 
 .de-empty {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-muted);
   font-style: italic;
   padding: 4px 0;
@@ -3294,7 +3294,7 @@ h6.de-section-title .fas {
 .we-message {
   min-height: 22px;
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 a.playlist {
@@ -3631,6 +3631,72 @@ a.playlist {
   white-space: nowrap;
 }
 
+/* Lux sun arc (read-only), see postHookLux in js/blocks.js */
+div.mh.lux-has-slider:not(.multiline) {
+  height: auto;
+  min-height: 85px;
+  flex-wrap: wrap;
+}
+
+.mh.dt_block.lux-has-slider {
+  padding-bottom: 6px !important;
+}
+
+.lux-slider {
+  clear: both;
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.lux-arc {
+  position: relative;
+  width: 100%;
+  max-width: 130px;
+  margin: 0 auto;
+}
+
+.lux-arc svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.lux-arc-value {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4%;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.lux-has-value .col-data .value {
+  display: none;
+}
+
+.lux-arc-track,
+.lux-arc-fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.lux-arc-track {
+  stroke: rgba(125, 138, 163, 0.35);
+}
+
+.lux-arc-glow {
+  fill: rgba(255, 214, 0, 0.8);
+}
+
+.lux-arc-sun {
+  fill: #fff;
+}
 /*To change the default height of the graph popup adapt the height value in custom.css
   Example:
 .graphheight {
@@ -4376,7 +4442,7 @@ html .ui-button.ui-state-disabled:active {
 .navbar-default .nav > li > a:focus {
   text-transform: uppercase;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-dark);
 }
 
@@ -5682,7 +5748,7 @@ a:not([href]) {
 }
 
 .news .headline .description {
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .news .headline .updated {
