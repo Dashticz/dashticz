@@ -1103,9 +1103,9 @@ function handleDevice(block) {
 
 /*exported postHookLux */
 var LUX_SLIDER_MAX = 2500;
-// Lux value that is treated as 1 lux step in the logarithmic curve; a larger
-// value keeps low lux values closer to the start of the arc
-var LUX_SLIDER_KNEE = 10;
+// Bend of the logarithmic curve: below this lux value the curve is nearly
+// linear; a larger value keeps low lux values closer to the start of the arc
+var LUX_SLIDER_KNEE = 100;
 
 /**
  * Appends a read-only sun arc to a lux block. The sun moves along the arc
