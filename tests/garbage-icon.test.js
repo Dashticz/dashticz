@@ -51,10 +51,10 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
     /removeProperty\('left'\)/,
     'the default theme must not shift the Kliko image'
   );
-  assert.doesNotMatch(
+  assert.match(
     helper,
-    /setProperty\('text-align'/,
-    'the Garbage title alignment must come from the theme (.dt_title), not an inline override'
+    /if \(hasNonDefaultTheme\(\)\) title\.style\.removeProperty\('text-align'\);\s*else title\.style\.setProperty\('text-align', 'left', 'important'\)/,
+    'the Garbage title is left aligned in the default theme only'
   );
   assert.match(
     helper,
