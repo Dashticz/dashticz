@@ -43,8 +43,8 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     helper,
-    /if \(hasNonDefaultTheme\(\)\) \{[^}]*setProperty\('left', '70px', 'important'\)/,
-    'the Kliko image is only shifted 70px to the right in non-default themes'
+    /if \(hasNonDefaultTheme\(\)\) \{[^}]*setProperty\('left', '45px', 'important'\)/,
+    'the Kliko image is only shifted 45px to the right in non-default themes'
   );
   assert.match(
     helper,
