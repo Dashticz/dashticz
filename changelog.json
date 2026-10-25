@@ -1,6 +1,6 @@
 {
   "changelog": {
-    "4.20.9": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it follows the theme and is right-aligned like the title of other blocks.",
+    "4.20.9": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it follows the theme and is right-aligned like the title of other blocks, and its extra top margin is removed so it lines up with the titles of neighbouring blocks.",
     "4.20.8": "Weather Underground is no longer supported (its free API stopped): the former wunderground, currentweather and currentweather_big blocks use the regular OpenWeatherMap/KNMI weather block. The Weather Underground scripts, settings and Skycons icons are removed.",
     "4.20.7": "The security panel's device information no longer needs mobile-detect; mobile-detect is removed.",
     "4.20.6": "playsound uses the browser's own audio element instead of ion.sound; ion-sound is removed.",

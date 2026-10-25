@@ -1,4 +1,4 @@
 {
     "version": "4.20.9",
-    "last_changes": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it follows the theme and is right-aligned like the title of other blocks."
+    "last_changes": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it follows the theme and is right-aligned like the title of other blocks, and its extra top margin is removed so it lines up with the titles of neighbouring blocks."
 }
