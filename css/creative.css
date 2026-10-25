@@ -9414,7 +9414,8 @@ canvas {
 /* The charger button shows the battery level as a translucent progress fill
    (--fully-level, set by fullykiosk.js), where 100% of the bar is the target
    level of the charger. The gradient is fixed to the whole bar and clipped to
-   the level: orange from 0 to 30%, then over to green. It sits behind the
+   the level: orange from 0 to 30%, then over yellow and light green to a
+   vivid green at the end of the bar. It sits behind the
    icon so the button and its icon stay visible. */
 .fullykiosk-btn[data-progress] {
   position: relative;
@@ -9427,10 +9428,10 @@ canvas {
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(255, 140, 0, 0.3) 0%,
-    rgba(255, 140, 0, 0.3) 10%,
-    rgba(46, 204, 113, 0.3) 30%,
-    rgba(46, 204, 113, 0.3) 100%
+    rgba(255, 110, 0, 0.4) 0%,
+    rgba(255, 200, 0, 0.4) 30%,
+    rgba(150, 230, 30, 0.45) 55%,
+    rgba(0, 255, 90, 0.55) 100%
   );
   clip-path: inset(0 calc(100% - var(--fully-level, 0%)) 0 0);
   pointer-events: none;
