@@ -1,4 +1,4 @@
 {
-    "version": "4.20.11",
-    "last_changes": "The progress fill of the Fully Kiosk charger button now shows its gradient over the filled part: from a light green at the start to a dark green at the end of the fill."
+    "version": "4.20.12",
+    "last_changes": "The progress fill of the Fully Kiosk charger button runs from #C0FCE1 at the start to #059956 at the end of the fill, fully opaque, so the color difference is clearly visible."
 }
