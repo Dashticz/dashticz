@@ -963,6 +963,7 @@ var DashticzDeviceEditor = (function () {
       f1language: 'f1_language',
       f1urlen: 'f1_url_en',
       f1urlnl: 'f1_url_nl',
+      f1timezone: 'f1_timezone',
       f1utcoffset: 'f1_utcoffset',
       f1pollminutes: 'f1_pollminutes',
       f1sessions: 'f1_sessions',
@@ -7727,7 +7728,7 @@ var DashticzDeviceEditor = (function () {
     fieldClass: 'de-f1-field',
     // Order of the settings in a saved block, after f1mode.
     saveOrder:
-      'language urlen urlnl utcoffset pollminutes sessions visibility emptytext hideimage fontsize image',
+      'language urlen urlnl timezone utcoffset pollminutes sessions visibility emptytext hideimage fontsize image',
     settings: [
       {
         key: 'language',
@@ -7740,7 +7741,18 @@ var DashticzDeviceEditor = (function () {
           ];
         },
       },
-      // Optional whole number: empty = the time zone of the browser.
+      {
+        key: 'timezone',
+        type: 'select',
+        def: 'browser',
+        options: function (t) {
+          return [
+            ['browser', t.f1_block_timezone_browser],
+            ['domoticz', t.f1_block_timezone_domoticz],
+          ];
+        },
+      },
+      // Optional number: empty = use the time zone setting above.
       { key: 'utcoffset', type: 'number', def: null, range: [-24, 24, 0.25] },
       { key: 'pollminutes', type: 'number', def: 60, range: [5, 1440, 5] },
       {

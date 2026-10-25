@@ -41,6 +41,62 @@ function dashticz_f1_download($url)
     return $response['body'];
 }
 
+// A latitude or longitude within the range as a number, else null.
+function dashticz_f1_coordinate($value, $min, $max)
+{
+    if (!is_numeric($value)) {
+        return null;
+    }
+    $number = (float) $value;
+    return $number >= $min && $number <= $max ? $number : null;
+}
+
+// Open-Meteo answer -> IANA time zone name ("Europe/Amsterdam"), or '' when
+// the answer has none or an unusable one.
+function dashticz_f1_timezone_from_json($json)
+{
+    $data = json_decode((string) $json, true);
+    $name = is_array($data) && isset($data['timezone']) && is_string($data['timezone']) ? $data['timezone'] : '';
+    if (!preg_match('~^[A-Za-z0-9_+-]+(?:/[A-Za-z0-9_+-]+){0,2}$~', $name)) {
+        return '';
+    }
+    try {
+        new DateTimeZone($name);
+    } catch (Exception $error) {
+        return '';
+    }
+    return $name;
+}
+
+// Time zone of a location (Open-Meteo derives it from the coordinates, and
+// follows summer time). Cached per location rounded to 0.1 degree for 30
+// days. '' when the lookup fails, so the widget falls back to the browser.
+function dashticz_f1_timezone($lat, $lon)
+{
+    $lat = round($lat, 1);
+    $lon = round($lon, 1);
+    $baseDir = dashticz_cache_dir('f1');
+    $file = $baseDir === null ? null : $baseDir . '/tz-' . sha1($lat . ',' . $lon) . '.json';
+    try {
+        return dashticz_cached_json($file, 30 * 86400, function () use ($lat, $lon) {
+            $url = 'https://api.open-meteo.com/v1/forecast?latitude=' . $lat . '&longitude=' . $lon
+                . '&current=temperature_2m&timezone=auto';
+            try {
+                $response = dashticz_fetch_remote($url, 65536);
+            } catch (RuntimeException $error) {
+                throw new RuntimeException('Unable to look up the time zone.');
+            }
+            $name = dashticz_f1_timezone_from_json($response['body']);
+            if ($name === '') {
+                throw new RuntimeException('Unable to look up the time zone.');
+            }
+            return $name;
+        }, 'tz', 300);
+    } catch (RuntimeException $error) {
+        return '';
+    }
+}
+
 // ICS text -> list of sessions, sorted by start time. Parsed with the shared
 // iCalendar helper (sabre/vobject); floating times are read as UTC and
 // all-day entries are not sessions, so they are left out.

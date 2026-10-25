@@ -179,3 +179,104 @@ test('Webpack cleans stale output while preserving legacy font assets', () => {
   assert.equal(config.output.clean.keep.test('assets/fonts/legacy.woff'), true);
   assert.equal(config.output.clean.keep.test('obsolete-chunk.js'), false);
 });
+
+/* Runs one refresh of the F1 widget (next mode) against a fake bridge
+   answer and returns the HTML it renders and the bridge request. */
+function renderF1(block, answer, location) {
+  let request;
+  let html = '';
+  const mount = {
+    css() {},
+    find(selector) {
+      return {
+        length: 0,
+        each() {},
+        html(value) {
+          if (selector === '.dt_state' && value !== undefined) html = value;
+        },
+      };
+    },
+  };
+  const f1 = loadComponent('js/components/f1.js', {
+    Date,
+    $: { extend: (target, ...rest) => Object.assign(target, ...rest) },
+    settings: {},
+    Domoticz: {
+      getAllDevices: () => ({ _settings: { Location: location || {} } }),
+    },
+    DT_function: {
+      clampNumber: (value, def) => (value === undefined ? def : Number(value)),
+      escapeHtml: (value) => String(value),
+      bridge(_url, req) {
+        request = req;
+        return { then: (ok) => ok(answer) };
+      },
+      bridgeError: () => 'error',
+      t: (_key, def) => def,
+    },
+  });
+  f1.refresh({ block, $mountPoint: mount });
+  return { html, request };
+}
+
+test('F1 widget follows summer time in the time zone from the bridge', () => {
+  const realNow = Date.now;
+  const summer = Date.parse('2026-10-24T12:00:00Z') / 1000;
+  const winter = Date.parse('2026-10-25T12:00:00Z') / 1000;
+  Date.now = () => Date.parse('2026-10-01T00:00:00Z');
+  try {
+    const answer = (ts, timezone) => ({
+      events: [
+        { start: ts, end: ts + 3600, session: 'Race', gp: '', location: '' },
+      ],
+      timezone,
+    });
+    const base = { f1mode: 'next', f1language: 'en', f1visibility: 365 };
+    // 12:00 UTC is 14:00 in summer time and 13:00 in winter time.
+    assert.match(
+      renderF1(base, answer(summer, 'Europe/Amsterdam')).html,
+      /Sat 24 Oct 14:00/
+    );
+    assert.match(
+      renderF1(base, answer(winter, 'Europe/Amsterdam')).html,
+      /Sun 25 Oct 13:00/
+    );
+    assert.match(
+      renderF1(base, answer(summer, 'America/New_York')).html,
+      /Sat 24 Oct 08:00/
+    );
+    // An unknown zone is ignored; the fixed offset ignores summer time.
+    assert.doesNotMatch(
+      renderF1(base, answer(summer, 'Nope/Zone')).html,
+      /undefined|NaN/
+    );
+    assert.match(
+      renderF1({ ...base, f1utcoffset: 1 }, answer(summer, 'Europe/Amsterdam'))
+        .html,
+      /Sat 24 Oct 13:00/
+    );
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test('F1 widget sends the Domoticz location only in domoticz time zone mode', () => {
+  const location = { Latitude: '52.37', Longitude: '4,9' };
+  const answer = { events: [] };
+  const base = { f1mode: 'next' };
+  assert.deepEqual(
+    Object.keys(renderF1(base, answer, location).request).sort(),
+    ['pollMinutes', 'url']
+  );
+  const request = renderF1(
+    { ...base, f1timezone: 'domoticz' },
+    answer,
+    location
+  ).request;
+  assert.equal(request.lat, 52.37);
+  assert.equal(request.lon, 4.9);
+  assert.equal(
+    renderF1({ ...base, f1timezone: 'domoticz' }, answer, {}).request.lat,
+    undefined
+  );
+});
