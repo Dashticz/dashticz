@@ -1,4 +1,4 @@
 {
-    "version": "4.20.10",
-    "last_changes": "The Fully Kiosk charger button shows its battery level as a progress fill that runs from a very light green to a green, without orange or other colors."
+    "version": "4.20.11",
+    "last_changes": "The progress fill of the Fully Kiosk charger button now shows its gradient over the filled part: from a light green at the start to a dark green at the end of the fill."
 }

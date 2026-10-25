@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.20.11 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Fully Kiosk: the progress fill of the charger button showed no visible
+  gradient at a partial level, because the gradient was spread over the whole
+  bar and only its first part was visible. The fill is now as wide as the
+  level and the gradient runs over the filled part, from a light green to a
+  dark green.
+
 v4.20.10 (25-10-2026)
 ----------------------
 
