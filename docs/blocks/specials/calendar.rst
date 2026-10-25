@@ -121,8 +121,8 @@ The **new calendar** block follows the same look and feel as most other blocks. 
   * - width
     - ``1..12``: The width of the block relative to the column width
   * - method
-    - | ``0``: ical method 0 (recommended. Default when PHP version < 7.1)
-      | ``1``: ical method 1 (default when PHP version >=  7.1)
+    - | No longer used. All calendars are read with `sabre/vobject <https://github.com/sabre-io/vobject>`_;
+      | an existing ``method`` setting is ignored.
   * - dateFormat
     - | String to change the date formatting of a calendar item using moments.js
       | ``'dd DD-MM'``. This will represent the dates as 'di 24-9'
@@ -148,11 +148,16 @@ The **new calendar** block follows the same look and feel as most other blocks. 
 Notes
 -----
 
-I did not find an ical library that handles all ical files correctly.
+Calendars are read on the server (``vendor/dashticz/ical``) with
+`sabre/vobject <https://github.com/sabre-io/vobject>`_, the same library the
+garbage and F1 blocks use. Recurring events (``RRULE``, ``RDATE``, ``EXDATE``),
+moved occurrences and time zones (including Windows time zone names) are
+expanded according to RFC 5545. It needs PHP 7.4 or newer with the
+``mbstring`` extension.
 
-ical method 0 has issues with yearly recurring events.
-
-ical method 1 has issues for recurring events with interval more than 1 (for instance biweekly events)
+Occurrences are returned for about two years ahead. A recurring event that
+needs an excessive number of steps to reach that window is skipped and
+reported in the browser console instead of blocking the whole calendar.
 
 
 Example of traditional calendar in table format

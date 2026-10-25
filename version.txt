@@ -1,4 +1,4 @@
 {
-    "version": "4.20.2",
-    "last_changes": "The HVC garbage option uses the new host inzamelkalender.hvcgroep.nl, because apps.hvcgroep.nl no longer resolves (#1352). Calendar events that repeat on the last weekday of the month (for example BYDAY=-1FR) now show the last one instead of the second-to-last one in months with five of that weekday (#1353)."
+    "version": "4.20.8",
+    "last_changes": "Weather Underground is no longer supported (its free API stopped): the former wunderground, currentweather and currentweather_big blocks use the regular OpenWeatherMap/KNMI weather block. The Weather Underground scripts, settings and Skycons icons are removed."
 }

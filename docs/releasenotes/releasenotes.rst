@@ -1,6 +1,90 @@
 Release Notes
 =============
 
+v4.20.8 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Weather: Weather Underground is no longer supported, because its free API
+  stopped. The former ``wunderground``, ``currentweather`` and
+  ``currentweather_big`` blocks are shown with the regular weather block
+  (OpenWeatherMap or KNMI, ``config['owm_api']``); ``currentweather`` and
+  ``currentweather_big`` as a single "now" row.
+
+* **Code**
+
+- The Weather Underground scripts (``js/weather.js``, the unused
+  ``js/weather_owm.js``), its settings (``wu_api``, ``wu_city``, ``wu_name``,
+  ``wu_country``) and the provider choice in the Widget Editor are removed,
+  together with the Skycons icons (about 11 KB less JavaScript).
+
+v4.20.7 (25-10-2026)
+----------------------
+
+* **Code**
+
+- Security panel: the hidden device information (bottom left screw) is
+  determined without the mobile-detect library, which is removed (about
+  38 KB less JavaScript).
+
+v4.20.6 (25-10-2026)
+----------------------
+
+* **Code**
+
+- ``playsound``, ``playsoundOn`` and ``playsoundOff`` use the browser's own
+  audio element instead of ion.sound (last release 2016). As before, the
+  configured file is used first and otherwise the same name in another format
+  (mp3, ogg, aac) from the sounds folder (about 12 KB less JavaScript).
+
+v4.20.5 (25-10-2026)
+----------------------
+
+* **Code**
+
+- RGB dimmers: ``colorpicker: 1`` (the old Spectrum colorpicker) now shows
+  the same colorpicker as ``colorpicker: 2``. spectrum-colorpicker and its
+  styles are removed (about 27 KB less JavaScript).
+
+v4.20.4 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Graphs: the time axis uses the Dashticz language for month and day names,
+  and ``displayFormats`` accept the Day.js (moment style) tokens shown in the
+  documentation, such as ``'MMM D'`` or ``'ll'``. Formats in the former
+  date-fns notation (``'EEE d MMM'``, ``'yyyy'``) keep working.
+
+* **Code**
+
+- The Chart.js date adapter is built on Day.js; date-fns and
+  chartjs-adapter-date-fns are removed (about 44 KB less JavaScript).
+
+v4.20.3 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Calendar, Garbage and F1: all iCalendar data is read with one library,
+  `sabre/vobject <https://github.com/sabre-io/vobject>`_. Recurring events
+  are expanded according to RFC 5545: biweekly events (``INTERVAL=2``),
+  extra dates (``RDATE``), excluded dates (``EXDATE``), moved occurrences,
+  the last weekday or day of the month, and yearly events on 29 February.
+- Calendar: one broken or endless recurring event is skipped (with a warning
+  in the browser console) instead of hiding the whole calendar.
+- Garbage: iCal based companies are read by the same calendar bridge on the
+  server, so recurring pickup dates are shown as well.
+
+* **Code**
+
+- The calendar ``method`` option is no longer used; methods 0, 1 and 2
+  (SG_iCal, om/icalparser and johngrogg/ics-parser) are replaced by
+  sabre/vobject 4.6 (PHP 7.4 or newer, ``mbstring``).
+- ical.js is removed from the browser bundle.
+- The last part of the version number goes up with every change.
+
 v4.20.2 (16-10-2026)
 ----------------------
 

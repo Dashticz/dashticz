@@ -88,7 +88,3 @@
 * Copyright OpenJS Foundation and other contributors; Licensed MIT */
 
 /*! js-cookie v3.0.8 | MIT */
-
-/*!@license Copyright 2013, Heinrich Goebl, License: MIT, see https://github.com/hgoebl/mobile-detect.js*/
-
-/*!mobile-detect v1.4.5 2021-03-13*/

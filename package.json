@@ -1,6 +1,6 @@
 {
   "name": "dashticz",
-  "version": "4.20.2",
+  "version": "4.20.8",
   "description": "Alternative dashboard for Domoticz",
   "main": "index.js",
   "directories": {
@@ -12,14 +12,10 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
-    "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-zoom": "^2.2.0",
-    "date-fns": "^4.1.0",
     "dayjs": "^1.11.23",
     "hammerjs": "^2.0.8",
     "handlebars": "^4.7.10",
-    "ical.js": "^2.2.1",
-    "ion-sound": "^3.0.7",
     "jquery": "^4.0.0",
     "jquery-migrate": "^4.0.2",
     "jquery-ui-dist": "^1.13.3",
@@ -27,9 +23,6 @@
     "js-cookie": "^3.0.8",
     "long-press-event": "^2.5.2",
     "md5": "^2.3.0",
-    "mobile-detect": "^1.4.5",
-    "skycons-color": "^1.0.0",
-    "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.2",
     "swiper": "^14.3.0"
   },

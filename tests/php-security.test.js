@@ -566,15 +566,15 @@ test('LMS backend shutdown handler turns an uncaught fatal error into valid JSON
 
 test('calendar fetching is URL validated and does not expose stack traces', () => {
   const source = read('vendor/dashticz/ical/index.php');
-  const legacy = read('vendor/dashticz/ical/ical5/index.php');
   const security = read('vendor/dashticz/security.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_fetch_remote\(/);
   assert.doesNotMatch(source, /debug_backtrace/);
   assert.doesNotMatch(source, /initUrl\(\$ICS/);
   assert.doesNotMatch(source, /die\(\$e\)/);
-  assert.match(legacy, /dashticz_require_same_origin\(\)/);
-  assert.match(legacy, /dashticz_fetch_remote\(/);
-  assert.doesNotMatch(legacy, /Access-Control-Allow-Origin:\s*\*/);
+  assert.doesNotMatch(source, /Access-Control-Allow-Origin:\s*\*/);
+  // The separate legacy SG_iCal endpoint is gone (sabre/vobject only).
+  assert.ok(!fs.existsSync(path.join(root, 'vendor/dashticz/ical/ical5')));
   assert.match(security, /function dashticz_resolve_redirect_url/);
   assert.match(security, /if \(\$location\[0\] === '\?'\)/);
 });

@@ -1,5 +1,0 @@
-.idea
-composer.lock
-/vendor/
-tests/output/
-/tools/windows_timezones.php
