@@ -39,3 +39,9 @@
   height: calc(0.875rem * 1.5 + 0.5rem + 2px);
   padding: 0.2rem;
 }
+
+/* The generic .dt_title top margin (5px) sets the Garbage title lower than the
+   .title of the device blocks next to it; drop it so they line up. */
+.garbage > .dt_content > .dt_title {
+  margin-top: 0;
+}

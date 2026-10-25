@@ -514,7 +514,9 @@ To set the time (or date) format for the x-axis add the ``displayFormats`` param
         },
     }
 
-The previous example sets the time formats to UK style. See https://www.chartjs.org/docs/latest/axes/cartesian/time.html#display-formats for time/date formats. 
+The previous example sets the time formats to UK style. The formats use the Day.js (moment compatible) tokens, see
+https://day.js.org/docs/en/display/format, and month and day names follow the Dashticz language. Formats written in the
+date-fns notation that was used before version 4.20.4 (for instance ``'EEE d MMM'`` or ``'yyyy'``) are still understood.
 
 Modifying the y-axes
 --------------------

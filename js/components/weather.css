@@ -85,10 +85,6 @@
   font-size: 80%;
 }
 
-.weather_2 .skycon {
-  width: 3em;
-}
-
 .weatherdetails {
   display: flex;
   flex-direction: row;
