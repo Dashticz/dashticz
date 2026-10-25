@@ -509,8 +509,13 @@
 
       block.classList.add('garbage-widget-enhanced');
 
+      // The default theme keeps the title left-aligned; the other themes
+      // right-align every .dt_title themselves.
       var title = block.querySelector('.dt_title');
-      if (title) title.style.setProperty('text-align', 'left', 'important');
+      if (title) {
+        if (hasNonDefaultTheme()) title.style.removeProperty('text-align');
+        else title.style.setProperty('text-align', 'left', 'important');
+      }
 
       // The 70px shift is meant for the non-default themes. In the default
       // theme it would push the icon over the table text.

@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v4.20.9 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Garbage: the title of the Garbage widget is right-aligned again like the
+  title of other blocks in the non-default themes. ``js/garbageconfig.js``
+  forced it to the left in every theme with an inline
+  ``text-align: left !important``; now only the default theme keeps it
+  left-aligned. The title also loses the extra 5px top margin, so it lines up
+  with the titles of neighbouring blocks.
+
 v4.20.8 (25-10-2026)
 ----------------------
 
