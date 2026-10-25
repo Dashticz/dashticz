@@ -437,7 +437,7 @@
       "f1_block_timezone_domoticz": "Domoticz-locatie",
       "f1_block_timezone_help": "Tijdzone van de sessietijden. Domoticz-locatie gebruikt de breedte- en lengtegraad uit de Domoticz-instellingen en valt terug op de tijdzone van de browser. Beide volgen zomertijd.",
       "f1_block_utcoffset": "UTC-verschil in uren (optioneel)",
-      "f1_block_utcoffset_help": "Vast verschil dat bij de sessietijden wordt opgeteld. Gaat vóór de tijdzone hierboven en volgt GEEN zomertijd. Leeg laten om de tijdzone-instelling te gebruiken.",
+      "f1_block_utcoffset_help": "Vast verschil dat bij de sessietijden wordt opgeteld. Gaat vóór de tijdzone hierboven en volgt GEEN zomertijd. Leeg of 0 laten om de tijdzone-instelling te gebruiken.",
       "f1_block_pollminutes": "Ophaalinterval (minuten)",
       "f1_block_pollminutes_help": "Hoe vaak de kalender wordt gedownload. Minimaal 5. Standaard: 60.",
       "f1_block_sessions": "Toon sessies",

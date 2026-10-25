@@ -523,7 +523,7 @@
       "f1_block_timezone_domoticz": "Emplacement Domoticz",
       "f1_block_timezone_help": "Fuseau horaire des horaires de session. Emplacement Domoticz utilise la latitude et la longitude des réglages Domoticz, avec repli sur le fuseau du navigateur. Les deux suivent l’heure d’été.",
       "f1_block_utcoffset": "Décalage UTC en heures (facultatif)",
-      "f1_block_utcoffset_help": "Décalage fixe ajouté aux horaires. Prioritaire sur le fuseau horaire ci-dessus et ne suit PAS l’heure d’été. Laisser vide pour utiliser le fuseau horaire.",
+      "f1_block_utcoffset_help": "Décalage fixe ajouté aux horaires. Prioritaire sur le fuseau horaire ci-dessus et ne suit PAS l’heure d’été. Laisser vide ou 0 pour utiliser le fuseau horaire.",
       "f1_block_pollminutes": "Intervalle d’interrogation (minutes)",
       "f1_block_pollminutes_help": "Fréquence de téléchargement du calendrier. Minimum 5. Par défaut : 60.",
       "f1_block_sessions": "Sessions affichées",
