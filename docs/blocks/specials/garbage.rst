@@ -211,8 +211,13 @@ venlo                   Venlo (NL)
 venray                  Venray (NL)  
 vianen                  Vianen (NL)  
 waalre                  Waalre (NL)
-waardlanden             Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)  
+waardlanden             Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)
 ===================     =========================
+
+The iCal based companies (``ical``, ``blink``, ``gad``, ``goes``, ``katwijk``, ``purmerend``,
+``suez``, ``veldhoven`` and ``venlo``) are read on the server by the same calendar bridge as the calendar block
+(``vendor/dashticz/ical``, sabre/vobject), so recurring pickup dates are expanded as well. This
+needs PHP; ``use_cors_prefix`` has no effect for these companies.
 
 .. _garbage_styling :
 

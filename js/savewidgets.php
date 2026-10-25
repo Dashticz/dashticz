@@ -39,10 +39,6 @@ $allowedSettings = [
     'owm_days'               => 'bool',
     'owm_cnt'                => 'number',
     'owm_min'                => 'bool',
-    'wu_api'                 => 'string',
-    'wu_city'                => 'string',
-    'wu_name'                => 'string',
-    'wu_country'             => 'string',
     'use_fahrenheit'         => 'bool',
     'use_beaufort'           => 'bool',
     'translate_windspeed'    => 'bool',
@@ -440,7 +436,9 @@ foreach ($data['widgets'] as $entry) {
         if ($provider !== 'openweather' && $provider !== 'wunderground') {
             dashticz_json_error(400, 'Unknown weather provider.');
         }
-        $widget['provider'] = $provider;
+        // Weather Underground is no longer available; such blocks are saved
+        // as OpenWeather.
+        $widget['provider'] = 'openweather';
 
         $widget['showRain'] = array_key_exists('showRain', $entry)
             ? (int)(bool)$entry['showRain']
@@ -1126,16 +1124,14 @@ function _widgetBlockProps($widget)
 
     switch ($widget['id']) {
         case 'weather':
-            $props['type'] = $widget['provider'] === 'wunderground' ? 'wunderground' : 'weather';
-            $props['widget_provider'] = $widget['provider'];
+            $props['type'] = 'weather';
+            $props['widget_provider'] = 'openweather';
             $props['title'] = 'Weer';
-            if ($widget['provider'] === 'openweather') {
-                $props['showRain'] = !empty($widget['showRain']);
-                $props['showDescription'] = !empty($widget['showDescription']);
-                $props['showWind'] = !empty($widget['showWind']);
-                $props['showGust'] = !empty($widget['showGust']);
-                $props['icons'] = $widget['icons'];
-            }
+            $props['showRain'] = !empty($widget['showRain']);
+            $props['showDescription'] = !empty($widget['showDescription']);
+            $props['showWind'] = !empty($widget['showWind']);
+            $props['showGust'] = !empty($widget['showGust']);
+            $props['icons'] = $widget['icons'];
             break;
         case 'garbage':
             $props['type'] = 'garbage';

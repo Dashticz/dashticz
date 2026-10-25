@@ -391,10 +391,6 @@ var widgetSettingTiles = [
         type: 'select',
         options: weatherIconOptions,
       },
-      wu_api: { title: language.settings.weather.wu_api, type: 'text' },
-      wu_city: { title: language.settings.weather.wu_city, type: 'text' },
-      wu_name: { title: language.settings.weather.wu_name, type: 'text' },
-      wu_country: { title: language.settings.weather.wu_country, type: 'text' },
       use_fahrenheit: {
         title: language.settings.weather.use_fahrenheit,
         type: 'checkbox',
@@ -869,9 +865,6 @@ var defaultSettings = {
   dashticz_refresh: 60,
   dashticz_php_path: './vendor/dashticz/',
   enable_websocket: true,
-  wu_api: '',
-  wu_country: 'NL',
-  wu_city: 'Amsterdam',
   owm_api: '',
   owm_country: 'de',
   owm_city: 'Mainaschaff',
@@ -1357,7 +1350,6 @@ function loadSettings() {
         bindThemePicker();
         bindBackgroundPickers();
         bindSettingsUpdateControls();
-        bindWeatherProviderToggle();
         bindClockTypeToggle();
         bindThemeCssVarControls();
         bindThemeCustomCssNotice();
@@ -1687,13 +1679,6 @@ function renderGarbageWidgetSettings(tile) {
   return html;
 }
 
-function getWeatherProviderPreference() {
-  if (settings['owm_api'] || !settings['wu_api']) {
-    return 'openweather';
-  }
-  return 'wunderground';
-}
-
 function renderClockWidgetSettings(tile) {
   var wt = widgetEditorTranslations;
   var html =
@@ -1790,27 +1775,7 @@ function bindClockTypeToggle() {
 }
 
 function renderWeatherWidgetSettings(tile) {
-  var provider = getWeatherProviderPreference();
   var wt = widgetEditorTranslations;
-  var html =
-    '<div class="settings-row">' +
-    '<label class="settings-label" for="setting-weather_provider_ui">' +
-    escapeSettingsHtml(wt.provider) +
-    '</label>' +
-    '<div class="settings-control">' +
-    '<select id="setting-weather_provider_ui" class="form-select settings-weather-provider">' +
-    '<option value="openweather"' +
-    (provider === 'openweather' ? ' selected' : '') +
-    '>' +
-    escapeSettingsHtml(wt.openweather) +
-    '</option>' +
-    '<option value="wunderground"' +
-    (provider === 'wunderground' ? ' selected' : '') +
-    '>' +
-    escapeSettingsHtml(wt.weather_underground) +
-    '</option>' +
-    '</select></div><div class="settings-help-slot"></div></div>';
-
   var owmKeys = [
     'owm_api',
     'owm_city',
@@ -1826,14 +1791,9 @@ function renderWeatherWidgetSettings(tile) {
     'weather_show_gust',
     'weather_icons',
   ];
-  var wuKeys = ['wu_api', 'wu_city', 'wu_name', 'wu_country'];
   var sharedKeys = ['use_fahrenheit', 'use_beaufort', 'translate_windspeed'];
 
-  html +=
-    '<div class="settings-weather-group" data-weather-provider="openweather"' +
-    (provider === 'openweather' ? '' : ' style="display:none"') +
-    '>';
-  html +=
+  var html =
     '<h6 class="settings-weather-heading">' +
     escapeSettingsHtml(wt.openweather) +
     '</h6>';
@@ -1842,22 +1802,6 @@ function renderWeatherWidgetSettings(tile) {
       html += renderSettingsRow(key, tile.settings[key]);
     }
   });
-  html += '</div>';
-
-  html +=
-    '<div class="settings-weather-group" data-weather-provider="wunderground"' +
-    (provider === 'wunderground' ? '' : ' style="display:none"') +
-    '>';
-  html +=
-    '<h6 class="settings-weather-heading">' +
-    escapeSettingsHtml(wt.weather_underground) +
-    '</h6>';
-  wuKeys.forEach(function (key) {
-    if (tile.settings[key]) {
-      html += renderSettingsRow(key, tile.settings[key]);
-    }
-  });
-  html += '</div>';
 
   html +=
     '<h6 class="settings-weather-heading">' +
@@ -1870,22 +1814,6 @@ function renderWeatherWidgetSettings(tile) {
   });
 
   return html;
-}
-
-function bindWeatherProviderToggle() {
-  var $popup = $('#settingspopup');
-  if (!$popup.length) return;
-
-  $popup
-    .off('change.weatherprovider')
-    .on('change.weatherprovider', '.settings-weather-provider', function () {
-      var provider =
-        $(this).val() === 'wunderground' ? 'wunderground' : 'openweather';
-      $popup.find('.settings-weather-group').each(function () {
-        var group = String($(this).data('weather-provider'));
-        $(this).toggle(group === provider);
-      });
-    });
 }
 
 function showSettingsHome() {

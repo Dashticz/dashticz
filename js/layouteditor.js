@@ -1762,9 +1762,8 @@ var DashticzLayoutEditor = (function () {
     }
 
     if (item.widgetId === 'weather') {
-      entry.provider =
-        definition.widget_provider ||
-        (definition.type === 'wunderground' ? 'wunderground' : 'openweather');
+      // Weather Underground blocks are saved as OpenWeather.
+      entry.provider = 'openweather';
       _copyDefinedWidgetProperties(entry, definition, [
         'showRain',
         'showDescription',

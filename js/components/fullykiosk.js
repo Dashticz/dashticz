@@ -329,6 +329,14 @@ var DT_fullykiosk = (function () {
     return 'fa-battery-empty';
   }
 
+  // The battery level as a share of the target level (100% of the progress
+  // bar), as the --fully-level style of the charger button.
+  function progressAttr(level, target) {
+    if (level === null) return '';
+    var pct = Math.max(0, Math.min(100, Math.round((level / target) * 100)));
+    return ' data-progress="' + pct + '" style="--fully-level:' + pct + '%"';
+  }
+
   function render(me) {
     var block = me.block;
     var fontSize = parseInt(block.fullyfontsize, 10);
@@ -358,15 +366,17 @@ var DT_fullykiosk = (function () {
     if (switchIdx(block)) {
       // The charger switch is one button in column 1, as high as the charge
       // data next to it: the battery and the percentage at which the charger
-      // is switched next.
+      // is switched next. The button shows the battery level as a green
+      // progress fill behind its icon;
+      // the stop target of the charger is 100% of the bar.
       var nextHtml = '';
       if (auto && charger) {
         nextHtml = dataHtml(
           'fa-arrows-up-down',
           esc(
             charger === 'On'
-              ? DT_function.t('fullykiosk_next_stop', 'Stops charging at')
-              : DT_function.t('fullykiosk_next_start', 'Starts charging at')
+              ? DT_function.t('fullykiosk_next_stop', 'Charge until')
+              : DT_function.t('fullykiosk_next_start', 'Charge from')
           ),
           esc(nextSwitchPercentage(charger, me.targets) + ' %')
         );
@@ -379,7 +389,8 @@ var DT_fullykiosk = (function () {
           'fa-power-off',
           chargeLabel,
           charger === 'On',
-          !charger
+          !charger,
+          progressAttr(level, auto ? me.targets.stop : 100)
         ) +
         '</span><span class="fullykiosk-groupdata">' +
         batteryHtml +

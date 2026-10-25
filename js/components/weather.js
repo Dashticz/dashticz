@@ -22,6 +22,15 @@ var DT_weather = (function () {
     'N',
   ];
 
+  function isCurrentWeatherBlock(block) {
+    return (
+      block.type === 'currentweather' ||
+      block.type === 'currentweather_big' ||
+      block.key === 'currentweather' ||
+      block.key === 'currentweather_big'
+    );
+  }
+
   return {
     name: 'weather',
     init: function () {
@@ -29,12 +38,19 @@ var DT_weather = (function () {
       DT_function.loadCSS('./vendor/weather/css/weather-icons-wind.min.css');
     },
     canHandle: function (block) {
+      if (!block) return false;
       var key = block.key;
+      // The former Weather Underground blocks (type or key wunderground,
+      // currentweather, currentweather_big) use OpenWeather as well.
       if (
         block.widget_provider === 'openweather' ||
+        block.widget_provider === 'wunderground' ||
         key === 'weather_owm' ||
         key === 'currentweather_owm' ||
-        key === 'currentweather_big_owm'
+        key === 'currentweather_big_owm' ||
+        isCurrentWeatherBlock(block) ||
+        block.type === 'wunderground' ||
+        key === 'wunderground'
       )
         return true;
     },
@@ -42,7 +58,8 @@ var DT_weather = (function () {
       var defaultLayout = 0;
       if (
         block.key === 'currentweather_owm' ||
-        block.key === 'currentweather_big_owm'
+        block.key === 'currentweather_big_owm' ||
+        isCurrentWeatherBlock(block)
       )
         defaultLayout = 2;
       var layout = choose(block && block.layout, defaultLayout);
