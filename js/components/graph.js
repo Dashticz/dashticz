@@ -1863,9 +1863,9 @@ function getDefaultGraphProperties(graph, block) {
                   graph.range === 'today'
                     ? 'H:mm'
                     : graph.realrange === 'day'
-                      ? 'EEE H:mm'
-                      : 'd MMM',
-                day: 'd MMM',
+                      ? 'ddd H:mm'
+                      : 'D MMM',
+                day: 'D MMM',
               },
             },
             distribution: 'series',

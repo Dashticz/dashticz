@@ -1,4 +1,4 @@
-/* global Dashticz Domoticz settings MobileDetect blocks md5*/
+/* global Dashticz Domoticz settings blocks md5*/
 /* From bundle:*/
 /* global templateEngine*/
 /* From src/functions.js*/
@@ -331,17 +331,39 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
   }
 });
 
+// Device information for troubleshooting (click the bottom left screw).
 $('body').on('click', '.sec-frame .screw.bl', function () {
-  var md = new MobileDetect(window.navigator.userAgent);
+  var ua = window.navigator.userAgent;
+  var touch = navigator.maxTouchPoints > 1;
+  // iPadOS reports itself as a Mac with touch support.
+  var tablet =
+    /iPad|Tablet|PlayBook|Silk|Kindle/i.test(ua) ||
+    (/Android/i.test(ua) && !/Mobile/i.test(ua)) ||
+    (/Macintosh/i.test(ua) && touch);
+  var phone = !tablet && /iPhone|iPod|Mobile|Windows Phone/i.test(ua);
+  var os = /Android/i.test(ua)
+    ? 'Android'
+    : /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && touch)
+      ? 'iOS'
+      : /Windows/i.test(ua)
+        ? 'Windows'
+        : /Mac OS X/i.test(ua)
+          ? 'macOS'
+          : /CrOS/i.test(ua)
+            ? 'ChromeOS'
+            : /Linux/i.test(ua)
+              ? 'Linux'
+              : 'unknown';
   var orientation =
     (screen.orientation || {}).type ||
     screen.mozOrientation ||
-    screen.msOrientation;
-  var msg = 'Mobile: ' + md.mobile() + '\n';
-  msg += 'Phone: ' + md.phone() + '\n';
-  msg += 'Tablet: ' + md.tablet() + '\n';
-  msg += 'OS: ' + md.os() + '\n';
-  msg += 'User Agent: ' + md.userAgent() + '\n';
+    screen.msOrientation ||
+    '';
+  var msg = 'Mobile: ' + (phone || tablet) + '\n';
+  msg += 'Phone: ' + phone + '\n';
+  msg += 'Tablet: ' + tablet + '\n';
+  msg += 'OS: ' + os + '\n';
+  msg += 'User Agent: ' + ua + '\n';
   msg += 'Resolution: ' + screen.width + 'x' + screen.height + '\n';
   msg += 'Orientation: ' + orientation.split('-')[0];
   alert(msg);

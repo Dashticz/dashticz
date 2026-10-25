@@ -1,5 +1,5 @@
 /* global showUpdateInformation settings getDevices language infoMessage iconORimage getBlockData blocks */
-/* global moment hexToHsb md5*/
+/* global moment md5*/
 /* from main.js */
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
@@ -16,8 +16,6 @@
 /* from version.js */
 
 /*exported reqSlideDeviceAsync*/
-
-var spectrumColors = {};
 
 /** Returns a default switch block
  *
@@ -397,14 +395,6 @@ function getDimmerBlock(block, buttonimg) {
   html += '</div>';
   html += '</div>';
 
-  /* todo: Destroy not really needed
-  var $rgbdiv = $div.find('.rgbw'); //This is the 'old' rgbdiv!
-
-  if (isRGBDeviceAndEnabled(block) && $rgbdiv.spectrum) {
-    //we have to manually destroy the previous spectrum color picker
-    $rgbdiv.spectrum('destroy');
-  }
-*/
   $div.html(html);
 
   function dimmerClickHandler(block) {
@@ -438,16 +428,8 @@ function getDimmerBlock(block, buttonimg) {
         .addClass('hover');
   }
 
-  switch (isRGBDeviceAndEnabled(block)) {
-    case 1:
-      addSpectrum(block);
-      break;
-    case 2:
-      addColorpicker(block);
-      break;
-    default:
-      break;
-  }
+  // 1 (the former Spectrum picker) and 2 both use the iro color picker.
+  if (isRGBDeviceAndEnabled(block)) addColorpicker(block);
 
   var slider = {};
   switch (parseFloat(device['MaxDimLevel'])) {
@@ -491,73 +473,6 @@ function addColorpicker(block) {
   new Colorpicker({
     container: block.mountPoint + ' .rgbholder',
     block: block,
-  });
-}
-
-function addSpectrum(block) {
-  function componentToHex(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? '0' + hex : hex;
-  }
-
-  function rgbToHex(r, g, b) {
-    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
-  }
-
-  var idx = block.idx;
-  var $rgbcontainer = block.$mountPoint.find('.rgbholder');
-  var html = '';
-  html +=
-    '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + idx + '">';
-  $rgbcontainer.html(html).addClass('spectrum');
-  var $rgbdiv = block.$mountPoint.find('.rgbw');
-  var color = '#FFFFFF';
-  if (block.device.Color) {
-    var deviceColor = JSON.parse(block.device.Color);
-    if (deviceColor.r && (deviceColor.m == 3 || deviceColor.m == 4)) {
-      color = rgbToHex(deviceColor.r, deviceColor.g, deviceColor.b);
-    }
-  }
-
-  $rgbdiv.spectrum({
-    color: color,
-    appendTo: $rgbcontainer,
-  });
-
-  $rgbdiv.on('dragstop.spectrum', function (e, color) {
-    var hasPassword = block.password;
-    if (!DT_function.promptPassword(hasPassword)) return;
-
-    color = color.toHexString();
-    spectrumColors[idx] = color;
-    var hue = hexToHsb(color);
-    var bIsWhite = hue.s < 20;
-
-    //sliding = idx;
-    Domoticz.hold(idx); //hold message queue
-
-    var cmd =
-      'type=command&param=setcolbrightnessvalue&idx=' +
-      idx +
-      '&hue=' +
-      hue.h +
-      '&brightness=' +
-      hue.b +
-      '&iswhite=' +
-      bIsWhite;
-    Domoticz.request(cmd);
-  });
-
-  $rgbdiv.on('hide.spectrum', function () {
-    //sliding = false;
-    Domoticz.release(idx); //release message queue
-
-    getDevices(true);
-  });
-
-  $rgbdiv.on('beforeShow.spectrum', function () {
-    Domoticz.hold(idx); //hold message queue
-    //sliding = idx;
   });
 }
 
@@ -1016,7 +931,7 @@ function isRGBDeviceAndEnabled(block) {
     return parseInt(block.colorpicker);
   if (typeof settings.colorpicker !== 'undefined')
     return parseInt(settings.colorpicker);
-  return settings.no_rgb ? 0 : 1; //Default colorpicker is the old spectrum colorpicker
+  return settings.no_rgb ? 0 : 2;
 }
 
 //# sourceURL=js/switches.js

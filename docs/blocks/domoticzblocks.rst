@@ -255,8 +255,7 @@ Block parameters
   * - colorpicker
     - | Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
       | ``0``: No RGB colorpicker
-      | ``1``: Old style RGB colorpicker
-      | ``2``: New style RGB colorpicker
+      | ``1`` or ``2``: RGB colorpicker (``1``, the former old style picker, now shows the same picker as ``2``)
   * - colorpickerscale
     - | Sets the relative size of the colorpicker 2 popup window. See :ref:`colorpicker`
       | ``1`` (=default): Scaling is 100%
@@ -618,11 +617,8 @@ RGB Color picker
 
 By setting the block parameter ``colorpicker`` to a non-zero value a color picker dropdown button will be added to a RGB device.
 
-With ``colorpicker:1`` the old style colorpicker will be added:
-
-.. image :: img/colorpicker1.jpg
-
-With ``colorpicker:2`` the enhanced colorpicker will be selected.
+``colorpicker:1`` and ``colorpicker:2`` both add the colorpicker (``1`` used to select the old
+Spectrum colorpicker, which is no longer included).
 The colorpicker configuration depends on the RGB type.
 The behavior is the same as in Domoticz.
 
