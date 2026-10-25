@@ -509,9 +509,6 @@
 
       block.classList.add('garbage-widget-enhanced');
 
-      var title = block.querySelector('.dt_title');
-      if (title) title.style.setProperty('text-align', 'left', 'important');
-
       // The 70px shift is meant for the non-default themes. In the default
       // theme it would push the icon over the table text.
       if (hasNonDefaultTheme()) {
