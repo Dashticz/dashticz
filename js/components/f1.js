@@ -28,7 +28,7 @@
  *                  summer time.
  *   f1utcoffset    optional: fixed hours added to the (UTC) session times;
  *                  overrides f1timezone and does NOT follow summer time;
- *                  empty (default) = use f1timezone
+ *                  empty (default) or 0 = use f1timezone
  *   f1pollminutes  how often the feed is downloaded (default 60)
  *   f1sessions     'all' (default) | 'sprint_race' | 'race'
  *   f1visibility   show the event this many days before its first upcoming
@@ -220,7 +220,8 @@ var DT_f1 = (function () {
   function formatWhen(block, ts, timeZone) {
     var offset = parseFloat(block.f1utcoffset);
     var p;
-    if (isNaN(offset)) {
+    // Empty and 0 mean 'no fixed offset', so the time zone setting is used.
+    if (isNaN(offset) || offset === 0) {
       p = zoneParts(ts, timeZone);
     } else {
       var d = new Date(

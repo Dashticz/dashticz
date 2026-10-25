@@ -245,6 +245,12 @@ test('F1 widget follows summer time in the time zone from the bridge', () => {
       renderF1(base, answer(summer, 'America/New_York')).html,
       /Sat 24 Oct 08:00/
     );
+    // Offset 0 is not an override: the time zone still applies.
+    assert.match(
+      renderF1({ ...base, f1utcoffset: 0 }, answer(summer, 'Europe/Amsterdam'))
+        .html,
+      /Sat 24 Oct 14:00/
+    );
     // An unknown zone is ignored; the fixed offset ignores summer time.
     assert.doesNotMatch(
       renderF1(base, answer(summer, 'Nope/Zone')).html,
