@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH settings infoMessage moment loadIcal _PHP_INSTALLED language templateEngine*/
+/* global Dashticz _CORS_PATH settings infoMessage moment _PHP_INSTALLED language templateEngine*/
 
 var DT_garbage = (function () {
   function garbageText(key, fallback) {
@@ -141,33 +141,41 @@ var DT_garbage = (function () {
     });
   }
 
+  /* iCalendar based providers go through the calendar bridge
+     (vendor/dashticz/ical/index.php, sabre/vobject), so recurring pickups
+     (RRULE/RDATE/EXDATE) and moved dates are expanded the same way as in the
+     calendar block. The server downloads the file, so no CORS prefix is
+     needed. */
   function getIcalData(me, url) {
-    //todo: add recurrence handling
-    // https://github.com/mifi/ical-expander
-    return loadIcal().then(function (ICAL) {
-      return $.get(getPrefixUrl(me) + url).then(function (data) {
-        var jcalData = ICAL.parse(data);
-        var vcalendar = new ICAL.Component(jcalData);
-        var vevents = vcalendar.getAllSubcomponents('vevent');
-        var returnData = vevents
-          .filter(function (vevent) {
-            return moment(
-              vevent.getFirstPropertyValue('dtstart').toString(),
-              'YYYY-MM-DD'
-            ).isBetween(me.date.start, me.date.end, null, '[]');
-          })
-          .map(function (vevent) {
-            return {
-              date: moment(
-                vevent.getFirstPropertyValue('dtstart').toString(),
-                'YYYY-MM-DD'
-              ),
-              summary: vevent.getFirstPropertyValue('summary'),
-            };
+    // A CORS prefix in a configured URL is not needed by the bridge.
+    if (_CORS_PATH && url.indexOf(_CORS_PATH) === 0)
+      url = url.substring(_CORS_PATH.length);
+    url = url.replace(/^https?:\/\/cors-anywhere\.herokuapp\.com\//i, '');
+    var days = me.date.end.diff(moment().startOf('day'), 'days') + 2;
+    return $.getJSON(settings['dashticz_php_path'] + 'ical/index.php', {
+      time: new Date().getTime(),
+      url: url,
+      maxitems: 500,
+      history: 1,
+      days: Math.max(1, days),
+    }).then(function (data) {
+      var returnData = [];
+      Object.keys(data || {}).forEach(function (key) {
+        if (key === '_errors') {
+          if (data[key].length > 0)
+            console.warn('Warnings for garbage calendar: ', url, data[key]);
+          return;
+        }
+        var event = data[key];
+        var date = moment(event.date, 'YYYY-MM-DD');
+        if (date.isBetween(me.date.start, me.date.end, null, '[]')) {
+          returnData.push({
+            date: date,
+            summary: event.title,
           });
-
-        return returnData;
+        }
       });
+      return returnData;
     });
   }
 

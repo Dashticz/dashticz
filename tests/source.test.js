@@ -513,6 +513,12 @@ test('package and runtime versions remain synchronized', () => {
     /<div class="loaderVersion">Version ([^<]+)<\/div>/
   );
   assert.equal(runtimeVersion, packageVersion);
+  // x.xx.y: y is the change counter, raised with every change (AGENTS.md).
+  assert.match(packageVersion, /^\d+\.\d{2}\.(0|[1-9]\d*)$/);
+  const changelog = JSON.parse(
+    fs.readFileSync(path.join(root, 'changelog.json'), 'utf8')
+  ).changelog;
+  assert.equal(Object.keys(changelog)[0], packageVersion);
   assert.ok(descriptionVersion);
   assert.equal(descriptionVersion[1], packageVersion);
   assert.ok(loaderVersion);
@@ -1667,10 +1673,6 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     path.join(root, 'js/components/weather.js'),
     'utf8'
   );
-  const legacyOwmWeather = fs.readFileSync(
-    path.join(root, 'js/weather_owm.js'),
-    'utf8'
-  );
   const garbage = fs.readFileSync(
     path.join(root, 'js/components/garbage.js'),
     'utf8'
@@ -1810,7 +1812,6 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(savewidgets, /'owm_days'\s*=>\s*'bool'/);
   assert.match(savewidgets, /'translate_windspeed'\s*=>\s*'bool'/);
   assert.match(savewidgets, /'garbage_width'\s*=>\s*'number'/);
-  assert.match(legacyOwmWeather, /settings\['owm_days'\]/);
   assert.match(weather, /\/\/\s*days: choose\(settings\['owm_days'\], true\)/);
   assert.match(garbage, /width: settings\['garbage_width'\] \|\| 12/);
   const calendarSettings = settings.slice(
@@ -2033,7 +2034,9 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(styles, /\.we-widget-grid/);
   assert.match(styles, /\.we-widget-card\.we-selected/);
   assert.match(weather, /block\.widget_provider === 'openweather'/);
-  assert.match(simpleBlock, /wunderground/);
+  // Weather Underground blocks are handled by the OpenWeather component.
+  assert.doesNotMatch(simpleBlock, /wunderground|renderWeather/);
+  assert.match(weather, /block\.type === 'wunderground'/);
   assert.match(simpleBlock, /t\.title \|\| 'Widgets'/);
   assert.match(fullscreen, /language\.settings\.widgeteditor\.fullscreen/);
   assert.match(garbage, /block\.type === 'garbage'/);
@@ -7064,30 +7067,46 @@ test('Moon widget paints its Icon/Title checkboxes instead of always dropping th
   assert.match(renderMoonBody, /class="dt_title">'\s*\+\s*me\.block\.title/);
 });
 
-test('Weather/Wunderground widget paints its Icon/Title checkboxes, and loadWeatherFull() refresh no longer wipes them', () => {
-  const simpleBlockSource = fs.readFileSync(
-    path.join(root, 'js/components/simpleblock.js'),
+test('former Weather Underground blocks are shown by the OpenWeather component', () => {
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
     'utf8'
   );
-  const renderWeatherBody = simpleBlockSource.slice(
-    simpleBlockSource.indexOf('function renderWeather'),
-    simpleBlockSource.indexOf('function renderCurrentWeather')
-  );
+  for (const legacy of [
+    "block.type === 'wunderground'",
+    "block.type === 'currentweather'",
+    "block.type === 'currentweather_big'",
+    "block.widget_provider === 'wunderground'",
+  ]) {
+    assert.ok(weather.includes(legacy), legacy);
+  }
+  // currentweather(_big) keep their single "now" row layout.
   assert.match(
-    renderWeatherBody,
-    /if \(me\.block\.icon \|\| me\.block\.image \|\| showTitle\) \{/
+    weather,
+    /isCurrentWeatherBlock\(block\)\s*\)\s*defaultLayout = 2/
   );
-  assert.match(renderWeatherBody, /class="dt-simple-header"/);
-  assert.match(renderWeatherBody, /_colIconHtml\(me\.block\)/);
-  // .containsweatherfull must be a nested child, not the outer .dt_block
-  // itself - js/weather.js's loadWeatherFull() replaces
-  // div.containsweatherfull's content wholesale on every refresh, which
-  // would wipe the header out too if it lived on the same element.
-  assert.match(
-    renderWeatherBody,
-    /header \+\s*\n\s*'<div class="containsweatherfull"><\/div>'/
+  for (const gone of ['js/weather.js', 'js/weather_owm.js']) {
+    assert.ok(!fs.existsSync(path.join(root, gone)), gone + ' is removed');
+  }
+  const settingsSource = fs.readFileSync(
+    path.join(root, 'js/settings.js'),
+    'utf8'
   );
-  assert.doesNotMatch(renderWeatherBody, /' containsweatherfull'/);
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  assert.doesNotMatch(
+    settingsSource + widgetEditor,
+    /wu_api|we-cfg-weather-provider/
+  );
+  assert.ok(
+    !(
+      'skycons-color' in
+      JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+        .dependencies
+    )
+  );
 });
 
 test('Spotify widget paints its Icon/Title checkboxes instead of always dropping them', () => {
@@ -7127,9 +7146,7 @@ test('OWM widget stops wiping the framework-rendered .col-icon/.dt_title when it
 
 test('Weather widget (js/components/weather.js) and OWM widget icon/title stay visible despite their own dynamic .dt_block font-size', () => {
   // The real "Weather" widget catalog entry (type: 'weather') dispatches
-  // to js/components/weather.js's DT_weather, not
-  // js/components/simpleblock.js's own renderWeather (only reachable via
-  // the legacy type: 'wunderground') - it already gets .col-icon/.dt_title
+  // to js/components/weather.js's DT_weather - it already gets .col-icon/.dt_title
   // structurally via the standard path. But DT_weather and the OWM widget
   // both call $block.css('font-size', ...px) to scale their own internal
   // content proportionally with tile width; .col-icon .icon/.dt_title

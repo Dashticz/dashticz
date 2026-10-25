@@ -3,7 +3,7 @@
 /*global Dashticz, DashticzLayoutEditor, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
-/*global ion isDefined*/
+/*global isDefined*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
@@ -1468,27 +1468,54 @@ function speak(textToSpeak) {
   window.speechSynthesis.speak(newUtterance);
 }
 
+/* Plays a playsound/playsoundOn/playsoundOff file with the browser's own
+   audio element. As before (ion.sound) the configured extension is tried
+   first and then the other formats in the sounds folder (mp3, ogg, aac),
+   and a sound that is still playing restarts instead of playing twice. */
+var audioPlayers = {};
 function playAudio(file) {
-  //    var key = md5(file);
-  file = file.split('/');
-
-  var filename = file[file.length - 1].split('.');
-  filename = filename[0];
-  delete file[file.length - 1];
-
-  ion.sound({
-    sounds: [
-      {
-        name: filename,
-      },
-    ],
-
-    path: file.join('/') + '/',
-    preload: true,
-    multiplay: false,
-  });
-
-  ion.sound.play(filename);
+  var match = String(file).match(/^(.*?)(?:\.([a-z0-9]+))?(\?.*)?$/i);
+  var base = match[1];
+  var given = (match[2] || '').toLowerCase();
+  var extensions = ['mp3', 'ogg', 'aac', 'mp4', 'wav'];
+  if (given) {
+    extensions = [given].concat(
+      extensions.filter(function (ext) {
+        return ext !== given;
+      })
+    );
+  }
+  var player = audioPlayers[file];
+  if (!player) {
+    player = audioPlayers[file] = { audio: new Audio(), ext: 0 };
+    player.audio.preload = 'auto';
+    player.audio.addEventListener('error', function () {
+      player.ext++;
+      if (player.ext < extensions.length) {
+        player.audio.src = base + '.' + extensions[player.ext];
+        play();
+      } else {
+        console.warn('Unable to play sound ' + file);
+      }
+    });
+    player.audio.src = base + '.' + extensions[0];
+  }
+  function play() {
+    var result = player.audio.play();
+    if (result && typeof result.catch === 'function') {
+      result.catch(function (error) {
+        // NotAllowedError: the browser blocks sound before the first click.
+        if (error && error.name !== 'AbortError') console.warn(error.message);
+      });
+    }
+  }
+  player.audio.pause();
+  try {
+    player.audio.currentTime = 0;
+  } catch (e) {
+    // not loaded yet
+  }
+  play();
 }
 
 /*Todo: make map a regular block*/

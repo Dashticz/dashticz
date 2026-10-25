@@ -644,19 +644,6 @@
   box-sizing: border-box;
 }
 
-.skycon {
-  margin: 10px auto 10px auto;
-  display: block;
-  width: 100%;
-  /*  max-width: 125px;*/
-}
-
-.skyconsmall {
-  display: block;
-  width: 100%;
-  max-width: 125px;
-}
-
 /* BEGIN || Settings modal */
 
 .nav-pills > li > a {
@@ -4012,8 +3999,7 @@ div.big {
 /* The actual "Weather" widget catalog entry (type: 'weather') dispatches
    to js/components/weather.js's DT_weather, a normal special block that
    goes through the standard getContainer()/getColIcon()/renderTitle()
-   path (unlike js/components/simpleblock.js's own renderWeather above,
-   only ever reachable via the legacy type: 'wunderground'), so its
+   path, so its
    .col-icon/.dt_title are already there structurally. But DT_weather (and
    the OWM widget, js/components/owmwidget.js) scales its own .dt_block's
    font-size dynamically based on tile width, for its internal forecast
