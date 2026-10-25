@@ -5,6 +5,11 @@ Weather forecast
 
 .. note:: In version 3.8.2 Dashticz switched to the new weather block as described here.
 
+.. note:: Weather Underground is no longer supported (its free API stopped). Since version 4.20.8 the former
+   ``currentweather``, ``currentweather_big`` and ``wunderground`` blocks are shown with this weather block
+   (``currentweather`` and ``currentweather_big`` as a single "now" row, ``layout: 2``), so they need an
+   OpenWeatherMap or KNMI API key in ``config['owm_api']``.
+
 Dashticz supports the following weather forecast providers:
 
 * Open Weather Map: https://openweathermap.org/

@@ -3,7 +3,7 @@
 /*global Dashticz, DashticzLayoutEditor, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
-/*global ion isDefined*/
+/*global isDefined*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
@@ -183,6 +183,7 @@ function applyBlockTextStyle($div, block) {
   var titleSize = parseInt(block.fontsize_title, 10);
   var valueSize = parseInt(block.fontsize_value, 10);
   var align = String(block.textalign || '').toLowerCase();
+  var valign = String(block.textvalign || '').toLowerCase();
   $div.each(function () {
     this.style.setProperty(
       '--dt-fs-title',
@@ -196,9 +197,14 @@ function applyBlockTextStyle($div, block) {
   $div
     .toggleClass('dt-fs-title', titleSize > 0)
     .toggleClass('dt-fs-value', valueSize > 0)
-    .removeClass('dt-align-left dt-align-center dt-align-right');
+    .removeClass(
+      'dt-align-left dt-align-center dt-align-right dt-valign-top dt-valign-middle dt-valign-bottom'
+    );
   if (['left', 'center', 'right'].indexOf(align) > -1) {
     $div.addClass('dt-align-' + align);
+  }
+  if (['top', 'middle', 'bottom'].indexOf(valign) > -1) {
+    $div.addClass('dt-valign-' + valign);
   }
 }
 
@@ -1095,6 +1101,85 @@ function handleDevice(block) {
   createBlocks(block);
 }
 
+/*exported postHookLux */
+var LUX_SLIDER_MAX = 2500;
+// Bend of the logarithmic curve: below this lux value the curve is nearly
+// linear; a larger value keeps low lux values closer to the start of the arc
+var LUX_SLIDER_KNEE = 100;
+
+/**
+ * Appends a read-only sun arc to a lux block. The sun moves along the arc
+ * with the current lux value (logarithmic scale 0 - LUX_SLIDER_MAX, values above
+ * the maximum are clamped).
+ * @param {object} block
+ */
+function postHookLux(block) {
+  var lux = parseFloat(block.device && block.device['Data']);
+  if (isNaN(lux)) return;
+  // Logarithmic scale: 0 lux at the far left, LUX_SLIDER_MAX at the far right
+  var fraction = Math.min(
+    Math.max(
+      Math.log(1 + lux / LUX_SLIDER_KNEE) /
+        Math.log(1 + LUX_SLIDER_MAX / LUX_SLIDER_KNEE),
+      0
+    ),
+    1
+  );
+  // Half circle from (10,58) to (110,58) around (60,58), radius 50. The sun
+  // sits on the arc at the position that belongs to the current lux value.
+  var angle = Math.PI * fraction;
+  var sunX = Math.round((60 - 50 * Math.cos(angle)) * 10) / 10;
+  var sunY = Math.round((58 - 50 * Math.sin(angle)) * 10) / 10;
+  var arc = 'M10 58 A50 50 0 0 1 110 58';
+  var gradId = 'luxgrad_' + String(block.key).replace(/\W/g, '_');
+  var html =
+    '<div class="lux-slider"><div class="lux-arc"><svg viewBox="0 0 120 66" focusable="false">' +
+    '<defs><linearGradient id="' +
+    gradId +
+    '" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="110" y2="0">' +
+    '<stop offset="0" stop-color="#6b7686"/>' +
+    '<stop offset="0.15" stop-color="#8fa3bf"/>' +
+    '<stop offset="0.4" stop-color="#e8dc8c"/>' +
+    '<stop offset="0.65" stop-color="#ffd600"/>' +
+    '<stop offset="1" stop-color="#ffb300"/></linearGradient>' +
+    '<filter id="' +
+    gradId +
+    '_glow" x="-100%" y="-100%" width="300%" height="300%">' +
+    '<feGaussianBlur stdDeviation="3"/></filter></defs>' +
+    '<path class="lux-arc-track" d="' +
+    arc +
+    '" pathLength="100"/>' +
+    '<path class="lux-arc-fill" d="' +
+    arc +
+    '" pathLength="100" stroke="url(#' +
+    gradId +
+    ')" stroke-dasharray="' +
+    Math.round(fraction * 1000) / 10 +
+    ' 200"/>' +
+    '<circle class="lux-arc-glow" cx="' +
+    sunX +
+    '" cy="' +
+    sunY +
+    '" r="9" filter="url(#' +
+    gradId +
+    '_glow)"/>' +
+    '<circle class="lux-arc-sun" cx="' +
+    sunX +
+    '" cy="' +
+    sunY +
+    '" r="5.5"/>' +
+    '</svg>' +
+    '<div class="lux-arc-value"></div></div></div>';
+  var $block = block.$mountPoint.find('[data-id="' + block.key + '"]');
+  // The value moves from the text column into the middle of the arc
+  var $value = $block.find('.col-data .value').first();
+  $block.addClass('lux-has-slider').append(html);
+  if ($value.length) {
+    $block.find('.lux-arc-value').text($value.text());
+    $block.addClass('lux-has-value');
+  }
+}
+
 /*exported postHookLogitechMediaServer */
 function postHookLogitechMediaServer(block) {
   var device = block.device;
@@ -1383,27 +1468,54 @@ function speak(textToSpeak) {
   window.speechSynthesis.speak(newUtterance);
 }
 
+/* Plays a playsound/playsoundOn/playsoundOff file with the browser's own
+   audio element. As before (ion.sound) the configured extension is tried
+   first and then the other formats in the sounds folder (mp3, ogg, aac),
+   and a sound that is still playing restarts instead of playing twice. */
+var audioPlayers = {};
 function playAudio(file) {
-  //    var key = md5(file);
-  file = file.split('/');
-
-  var filename = file[file.length - 1].split('.');
-  filename = filename[0];
-  delete file[file.length - 1];
-
-  ion.sound({
-    sounds: [
-      {
-        name: filename,
-      },
-    ],
-
-    path: file.join('/') + '/',
-    preload: true,
-    multiplay: false,
-  });
-
-  ion.sound.play(filename);
+  var match = String(file).match(/^(.*?)(?:\.([a-z0-9]+))?(\?.*)?$/i);
+  var base = match[1];
+  var given = (match[2] || '').toLowerCase();
+  var extensions = ['mp3', 'ogg', 'aac', 'mp4', 'wav'];
+  if (given) {
+    extensions = [given].concat(
+      extensions.filter(function (ext) {
+        return ext !== given;
+      })
+    );
+  }
+  var player = audioPlayers[file];
+  if (!player) {
+    player = audioPlayers[file] = { audio: new Audio(), ext: 0 };
+    player.audio.preload = 'auto';
+    player.audio.addEventListener('error', function () {
+      player.ext++;
+      if (player.ext < extensions.length) {
+        player.audio.src = base + '.' + extensions[player.ext];
+        play();
+      } else {
+        console.warn('Unable to play sound ' + file);
+      }
+    });
+    player.audio.src = base + '.' + extensions[0];
+  }
+  function play() {
+    var result = player.audio.play();
+    if (result && typeof result.catch === 'function') {
+      result.catch(function (error) {
+        // NotAllowedError: the browser blocks sound before the first click.
+        if (error && error.name !== 'AbortError') console.warn(error.message);
+      });
+    }
+  }
+  player.audio.pause();
+  try {
+    player.audio.currentTime = 0;
+  } catch (e) {
+    // not loaded yet
+  }
+  play();
 }
 
 /*Todo: make map a regular block*/

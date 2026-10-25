@@ -2445,7 +2445,9 @@ screens[1] = {
       .locator('[data-order-key="widget:weather"] .de-config-btn')
       .click();
     await expect(page.locator('#we-config-popup')).toBeVisible();
-    await expect(page.locator('#we-cfg-weather-provider')).toBeVisible();
+    // OpenWeather is the only weather provider: no provider selector.
+    await expect(page.locator('#we-cfg-owm-api')).toBeVisible();
+    await expect(page.locator('#we-cfg-weather-provider')).toHaveCount(0);
 
     for (const option of ['icon', 'show_title']) {
       await expect(

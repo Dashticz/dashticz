@@ -142,7 +142,11 @@ var DashticzDeviceEditor = (function () {
         text_style: 'Text',
         text_fontsize_title: 'Title size',
         text_fontsize_value: 'Value size',
-        text_align: 'Alignment',
+        text_align: 'Horizontal',
+        text_valign: 'Vertical',
+        text_valign_top: 'Top',
+        text_valign_middle: 'Middle',
+        text_valign_bottom: 'Bottom',
         text_align_default: 'Theme default',
         text_align_left: 'Left',
         text_align_center: 'Center',
@@ -959,6 +963,7 @@ var DashticzDeviceEditor = (function () {
       f1language: 'f1_language',
       f1urlen: 'f1_url_en',
       f1urlnl: 'f1_url_nl',
+      f1timezone: 'f1_timezone',
       f1utcoffset: 'f1_utcoffset',
       f1pollminutes: 'f1_pollminutes',
       f1sessions: 'f1_sessions',
@@ -1356,6 +1361,7 @@ var DashticzDeviceEditor = (function () {
         fontsizeTitle: _parseTextFontSize(definition.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(definition.fontsize_value, true),
         textalign: _parseTextAlign(definition.textalign),
+        textvalign: _parseTextVAlign(definition.textvalign),
         compactIcons:
           definition.compactIcons && typeof definition.compactIcons === 'object'
             ? $.extend({}, definition.compactIcons)
@@ -1588,6 +1594,7 @@ var DashticzDeviceEditor = (function () {
     fontsize_title: true,
     fontsize_value: true,
     textalign: true,
+    textvalign: true,
     // Reverse icon dimming - the Reverse toggle in Display options.
     reverseicon: true,
     __proto__: true,
@@ -1898,6 +1905,7 @@ var DashticzDeviceEditor = (function () {
   // applyBlockTextStyle(). Stored as fontsize_title/fontsize_value/textalign
   // custom fields, like compactSelector.
   var TEXT_ALIGN_VALUES = ['left', 'center', 'right'];
+  var TEXT_VALIGN_VALUES = ['top', 'middle', 'bottom'];
 
   // keepOutOfRange: a stored size outside 6-100 (the components accept any
   // positive size) is passed on as it is until the user changes the field.
@@ -1912,6 +1920,11 @@ var DashticzDeviceEditor = (function () {
     return TEXT_ALIGN_VALUES.indexOf(value) > -1 ? value : '';
   }
 
+  function _parseTextVAlign(value) {
+    value = String(value || '').toLowerCase();
+    return TEXT_VALIGN_VALUES.indexOf(value) > -1 ? value : '';
+  }
+
   function _applyReverseIconField(customFields, options) {
     delete customFields.reverseicon;
     if (options.reverseicon === true) customFields.reverseicon = true;
@@ -1921,11 +1934,13 @@ var DashticzDeviceEditor = (function () {
     delete customFields.fontsize_title;
     delete customFields.fontsize_value;
     delete customFields.textalign;
+    delete customFields.textvalign;
     if (options.fontsizeTitle)
       customFields.fontsize_title = options.fontsizeTitle;
     if (options.fontsizeValue)
       customFields.fontsize_value = options.fontsizeValue;
     if (options.textalign) customFields.textalign = options.textalign;
+    if (options.textvalign) customFields.textvalign = options.textvalign;
   }
 
   function _devicePreservedFieldValues(definition) {
@@ -2003,9 +2018,8 @@ var DashticzDeviceEditor = (function () {
     }
 
     if (widget.id === 'weather') {
-      entry.provider =
-        definition.widget_provider ||
-        (definition.type === 'wunderground' ? 'wunderground' : 'openweather');
+      // Weather Underground blocks are saved as OpenWeather.
+      entry.provider = 'openweather';
       _copyDefinedWidgetProperties(entry, definition, [
         'showRain',
         'showDescription',
@@ -2584,6 +2598,7 @@ var DashticzDeviceEditor = (function () {
         fontsizeTitle: _parseTextFontSize(configured.fontsize_title, true),
         fontsizeValue: _parseTextFontSize(configured.fontsize_value, true),
         textalign: _parseTextAlign(configured.textalign),
+        textvalign: _parseTextVAlign(configured.textvalign),
         compactIcons:
           configured.compactIcons && typeof configured.compactIcons === 'object'
             ? $.extend({}, configured.compactIcons)
@@ -3989,6 +4004,32 @@ var DashticzDeviceEditor = (function () {
     return html + '</span></span>';
   }
 
+  // Drag the device rows into the order they are shown in. The list element
+  // itself is kept when the rows are re-rendered, so this is wired once;
+  // getList/setList give access to the (re-assignable) pending device array.
+  function _wireClusterSort($list, getList, setList) {
+    if (!$.fn.sortable) return;
+    $list.sortable({
+      items: '.cl-pending-item',
+      handle: '.cl-pending-handle',
+      axis: 'y',
+      tolerance: 'pointer',
+      containment: 'parent',
+      update: function () {
+        var current = getList();
+        var sorted = [];
+        $list.find('.cl-pending-item').each(function () {
+          var idx = parseInt($(this).attr('data-idx'), 10);
+          var found = current.find(function (d) {
+            return d.idx === idx;
+          });
+          if (found) sorted.push(found);
+        });
+        if (sorted.length === current.length) setList(sorted);
+      },
+    });
+  }
+
   function _clusterPendingListHtml(t, pendingDevices, usageList) {
     if (!pendingDevices.length) {
       return '<div class="de-empty">' + _esc(t.cluster_no_devices) + '</div>';
@@ -4014,6 +4055,7 @@ var DashticzDeviceEditor = (function () {
           '<div class="de-device-item cl-pending-item" data-idx="' +
           _esc(d.idx) +
           '">' +
+          '<span class="cl-pending-handle de-parts-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>' +
           '<span class="cl-pending-name-group">' +
           '<input type="text" class="form-control form-control-sm cl-name-input" data-idx="' +
           _esc(d.idx) +
@@ -4495,6 +4537,16 @@ var DashticzDeviceEditor = (function () {
     var $popup = $('#clusterblockpopup');
     _wireQuickOptions('cl', $popup);
     _wireBackButton('clusterblockpopup');
+
+    _wireClusterSort(
+      $('#cl-device-pending'),
+      function () {
+        return pendingDevices;
+      },
+      function (list) {
+        pendingDevices = list;
+      }
+    );
 
     $('#cl-add-device-btn').on('click', function () {
       var $select = $('#cl-device-select');
@@ -7676,7 +7728,7 @@ var DashticzDeviceEditor = (function () {
     fieldClass: 'de-f1-field',
     // Order of the settings in a saved block, after f1mode.
     saveOrder:
-      'language urlen urlnl utcoffset pollminutes sessions visibility emptytext hideimage fontsize image',
+      'language urlen urlnl timezone utcoffset pollminutes sessions visibility emptytext hideimage fontsize image',
     settings: [
       {
         key: 'language',
@@ -7689,7 +7741,18 @@ var DashticzDeviceEditor = (function () {
           ];
         },
       },
-      // Optional whole number: empty = the time zone of the browser.
+      {
+        key: 'timezone',
+        type: 'select',
+        def: 'browser',
+        options: function (t) {
+          return [
+            ['browser', t.f1_block_timezone_browser],
+            ['domoticz', t.f1_block_timezone_domoticz],
+          ];
+        },
+      },
+      // Optional number: empty = use the time zone setting above.
       { key: 'utcoffset', type: 'number', def: null, range: [-24, 24, 0.25] },
       { key: 'pollminutes', type: 'number', def: 60, range: [5, 1440, 5] },
       {
@@ -9596,34 +9659,56 @@ var DashticzDeviceEditor = (function () {
         '"><span>px</span></span>'
       );
     };
-    var align = _parseTextAlign(options.textalign);
-    var alignButtons = [
-      { value: '', icon: 'fa-ban', label: t.text_align_default },
-      { value: 'left', icon: 'fa-align-left', label: t.text_align_left },
-      { value: 'center', icon: 'fa-align-center', label: t.text_align_center },
-      { value: 'right', icon: 'fa-align-right', label: t.text_align_right },
-    ]
-      .map(function (button) {
-        var id = 'de-config-textalign-' + (button.value || 'default');
-        return (
-          '<input type="radio" class="btn-check" name="de-config-textalign" id="' +
-          id +
-          '" value="' +
-          button.value +
-          '" autocomplete="off"' +
-          (align === button.value ? ' checked' : '') +
-          '><label class="btn btn-outline-secondary btn-sm" for="' +
-          id +
-          '" title="' +
-          _esc(button.label) +
-          '" aria-label="' +
-          _esc(button.label) +
-          '"><i class="fas ' +
-          button.icon +
-          '"></i></label>'
-        );
-      })
-      .join('');
+    var alignButtonRow = function (name, current, buttons) {
+      return buttons
+        .map(function (button) {
+          var id = name + '-' + (button.value || 'default');
+          return (
+            '<input type="radio" class="btn-check" name="' +
+            name +
+            '" id="' +
+            id +
+            '" value="' +
+            button.value +
+            '" autocomplete="off"' +
+            (current === button.value ? ' checked' : '') +
+            '><label class="btn btn-outline-secondary btn-sm" for="' +
+            id +
+            '" title="' +
+            _esc(button.label) +
+            '" aria-label="' +
+            _esc(button.label) +
+            '"><i class="fas ' +
+            button.icon +
+            '"></i></label>'
+          );
+        })
+        .join('');
+    };
+    var alignButtons = alignButtonRow(
+      'de-config-textalign',
+      _parseTextAlign(options.textalign),
+      [
+        { value: '', icon: 'fa-ban', label: t.text_align_default },
+        { value: 'left', icon: 'fa-align-left', label: t.text_align_left },
+        {
+          value: 'center',
+          icon: 'fa-align-center',
+          label: t.text_align_center,
+        },
+        { value: 'right', icon: 'fa-align-right', label: t.text_align_right },
+      ]
+    );
+    var valignButtons = alignButtonRow(
+      'de-config-textvalign',
+      _parseTextVAlign(options.textvalign),
+      [
+        { value: '', icon: 'fa-ban', label: t.text_align_default },
+        { value: 'top', icon: 'fa-arrow-up', label: t.text_valign_top },
+        { value: 'middle', icon: 'fa-arrows-v', label: t.text_valign_middle },
+        { value: 'bottom', icon: 'fa-arrow-down', label: t.text_valign_bottom },
+      ]
+    );
     return (
       '<div class="mb-3 de-text-style-row">' +
       '<div class="form-label">' +
@@ -9644,6 +9729,11 @@ var DashticzDeviceEditor = (function () {
       _esc(t.text_align) +
       '</span><span class="btn-group de-text-align-group" role="group">' +
       alignButtons +
+      '</span></span>' +
+      '<span class="d-flex align-items-center gap-2"><span>' +
+      _esc(t.text_valign) +
+      '</span><span class="btn-group de-text-align-group" role="group">' +
+      valignButtons +
       '</span></span></div>' +
       '<div class="form-text">' +
       _esc(t.text_style_help) +
@@ -10488,6 +10578,15 @@ var DashticzDeviceEditor = (function () {
           _clusterUsesSwitchRows(clusterMode) ? clusterUsageList : null
         );
       }
+      _wireClusterSort(
+        $popup.find('#de-config-cluster-pending'),
+        function () {
+          return clusterPendingDevices;
+        },
+        function (list) {
+          clusterPendingDevices = list;
+        }
+      );
       $popup.on('click', '#de-config-cluster-add-btn', function () {
         var $select = $popup.find('#de-config-cluster-select');
         var idx = parseInt($select.val(), 10);
@@ -11099,6 +11198,9 @@ var DashticzDeviceEditor = (function () {
         );
         updated.textalign = _parseTextAlign(
           $popup.find('input[name="de-config-textalign"]:checked').val()
+        );
+        updated.textvalign = _parseTextVAlign(
+          $popup.find('input[name="de-config-textvalign"]:checked').val()
         );
       }
       if (supportsCompactSelector) {
