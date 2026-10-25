@@ -1395,6 +1395,31 @@ test('F1 bridge parses the sessions of an ICS feed', () => {
   assert.equal(events[1].end - events[1].start, 7200);
 });
 
+test('F1 bridge extracts a valid time zone from the lookup answer', () => {
+  const zones = runPhp(
+    `echo json_encode(array(
+      dashticz_f1_timezone_from_json('{"timezone":"Europe\\/Amsterdam"}'),
+      dashticz_f1_timezone_from_json('{"timezone":"Not\\/AZone"}'),
+      dashticz_f1_timezone_from_json('{"timezone":"../etc/passwd"}'),
+      dashticz_f1_timezone_from_json('{"other":1}'),
+      dashticz_f1_timezone_from_json('nonsense'),
+      dashticz_f1_coordinate('52.37', -90, 90),
+      dashticz_f1_coordinate('120', -90, 90),
+      dashticz_f1_coordinate('abc', -90, 90)
+    ));`
+  );
+  assert.deepEqual(zones, [
+    'Europe/Amsterdam',
+    '',
+    '',
+    '',
+    '',
+    52.37,
+    null,
+    null,
+  ]);
+});
+
 test('dashticz_cached_json caches, falls back to stale data and remembers failures', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dt-cache-'));
   try {

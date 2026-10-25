@@ -20,9 +20,15 @@
  *                  heading above the rows.
  *   f1language     'en' (default) | 'nl'  (weekday/month names and feed)
  *   f1urlen/f1urlnl  ICS feed per language (defaults: the plugin's feeds)
+ *   f1timezone     'browser' (default): show the session times in the time
+ *                  zone of the browser. 'domoticz': use the time zone of the
+ *                  Domoticz location (latitude/longitude), looked up by the
+ *                  bridge; falls back to the browser time zone when the
+ *                  location or the lookup is not available. Both follow
+ *                  summer time.
  *   f1utcoffset    optional: fixed hours added to the (UTC) session times;
- *                  empty (default) = the time zone of the browser, which
- *                  follows summer time
+ *                  overrides f1timezone and does NOT follow summer time;
+ *                  empty (default) = use f1timezone
  *   f1pollminutes  how often the feed is downloaded (default 60)
  *   f1sessions     'all' (default) | 'sprint_race' | 'race'
  *   f1visibility   show the event this many days before its first upcoming
@@ -44,6 +50,7 @@ var DT_f1 = (function () {
     en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     nl: ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'],
   };
+  var WEEKDAY_KEYS = WEEKDAYS.en;
   var MONTHS = {
     en: [
       'Jan',
@@ -112,6 +119,7 @@ var DT_f1 = (function () {
       f1language: 'f1_language',
       f1urlen: 'f1_url_en',
       f1urlnl: 'f1_url_nl',
+      f1timezone: 'f1_timezone',
       f1utcoffset: 'f1_utcoffset',
       f1pollminutes: 'f1_pollminutes',
       f1sessions: 'f1_sessions',
@@ -156,33 +164,87 @@ var DT_f1 = (function () {
     return (n < 10 ? '0' : '') + n;
   }
 
-  // Unix time -> "Sat 5 Jul 12:30", shifted by the UTC offset.
-  function formatWhen(block, ts) {
+  // The location of Domoticz: {lat, lon} or null.
+  function domoticzLocation() {
+    var location = {};
+    try {
+      location = (Domoticz.getAllDevices()['_settings'] || {}).Location || {};
+    } catch (e) {
+      return null;
+    }
+    var lat = parseFloat(String(location.Latitude).replace(',', '.'));
+    var lon = parseFloat(String(location.Longitude).replace(',', '.'));
+    return isFinite(lat) && isFinite(lon) ? { lat: lat, lon: lon } : null;
+  }
+
+  // Valid IANA time zone name, else ''.
+  function validTimeZone(name) {
+    if (typeof name !== 'string' || !name) return '';
+    try {
+      new Intl.DateTimeFormat('en-GB', { timeZone: name });
+      return name;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // Calendar parts of a unix time in an IANA time zone ('' = the browser's),
+  // so summer time is applied for that very moment.
+  function zoneParts(ts, timeZone) {
+    var options = {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: 'h23',
+    };
+    if (timeZone) options.timeZone = timeZone;
+    var parts = {};
+    new Intl.DateTimeFormat('en-GB', options)
+      .formatToParts(new Date(ts * 1000))
+      .forEach(function (part) {
+        parts[part.type] = part.value;
+      });
+    return {
+      day: WEEKDAY_KEYS.indexOf(parts.weekday),
+      date: parseInt(parts.day, 10),
+      month: parseInt(parts.month, 10) - 1,
+      hours: parseInt(parts.hour, 10) % 24,
+      minutes: parseInt(parts.minute, 10),
+    };
+  }
+
+  // Unix time -> "Sat 5 Jul 12:30", in the chosen time zone (timeZone, ''
+  // = browser) or shifted by the fixed f1utcoffset, which wins when set.
+  function formatWhen(block, ts, timeZone) {
     var offset = parseFloat(block.f1utcoffset);
-    var d;
-    var local = isNaN(offset);
-    if (local) {
-      // Browser time zone, so summer time is followed automatically.
-      d = new Date(ts * 1000);
+    var p;
+    if (isNaN(offset)) {
+      p = zoneParts(ts, timeZone);
     } else {
-      d = new Date((ts + Math.min(24, Math.max(-24, offset)) * 3600) * 1000);
+      var d = new Date(
+        (ts + Math.min(24, Math.max(-24, offset)) * 3600) * 1000
+      );
+      p = {
+        day: d.getUTCDay(),
+        date: d.getUTCDate(),
+        month: d.getUTCMonth(),
+        hours: d.getUTCHours(),
+        minutes: d.getUTCMinutes(),
+      };
     }
     var l = lang(block);
-    var day = local ? d.getDay() : d.getUTCDay();
-    var date = local ? d.getDate() : d.getUTCDate();
-    var month = local ? d.getMonth() : d.getUTCMonth();
-    var hours = local ? d.getHours() : d.getUTCHours();
-    var minutes = local ? d.getMinutes() : d.getUTCMinutes();
     return (
-      WEEKDAYS[l][day] +
+      WEEKDAYS[l][p.day] +
       ' ' +
-      date +
+      p.date +
       ' ' +
-      MONTHS[l][month] +
+      MONTHS[l][p.month] +
       ' ' +
-      pad(hours) +
+      pad(p.hours) +
       ':' +
-      pad(minutes)
+      pad(p.minutes)
     );
   }
 
@@ -243,7 +305,7 @@ var DT_f1 = (function () {
     return !!location;
   }
 
-  function weekendHtml(block, weekend, now, titleHasLocation) {
+  function weekendHtml(block, weekend, now, titleHasLocation, timeZone) {
     var head = shortHeading(weekend[0].gp || weekend[0].location);
     return (
       '<div class="f1-rows f1-list">' +
@@ -260,7 +322,7 @@ var DT_f1 = (function () {
             esc(event.session) +
             '</span>' +
             '<span class="f1-value">' +
-            esc(formatWhen(block, event.start)) +
+            esc(formatWhen(block, event.start, timeZone)) +
             '</span>' +
             '</div>'
           );
@@ -279,7 +341,7 @@ var DT_f1 = (function () {
   }
 
   // Grand Prix name, and below it "Do 24 Sep 10:30 : Vrije Training 1".
-  function eventHtml(block, event) {
+  function eventHtml(block, event, timeZone) {
     var head = shortHeading(event.gp || event.location);
     return (
       '<div class="f1-next">' +
@@ -287,7 +349,7 @@ var DT_f1 = (function () {
       '<div class="f1-rows">' +
       (head ? '<div class="f1-heading">' + esc(head) + '</div>' : '') +
       '<div class="f1-session">' +
-      esc(formatWhen(block, event.start) + ' : ' + event.session) +
+      esc(formatWhen(block, event.start, timeZone) + ' : ' + event.session) +
       '</div>' +
       '</div>' +
       '</div>'
@@ -337,13 +399,21 @@ var DT_f1 = (function () {
       '--font-device-title',
       fontSize >= 8 && fontSize <= 60 ? fontSize + 'px' : ''
     );
-    DT_function.bridge('f1/index.php', {
+    var request = {
       url: feedUrl(block),
       pollMinutes: num(block, 'f1pollminutes', 60, 5, 1440),
-    }).then(
+    };
+    var location = block.f1timezone === 'domoticz' ? domoticzLocation() : null;
+    if (location) {
+      request.lat = location.lat;
+      request.lon = location.lon;
+    }
+    DT_function.bridge('f1/index.php', request).then(
       function (res) {
         var now = Math.floor(Date.now() / 1000);
         var events = (res && res.events) || [];
+        // Empty = the time zone of the browser.
+        var timeZone = validTimeZone(res && res.timezone);
         var html;
         if (block.f1mode === 'all') {
           var weekend = nextWeekend(block, events, now);
@@ -354,11 +424,12 @@ var DT_f1 = (function () {
               block,
               weekend,
               now,
-              setTitleLocation(me, weekend[0].location)
+              setTitleLocation(me, weekend[0].location),
+              timeZone
             );
         } else {
           var event = nextEvent(block, events, now);
-          html = event && eventHtml(block, event);
+          html = event && eventHtml(block, event, timeZone);
         }
         if (!html) {
           // showEmpty reads me.block for the legacy hide-image/no-event
