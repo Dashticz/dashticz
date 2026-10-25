@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.12 (25-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Fully Kiosk: the progress fill of the charger button runs from ``#C0FCE1``
+  at the start to ``#059956`` at the end of the fill and is fully opaque, so the
+  color difference is clearly visible.
+
 v4.20.11 (25-10-2026)
 ----------------------
 
