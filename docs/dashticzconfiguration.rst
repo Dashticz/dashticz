@@ -176,15 +176,6 @@ Config parameters
       | ``1`` = Whole world
       | ``2..14``
       | ``15`` = Most detail
-  * - wu_api
-    - | ``'[API KEY]'``
-      | Your Wundergrond Weather API key. You can get a API key at https://www.wunderground.com/weather/api/d/pricing.html '. ''Edit: You can no longer get a free API key from Wunderground'''
-  * - wu_city
-    - ``'[CITY]'`` Put here your weather city.
-  * - wu_country
-    - ``'[COUNTRY]'`` Put here your weather country
-  * - wu_name
-    - ``'[CITY]'`` Alternative display name of your city
   * - switch_horizon
     - ``'<url>'`` (Only Dutch users) If you have a Ziggo Horizon box, you can set the url of the Horizon box here
   * - host_nzbget
@@ -278,7 +269,7 @@ Config parameters
     - | 0 / 1
       | Hide or show RGB button on switch
   * - colorpicker
-    - | 0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker
+    - | 0: No RGB colorpicker, 1 or 2: RGB colorpicker (1 used to be the old style picker)
       | Choose the default RGB colorpicker for RGB devices
   * - colorpickerscale
     - | Choose the scaling factor for colorpicker 2 popup window.

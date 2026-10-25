@@ -1,4 +1,4 @@
 {
-    "version": "4.20.2",
-    "last_changes": "The HVC garbage option uses the new host inzamelkalender.hvcgroep.nl, because apps.hvcgroep.nl no longer resolves (#1352). Calendar events that repeat on the last weekday of the month (for example BYDAY=-1FR) now show the last one instead of the second-to-last one in months with five of that weekday (#1353)."
+    "version": "4.20.9",
+    "last_changes": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it is right-aligned like the title of other blocks in the non-default themes (the default theme keeps it left-aligned), and its extra top margin is removed so it lines up with the titles of neighbouring blocks."
 }

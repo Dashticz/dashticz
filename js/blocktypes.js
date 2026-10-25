@@ -6,7 +6,7 @@
 /* from dt_function.js: */
 /* global choose*/
 /* from blocks.js */
-/* global getSecurityBlock postHookLogitechMediaServer*/
+/* global getSecurityBlock postHookLogitechMediaServer postHookLux*/
 // Type/SubType/SwitchType
 var blocktypes = {};
 var SubType = {};
@@ -18,6 +18,7 @@ SubType.Electric = {
 };
 SubType.Lux = {
   icon: 'fas fa-sun-o',
+  postHook: postHookLux,
 };
 SubType.Pressure = {
   icon: 'wi wi-barometer',
@@ -319,6 +320,11 @@ blocktypes.Scale = {
 
 blocktypes['Air Quality'] = {
   image: 'air.png',
+};
+// Domoticz reports lux sensors as Type 'Lux' as well as General/Lux
+blocktypes.Lux = {
+  icon: 'fas fa-sun',
+  postHook: postHookLux,
 };
 blocktypes.UV = {
   icon: 'fas fa-sun',

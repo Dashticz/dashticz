@@ -644,19 +644,6 @@
   box-sizing: border-box;
 }
 
-.skycon {
-  margin: 10px auto 10px auto;
-  display: block;
-  width: 100%;
-  /*  max-width: 125px;*/
-}
-
-.skyconsmall {
-  display: block;
-  width: 100%;
-  max-width: 125px;
-}
-
 /* BEGIN || Settings modal */
 
 .nav-pills > li > a {
@@ -921,7 +908,7 @@ next css sets the default height of the frame popup
 
 .settings-update-label {
   margin: 0;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1023,7 +1010,7 @@ next css sets the default height of the frame popup
   margin: 18px 0 8px;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   color: #495057;
   letter-spacing: 0.03em;
@@ -1136,7 +1123,7 @@ next css sets the default height of the frame popup
 
 .settings-cssvar-px-suffix {
   color: #6c757d;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 @media (max-width: 767.98px) {
@@ -1346,7 +1333,7 @@ next css sets the default height of the frame popup
 .settings-static {
   padding: 12px 0;
   color: #343a40;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 @media (max-width: 767.98px) {
@@ -1812,7 +1799,7 @@ next css sets the default height of the frame popup
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.35);
   color: var(--text-light);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -1868,7 +1855,7 @@ next css sets the default height of the frame popup
 /* Font Awesome icons inside screen-switcher buttons */
 .dt-screen-btn i[aria-hidden] {
   pointer-events: none;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -2173,7 +2160,7 @@ body.dle-active {
 .dle-pending-name {
   max-width: 100%;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2258,7 +2245,7 @@ h6.de-section-title .fas {
   border-radius: 4px;
   background: #f8f9fa;
   border: 1px solid #e9ecef;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .de-device-identity {
@@ -2918,7 +2905,7 @@ h6.de-section-title .fas {
 
 .de-add-row .de-device-select {
   flex: 1 1 auto;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .de-add-row .de-width-input {
@@ -2944,7 +2931,7 @@ h6.de-section-title .fas {
 }
 
 .de-empty {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-muted);
   font-style: italic;
   padding: 4px 0;
@@ -3294,7 +3281,7 @@ h6.de-section-title .fas {
 .we-message {
   min-height: 22px;
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 a.playlist {
@@ -3440,6 +3427,16 @@ a.playlist {
   width: 30px;
   height: 100%;
   margin: auto;
+}
+
+/* Center the +/- (and chevron) symbols of the setpoint/blinds buttons both
+   horizontally and vertically inside their button. */
+.col-button1 .btn-number,
+.col-button2 .btn-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .col-dots {
@@ -3621,6 +3618,72 @@ a.playlist {
   white-space: nowrap;
 }
 
+/* Lux sun arc (read-only), see postHookLux in js/blocks.js */
+div.mh.lux-has-slider:not(.multiline) {
+  height: auto;
+  min-height: 85px;
+  flex-wrap: wrap;
+}
+
+.mh.dt_block.lux-has-slider {
+  padding-bottom: 6px !important;
+}
+
+.lux-slider {
+  clear: both;
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.lux-arc {
+  position: relative;
+  width: 100%;
+  max-width: 130px;
+  margin: 0 auto;
+}
+
+.lux-arc svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.lux-arc-value {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4%;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.lux-has-value .col-data .value {
+  display: none;
+}
+
+.lux-arc-track,
+.lux-arc-fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.lux-arc-track {
+  stroke: rgba(125, 138, 163, 0.35);
+}
+
+.lux-arc-glow {
+  fill: rgba(255, 214, 0, 0.8);
+}
+
+.lux-arc-sun {
+  fill: #fff;
+}
 /*To change the default height of the graph popup adapt the height value in custom.css
   Example:
 .graphheight {
@@ -3936,8 +3999,7 @@ div.big {
 /* The actual "Weather" widget catalog entry (type: 'weather') dispatches
    to js/components/weather.js's DT_weather, a normal special block that
    goes through the standard getContainer()/getColIcon()/renderTitle()
-   path (unlike js/components/simpleblock.js's own renderWeather above,
-   only ever reachable via the legacy type: 'wunderground'), so its
+   path, so its
    .col-icon/.dt_title are already there structurally. But DT_weather (and
    the OWM widget, js/components/owmwidget.js) scales its own .dt_block's
    font-size dynamically based on tile width, for its internal forecast
@@ -4366,7 +4428,7 @@ html .ui-button.ui-state-disabled:active {
 .navbar-default .nav > li > a:focus {
   text-transform: uppercase;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-dark);
 }
 
@@ -5672,7 +5734,7 @@ a:not([href]) {
 }
 
 .news .headline .description {
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .news .headline .updated {
@@ -9135,6 +9197,37 @@ canvas {
   text-align: right !important;
 }
 
+/* Block without an icon (Icon toggle off): the empty .col-icon column still
+   takes up space, which pushed aligned text off the block. Drop the empty
+   column and let the data span the full width. */
+.mh[class*='dt-align-'] .col-icon:empty {
+  display: none;
+}
+
+.mh[class*='dt-align-'] .col-icon:empty + .col-data {
+  width: 100%;
+}
+
+/* Vertical alignment of the content in the block (Device Config -> Text ->
+   Vertical, block.textvalign). */
+.mh.dt-valign-top,
+.mh.dt-valign-middle,
+.mh.dt-valign-bottom {
+  display: flex;
+}
+
+.mh.dt-valign-top {
+  align-items: flex-start;
+}
+
+.mh.dt-valign-middle {
+  align-items: center;
+}
+
+.mh.dt-valign-bottom {
+  align-items: flex-end;
+}
+
 /* Shared widget button (.dt-btn): a rounded, themed button for the controls of
    a widget, used by the LMS control and the Fully Kiosk widget. Add .on for
    the active state of a power or toggle button. The size is set by the widget
@@ -9316,6 +9409,37 @@ canvas {
 
 .fullykiosk-group .fullykiosk-btn {
   height: auto;
+}
+
+/* The charger button shows the battery level as a translucent progress fill
+   (--fully-level, set by fullykiosk.js), where 100% of the bar is the target
+   level of the charger. The gradient is fixed to the whole bar and clipped to
+   the level: orange from 0 to 30%, then over to green. It sits behind the
+   icon so the button and its icon stay visible. */
+.fullykiosk-btn[data-progress] {
+  position: relative;
+  overflow: hidden;
+}
+
+.fullykiosk-btn[data-progress]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 140, 0, 0.3) 0%,
+    rgba(255, 140, 0, 0.3) 10%,
+    rgba(46, 204, 113, 0.3) 30%,
+    rgba(46, 204, 113, 0.3) 100%
+  );
+  clip-path: inset(0 calc(100% - var(--fully-level, 0%)) 0 0);
+  pointer-events: none;
+  transition: clip-path 0.6s ease;
+}
+
+.fullykiosk-btn[data-progress] > .fas {
+  position: relative;
+  z-index: 1;
 }
 
 /* A power button that is off has a grey icon. */
@@ -9552,6 +9676,15 @@ canvas {
   cursor: grab;
   opacity: 0.6;
   touch-action: none;
+}
+
+.cl-pending-item.ui-sortable-helper {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.cl-pending-handle {
+  align-self: center;
+  margin-right: 0.5rem;
 }
 
 .de-parts-item.ui-sortable-helper {

@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify loadSpotifyApi DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment dashticz_version */
+/* global Dashticz DT_function getFullScreenIcon settings getSpotify loadSpotifyApi DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment dashticz_version */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -23,22 +23,6 @@ var DT_simpleblock = (function () {
     },
     responsiveclock: {
       render: renderResponsiveClock,
-    },
-    weather: {
-      script: 'js/weather.js',
-      render: renderWeather,
-    },
-    wunderground: {
-      script: 'js/weather.js',
-      render: renderWeather,
-    },
-    currentweather: {
-      script: 'js/weather.js',
-      render: renderCurrentWeather,
-    },
-    currentweather_big: {
-      script: 'js/weather.js',
-      render: renderCurrentWeather_big,
     },
     spotify: {
       script: 'js/spotify.js',
@@ -911,122 +895,6 @@ var DT_simpleblock = (function () {
       '<div class="col no-icon"><h2 class="clock"></h1><h4 class="weekday my-4"></h4><h4 class="date"></h4></div>' +
       '</div>'
     );
-  }
-
-  function loadWeatherScript(callback) {
-    $.ajax({
-      url: 'js/weather.js',
-      dataType: 'script',
-      success: callback,
-      error: function () {
-        console.error('Failed to load weather.js');
-      },
-    });
-  }
-
-  function renderWeather(me) {
-    function doRender() {
-      var fixedHeight = parseInt(me.block.height, 10);
-      var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
-      var heightStyle =
-        fixedHeight > 0
-          ? ' style="height:' + fixedHeight + 'px !important"'
-          : '';
-      var showTitle = !me.block.hide_title && me.block.title;
-      // Weather is in getWidgetTitle()'s titleKeys (js/dashticz.js), so the
-      // Widget Editor's Icon/Title checkboxes save block.icon/block.title
-      // (or block.image, for its Icon field's "Image" source) correctly,
-      // but this renderer replaced the whole mount point with a bare
-      // .containsweatherfull, silently dropping both. _colIconHtml()/
-      // .dt_title reuse getColIcon()'s/renderTitle()'s own markup purely
-      // so a theme's icon-size/title rules apply here too - as siblings of
-      // .containsweatherfull (not inside it), since loadWeatherFull()
-      // below replaces that div's content wholesale on every refresh.
-      var header = '';
-      if (me.block.icon || me.block.image || showTitle) {
-        header += '<div class="dt-simple-header">';
-        header += _colIconHtml(me.block);
-        if (showTitle)
-          header += '<div class="dt_title">' + me.block.title + '</div>';
-        header += '</div>';
-      }
-      me.$mountPoint.html(
-        '<div data-id="weather" class="mh transbg dt_block block_' +
-          me.block.type +
-          ' col-xs-' +
-          me.block.width +
-          heightClass +
-          '"' +
-          heightStyle +
-          '>' +
-          header +
-          '<div class="containsweatherfull"></div>' +
-          '</div>'
-      );
-      if (settings['wu_api'] && settings['wu_city']) {
-        loadWeatherFull(settings['wu_city'], settings['wu_country']);
-      } else {
-        me.$mountPoint
-          .find('.containsweatherfull')
-          .html(
-            '<div class="dt_state">' +
-              language.misc.wu_settings_missing +
-              '</div>'
-          );
-      }
-    }
-    if (typeof loadWeatherFull !== 'function') {
-      loadWeatherScript(doRender);
-    } else {
-      doRender();
-    }
-  }
-
-  function renderCurrentWeather(me) {
-    if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-      function doRender() {
-        me.$mountPoint.html(
-          '<div data-id="currentweather" class="mh transbg block_' +
-            me.block.type +
-            ' col-xs-' +
-            me.block.width +
-            ' containsweather">' +
-            '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-        loadWeather(settings['wu_city'], settings['wu_country']);
-      }
-      if (typeof loadWeather !== 'function') {
-        loadWeatherScript(doRender);
-      } else {
-        doRender();
-      }
-    }
-  }
-
-  function renderCurrentWeather_big(me) {
-    if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-      function doRender() {
-        me.$mountPoint.html(
-          '<div data-id="currentweather_big" class="mh transbg big block_' +
-            me.block.type +
-            ' col-xs-' +
-            me.block.width +
-            ' containsweather">' +
-            '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-
-        loadWeather(settings['wu_city'], settings['wu_country']);
-      }
-      if (typeof loadWeather !== 'function') {
-        loadWeatherScript(doRender);
-      } else {
-        doRender();
-      }
-    }
   }
 
   function renderSpotify(me) {

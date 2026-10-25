@@ -53,8 +53,8 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     helper,
-    /setProperty\('text-align', 'left', 'important'\)/,
-    'the Garbage title must be left aligned'
+    /if \(hasNonDefaultTheme\(\)\) title\.style\.removeProperty\('text-align'\);\s*else title\.style\.setProperty\('text-align', 'left', 'important'\)/,
+    'the Garbage title is left aligned in the default theme only'
   );
   assert.match(
     helper,

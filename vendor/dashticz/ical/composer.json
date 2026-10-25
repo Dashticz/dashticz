@@ -1,7 +1,11 @@
 {
     "require": {
-        "om/icalparser": "^1",
-        "johngrogg/ics-parser": "^3"
-
+        "sabre/vobject": "^4.6"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.0"
+        },
+        "optimize-autoloader": true
     }
 }
