@@ -1863,9 +1863,9 @@ function getDefaultGraphProperties(graph, block) {
                   graph.range === 'today'
                     ? 'H:mm'
                     : graph.realrange === 'day'
-                      ? 'EEE H:mm'
-                      : 'd MMM',
-                day: 'd MMM',
+                      ? 'ddd H:mm'
+                      : 'D MMM',
+                day: 'D MMM',
               },
             },
             distribution: 'series',
@@ -1964,7 +1964,10 @@ function getYlabels(g) {
         l.push(label);
     }
   });
-  return l;
+  //Chart.js ignores an axis with an empty id, so a device without unit/axis label would not render
+  return l.map(function (lbl) {
+    return isDefined(lbl) && lbl !== '' ? lbl : ' ';
+  });
 }
 
 function groupByDevice(me) {

@@ -56,13 +56,13 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 5. After merging, sanity-check with `npm run format:check`, `npm install`, `npm run build`, and `npm test`.
 6. Once approved, merge the integration branch into `beta` and do the release bookkeeping below as part of that same change.
 
-## Release bookkeeping — only when the user explicitly asks
+## Release bookkeeping — on every change
 
-Do not bump the version on your own initiative — not per commit, not once a day, not because a session's work feels "done". Only do the bookkeeping below when the user explicitly asks for a version bump/release. Absent that request, push code changes without touching `version.txt`, `package.json`'s `version`, `index.html`'s version strings, or `docs/releasenotes/releasenotes.rst`.
+Version numbers have the form `x.xx.y` (for example `4.20.3`): `x` and `xx` are only raised when the maintainer asks for it; `y` is a change counter (plain number, no leading zeros) that goes up by one with **every** change - each commit/branch that changes code, tests, docs or dependencies gets its own next `y` (`4.20.3`, `4.20.4`, ...), without waiting to be asked. Do not reuse or amend an earlier version for a new change, even on the same day. When `xx` (or `x`) is raised, `y` restarts at `0`.
 
-When the user does ask for a bump: if a bump already exists for today (i.e. the newest entry in `changelog.json` is already dated today), amend that same version's `changelog.json`/`last_changes`/release-notes entry with the new change instead of creating another version bump. Otherwise create a new one.
+Before picking the next number, sync to the latest branch tip (see the start of this file) and read `version.txt`, so two changes never get the same number.
 
-When a bump does apply, it must include:
+Every bump must include:
 
 - Bump `version.txt`'s `version` field (and its `last_changes`) and add a matching entry at the top of `changelog.json`. The changelog lives in its own file so that the small `version.txt`, which every dashboard start fetches, stays small.
 - Mirror the same version in `package.json`'s `version` field and in

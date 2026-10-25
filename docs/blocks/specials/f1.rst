@@ -13,16 +13,16 @@ You can place it several times on one screen. Add it via the Screen Editor:
 "Add items" -> Widgets -> F1 (in the "Widgets (multiple per screen)" section),
 and choose with the two icon buttons what the tile shows:
 
-* **Next event** (``f1mode: 'next'``): the Grand Prix name, centered, and below
+* **Next event** (``f1mode: 'next'``): the GP (Grand Prix) name, centered, and below
   it the next session, for example::
 
-    Grand Prix van Azerbeidzjan
+    GP van Azerbeidzjan
     Do 24 Sep 10:30 : Vrije Training 1
 
 * **All events** (``f1mode: 'all'``): one row per session of that race
   weekend (session name left, date and time right). Sessions that are over are
   dimmed. The location of the race is added to the tile title (for example
-  ``F1 agenda - Baku``); a tile without a title shows the Grand Prix name above
+  ``F1 agenda - Baku``); a tile without a title shows the GP name above
   the rows instead.
 
 Use the tile ``image`` option to show the F1 logo next to it. Change the

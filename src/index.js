@@ -14,7 +14,6 @@ require('jquery-ui-touch-punch');
 require('./bootstrap-compat.js');
 require('@fortawesome/fontawesome-free/css/all.min.css');
 require('@fortawesome/fontawesome-free/css/v4-shims.min.css');
-window.MobileDetect = require('mobile-detect');
 window.md5 = require('md5');
 import Cookies from 'js-cookie';
 window.Cookies = Cookies;
@@ -24,10 +23,6 @@ window.Handlebars = Handlebars;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
-var Skycons = require('skycons-color');
-window.Skycons = Skycons;
-require('spectrum-colorpicker');
-require('ion-sound');
 require('hammerjs');
 window.Popper = require('@popperjs/core');
 window.iro = require('@jaames/iro').default;
@@ -44,20 +39,6 @@ window.loadSpotifyApi = function () {
     });
   }
   return spotifyApiPromise;
-};
-
-var icalPromise;
-window.loadIcal = function () {
-  if (window.ICAL) return Promise.resolve(window.ICAL);
-  if (!icalPromise) {
-    icalPromise = import(/* webpackChunkName: "ical" */ 'ical.js').then(
-      function (module) {
-        window.ICAL = module.default || module;
-        return window.ICAL;
-      }
-    );
-  }
-  return icalPromise;
 };
 
 // Loaded statically (not via a lazy import() chunk) - on at least one real

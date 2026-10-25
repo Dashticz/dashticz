@@ -16,7 +16,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js';
-import 'chartjs-adapter-date-fns';
+import './chart-date-adapter.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
 
 // Dashticz graphs are line/bar charts with category or time x-axes and linear

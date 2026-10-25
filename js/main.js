@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters _DASHTICZ_VERSION _LOADER_CACHE_BUST*/
-/* global sessionValid MobileDetect moment getBlock DT_function*/
+/* global sessionValid moment getBlock DT_function*/
 /* global Swiper Debug*/
 
 //To refactor later:
@@ -36,7 +36,6 @@ var myswiper;
 //move var addedThermostat = [];
 //move var oldstates = [];
 //move var onOffstates = [];
-var md;
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -958,7 +957,6 @@ function onLoad() {
     // browser doesn't support touch
     document.documentElement.className += ' non-touch';
   }
-  md = new MobileDetect(window.navigator.userAgent);
 
   $('body').attr('unselectable', 'on').css({
     '-moz-user-select': 'none',
