@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.10 (25-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Fully Kiosk: the progress fill of the charger button runs from a very light
+  green at the start of the bar to a green at the end, without orange or other
+  colors.
+
 v4.20.9 (25-10-2026)
 ----------------------
 
