@@ -279,6 +279,12 @@ function dashticz_owner_info($path)
 function dashticz_acquire_file_update_lock($path)
 {
     $lock = @fopen($path . '.lock', 'c');
+    if ($lock === false && is_file($path)) {
+        // A .lock file owned by another OS user (for example created by root
+        // from the CLI) cannot be opened for writing. Lock the target file
+        // itself instead of failing every save.
+        $lock = @fopen($path, 'r');
+    }
     if ($lock === false || !@flock($lock, LOCK_EX)) {
         if (is_resource($lock)) {
             @fclose($lock);
@@ -297,11 +303,38 @@ function dashticz_release_file_update_lock($lock)
     @fclose($lock);
 }
 
+// Temporary files left behind by a request that died between tempnam() and
+// rename() (fatal error, timeout). Only old files are removed, so a write that
+// is in progress is never touched.
+function dashticz_remove_stale_write_files($directory)
+{
+    $files = @glob(rtrim($directory, '/\\') . '/.dashticz-write-*');
+    if (!$files) {
+        return;
+    }
+    foreach ($files as $file) {
+        if (is_file($file) && filemtime($file) < time() - 3600) {
+            @unlink($file);
+        }
+    }
+}
+
 function dashticz_atomic_write_file($path, $contents, $mode = 0664)
 {
     $directory = dirname($path);
+    // tempnam() silently falls back to the system temp directory when
+    // $directory is not writable; rename() from there would then fail or turn
+    // the write into a non-atomic one.
+    if (!is_writable($directory)) {
+        return false;
+    }
+    dashticz_remove_stale_write_files($directory);
     $temporary = @tempnam($directory, '.dashticz-write-');
     if ($temporary === false) {
+        return false;
+    }
+    if (realpath(dirname($temporary)) !== realpath($directory)) {
+        @unlink($temporary);
         return false;
     }
 
