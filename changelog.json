@@ -1,6 +1,9 @@
 {
   "changelog": {
-    "4.20.10": "Evohome/Ramses zone and hot water dials: setting a temperature no longer sets the override until time to the moment you entered it (which made the zone fall back at once) when the boost duration setting is empty; the dial now defaults to 60 minutes for zones and 30 minutes for hot water, like the dial display already did (#1360).",
+    "4.20.13": "Evohome/Ramses zone and hot water dials: setting a temperature no longer sets the override until time to the moment you entered it (which made the zone fall back at once) when the boost duration setting is empty; the dial now defaults to 60 minutes for zones and 30 minutes for hot water, like the dial display already did (#1360).",
+    "4.20.12": "The progress fill of the Fully Kiosk charger button runs from #C0FCE1 at the start to #059956 at the end of the fill, fully opaque, so the color difference is clearly visible.",
+    "4.20.11": "The progress fill of the Fully Kiosk charger button now shows its gradient over the filled part: from a light green at the start to a dark green at the end of the fill.",
+    "4.20.10": "The Fully Kiosk charger button shows its battery level as a progress fill that runs from a very light green to a green, without orange or other colors.",
     "4.20.9": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it is right-aligned like the title of other blocks in the non-default themes (the default theme keeps it left-aligned), and its extra top margin is removed so it lines up with the titles of neighbouring blocks.",
     "4.20.8": "Weather Underground is no longer supported (its free API stopped): the former wunderground, currentweather and currentweather_big blocks use the regular OpenWeatherMap/KNMI weather block. The Weather Underground scripts, settings and Skycons icons are removed.",
     "4.20.7": "The security panel's device information no longer needs mobile-detect; mobile-detect is removed.",
