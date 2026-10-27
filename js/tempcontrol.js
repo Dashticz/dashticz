@@ -241,7 +241,9 @@ function switchEvoZone(block, setpoint, override) {
   var hasPassword = block.password;
   var mode = override
     ? '&mode=TemporaryOverride&until=' +
-      moment().add(settings['evohome_boost_zone'], 'minutes').toISOString()
+      moment()
+        .add(choose(settings['evohome_boost_zone'], 60), 'minutes')
+        .toISOString()
     : '&mode=Auto';
 
   if (!DT_function.promptPassword(hasPassword)) {
@@ -398,7 +400,9 @@ function switchEvoHotWater(block, state, override) {
   var dial = block.type === 'dhw';
   var mode = override
     ? '&mode=TemporaryOverride&until=' +
-      moment().add(settings['evohome_boost_hw'], 'minutes').toISOString()
+      moment()
+        .add(choose(settings['evohome_boost_hw'], 30), 'minutes')
+        .toISOString()
     : '&mode=Auto';
 
   var hasPassword = block.password;
