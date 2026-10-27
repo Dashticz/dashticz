@@ -1,6 +1,46 @@
 Release Notes
 =============
 
+v4.20.13 (27-10-2026)
+----------------------
+
+* **Fixes**
+
+- Evohome/Ramses zone and hot water dials: setting a temperature no longer
+  sets the override until time to the moment you entered it (so the zone fell
+  back at once) when the boost duration setting is empty. The override now
+  defaults to 60 minutes for zones and 30 minutes for hot water, like the dial
+  display already did (#1360).
+
+v4.20.12 (25-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Fully Kiosk: the progress fill of the charger button runs from ``#C0FCE1``
+  at the start to ``#059956`` at the end of the fill and is fully opaque, so the
+  color difference is clearly visible.
+
+v4.20.11 (25-10-2026)
+----------------------
+
+* **Fixes**
+
+- Fully Kiosk: the progress fill of the charger button showed no visible
+  gradient at a partial level, because the gradient was spread over the whole
+  bar and only its first part was visible. The fill is now as wide as the
+  level and the gradient runs over the filled part, from a light green to a
+  dark green.
+
+v4.20.10 (25-10-2026)
+----------------------
+
+* **Enhancements**
+
+- Fully Kiosk: the progress fill of the charger button runs from a very light
+  green at the start of the bar to a green at the end, without orange or other
+  colors.
+
 v4.20.9 (25-10-2026)
 ----------------------
 
