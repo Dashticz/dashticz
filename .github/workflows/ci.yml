@@ -86,7 +86,10 @@ jobs:
 
   browsers:
     name: Playwright ${{ matrix.browser }}
-    runs-on: ubuntu-latest
+    # Pinned: the WebKit build Playwright downloads is for Ubuntu 24.04 and needs
+    # libicu74. On other ubuntu-latest images install-deps installs a different
+    # libicu and every WebKit test fails with "libicudata.so.74: cannot open".
+    runs-on: ubuntu-24.04
     # A healthy run takes about 2 minutes. install-deps (apt) can hang on a
     # bad mirror/runner; fail after 15 minutes instead of the 6 hour default.
     timeout-minutes: 15
