@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+v4.20.14 (27-10-2026)
+----------------------
+
+* **Fixes**
+
+- Evohome/Ramses zone and hot water dials: the override until time is now sent
+  as local time. Domoticz copies the digits of the time into the controller's
+  clock and ignores the time zone, so with the previous UTC time the setpoint
+  fell back at once in time zones other than UTC (#1360).
+
 v4.20.13 (27-10-2026)
 ----------------------
 
