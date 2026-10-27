@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.20.10 (27-10-2026)
+----------------------
+
+* **Fixes**
+
+- Evohome/Ramses zone and hot water dials: setting a temperature no longer
+  sets the override until time to the moment you entered it (so the zone fell
+  back at once) when the boost duration setting is empty. The override now
+  defaults to 60 minutes for zones and 30 minutes for hot water, like the dial
+  display already did (#1360).
+
 v4.20.9 (25-10-2026)
 ----------------------
 
