@@ -150,7 +150,7 @@ test('Evohome override falls back to a 60 minute zone and 30 minute hot water bo
     moment: () => ({
       add: (amount, unit) => (
         added.push([amount, unit]),
-        { toISOString: () => 'until' }
+        { format: (fmt) => 'until-' + fmt }
       ),
     }),
     Domoticz: {
@@ -165,7 +165,10 @@ test('Evohome override falls back to a 60 minute zone and 30 minute hot water bo
   context.switchEvoZone(block({ type: 'zone' }), 21, true);
   context.switchEvoHotWater(block({ type: 'dhw' }), 1, true);
   assert.deepEqual(added[0], [60, 'minutes']);
-  assert.match(added[1], /mode=TemporaryOverride&until=until/);
+  assert.match(
+    added[1],
+    /mode=TemporaryOverride&until=until-YYYY-MM-DDTHH:mm:ss&used=true/
+  );
   assert.deepEqual(added[2], [30, 'minutes']);
 
   const configured = loadThermostat({
