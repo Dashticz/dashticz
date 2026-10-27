@@ -58,7 +58,9 @@ function loadThermostat(overrides) {
   vm.runInContext(
     read('js/tempcontrol.js') +
       '\nthis.getThermostatBlock = getThermostatBlock;' +
-      '\nthis.switchThermostat = switchThermostat;',
+      '\nthis.switchThermostat = switchThermostat;' +
+      '\nthis.switchEvoZone = switchEvoZone;' +
+      '\nthis.switchEvoHotWater = switchEvoHotWater;',
     context
   );
   return { context, requests, rendered };
@@ -140,4 +142,37 @@ test('switching the thermostat sends the setpoint command unless the password pr
   });
   refused.context.switchThermostat(block({ password: 'x' }), 21.5);
   assert.deepEqual(refused.requests, []);
+});
+
+test('Evohome override falls back to a 60 minute zone and 30 minute hot water boost when the settings are empty', () => {
+  const added = [];
+  const overrides = {
+    moment: () => ({
+      add: (amount, unit) => (
+        added.push([amount, unit]),
+        { toISOString: () => 'until' }
+      ),
+    }),
+    Domoticz: {
+      syncRequest: (idx, query) => (
+        added.push(query),
+        { then: (callback) => callback() }
+      ),
+    },
+    DT_dial: { make: () => {} },
+  };
+  const { context } = loadThermostat(overrides);
+  context.switchEvoZone(block({ type: 'zone' }), 21, true);
+  context.switchEvoHotWater(block({ type: 'dhw' }), 1, true);
+  assert.deepEqual(added[0], [60, 'minutes']);
+  assert.match(added[1], /mode=TemporaryOverride&until=until/);
+  assert.deepEqual(added[2], [30, 'minutes']);
+
+  const configured = loadThermostat({
+    ...overrides,
+    settings: { evohome_boost_zone: '90', evohome_boost_hw: '45' },
+  });
+  added.length = 0;
+  configured.context.switchEvoZone(block({ type: 'zone' }), 21, true);
+  assert.deepEqual(added[0], ['90', 'minutes']);
 });
