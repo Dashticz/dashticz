@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.20.14": "Evohome/Ramses zone and hot water dials: the override until time is now sent as local time (Domoticz copies the digits of the time into the controller's clock and ignores the time zone), so setting a temperature keeps the new setpoint for the boost duration instead of falling back at once in time zones other than UTC (#1360).",
     "4.20.13": "Evohome/Ramses zone and hot water dials: setting a temperature no longer sets the override until time to the moment you entered it (which made the zone fall back at once) when the boost duration setting is empty; the dial now defaults to 60 minutes for zones and 30 minutes for hot water, like the dial display already did (#1360).",
     "4.20.12": "The progress fill of the Fully Kiosk charger button runs from #C0FCE1 at the start to #059956 at the end of the fill, fully opaque, so the color difference is clearly visible.",
     "4.20.11": "The progress fill of the Fully Kiosk charger button now shows its gradient over the filled part: from a light green at the start to a dark green at the end of the fill.",
