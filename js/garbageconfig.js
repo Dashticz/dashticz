@@ -517,11 +517,11 @@
         else title.style.setProperty('text-align', 'left', 'important');
       }
 
-      // The 70px shift is meant for the non-default themes. In the default
+      // The 30px shift is meant for the non-default themes. In the default
       // theme it would push the icon over the table text.
       if (hasNonDefaultTheme()) {
         image.style.setProperty('position', 'relative', 'important');
-        image.style.setProperty('left', '70px', 'important');
+        image.style.setProperty('left', '30px', 'important');
       } else {
         image.style.removeProperty('position');
         image.style.removeProperty('left');

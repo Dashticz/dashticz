@@ -1,4 +1,4 @@
 {
-    "version": "4.20.9",
-    "last_changes": "Garbage widget: the title is no longer forced to the left by the Garbage config helper (an inline text-align: left !important), so it is right-aligned like the title of other blocks in the non-default themes (the default theme keeps it left-aligned), and its extra top margin is removed so it lines up with the titles of neighbouring blocks."
+    "version": "4.20.13",
+    "last_changes": "Evohome/Ramses zone and hot water dials: setting a temperature no longer sets the override until time to the moment you entered it (which made the zone fall back at once) when the boost duration setting is empty; the dial now defaults to 60 minutes for zones and 30 minutes for hot water, like the dial display already did (#1360)."
 }
