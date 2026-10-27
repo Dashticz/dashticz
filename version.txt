@@ -1,4 +1,4 @@
 {
-    "version": "4.20.13",
-    "last_changes": "Evohome/Ramses zone and hot water dials: setting a temperature no longer sets the override until time to the moment you entered it (which made the zone fall back at once) when the boost duration setting is empty; the dial now defaults to 60 minutes for zones and 30 minutes for hot water, like the dial display already did (#1360)."
+    "version": "4.20.14",
+    "last_changes": "Evohome/Ramses zone and hot water dials: the override until time is now sent as local time (Domoticz copies the digits of the time into the controller's clock and ignores the time zone), so setting a temperature keeps the new setpoint for the boost duration instead of falling back at once in time zones other than UTC (#1360)."
 }

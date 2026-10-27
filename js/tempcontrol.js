@@ -235,6 +235,10 @@ function addEvohomeZoneFunctions(block) {
   });
 }
 
+/* Domoticz copies the digits of the until time as they are (it ignores a time
+   zone or Z suffix) into the controller's clock, so the time must be local. */
+var EVO_UNTIL_FORMAT = 'YYYY-MM-DDTHH:mm:ss';
+
 function switchEvoZone(block, setpoint, override) {
   var idx = block.device.idx;
   var dial = block.type === 'zone';
@@ -243,7 +247,7 @@ function switchEvoZone(block, setpoint, override) {
     ? '&mode=TemporaryOverride&until=' +
       moment()
         .add(choose(settings['evohome_boost_zone'], 60), 'minutes')
-        .toISOString()
+        .format(EVO_UNTIL_FORMAT)
     : '&mode=Auto';
 
   if (!DT_function.promptPassword(hasPassword)) {
@@ -402,7 +406,7 @@ function switchEvoHotWater(block, state, override) {
     ? '&mode=TemporaryOverride&until=' +
       moment()
         .add(choose(settings['evohome_boost_hw'], 30), 'minutes')
-        .toISOString()
+        .format(EVO_UNTIL_FORMAT)
     : '&mode=Auto';
 
   var hasPassword = block.password;
