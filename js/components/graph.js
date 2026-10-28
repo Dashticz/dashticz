@@ -1764,6 +1764,11 @@ function getDefaultGraphProperties(graph, block) {
               } catch (err) {
                 console.log('error in tooltip');
               }
+              //The tooltip body text is formatted by Chart.js with the browser locale (e.g. '2,19').
+              //parseFloat of that text drops the decimals, so prefer the numeric data point value.
+              var dataPoint = tooltip.dataPoints && tooltip.dataPoints[i];
+              var parsed = dataPoint && dataPoint.parsed && dataPoint.parsed.y;
+              if (typeof parsed === 'number' && isFinite(parsed)) val = parsed;
               var obj = {};
               obj.key = body[0].split(':')[0];
               obj.val = number_format(val, decimals);
