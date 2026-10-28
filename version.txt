@@ -1,4 +1,4 @@
 {
-    "version": "4.20.14",
-    "last_changes": "Evohome/Ramses zone and hot water dials: the override until time is now sent as local time (Domoticz copies the digits of the time into the controller's clock and ignores the time zone), so setting a temperature keeps the new setpoint for the boost duration instead of falling back at once in time zones other than UTC (#1360)."
+    "version": "4.20.15",
+    "last_changes": "Graph tooltips: decimals of the values (e.g. Custom Sensor values like 2,19) are no longer dropped to whole numbers in browsers with a decimal comma locale. The tooltip now uses the numeric data point value instead of parsing the locale formatted text, and honors the decimals setting (#1366)."
 }
