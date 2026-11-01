@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.20.16 (01-11-2026)
+----------------------
+
+* **Code**
+
+- Updated dependencies: chart.js 4.6.1, @babel/core 8.0.9, @types/node 26.6.6,
+  sass 1.106.1 and sass-loader 17.1.0. The dist bundle has been rebuilt.
+
 v4.20.15 (28-10-2026)
 ----------------------
 
