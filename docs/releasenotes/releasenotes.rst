@@ -1,6 +1,24 @@
 Release Notes
 =============
 
+v4.20.16 (01-11-2026)
+----------------------
+
+* **Code**
+
+- Updated dependencies: chart.js 4.6.1, @babel/core 8.0.9, @types/node 26.6.6,
+  sass 1.106.1 and sass-loader 17.1.0. The dist bundle has been rebuilt.
+
+v4.20.15 (28-10-2026)
+----------------------
+
+* **Fixes**
+
+- Graph tooltips: values with decimals (for example a Custom Sensor with 2.19)
+  were rounded to whole numbers in browsers with a decimal comma locale,
+  because the locale formatted tooltip text was parsed again. The tooltip now
+  uses the numeric data point value and honors the decimals setting (#1366).
+
 v4.20.14 (27-10-2026)
 ----------------------
 
