@@ -1387,6 +1387,48 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && definition.carmode === 'info') {
+      // Repeatable Car info block (js/deviceeditor.js's _showCarPopup()),
+      // dispatched purely on carmode (js/components/car.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'car',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && definition.toonmode === 'info') {
+      // Toon block (js/deviceeditor.js's _showToonPopup()), dispatched purely
+      // on toonmode (js/components/toon.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'toon',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && definition.mowermode === 'info') {
+      // Mower block (js/deviceeditor.js's _showMowerPopup()), dispatched purely
+      // on mowermode (js/components/mower.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'mower',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && typeof definition.tvgids === 'string' && definition.tvgids) {
       // Repeatable TVgids block (js/deviceeditor.js's _showTvgidsPopup()),
       // dispatched purely on a truthy tvgids channel list

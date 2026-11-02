@@ -155,6 +155,33 @@
       "referenceBased": true,
       "saved": true,
       "defaultWidth": 4
+    },
+    "car": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    },
+    "mower": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    },
+    "toon": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
     }
   }
 }

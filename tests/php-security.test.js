@@ -759,6 +759,9 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
       'tvgids',
       'fullykiosk',
       'weatherinfo',
+      'car',
+      'mower',
+      'toon',
     ].sort(
       (a, b) =>
         Object.keys(manifest.kinds).indexOf(a) -
@@ -1579,6 +1582,94 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
   assert.match(source, /Cache-Control: no-store/);
   assert.match(source, /dashticz_normalize_host_input\(/);
   assert.match(source, /CURLOPT_FOLLOWLOCATION => false/);
+});
+
+/* The Toon bridge (vendor/dashticz/toon/toon.php) uses the calls of the
+   domoticz_toon plugin. */
+test('Toon bridge summarises the thermostat and only allows known commands', () => {
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const script =
+    `require '${dir}/toon/toon.php';` +
+    ` echo json_encode(array(` +
+    `dashticz_toon_summary(array('currentTemp' => 1970, 'currentSetpoint' => 2050, 'activeState' => 1, 'burnerInfo' => 1, 'nextProgram' => 0, 'nextSetpoint' => 0, 'nextTime' => 0, 'nextState' => 0), array('boilerPressure' => '1.6', 'boilerModulationLevel' => 145)),` +
+    `dashticz_toon_command_path('setpoint', '20.5'),` +
+    `dashticz_toon_command_path('scene', 20)));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), [
+    {
+      room: 19.7,
+      setpoint: 20.5,
+      scene: 30,
+      boiler: 'heating',
+      program: 'Program is off',
+      pressure: 1.6,
+      modulation: 100,
+    },
+    'happ_thermstat?action=setSetpoint&Setpoint=2050',
+    'happ_thermstat?action=changeSchemeState&state=2&temperatureState=2',
+  ]);
+  for (const bad of ["'setpoint', 99", "'scene', 55", "'reboot', 1"]) {
+    const rejected = spawnSync(
+      'php',
+      [
+        '-r',
+        `require '${dir}/toon/toon.php'; dashticz_toon_command_path(${bad});`,
+      ],
+      { encoding: 'utf8' }
+    );
+    assert.notEqual(rejected.status, 0, bad);
+  }
+});
+
+test('Toon and Husqvarna bridges are same-origin and never cached by the browser', () => {
+  for (const name of ['toon', 'husqvarna']) {
+    const source = read(`vendor/dashticz/${name}/index.php`);
+    assert.match(source, /dashticz_require_same_origin\(\);/);
+    assert.match(source, /Cache-Control: no-store/);
+  }
+  assert.match(
+    read('vendor/dashticz/toon/index.php'),
+    /dashticz_normalize_host_input\(/
+  );
+});
+
+/* The Husqvarna bridge (vendor/dashticz/husqvarna/husqvarna.php) uses the
+   Automower Connect API like the Domoticz Husqvarna plugin. */
+test('Husqvarna bridge summarises the mower and only allows known actions', () => {
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const script =
+    `require '${dir}/husqvarna/husqvarna.php';` +
+    ` echo json_encode(array(` +
+    `dashticz_husqvarna_summary(array('attributes' => array('system' => array('name' => 'Mow'), 'battery' => array('batteryPercent' => 180), 'mower' => array('activity' => 'PARKED_IN_CS', 'state' => 'RESTRICTED'), 'planner' => array('nextStartTimestamp' => 1793617200000, 'restrictedReason' => 'PARK_OVERRIDE')))),` +
+    `json_decode(dashticz_husqvarna_action_body('Start', 90), true),` +
+    `json_decode(dashticz_husqvarna_action_body('ResumeSchedule', 90), true)));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), [
+    {
+      name: 'Mow',
+      status: 'Parked in base',
+      activity: 'PARKED_IN_CS',
+      state: 'RESTRICTED',
+      parked: true,
+      running: false,
+      nextStart: 1793617200000,
+      reason: 'PARK_OVERRIDE',
+      battery: 100,
+    },
+    { data: { type: 'Start', attributes: { duration: 90 } } },
+    { data: { type: 'ResumeSchedule' } },
+  ]);
+  const rejected = spawnSync(
+    'php',
+    [
+      '-r',
+      `require '${dir}/husqvarna/husqvarna.php'; dashticz_husqvarna_action_body('Delete', 1);`,
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.notEqual(rejected.status, 0);
 });
 
 /* The Weather Info bridge (vendor/dashticz/weatherinfo/weatherinfo.php) parses

@@ -1926,6 +1926,21 @@ function configwriter_special_block_props($block)
             $props['icon'] = (string)$block['icon'];
         }
         $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'car' || $kind === 'toon' || $kind === 'mower') {
+        // js/components/car.js dispatches on carmode alone - no `type` of its
+        // own, same convention as Weather Info below. carmode and the car
+        // devices are carried through custom_fields (saveblocks.php
+        // validates the mode and the idx numbers).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'weatherinfo') {
         // js/components/weatherinfo.js dispatches on wimode alone - no `type`
         // of its own, same convention as F1 below. wimode and every other

@@ -286,3 +286,236 @@ test('F1 widget sends the Domoticz location only in domoticz time zone mode', ()
     undefined
   );
 });
+
+test('Car info reads tyre pressures and rates them', () => {
+  const car = loadComponent('js/components/car.js', {
+    DT_function: { escapeHtml: (value) => String(value) },
+  });
+  assert.equal(car.canHandle({ carmode: 'info' }), true);
+  assert.equal(car.canHandle({ type: 'hpilo' }), false);
+  assert.equal(car.parsePressure({ Data: '2.4 bar' }), 2.4);
+  assert.equal(car.parsePressure({ Data: '2,3 bar' }), 2.3);
+  assert.equal(car.parsePressure({ Data: 'n/a' }), null);
+  assert.equal(car.parsePressure(null), null);
+  assert.equal(car.tyreLevel(2.4), 'ok');
+  assert.equal(car.tyreLevel(2.1), 'warn');
+  assert.equal(car.tyreLevel(1.8), 'low');
+  assert.equal(car.tyreLevel(null), 'na');
+  assert.equal(car.parsePercentage({ Data: '140 %' }), 100);
+});
+
+test('Car info draws only the configured devices', () => {
+  const devices = { 7: { Data: '2.4 bar' }, 9: { Data: '80 %' } };
+  const car = loadComponent('js/components/car.js', {
+    DT_function: { escapeHtml: (value) => String(value) },
+    Domoticz: { getAllDevices: (idx) => devices[idx] },
+  });
+  let html = '';
+  const state = {
+    html(value) {
+      html = value;
+      return state;
+    },
+    find: () => ({ on: () => {} }),
+  };
+  const me = {
+    block: { carmode: 'info', carfl: '7', carsoc: '9', carrr: 'x' },
+    $mountPoint: { find: () => state },
+  };
+  car.render(me);
+  assert.match(html, /car-tyre-fl car-tyre-ok/);
+  assert.match(html, /car-soc/);
+  assert.match(html, /width:80%/);
+  assert.doesNotMatch(html, /car-range/);
+  assert.doesNotMatch(html, /car-tyre-rr/);
+  assert.equal(car.isClosed('Closed'), true);
+  assert.equal(car.isClosed('Unlocked'), false);
+  assert.equal(car.isClosed('Open'), false);
+  assert.equal(car.imageUrl('custom/car.webp'), 'img/custom/car.webp');
+  assert.equal(car.imageUrl('../x.png'), '');
+});
+
+test('Toon finds its devices by name and draws only those', () => {
+  const devices = {
+    1: {
+      idx: '1',
+      HardwareName: 'Toon',
+      Type: 'Temp',
+      Name: 'Woonkamer Toon Temp',
+      Temp: 19.7,
+    },
+    2: {
+      idx: '2',
+      HardwareName: 'Toon',
+      Type: 'Setpoint',
+      Name: 'Thermostaat',
+      SetPoint: '19.5',
+    },
+    3: {
+      idx: '3',
+      HardwareName: 'Toon',
+      Type: 'General',
+      SubType: 'Pressure',
+      Name: 'Keteldruk',
+      Data: '1.8 Bar',
+    },
+    4: {
+      idx: '4',
+      HardwareName: 'Toon',
+      Type: 'Light/Switch',
+      Name: 'Toon - Scene',
+      Level: 30,
+      LevelNames: Buffer.from('|Weg|Slapen|Thuis').toString('base64'),
+    },
+    5: { idx: '5', HardwareName: 'Other', Type: 'Temp', Name: 'Buiten' },
+  };
+  const toon = loadComponent('js/components/toon.js', {
+    DT_function: { escapeHtml: (value) => String(value) },
+    Domoticz: { getAllDevices: (idx) => (idx ? devices[idx] : devices) },
+    atob: (value) => Buffer.from(value, 'base64').toString(),
+  });
+  assert.equal(toon.canHandle({ toonmode: 'info' }), true);
+  assert.equal(toon.canHandle({ carmode: 'info' }), false);
+  const found = toon.findDevices();
+  assert.equal(found.room.idx, '1');
+  assert.equal(found.setpoint.idx, '2');
+  assert.equal(found.pressure.idx, '3');
+  assert.equal(found.scene.idx, '4');
+  assert.equal(found.boiler, null);
+  const direct = toon.fromBridge({
+    room: 19.7,
+    setpoint: 20.5,
+    pressure: 1.6,
+    boiler: 'heating',
+    modulation: 45,
+    scene: 30,
+    program: 'Program is off',
+  });
+  assert.equal(direct.room.Temp, 19.7);
+  assert.equal(direct.setpoint.SetPoint, 20.5);
+  assert.equal(direct.pressure.Data, '1.6 Bar');
+  assert.equal(direct.modulation.Data, '45 %');
+  assert.equal(direct.scene.Level, 30);
+  assert.equal(toon.levels(direct.scene).length, 4);
+  assert.equal(toon.fromBridge(null).room, null);
+  assert.equal(
+    toon.findDevices({ toonsource: 'dashticz' }, { room: 18 }).room.Temp,
+    18
+  );
+  assert.equal(
+    JSON.stringify(toon.levels(found.scene)),
+    '[[10,"Weg"],[20,"Slapen"],[30,"Thuis"]]'
+  );
+  assert.equal(toon.parseNumber('1.8 Bar'), 1.8);
+  let html = '';
+  const state = {
+    html(value) {
+      html = value;
+      return state;
+    },
+  };
+  toon.render({ $mountPoint: { find: () => state } });
+  assert.match(html, /toon-temp-value">19.7/);
+  assert.match(html, /data-act="up"/);
+  assert.match(html, /toon-scene active" data-act="scene" data-level="30"/);
+  assert.doesNotMatch(html, /toon-boiler/);
+});
+
+test('Mower finds its devices by name and shows only Start and Park', () => {
+  const names =
+    '|(select)|Start (2.0h)|Pause|ResumeSchedule|ParkUntilFurtherNotice|ParkUntilNextSchedule';
+  const devices = {
+    1: {
+      idx: '1',
+      HardwareName: 'Husqvarna',
+      Type: 'General',
+      Name: 'Husqvarna - R4 - State',
+      Data: 'Parked until Tomorrow 11:00',
+    },
+    2: {
+      idx: '2',
+      HardwareName: 'Husqvarna',
+      Type: 'General',
+      Name: 'Husqvarna - R4 - Next Schedule',
+      Data: 'Tomorrow 11:00\n<body><p>Grass too short</p></body>',
+    },
+    3: {
+      idx: '3',
+      HardwareName: 'Husqvarna',
+      Type: 'Light/Switch',
+      BatteryLevel: 80,
+      Name: 'Husqvarna - R4 - Run',
+      Status: 'Off',
+      Data: 'Off',
+    },
+    4: {
+      idx: '4',
+      HardwareName: 'Husqvarna',
+      Type: 'Light/Switch',
+      Name: 'Husqvarna - R4 - Actions',
+      LevelNames: Buffer.from(names).toString('base64'),
+    },
+    5: {
+      idx: '5',
+      HardwareName: 'Other',
+      Type: 'General',
+      Name: 'Other - State',
+    },
+  };
+  const mower = loadComponent('js/components/mower.js', {
+    DT_function: { escapeHtml: (value) => String(value) },
+    Domoticz: { getAllDevices: (idx) => (idx ? devices[idx] : devices) },
+    atob: (value) => Buffer.from(value, 'base64').toString(),
+  });
+  assert.equal(mower.canHandle({ mowermode: 'info' }), true);
+  assert.equal(mower.canHandle({ toonmode: 'info' }), false);
+  const found = mower.findDevices();
+  assert.equal(found.state.idx, '1');
+  assert.equal(found.schedule.idx, '2');
+  assert.equal(found.run.idx, '3');
+  assert.equal(found.actions.idx, '4');
+  assert.equal(found.location, null);
+  const direct = mower.fromBridge({
+    status: 'Parked in base',
+    parked: true,
+    nextStart: Date.UTC(2026, 10, 2, 11, 0),
+    battery: 80,
+  });
+  assert.equal(direct.battery.BatteryLevel, 80);
+  assert.equal(direct.run.Status, 'Off');
+  assert.equal(
+    JSON.stringify(mower.actionButtons(direct.actions)),
+    '[{"level":20,"label":"Start"},{"level":60,"label":"Park"}]'
+  );
+  assert.match(direct.state.Data, /^Parked until .*11:00$/);
+  assert.equal(
+    mower.nextStartText(Date.UTC(2026, 10, 1, 9, 5), new Date(2026, 10, 1, 8)),
+    '09:05'
+  );
+  assert.equal(
+    mower.nextStartText(Date.UTC(2026, 10, 5, 9, 5), new Date(2026, 10, 1, 8)),
+    '05-11 09:05'
+  );
+  assert.equal(
+    JSON.stringify(mower.cleanText(devices[2].Data)),
+    '["Tomorrow 11:00","Grass too short"]'
+  );
+  assert.equal(
+    JSON.stringify(mower.actionButtons(found.actions)),
+    '[{"level":20,"label":"Start"},{"level":60,"label":"Park"}]'
+  );
+  let html = '';
+  const state = {
+    html(value) {
+      html = value;
+      return state;
+    },
+  };
+  mower.render({ $mountPoint: { find: () => state } });
+  assert.match(html, /mower-state">Parked until Tomorrow 11:00/);
+  assert.match(html, /mower-value">80 %/);
+  assert.match(html, /mower-bar-fill" style="width:80%/);
+  assert.match(html, /data-level="20">Start/);
+  assert.match(html, /data-level="60">Park/);
+  assert.doesNotMatch(html, /Pause|Resume/);
+});

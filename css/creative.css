@@ -9453,6 +9453,450 @@ canvas {
   color: var(--dt-error);
 }
 
+/* Car info widget (js/components/car.js): the picture of a car seen from above
+   (front to the left) fills the tile; every value sits on the car. Sizes are
+   in container units, so the values scale with the tile. */
+/* The picture fills the whole tile; the title and icon sit on top of it. */
+.car-block .dt_state {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.car-block .dt_content {
+  position: relative;
+  z-index: 2;
+}
+
+.car-widget {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+}
+
+.car-figure {
+  position: relative;
+  width: min(100cqw, calc(100cqh * var(--car-ar, 1.6)));
+  aspect-ratio: var(--car-ar, 1.6);
+  container-type: inline-size;
+  overflow: hidden;
+  color: #fff;
+}
+
+.car-figure > * {
+  font-size: clamp(7px, 3.3cqw, 18px);
+}
+
+.car-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.car-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.car-body {
+  fill: #2b3340;
+  stroke: #5b6678;
+  stroke-width: 3;
+}
+
+.car-glass {
+  fill: #121820;
+}
+
+.car-roof {
+  fill: #232a35;
+}
+
+.car-wheel {
+  fill: #0b0e13;
+  stroke: #5b6678;
+  stroke-width: 2;
+}
+
+.car-tyre,
+.car-engine,
+.car-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.62);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.car-tyre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3em;
+  padding: 1px 4px;
+  border: 2px solid #5b6678;
+  border-radius: 8px;
+}
+
+.car-tyre-value {
+  font-weight: 600;
+}
+
+.car-tyre-unit {
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.car-tyre-fr {
+  left: 21%;
+  top: 13%;
+}
+
+.car-tyre-fl {
+  left: 21%;
+  top: 87%;
+}
+
+.car-tyre-rr {
+  left: 76%;
+  top: 13%;
+}
+
+.car-tyre-rl {
+  left: 76%;
+  top: 87%;
+}
+
+.car-tyre-ok {
+  border-color: #2ecc71;
+}
+
+.car-tyre-warn {
+  border-color: #f39c12;
+}
+
+.car-tyre-low {
+  border-color: #e74c3c;
+}
+
+.car-engine {
+  left: 13%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 20%;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.car-soc {
+  font-size: 1.7em;
+  font-weight: 600;
+}
+
+.car-bar {
+  align-self: stretch;
+  height: 0.45em;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.car-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+}
+
+.car-range {
+  font-size: 0.95em;
+}
+
+.car-charging {
+  left: 91%;
+  top: 22%;
+}
+
+.car-cabin {
+  position: absolute;
+  left: 65%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  transform: translate(-50%, -50%);
+}
+
+.car-cabin .car-chip {
+  position: static;
+  transform: none;
+}
+
+.car-lock {
+  left: 93%;
+  top: 50%;
+}
+
+.car-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2px 8px;
+  border: 2px solid #5b6678;
+  border-radius: 8px;
+}
+
+.car-chip-ok {
+  border-color: #2ecc71;
+}
+
+.car-chip-warn {
+  border-color: #f39c12;
+}
+
+.car-empty {
+  opacity: 0.7;
+  padding: 8px;
+}
+
+/* Toon widget (js/components/toon.js): temperature and thermostat on top, the
+   boiler values, the scene buttons and the summer mode below. */
+.toon-block .dt_state {
+  position: absolute;
+  inset: 0;
+  padding: 48px 10px 8px;
+  overflow: auto;
+  font-size: calc(1em + 3pt);
+}
+
+.toon-block .dt_content {
+  position: relative;
+  z-index: 2;
+}
+
+.toon-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toon-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* The room temperature sits in the header row, next to the icon. */
+.toon-temp {
+  position: absolute;
+  left: 64px;
+  top: 4px;
+  z-index: 2;
+}
+
+.toon-temp .toon-caption,
+.toon-setpoint .toon-caption {
+  display: none;
+}
+
+.toon-temp,
+.toon-setpoint {
+  display: flex;
+  flex-direction: column;
+}
+
+.toon-setpoint {
+  align-items: flex-end;
+}
+
+.toon-temp-value {
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.toon-caption {
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+.toon-sp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toon-sp-value {
+  min-width: 3em;
+  text-align: center;
+  font-size: 2.6em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.toon-setpoint .toon-btn {
+  padding: 4px 18px;
+  font-size: 1.5em;
+}
+
+.toon-btn {
+  padding: 2px 12px;
+  border: 1px solid var(--main-border, #5b6678);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+
+.toon-btn.active {
+  background: #059956;
+  border-color: #2ecc71;
+}
+
+.toon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.toon-pair {
+  display: flex;
+  justify-content: space-between;
+}
+
+.toon-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
+  overflow: hidden;
+}
+
+.toon-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+}
+
+.toon-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toon-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toon-program,
+.toon-error,
+.mower-error {
+  margin-top: 6px;
+  font-size: 0.8em;
+  color: #e57373;
+}
+
+.toon-empty {
+  opacity: 0.7;
+}
+
+/* Mower widget (js/components/mower.js): the state on top, then location,
+   next schedule, the mowing switch and the Start and Park buttons. */
+.mower-block .dt_state {
+  position: absolute;
+  inset: 0;
+  padding: 40px 10px 6px;
+  overflow: hidden;
+  font-size: calc(1em + 3pt);
+}
+
+.mower-block .dt_content {
+  position: relative;
+  z-index: 2;
+}
+
+.mower-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mower-state {
+  font-size: calc(1.4em - 2pt);
+  text-align: center;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mower-pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mower-location {
+  margin-bottom: -4pt;
+}
+
+.mower-caption {
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+.mower-value {
+  text-align: right;
+}
+
+.mower-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mower-btn {
+  flex: 1 1 0;
+  padding: 5px 6px;
+  border: 1px solid var(--main-border, #5b6678);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+
+.mower-btn.active {
+  background: #059956;
+  border-color: #2ecc71;
+}
+
+.mower-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
+  overflow: hidden;
+}
+
+.mower-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+}
+
+.mower-empty {
+  opacity: 0.7;
+}
+
 /* Device Config / quick-add -> Fully Kiosk section
    (js/deviceeditor.js _fullyFieldsHtml()): three columns, two on a narrow
    popup, one on a phone. */
@@ -9556,6 +10000,18 @@ canvas {
 /* Device Config / quick-add -> Weather Info section
    (js/deviceeditor.js _weatherinfoFieldsHtml()): two columns, one on a
    phone. */
+.de-car-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .de-car-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .de-weatherinfo-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
