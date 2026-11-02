@@ -1,4 +1,4 @@
 {
-    "version": "4.20.16",
-    "last_changes": "Dependencies updated: chart.js 4.6.1, @babel/core 8.0.9, @types/node 26.6.6, sass 1.106.1 and sass-loader 17.1.0. The dist bundle has been rebuilt."
+    "version": "4.20.20",
+    "last_changes": "Toon and Mower widgets: new data source Dashticz. Besides the devices of Domoticz, the widgets can ask the Toon (IP address) or Husqvarna (client ID and secret) themselves, with the settings in the widget."
 }

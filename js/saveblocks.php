@@ -2,6 +2,41 @@
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 require_once(__DIR__ . '/configwriter.php');
 
+// Toon and Mower blocks: the source is 'domoticz' (the devices of Domoticz) or
+// 'dashticz' (the widget asks the Toon or Husqvarna itself, with the settings
+// of the block; vendor/dashticz/toon and vendor/dashticz/husqvarna).
+function dashticz_validate_source_fields($customFields, $prefix)
+{
+    if (isset($customFields[$prefix . 'source'])
+        && !in_array($customFields[$prefix . 'source'], array('domoticz', 'dashticz'), true)) {
+        dashticz_json_error(400, 'Choose a valid data source.');
+    }
+    $numbers = $prefix === 'toon'
+        ? array('port' => array(1, 65535), 'poll' => array(5, 600))
+        : array('poll' => array(1, 60), 'start' => array(1, 1440));
+    foreach ($numbers as $field => $range) {
+        $key = $prefix . $field;
+        if (isset($customFields[$key])
+            && (!is_numeric($customFields[$key])
+                || (float) $customFields[$key] < $range[0]
+                || (float) $customFields[$key] > $range[1])) {
+            dashticz_json_error(400, 'Enter a valid number for the ' . $prefix . ' settings.');
+        }
+    }
+    $texts = $prefix === 'toon'
+        ? array('host' => '/^[A-Za-z0-9.\-_:\[\]]{1,253}$/')
+        : array('clientid' => '/^[A-Za-z0-9._-]{1,100}$/', 'clientsecret' => '/^.{1,200}$/', 'name' => '/^.{1,100}$/');
+    foreach ($texts as $field => $pattern) {
+        $key = $prefix . $field;
+        if (isset($customFields[$key])
+            && $customFields[$key] !== ''
+            && (!is_string($customFields[$key])
+                || !preg_match($pattern, $field === 'host' ? dashticz_normalize_host_input($customFields[$key]) : $customFields[$key]))) {
+            dashticz_json_error(400, 'Enter valid settings for the ' . $prefix . ' widget.');
+        }
+    }
+}
+
 function _validate_custom_device_value($value, $depth = 0)
 {
     if ($depth > 4) {
@@ -456,6 +491,39 @@ foreach ($data['devices'] as $entry) {
                         && $customFields[$wiField] !== ''
                         && (!is_numeric($customFields[$wiField]) || abs((float) $customFields[$wiField]) > $wiLimit)) {
                         dashticz_json_error(400, 'Enter a valid latitude and longitude for the Weather Info block.');
+                    }
+                }
+            } elseif ($kind === 'toon') {
+                // toonmode is otherwise just another custom field, but
+                // js/components/toon.js dispatches on it, so it is required.
+                if (!isset($customFields['toonmode']) || $customFields['toonmode'] !== 'info') {
+                    dashticz_json_error(400, 'A Toon block requires a mode.');
+                }
+                dashticz_validate_source_fields($customFields, 'toon');
+            } elseif ($kind === 'mower') {
+                // mowermode is otherwise just another custom field, but
+                // js/components/mower.js dispatches on it, so it is required.
+                if (!isset($customFields['mowermode']) || $customFields['mowermode'] !== 'info') {
+                    dashticz_json_error(400, 'A Mower block requires a mode.');
+                }
+                dashticz_validate_source_fields($customFields, 'mower');
+            } elseif ($kind === 'car') {
+                // carmode is otherwise just another custom field, but
+                // js/components/car.js dispatches on it, so it is required
+                // here. The car fields are Domoticz idx numbers.
+                if (!isset($customFields['carmode']) || $customFields['carmode'] !== 'info') {
+                    dashticz_json_error(400, 'A Car info block requires a mode.');
+                }
+                if (isset($customFields['carimage'])
+                    && (!is_string($customFields['carimage'])
+                        || !preg_match('/^[A-Za-z0-9 _.\/-]{1,100}$/', $customFields['carimage'])
+                        || strpos($customFields['carimage'], '..') !== false)) {
+                    dashticz_json_error(400, 'Choose a valid car image.');
+                }
+                foreach (['fl', 'fr', 'rl', 'rr', 'soc', 'range', 'charging', 'lock', 'doors', 'windows'] as $carField) {
+                    if (isset($customFields['car' . $carField])
+                        && !preg_match('/^\d{1,9}$/', (string) $customFields['car' . $carField])) {
+                        dashticz_json_error(400, 'Choose a valid Domoticz device for the Car info block.');
                     }
                 }
             } elseif ($kind === 'tvgids') {
