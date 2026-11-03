@@ -1,4 +1,4 @@
 {
-    "version": "4.20.23",
-    "last_changes": "Car status widget: the values of Charging until, Doors and Windows are right-aligned and a charging car shows a glow in the battery bar."
+    "version": "4.20.24",
+    "last_changes": "Car status widget: the line below the battery bar is always shown."
 }

@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.20.24 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- **Car status** widget: the line below the battery bar is always shown, also
+  when there is nothing below it.
+
 v4.20.23 (03-11-2026)
 ----------------------
 
