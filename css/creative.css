@@ -10494,6 +10494,10 @@ input[id$='-carstatus-fontsize'] {
   gap: 2px;
 }
 
+.carstatus-below > * {
+  padding-left: var(--carstatus-indent, 0);
+}
+
 .carstatus-row {
   display: flex;
   justify-content: space-between;
