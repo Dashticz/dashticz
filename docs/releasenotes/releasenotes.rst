@@ -1,6 +1,94 @@
 Release Notes
 =============
 
+v4.20.24 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- **Car status** widget: the line below the battery bar is always shown, also
+  when there is nothing below it.
+
+v4.20.23 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- **Car status** widget: the values of *Charging until*, *Doors* and *Windows*
+  are right-aligned, with the label at the left.
+- **Car status** widget: while charging, a soft glow travels through the battery
+  bar from left to right.
+
+v4.20.22 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- New **Car status** widget (Widgets -> Car status): shows a BMW, MINI or other
+  car in its own tile, read from Domoticz devices. The battery level is a
+  progress bar like the one of the Mower widget (below 15% blinking red, below
+  30% red, below 50% orange, from 50% the green bar), with the percentage at
+  its start and the mileage at its end; without a title the battery is shown
+  next to the icon. Below a line the tile shows *On the road* or *Not home*
+  (nothing at home), then *Charging until* the time it is charged and *Doors*
+  and *Windows* when one is open. The optional *Test view* always shows those
+  rows. See :ref:`carstatus`.
+
+v4.20.21 (03-11-2026)
+----------------------
+
+* **Fixes**
+
+- Graphs: newer Domoticz versions add a timestamp field ("ts") to the graph
+  data of devices such as Custom Sensors. It was drawn as an extra data series
+  with values around 1.8e12, which made the Y-axis unreadable. This field is
+  now ignored (#1371).
+
+v4.20.20 (01-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Toon and Mower widgets: new setting "Data source". Domoticz (automatic) is
+  the default and works as before. With Dashticz (direct connection) the widget
+  asks the device itself and Domoticz is not needed: the Toon through its local
+  API (settings: IP address, port, refresh interval), and the Husqvarna mower
+  through the Automower Connect API (settings: client ID, client secret, mower
+  name, refresh interval, mowing time of Start). The Husqvarna answer is cached
+  on the server, so several dashboards share the API quota.
+
+v4.20.19 (01-11-2026)
+----------------------
+
+* **Enhancements**
+
+- New Widgets card "Toon": temperature, thermostat setpoint (with - and +),
+  boiler pressure, state and modulation, scenes and summer mode of a Toon. The
+  Toon devices are found in Domoticz automatically.
+- New Widgets card "Mower": a Husqvarna mower with state, location, battery
+  level, a mowing on/off switch and the buttons Start and Park. The Husqvarna
+  devices are found in Domoticz automatically.
+
+v4.20.18 (01-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car info: the range on the bonnet no longer has an icon.
+
+v4.20.17 (01-11-2026)
+----------------------
+
+* **Enhancements**
+
+- New Widgets card "Car info": one tile per car, add a tile for every car you
+  have. Choose the Domoticz devices for the four tyre pressures, battery level,
+  range, charging, doors, windows and lock. The values are drawn on a picture of
+  the car seen from above (front to the left): tyre pressures at the wheels,
+  battery and range on the bonnet, doors and windows on the roof, charging and
+  lock at the rear. You can choose your own picture from ``img/custom``; the
+  empty border around the car is cut away automatically.
+
 v4.20.16 (01-11-2026)
 ----------------------
 

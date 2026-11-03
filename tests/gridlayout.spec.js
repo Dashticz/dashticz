@@ -1171,6 +1171,84 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     expect(blocks[0].custom_fields.wiparts).toBe('logo,status,temp,wind');
   });
 
+  test('Car status quick-add needs a device and saves the idx values as custom fields', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'carstatus-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: blocksRequest.devices.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page
+      .locator('.we-widget-card[data-special-widget="carstatus"]')
+      .click();
+    const popup = page.locator('#carstatusblockpopup');
+    await expect(popup).toBeVisible();
+    await popup.locator('#carstatus-device-title').fill('BMW');
+    // Without a device nothing is saved.
+    await page.locator('#carstatus-save-btn').click();
+    await expect(popup.locator('.cd-custom-message')).not.toHaveText('');
+    expect(blocksRequest).toBeNull();
+
+    // The pickers list every device of the dashboard.
+    await popup
+      .locator('#carstatus-carstatus-battery')
+      .selectOption({ index: 1 });
+    await popup
+      .locator('#carstatus-carstatus-mileage')
+      .selectOption({ index: 2 });
+    await page.locator('#carstatus-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const blocks = blocksRequest.devices.filter(
+      (entry) => entry.kind === 'carstatus'
+    );
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0].custom_fields.csmode).toBe('status');
+    expect(String(blocks[0].custom_fields.csbattery)).toMatch(/^\d+$/);
+    expect(String(blocks[0].custom_fields.csmileage)).toMatch(/^\d+$/);
+    expect(blocks[0].custom_fields.csbattery).not.toBe(
+      blocks[0].custom_fields.csmileage
+    );
+  });
+
   test('TVgids block shows one column per channel, as many next to each other as fit', async ({
     page,
   }) => {

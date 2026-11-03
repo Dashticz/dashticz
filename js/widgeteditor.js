@@ -2237,7 +2237,11 @@ var DashticzWidgetEditor = (function () {
     html += _f1WidgetCardHtml();
     html += _tvgidsWidgetCardHtml();
     html += _fullykioskWidgetCardHtml();
+    html += _carstatusWidgetCardHtml();
     html += _weatherinfoWidgetCardHtml();
+    html += _carWidgetCardHtml();
+    html += _mowerWidgetCardHtml();
+    html += _toonWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2788,6 +2792,38 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  /* Car (docs/blocks/specials/carstatus.rst, js/components/carstatus.js) is also only a
+     repeatable card: it opens the Car quick-add popup
+     (DashticzDeviceEditor.openCarstatus()). */
+  function _carstatusWidgetCardHtml() {
+    var itemTitle = _t('carstatus_title', 'Car');
+    return (
+      '<div class="we-widget-card we-widget-card-carstatus" data-special-widget="carstatus" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-car" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'carstatus_description',
+        'Status of a car (BMW, MINI, ...) from Domoticz devices: battery, mileage, charging, doors and windows.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCarstatusFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCarstatus();
+    });
+  }
+
   /* Weather Info (docs/blocks/specials/weatherinfo.rst,
      js/components/weatherinfo.js) is also only a repeatable card: it opens
      the Weather Info quick-add popup (DashticzDeviceEditor.openWeatherinfo()). */
@@ -2811,6 +2847,102 @@ var DashticzWidgetEditor = (function () {
       _t('click_to_add', 'Click to add') +
       '</div></div>'
     );
+  }
+
+  /* Car info (docs/blocks/specials/car.rst, js/components/car.js) is also only
+     a repeatable card: one tile per car, added through the Car info quick-add
+     popup (DashticzDeviceEditor.openCar()). */
+  function _carWidgetCardHtml() {
+    var itemTitle = _t('car_title', 'Car info');
+    return (
+      '<div class="we-widget-card we-widget-card-car" data-special-widget="car" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-car" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'car_description',
+        'Tyre pressures, battery and doors of one car. Add a tile per car.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  /* Toon (docs/blocks/specials/toon.rst, js/components/toon.js): a card that
+     adds a Toon tile through the Toon quick-add popup
+     (DashticzDeviceEditor.openToon()). */
+  function _toonWidgetCardHtml() {
+    var itemTitle = _t('toon_title', 'Toon');
+    return (
+      '<div class="we-widget-card we-widget-card-toon" data-special-widget="toon" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-temperature-half" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'toon_description',
+        'Temperature, thermostat, boiler and scenes of your Toon.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openToonFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openToon();
+    });
+  }
+
+  /* Mower (docs/blocks/specials/mower.rst, js/components/mower.js): a card that
+     adds a Mower tile through the Mower quick-add popup
+     (DashticzDeviceEditor.openMower()). */
+  function _mowerWidgetCardHtml() {
+    var itemTitle = _t('mower_title', 'Mower');
+    return (
+      '<div class="we-widget-card we-widget-card-mower" data-special-widget="mower" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-robot" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'mower_description',
+        'Temperature, thermostat, boiler and scenes of your Mower.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openMowerFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openMower();
+    });
+  }
+
+  function _openCarFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCar();
+    });
   }
 
   function _openWeatherinfoFromWidgets() {
@@ -5886,8 +6018,24 @@ var DashticzWidgetEditor = (function () {
         _openFullykioskFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'carstatus') {
+        _openCarstatusFromWidgets();
+        return;
+      }
       if ($(this).data('special-widget') === 'weatherinfo') {
         _openWeatherinfoFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'car') {
+        _openCarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'mower') {
+        _openMowerFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'toon') {
+        _openToonFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));
@@ -5945,8 +6093,24 @@ var DashticzWidgetEditor = (function () {
         _openFullykioskFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'carstatus') {
+        _openCarstatusFromWidgets();
+        return;
+      }
       if ($(this).data('special-widget') === 'weatherinfo') {
         _openWeatherinfoFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'car') {
+        _openCarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'mower') {
+        _openMowerFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'toon') {
+        _openToonFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

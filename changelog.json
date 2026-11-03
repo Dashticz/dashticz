@@ -1,5 +1,13 @@
 {
   "changelog": {
+    "4.20.24": "Car status widget: the line below the battery bar is always shown, also when there is nothing below it.",
+    "4.20.23": "Car status widget: the values of Charging until, Doors and Windows are right-aligned, with the label at the left. While charging, a soft glow travels through the battery bar from left to right.",
+    "4.20.22": "New Car status widget: shows a BMW, MINI or other car in its own tile, read from Domoticz devices. The battery is a progress bar like the Mower widget, with the percentage and the mileage above it (next to the icon when there is no title), the time it is charged, warnings for open doors and windows, and an optional test view with the state of the devices.",
+    "4.20.21": "Graphs: the 'ts' timestamp that newer Domoticz versions add to the graph data is no longer drawn as a data series, so the Y-axis is readable again (#1371).",
+    "4.20.20": "Toon and Mower widgets: new data source Dashticz. Besides the devices of Domoticz, the widgets can ask the Toon (IP address) or Husqvarna (client ID and secret) themselves, with the settings in the widget.",
+    "4.20.19": "Toon and Mower widgets: two new Widgets cards. Toon shows the temperature, thermostat, boiler and scenes of a Toon, and Mower shows a Husqvarna mower with state, location, battery and Start/Park buttons. Both take their data from Domoticz.",
+    "4.20.18": "Car info widget: the range on the bonnet no longer has an icon.",
+    "4.20.17": "Car info widget: a new repeatable Widgets card with one tile per car. It shows the tyre pressures, battery level, range, charging, doors, windows and lock on a picture of the car seen from above, and you can choose your own picture.",
     "4.20.16": "Dependencies updated: chart.js 4.6.1, @babel/core 8.0.9, @types/node 26.6.6, sass 1.106.1 and sass-loader 17.1.0. The dist bundle has been rebuilt.",
     "4.20.15": "Graph tooltips: decimals of the values (e.g. Custom Sensor values like 2,19) are no longer dropped to whole numbers in browsers with a decimal comma locale. The tooltip now uses the numeric data point value instead of parsing the locale formatted text, and honors the decimals setting (#1366).",
     "4.20.14": "Evohome/Ramses zone and hot water dials: the override until time is now sent as local time (Domoticz copies the digits of the time into the controller's clock and ignores the time zone), so setting a temperature keeps the new setpoint for the boost duration instead of falling back at once in time zones other than UTC (#1360).",
