@@ -310,6 +310,32 @@ var DT_carstatus = (function () {
           carstatusHtml(block, undefined, inHeader) +
           '</div>'
       );
+    alignBelow(me);
+  }
+
+  // The text below the line starts at the left of the battery: with the
+  // battery next to the icon (no title) it is indented by the width of the
+  // icon column, measured from the page because the theme sets that width.
+  function alignBelow(me) {
+    var root = me.$mountPoint && me.$mountPoint[0];
+    if (!root || !root.querySelector) return;
+    var apply = function () {
+      var below = root.querySelector('.carstatus-below');
+      if (!below) return;
+      below.style.setProperty('--carstatus-indent', '0px');
+      // The bar itself: the box around it starts at the icon.
+      var head = root.querySelector('.carstatus-headtext .carstatus-bar');
+      if (!head) return;
+      var delta = Math.round(
+        head.getBoundingClientRect().left - below.getBoundingClientRect().left
+      );
+      if (delta > 0)
+        below.style.setProperty('--carstatus-indent', delta + 'px');
+    };
+    apply();
+    // Once more after the layout of the tile has settled.
+    if (typeof window !== 'undefined' && window.requestAnimationFrame)
+      window.requestAnimationFrame(apply);
   }
 })();
 
