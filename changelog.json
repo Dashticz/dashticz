@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.20.22": "New Car status widget: shows a BMW, MINI or other car in its own tile, read from Domoticz devices. The battery is a progress bar like the Mower widget, with the percentage and the mileage above it (next to the icon when there is no title), the time it is charged, warnings for open doors and windows, and an optional test view with the state of the devices.",
     "4.20.21": "Graphs: the 'ts' timestamp that newer Domoticz versions add to the graph data is no longer drawn as a data series, so the Y-axis is readable again (#1371).",
     "4.20.20": "Toon and Mower widgets: new data source Dashticz. Besides the devices of Domoticz, the widgets can ask the Toon (IP address) or Husqvarna (client ID and secret) themselves, with the settings in the widget.",
     "4.20.19": "Toon and Mower widgets: two new Widgets cards. Toon shows the temperature, thermostat, boiler and scenes of a Toon, and Mower shows a Husqvarna mower with state, location, battery and Start/Park buttons. Both take their data from Domoticz.",
