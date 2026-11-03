@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+v4.20.23 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- **Car status** widget: the values of *Charging until*, *Doors* and *Windows*
+  are right-aligned, with the label at the left.
+- **Car status** widget: while charging, a soft glow travels through the battery
+  bar from left to right.
+
 v4.20.22 (03-11-2026)
 ----------------------
 

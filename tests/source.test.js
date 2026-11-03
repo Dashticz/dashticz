@@ -8456,10 +8456,13 @@ test('Car block follows the logic of the Tablet_Autos script', () => {
     block,
     now
   );
-  assert.match(html, /Charging until: <b class="carstatus-chargetime">19:30/);
+  assert.match(
+    html,
+    /Charging until:<\/span> <b class="carstatus-chargetime">19:30/
+  );
   assert.match(html, /carstatus-charging/);
-  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
-  assert.match(html, /Windows: <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Doors:<\/span> <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Windows:<\/span> <b class="carstatus-warning-text">Open/);
   assert.doesNotMatch(html, /Not home|On the road/);
 
   // At home, not charging, nothing open: only the battery, nothing below it.
@@ -8473,7 +8476,7 @@ test('Car block follows the logic of the Tablet_Autos script', () => {
   assert.match(html, /Not home/);
   html = renderCarstatus(devices({ door: 'Open' }), block, now);
   assert.match(html, /Not home/);
-  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Doors:<\/span> <b class="carstatus-warning-text">Open/);
   assert.doesNotMatch(html, /Windows:/);
 });
 
@@ -8516,10 +8519,22 @@ test('Car status test view shows every row', () => {
     },
     $mountPoint: chain,
   });
-  assert.match(html, /Charging until: <b>-/);
-  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
-  assert.match(html, /Windows: <b>\?/);
+  assert.match(html, /Charging until:<\/span> <b>-/);
+  assert.match(html, /Doors:<\/span> <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Windows:<\/span> <b>\?/);
   assert.doesNotMatch(html, /\(1\)/);
+  // The test view also shows the charging glow in the battery bar.
+  const withBar = context.DT_carstatus.carstatusHtml({
+    csmode: 'status',
+    csbattery: 5,
+    csdebug: 'true',
+  });
+  assert.match(withBar, /class="carstatus-battery [^"]*carstatus-charging/);
+  const noTest = context.DT_carstatus.carstatusHtml({
+    csmode: 'status',
+    csbattery: 5,
+  });
+  assert.doesNotMatch(noTest, /carstatus-charging/);
 });
 
 test('Car status battery bar: colour thresholds', () => {
