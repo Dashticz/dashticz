@@ -10400,9 +10400,28 @@ canvas {
   animation: carstatus-blink 1s infinite alternate;
 }
 
-/* Charging: the filled part of the bar pulses. */
-.carstatus-charging .carstatus-bar-fill {
-  animation: carstatus-charge 1.6s ease-in-out infinite;
+/* Charging: a soft glow travels through the filled part of the bar, from left
+   to right. */
+.carstatus-bar-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.carstatus-charging .carstatus-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.65),
+    rgba(255, 255, 255, 0)
+  );
+  transform: translateX(-100%);
+  animation: carstatus-charge 1.8s ease-in-out infinite;
 }
 
 .carstatus-chargetime {
@@ -10433,12 +10452,11 @@ canvas {
 }
 
 @keyframes carstatus-charge {
-  0%,
-  100% {
-    opacity: 1;
+  0% {
+    transform: translateX(-100%);
   }
-  50% {
-    opacity: 0.45;
+  100% {
+    transform: translateX(170%);
   }
 }
 
@@ -10477,6 +10495,12 @@ input[id$='-carstatus-fontsize'] {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.carstatus-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .carstatus-row b.carstatus-warning-text {

@@ -1,4 +1,4 @@
 {
-    "version": "4.20.22",
-    "last_changes": "New Car status widget: shows a BMW, MINI or other car in its own tile, read from Domoticz devices: battery progress bar with percentage and mileage, status below a line, the time it is charged and open doors and windows."
+    "version": "4.20.23",
+    "last_changes": "Car status widget: the values of Charging until, Doors and Windows are right-aligned and a charging car shows a glow in the battery bar."
 }
