@@ -9931,6 +9931,7 @@ canvas {
   order: 3;
 }
 
+.de-carstatus-grid,
 .de-fully-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -9938,17 +9939,20 @@ canvas {
   align-items: start;
 }
 
+.de-carstatus-grid > .de-carstatus-field-full,
 .de-fully-grid > .de-fully-field-full {
   grid-column: 1 / -1;
 }
 
 @media (max-width: 767px) {
+  .de-carstatus-grid,
   .de-fully-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 479px) {
+  .de-carstatus-grid,
   .de-fully-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -10300,4 +10304,192 @@ canvas {
   .de-compact-icons:not(.d-none) {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Car widget (js/components/carstatus.js): the status of one car. The battery level
+   is a progress bar of 10 segments, styled like the segments of the Bar
+   display mode (.dial-bar-segment). */
+.carstatus-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: auto;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.carstatus-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 10px 4px;
+}
+
+.carstatus-status {
+  font-weight: bold;
+}
+
+.carstatus-status.carstatus-driving {
+  color: lightblue;
+}
+
+.carstatus-battery,
+.carstatus-battery-text {
+  --carstatus-color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.carstatus-battery.carstatus-batt-full,
+.carstatus-battery-text.carstatus-batt-full {
+  --carstatus-color: lightgreen;
+}
+
+.carstatus-battery.carstatus-batt-mid,
+.carstatus-battery-text.carstatus-batt-mid {
+  --carstatus-color: orange;
+}
+
+.carstatus-battery.carstatus-batt-low,
+.carstatus-battery.carstatus-batt-critical,
+.carstatus-battery-text.carstatus-batt-low,
+.carstatus-battery-text.carstatus-batt-critical {
+  --carstatus-color: red;
+}
+
+/* The bar of the Mower widget (.mower-bar): a thin track with a green
+   gradient fill; below 50% the fill has the color of the level. */
+.carstatus-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
+  overflow: hidden;
+}
+
+.carstatus-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+  transition: width 0.6s ease;
+}
+
+.carstatus-batt-mid .carstatus-bar-fill {
+  background: orange;
+}
+
+.carstatus-batt-low .carstatus-bar-fill,
+.carstatus-batt-critical .carstatus-bar-fill {
+  background: red;
+}
+
+.carstatus-battery-text {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.carstatus-pct {
+  font-weight: bold;
+  color: var(--carstatus-color);
+}
+
+.carstatus-batt-critical .carstatus-pct,
+.carstatus-batt-critical .carstatus-bar-fill {
+  animation: carstatus-blink 1s infinite alternate;
+}
+
+/* Charging: the filled part of the bar pulses. */
+.carstatus-charging .carstatus-bar-fill {
+  animation: carstatus-charge 1.6s ease-in-out infinite;
+}
+
+.carstatus-chargetime {
+  font-weight: bold;
+  background: linear-gradient(90deg, white, yellow, red, white, green);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  align-self: flex-start;
+  animation: carstatus-gradient 4s linear infinite;
+}
+
+.carstatus-warning b,
+.carstatus-warning-text {
+  color: yellow;
+}
+
+@keyframes carstatus-blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.25;
+  }
+}
+
+@keyframes carstatus-charge {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes carstatus-gradient {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* The font size field of the Car status settings is 5 characters wide (the
+   extra width is for the spinner of the number field). */
+input[id$='-carstatus-fontsize'] {
+  width: 9ch;
+}
+
+/* Without a title the battery (text above the bar) sits next to the icon, in the header row
+   (js/components/carstatus.js render()). */
+.carstatus-headtext {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: flex-end;
+}
+
+/* The part below the line: status and the rows Charging until, Doors and
+   Windows. The line only shows when there is something below it. */
+.carstatus-below:not(:empty) {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.carstatus-below {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.carstatus-row b.carstatus-warning-text {
+  color: yellow;
+}
+
+/* Little space between the header row and the status below it. */
+.carstatus-block .dt_content {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.carstatus-block .dt_state {
+  margin-top: 0;
+  padding-top: 0;
 }

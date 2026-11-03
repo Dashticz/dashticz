@@ -1372,6 +1372,20 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && definition.csmode === 'status') {
+      // Repeatable Car block (js/deviceeditor.js's _showCarstatusPopup()),
+      // dispatched purely on csmode (js/components/carstatus.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'carstatus',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && definition.wimode === 'forecast') {
       // Repeatable Weather Info block (js/deviceeditor.js's
       // _showWeatherinfoPopup()), dispatched purely on wimode

@@ -8397,6 +8397,223 @@ test('Fully Kiosk block renders its rows: switches in column 1, data in column 2
   assert.doesNotMatch(html, /fullykiosk-battery/);
 });
 
+function renderCarstatus(devices, block, now) {
+  const context = {
+    language: { misc: {} },
+    settings: { dashticz_php_path: 'vendor/dashticz/' },
+    Dashticz: { register: () => {} },
+    Domoticz: { getAllDevices: () => devices },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/carstatus.js'), 'utf8'),
+    context
+  );
+  return context.DT_carstatus.carstatusHtml(block, now);
+}
+
+test('Car block follows the logic of the Tablet_Autos script', () => {
+  const block = {
+    csmode: 'status',
+    csdoor: 1,
+    cswindows: 2,
+    csmileage: 3,
+    cscharging: 4,
+    cschargetime: 5,
+    csbattery: 6,
+    csdriving: 7,
+    cshome: 8,
+  };
+  const devices = (state) => ({
+    1: { Status: state.door || 'Closed', Data: state.door || 'Closed' },
+    2: { Status: state.windows || 'Closed', Data: state.windows || 'Closed' },
+    3: { Data: '12345 km' },
+    4: { Status: state.charging || 'Off', Data: state.charging || 'Off' },
+    5: { Data: '90' },
+    6: { Data: state.battery || '80 %' },
+    7: { Status: state.driving || 'Off', Data: state.driving || 'Off' },
+    8: { Status: state.home || 'Off', Data: state.home || 'Off' },
+  });
+  const now = new Date(2026, 10, 2, 18, 0, 0).getTime();
+
+  // Driving: the battery and "On the road" below it.
+  let html = renderCarstatus(
+    devices({ driving: 'On', home: 'On' }),
+    block,
+    now
+  );
+  assert.match(html, /On the road/);
+  assert.match(html, /12345 km/);
+  assert.doesNotMatch(html, /Charging until/);
+
+  // At home and charging: the time is now plus the charge minutes; no status.
+  html = renderCarstatus(
+    devices({ home: 'On', charging: 'On', door: 'Open', windows: 'Open' }),
+    block,
+    now
+  );
+  assert.match(html, /Charging until: <b class="carstatus-chargetime">19:30/);
+  assert.match(html, /carstatus-charging/);
+  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Windows: <b class="carstatus-warning-text">Open/);
+  assert.doesNotMatch(html, /Not home|On the road/);
+
+  // At home, not charging, nothing open: only the battery, nothing below it.
+  html = renderCarstatus(devices({ home: 'On' }), block, now);
+  assert.match(html, /carstatus-battery/);
+  assert.match(html, /<div class="carstatus-below"><\/div>/);
+
+  // Away from home: the battery stays, "Not home" below it.
+  html = renderCarstatus(devices({}), block, now);
+  assert.match(html, /carstatus-battery/);
+  assert.match(html, /Not home/);
+  html = renderCarstatus(devices({ door: 'Open' }), block, now);
+  assert.match(html, /Not home/);
+  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
+  assert.doesNotMatch(html, /Windows:/);
+});
+
+test('Car status test view shows every row', () => {
+  const devices = { 1: { Status: 'Open' }, 8: { Status: 'On' } };
+  let html = '';
+  const chain = {
+    find: () => chain,
+    remove: () => chain,
+    append: () => chain,
+    css: () => chain,
+    html: (value) => {
+      html = value;
+      return chain;
+    },
+  };
+  const context = {
+    language: { misc: {} },
+    settings: {},
+    Dashticz: { register: () => {} },
+    Domoticz: { getAllDevices: () => devices },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/carstatus.js'), 'utf8'),
+    context
+  );
+  context.DT_carstatus.render({
+    block: {
+      csmode: 'status',
+      csdoor: 1,
+      cshome: 8,
+      cswindows: 9,
+      csdebug: 'true',
+      title: 'BMW',
+    },
+    $mountPoint: chain,
+  });
+  assert.match(html, /Charging until: <b>-/);
+  assert.match(html, /Doors: <b class="carstatus-warning-text">Open/);
+  assert.match(html, /Windows: <b>\?/);
+  assert.doesNotMatch(html, /\(1\)/);
+});
+
+test('Car status battery bar: colour thresholds', () => {
+  const context = {
+    language: { misc: {} },
+    settings: {},
+    Dashticz: { register: () => {} },
+    Domoticz: { getAllDevices: () => ({}) },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/carstatus.js'), 'utf8'),
+    context
+  );
+  const car = context.DT_carstatus;
+  assert.equal(car.canHandle({ csmode: 'status' }), true);
+  assert.equal(car.canHandle({ fullymode: 'charge' }), false);
+  assert.equal(car.batteryClass(14), 'carstatus-batt-critical');
+  assert.equal(car.batteryClass(15), 'carstatus-batt-low');
+  assert.equal(car.batteryClass(29), 'carstatus-batt-low');
+  assert.equal(car.batteryClass(30), 'carstatus-batt-mid');
+  assert.equal(car.batteryClass(49), 'carstatus-batt-mid');
+  assert.equal(car.batteryClass(50), 'carstatus-batt-ok');
+  assert.equal(car.batteryClass(99), 'carstatus-batt-ok');
+  assert.equal(car.batteryClass(100), 'carstatus-batt-full');
+});
+
+test('Car is a repeatable Widgets card with its own settings table', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgets = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layout = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const save = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assertReferenceBasedKind(layout, 'carstatus');
+  assert.match(widgets, /html \+= _carstatusWidgetCardHtml\(\);/);
+  assert.equal(
+    (
+      widgets.match(/=== 'carstatus'\) \{\s*_openCarstatusFromWidgets\(\);/g) ||
+      []
+    ).length,
+    2
+  );
+  assert.match(widgets, /DashticzDeviceEditor\.openCarstatus\(\);/);
+  assert.match(editor, /openCarstatus: openCarstatus,/);
+  assert.match(editor, /carstatus: 'carstatus_',/);
+  assert.match(editor, /kind = 'carstatus';/);
+  assert.match(
+    editor,
+    /if \(isCarstatusBlock\) html \+= _carstatusFieldsHtml\('de-config', carstatusValues\);/
+  );
+  assert.match(layout, /kind: 'carstatus',/);
+  assert.match(dashticz, /'weatherinfo',\s*'carstatus',/);
+  assert.match(save, /\$kind === 'carstatus'/);
+  assert.match(writer, /\$kind === 'carstatus'/);
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const lang = JSON.parse(
+      fs.readFileSync(path.join(root, `lang/${locale}.json`), 'utf8')
+    );
+    const de = lang.settings.deviceeditor;
+    for (const key of [
+      'carstatus_block',
+      'carstatus_block_battery',
+      'carstatus_block_chargetime',
+      'invalid_carstatus_block_devices',
+    ]) {
+      assert.ok(de[key], `${locale} ${key}`);
+    }
+    assert.ok(
+      lang.settings.widgeteditor.carstatus_title,
+      `${locale} carstatus_title`
+    );
+    for (const key of [
+      'carstatus_driving',
+      'carstatus_away',
+      'carstatus_charging_until',
+    ]) {
+      assert.ok(lang.misc[key], `${locale} ${key}`);
+    }
+  }
+});
+
 test('LMS and Fully Kiosk share the .dt-btn button style of creative.css', () => {
   const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const lmsCss = fs.readFileSync(

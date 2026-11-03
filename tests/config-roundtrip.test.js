@@ -138,6 +138,19 @@ test('a Fully Kiosk block is written with its mode and settings', () => {
   assert.doesNotMatch(line, /type:/);
 });
 
+// A Car block (js/components/carstatus.js) is dispatched on csmode; the device
+// idx values arrive as custom fields.
+test('a Car block is written with its mode and device idx values', () => {
+  const line = specialLine(
+    "['kind' => 'carstatus', 'name' => 'BMW', 'width' => 4, 'icon' => 'fas fa-car', 'custom_fields' => ['csmode' => 'status', 'csbattery' => 915, 'csmileage' => 912]]"
+  );
+  assert.match(line, /csmode:'status'/);
+  assert.match(line, /csbattery:915/);
+  assert.match(line, /csmileage:912/);
+  assert.match(line, /width:4/);
+  assert.doesNotMatch(line, /type:/);
+});
+
 // A Weather Info block (js/components/weatherinfo.js) is dispatched on wimode;
 // the location and the other settings arrive as custom fields.
 test('a Weather Info block is written with its mode and settings', () => {
