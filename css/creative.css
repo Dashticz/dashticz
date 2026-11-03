@@ -10361,10 +10361,12 @@ canvas {
 /* The bar of the Mower widget (.mower-bar): a thin track with a green
    gradient fill; below 50% the fill has the color of the level. */
 .carstatus-bar {
-  height: 6px;
-  border-radius: 3px;
+  height: 11px;
+  border-radius: 1px;
   background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
   overflow: hidden;
+  /* The end of the bar is slanted, like the battery bar of the BMW. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
 .carstatus-bar-fill {
@@ -10372,6 +10374,8 @@ canvas {
   height: 100%;
   background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
   transition: width 0.6s ease;
+  /* The end of the filled part is slanted too. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
 .carstatus-batt-mid .carstatus-bar-fill {
