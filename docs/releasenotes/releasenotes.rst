@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.20.25 (03-11-2026)
+----------------------
+
+* **Enhancements**
+
+- **Car status** widget: the text below the line starts at the same left
+  position as the battery and the progress bar.
+
 v4.20.24 (03-11-2026)
 ----------------------
 
