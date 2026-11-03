@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+v4.20.21 (03-11-2026)
+----------------------
+
+* **Fixes**
+
+- Graphs: newer Domoticz versions add a timestamp field ("ts") to the graph
+  data of devices such as Custom Sensors. It was drawn as an extra data series
+  with values around 1.8e12, which made the Y-axis unreadable. This field is
+  now ignored (#1371).
+
 v4.20.20 (01-11-2026)
 ----------------------
 
