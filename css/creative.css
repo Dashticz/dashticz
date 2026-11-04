@@ -10394,8 +10394,14 @@ canvas {
   gap: 10px;
 }
 
-.carstatus-pct {
+.carstatus-pct,
+.carstatus-km {
   font-weight: bold;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.carstatus-pct {
   color: var(--carstatus-color);
 }
 
