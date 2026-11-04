@@ -378,11 +378,19 @@ var DT_carstatus = (function () {
       // The icon column grows with the image, so the battery next to it
       // does not run under it.
       var column = img.parentNode;
-      column.style.setProperty(
-        'width',
-        (wide ? other : size) + 'px',
-        'important'
+      var imageWidth = wide ? other : size;
+      column.style.setProperty('width', imageWidth + 'px', 'important');
+      // The theme may offset the image inside the column: the column then
+      // ends where the image ends.
+      var overflow = Math.round(
+        img.getBoundingClientRect().right - column.getBoundingClientRect().right
       );
+      if (overflow > 0)
+        column.style.setProperty(
+          'width',
+          imageWidth + overflow + 'px',
+          'important'
+        );
       alignBelow(me);
     };
     if (img.complete) apply();
