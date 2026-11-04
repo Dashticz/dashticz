@@ -10448,15 +10448,7 @@ canvas {
 
 .carstatus-chargetime {
   font-weight: bold;
-  background: linear-gradient(90deg, white, yellow, red, white, green);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  display: inline-block;
   align-self: flex-start;
-  animation: carstatus-gradient 4s linear infinite;
 }
 
 .carstatus-warning b,
@@ -10479,15 +10471,6 @@ canvas {
   }
   100% {
     transform: translateX(170%);
-  }
-}
-
-@keyframes carstatus-gradient {
-  0% {
-    background-position: 200% 0%;
-  }
-  100% {
-    background-position: 0% 0%;
   }
 }
 
