@@ -8208,6 +8208,7 @@ var DashticzDeviceEditor = (function () {
       '<div class="' +
       section.fieldClass +
       (setting.full ? ' ' + section.fieldClass + '-full' : '') +
+      (setting.rowstart ? ' ' + section.fieldClass + '-rowstart' : '') +
       (setting.type === 'switch' ? ' de-setting-switch' : '') +
       '"><div class="mb-3"><label class="form-label" for="' +
       id +
@@ -9159,7 +9160,13 @@ var DashticzDeviceEditor = (function () {
       { key: 'windows', type: 'device', anydevice: true, def: '' },
       // The levels (%) below which the battery turns blinking red, red and
       // orange.
-      { key: 'critical', type: 'number', def: 15, range: [0, 100, 1] },
+      {
+        key: 'critical',
+        type: 'number',
+        def: 15,
+        range: [0, 100, 1],
+        rowstart: 1,
+      },
       { key: 'low', type: 'number', def: 30, range: [0, 100, 1] },
       { key: 'mid', type: 'number', def: 50, range: [0, 100, 1] },
       // A test view: the raw state of every device, below the status.

@@ -9944,6 +9944,11 @@ canvas {
   grid-column: 1 / -1;
 }
 
+/* Starts a new row, e.g. the three color levels next to each other. */
+.de-carstatus-grid > .de-carstatus-field-rowstart {
+  grid-column-start: 1;
+}
+
 @media (max-width: 767px) {
   .de-carstatus-grid,
   .de-fully-grid {
