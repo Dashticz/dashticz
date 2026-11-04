@@ -9147,7 +9147,7 @@ var DashticzDeviceEditor = (function () {
     labelPrefix: 'carstatus_block_',
     fieldClass: 'de-carstatus-field',
     saveOrder:
-      'door windows mileage charging chargetime battery driving home debug fontsize',
+      'door windows mileage charging chargetime battery driving home critical low mid debug fontsize',
     settings: [
       { key: 'battery', type: 'device', anydevice: true, def: '' },
       { key: 'mileage', type: 'device', anydevice: true, def: '' },
@@ -9157,6 +9157,11 @@ var DashticzDeviceEditor = (function () {
       { key: 'chargetime', type: 'device', anydevice: true, def: '' },
       { key: 'door', type: 'device', anydevice: true, def: '' },
       { key: 'windows', type: 'device', anydevice: true, def: '' },
+      // The levels (%) below which the battery turns blinking red, red and
+      // orange.
+      { key: 'critical', type: 'number', def: 15, range: [0, 100, 1] },
+      { key: 'low', type: 'number', def: 30, range: [0, 100, 1] },
+      { key: 'mid', type: 'number', def: 50, range: [0, 100, 1] },
       // A test view: the raw state of every device, below the status.
       { key: 'debug', type: 'switch', def: false, full: 1 },
       { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
