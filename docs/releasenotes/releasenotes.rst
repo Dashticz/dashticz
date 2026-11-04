@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.20.26 (04-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a little more space between the image and the battery
+  icon and progress bar.
+
 v4.20.25 (03-11-2026)
 ----------------------
 
