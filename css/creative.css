@@ -10400,12 +10400,10 @@ canvas {
 }
 
 .carstatus-battery-text .carstatus-icon {
-  font-size: 1em;
-  width: auto;
-  height: auto;
-  line-height: 1;
+  width: 1.3em;
+  height: 1.3em;
   margin: 0 6px 0 0;
-  vertical-align: baseline;
+  vertical-align: -0.3em;
 }
 
 .carstatus-batt-critical .carstatus-pct,

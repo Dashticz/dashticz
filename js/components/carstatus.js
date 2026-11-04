@@ -163,26 +163,38 @@ var DT_carstatus = (function () {
     return Math.max(0, Math.min(100, Math.round(pct)));
   }
 
-  // The battery icon that fits a battery level.
-  function batteryIcon(pct) {
-    if (pct >= 90) return 'fa-battery-full';
-    if (pct >= 65) return 'fa-battery-three-quarters';
-    if (pct >= 35) return 'fa-battery-half';
-    if (pct >= 10) return 'fa-battery-quarter';
-    return 'fa-battery-empty';
+  // The icons are drawn here as SVG: no icon font, and they follow the
+  // colour of the text. The battery is filled up to the battery level.
+  function batterySvg(pct) {
+    var width = Math.round((pct / 100) * 13 * 10) / 10;
+    return (
+      '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="2" y="6" width="18" height="12" rx="2"></rect><path d="M22 10.5v3"></path>' +
+      '<rect x="4.5" y="8.5" width="' +
+      width +
+      '" height="7" fill="currentColor" stroke="none"></rect></svg>'
+    );
   }
 
-  // The battery percentage with a battery icon and the mileage with a plug
+  function routeSvg() {
+    return (
+      '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="5" r="2"></circle>' +
+      '<path d="M8 19h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"></path></svg>'
+    );
+  }
+
+  // The battery percentage with a battery icon and the mileage with a route
   // icon.
   function batteryTextHtml(pct, mileage, limits) {
     return (
       '<div class="carstatus-battery-text ' +
       batteryClass(batteryLevel(pct), limits) +
-      '"><span class="carstatus-pct"><i class="fas ' +
-      batteryIcon(batteryLevel(pct)) +
-      ' carstatus-icon" aria-hidden="true"></i>' +
+      '"><span class="carstatus-pct">' +
+      batterySvg(batteryLevel(pct)) +
       batteryLevel(pct) +
-      '%</span><span class="carstatus-km"><i class="fas fa-plug carstatus-icon" aria-hidden="true"></i>' +
+      '%</span><span class="carstatus-km">' +
+      routeSvg() +
       esc(Math.round(mileage)) +
       ' km</span></div>'
     );
