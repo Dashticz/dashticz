@@ -10494,6 +10494,8 @@ input[id$='-carstatus-fontsize'] {
   flex: 1 1 auto;
   min-width: 0;
   align-self: flex-end;
+  /* Some space between the icon or image and the battery with its bar. */
+  padding-left: 10px;
 }
 
 /* The part below the line: status and the rows Charging until, Doors and
