@@ -65,6 +65,14 @@ set is treated as off (or 0).
     - Idx of the device that is ``Open`` (or on) while a door is open
   * - cswindows
     - Idx of the device that is ``Open`` (or on) while a window is open
+  * - cscritical
+    - Below this battery level (%) the bar and percentage blink red.
+      Default: ``15``
+  * - cslow
+    - Below this battery level (%) the bar is red. Default: ``30``
+  * - csmid
+    - Below this battery level (%) the bar is orange; from there it is green.
+      Default: ``50``
   * - csdebug
     - ``true``: a test view that always shows the rows *Charging until*, *Doors*
       and *Windows* (also when they do not apply) and the charging glow in the
