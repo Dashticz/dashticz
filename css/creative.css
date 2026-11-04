@@ -10494,7 +10494,10 @@ input[id$='-carstatus-fontsize'] {
   flex: 1 1 auto;
   min-width: 0;
   align-self: flex-end;
-  /* Some space between the icon or image and the battery with its bar. */
+  /* Some space between the icon or image and the battery with its bar.
+     flow-root: the box is placed beside the floating icon column, and (unlike
+     a margin) the padding then counts from the end of that column. */
+  display: flow-root;
   padding-left: 10px;
 }
 
