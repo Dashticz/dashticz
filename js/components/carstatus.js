@@ -176,15 +176,14 @@ var DT_carstatus = (function () {
     );
   }
 
-  function routeSvg() {
+  function roadSvg() {
     return (
       '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-      '<circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="5" r="2"></circle>' +
-      '<path d="M8 19h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"></path></svg>'
+      '<path d="M8 3 4 21M16 3l4 18M12 4v3M12 10.5v3M12 17v3"></path></svg>'
     );
   }
 
-  // The battery percentage with a battery icon and the mileage with a route
+  // The battery percentage with a battery icon and the mileage with a road
   // icon.
   function batteryTextHtml(pct, mileage, limits) {
     return (
@@ -194,7 +193,7 @@ var DT_carstatus = (function () {
       batterySvg(batteryLevel(pct)) +
       batteryLevel(pct) +
       '%</span><span class="carstatus-km">' +
-      routeSvg() +
+      roadSvg() +
       esc(Math.round(mileage)) +
       ' km</span></div>'
     );

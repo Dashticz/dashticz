@@ -8530,7 +8530,7 @@ test('Car status test view shows every row', () => {
     csdebug: 'true',
   });
   assert.match(withBar, /class="carstatus-battery [^"]*carstatus-charging/);
-  // The icons are SVG: a battery filled to the level, and a route.
+  // The icons are SVG: a battery filled to the level, and a road.
   assert.match(withBar, /<svg class="carstatus-icon"[^>]*>\s*<rect/);
   assert.equal((withBar.match(/<svg class="carstatus-icon"/g) || []).length, 2);
   assert.doesNotMatch(withBar, /fa-battery|fa-plug/);
