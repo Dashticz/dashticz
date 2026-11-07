@@ -1,4 +1,4 @@
 {
-    "version": "4.20.26",
-    "last_changes": "Car status widget: a little more space between the image and the battery icon and progress bar."
+    "version": "4.20.27",
+    "last_changes": "Updated dependencies: swiper 14.4.0, @babel/core 8.1.0, sass 1.107.1 and webpack-cli 7.3.1."
 }
