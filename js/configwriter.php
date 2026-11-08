@@ -1941,7 +1941,7 @@ function configwriter_special_block_props($block)
             $props['icon'] = (string)$block['icon'];
         }
         $props['last_update'] = !empty($block['last_update']);
-    } elseif ($kind === 'car' || $kind === 'toon' || $kind === 'mower') {
+    } elseif ($kind === 'car' || $kind === 'toon' || $kind === 'mower' || $kind === 'homeconnect') {
         // js/components/car.js dispatches on carmode alone - no `type` of its
         // own, same convention as Weather Info below. carmode and the car
         // devices are carried through custom_fields (saveblocks.php

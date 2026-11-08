@@ -1,4 +1,4 @@
 {
-    "version": "4.20.28",
-    "last_changes": "Updated dependencies: sass 1.108.1 and @playwright/test 1.65.0."
+    "version": "4.20.31",
+    "last_changes": "Installer: when the web-server user cannot enter a parent folder of the Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such as /home/pi private), the write-access step now names that folder and the command that fixes it, instead of only reporting Permission denied on custom/."
 }

@@ -9,8 +9,9 @@
  *
  * It is a repeatable block (Widgets -> Fully Kiosk), configured per block, and
  * dispatched on fullymode ('charge'). The tile shows the battery percentage,
- * the percentage at which the charger is switched next, and a switch that
- * turns the charger on and off by hand.
+ * the percentage at which the charger is switched next, with a battery bar
+ * (green up to the level, grey to 100%) and a dot at that percentage. Clicking
+ * the tile turns the charger on and off by hand.
  *
  *   fullyhost, fullyport (2323), fullypassword, fullyhttps
  *                   the Remote Admin connection of the tablet
@@ -105,7 +106,7 @@ var DT_fullykiosk = (function () {
   };
 
   // The data column of a row: icon, label and value.
-  function dataHtml(icon, label, value, extraClass) {
+  function dataHtml(icon, label, value, extraClass, middle) {
     return (
       '<span class="fullykiosk-data' +
       (extraClass ? ' ' + extraClass : '') +
@@ -116,6 +117,7 @@ var DT_fullykiosk = (function () {
       '<span class="fullykiosk-label">' +
       label +
       '</span>' +
+      (middle || '') +
       (value ? '<span class="fullykiosk-value">' + value + '</span>' : '') +
       '</span>'
     );
@@ -329,12 +331,29 @@ var DT_fullykiosk = (function () {
     return 'fa-battery-empty';
   }
 
-  // The battery level as a share of the target level (100% of the progress
-  // bar), as the --fully-level style of the charger button.
-  function progressAttr(level, target) {
-    if (level === null) return '';
-    var pct = Math.max(0, Math.min(100, Math.round((level / target) * 100)));
-    return ' data-progress="' + pct + '" style="--fully-level:' + pct + '%"';
+  // The battery bar, as the bar of the Husqvarna widget: the bar fills the
+  // space between the label and the percentage, green up to the battery level and grey from there to 100%. A dot on
+  // the bar marks the percentage at which the charger is switched next.
+  function barHtml(level, mark, markLabel) {
+    var pct =
+      level === null ? 0 : Math.max(0, Math.min(100, Math.round(level)));
+    var dot = '';
+    if (mark !== null) {
+      var at = Math.max(0, Math.min(100, Math.round(mark)));
+      dot =
+        '<span class="fullykiosk-bar-dot" style="left:' +
+        at +
+        '%" title="' +
+        markLabel +
+        '"></span>';
+    }
+    return (
+      '<div class="fullykiosk-bar"><span class="fullykiosk-bar-fill" style="width:' +
+      pct +
+      '%"></span>' +
+      dot +
+      '</div>'
+    );
   }
 
   function render(me) {
@@ -353,53 +372,37 @@ var DT_fullykiosk = (function () {
       .find('.col-icon .icon')
       .toggleClass('on', charger === 'On')
       .toggleClass('off', charger === 'Off');
-    var chargeLabel = esc(DT_function.t('fullykiosk_charging', 'Charging'));
     var html = '<div class="fullykiosk-rows">';
-    var batteryHtml = isOn(block.fullyshowbattery, true)
-      ? dataHtml(
-          batteryIcon(level),
-          esc(DT_function.t('fullykiosk_battery', 'Battery')),
-          level === null ? '-' : esc(level + ' %'),
-          'fullykiosk-battery'
-        )
-      : '';
-    if (switchIdx(block)) {
-      // The charger switch is one button in column 1, as high as the charge
-      // data next to it: the battery and the percentage at which the charger
-      // is switched next. The button shows the battery level as a green
-      // progress fill behind its icon;
-      // the stop target of the charger is 100% of the bar.
+    var showBattery = isOn(block.fullyshowbattery, true);
+    if (showBattery || switchIdx(block)) {
+      // The battery level with the bar between the text and the percentage,
+      // then the percentage at which the charger is switched next. The
+      // charger itself is switched by clicking the tile.
       var nextHtml = '';
-      if (auto && charger) {
-        nextHtml = dataHtml(
-          'fa-arrows-up-down',
-          esc(
-            charger === 'On'
-              ? DT_function.t('fullykiosk_next_stop', 'Charge until')
-              : DT_function.t('fullykiosk_next_start', 'Charge from')
-          ),
-          esc(nextSwitchPercentage(charger, me.targets) + ' %')
+      var mark = null;
+      var markLabel = '';
+      if (switchIdx(block) && auto && charger) {
+        mark = nextSwitchPercentage(charger, me.targets);
+        markLabel = esc(
+          charger === 'On'
+            ? DT_function.t('fullykiosk_next_stop', 'Charge until')
+            : DT_function.t('fullykiosk_next_start', 'Charge from')
         );
+        nextHtml = dataHtml('fa-arrows-up-down', markLabel, esc(mark + ' %'));
       }
+      var batteryHtml = showBattery
+        ? dataHtml(
+            batteryIcon(level),
+            esc(DT_function.t('fullykiosk_battery', 'Battery')),
+            level === null ? '-' : esc(level + ' %'),
+            'fullykiosk-battery',
+            barHtml(level, mark, markLabel)
+          )
+        : '';
       html +=
-        '<div class="fullykiosk-row fullykiosk-switch fullykiosk-group">' +
-        '<span class="fullykiosk-control">' +
-        buttonHtml(
-          'charger',
-          'fa-power-off',
-          chargeLabel,
-          charger === 'On',
-          !charger,
-          progressAttr(level, auto ? me.targets.stop : 100)
-        ) +
-        '</span><span class="fullykiosk-groupdata">' +
+        '<div class="fullykiosk-row fullykiosk-group">' +
         batteryHtml +
         nextHtml +
-        '</span></div>';
-    } else if (batteryHtml) {
-      html +=
-        '<div class="fullykiosk-row fullykiosk-battery"><span class="fullykiosk-control"></span>' +
-        batteryHtml +
         '</div>';
     }
     EXTRA_ROWS.forEach(function (row) {
@@ -424,14 +427,21 @@ var DT_fullykiosk = (function () {
       .on('change', function () {
         sendCommand(me, 'brightness', parseInt($(this).val(), 10) || 0);
       });
+    // The tile switches the charger on and off.
+    me.$mountPoint
+      .find('.dt_block')
+      .off('click.fullykiosk')
+      .on('click.fullykiosk', function (event) {
+        if ($(event.target).closest('button, input, a').length) return;
+        if (charger) sendSwitch(me, charger === 'On' ? 'Off' : 'On');
+      })
+      .css('cursor', switchIdx(block) ? 'pointer' : '');
     me.$mountPoint.find('.fullykiosk-btn').on('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
       var $button = $(this);
       var action = $button.attr('data-action');
-      if (action === 'charger') {
-        if (charger) sendSwitch(me, charger === 'On' ? 'Off' : 'On');
-      } else if (action === 'toggle') {
+      if (action === 'toggle') {
         sendCommand(
           me,
           $button.attr('data-command'),
@@ -480,20 +490,21 @@ var DT_fullykiosk = (function () {
       );
     }
     if (row.readonly) {
+      // Shows the state like the other power buttons, but cannot be clicked.
       var plugged = !!(info && info.plugged);
       return rowHtml(
         'fullykiosk-extra fullykiosk-plugged',
-        '',
+        buttonHtml(
+          'readonly',
+          'fa-power-off',
+          label,
+          plugged,
+          false,
+          ' tabindex="-1" aria-disabled="true"'
+        ),
         row.icon,
         label,
-        info
-          ? esc(
-              DT_function.t(
-                plugged ? 'fullykiosk_on' : 'fullykiosk_off',
-                plugged ? 'On' : 'Off'
-              )
-            )
-          : '-'
+        ''
       );
     }
     return rowHtml(

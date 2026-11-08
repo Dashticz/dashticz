@@ -144,6 +144,33 @@ chgrp "$WEB_GROUP" "$CUSTOM_CSS_FILE"
 chmod 0664 "$CUSTOM_CSS_FILE"
 
 if command -v runuser >/dev/null 2>&1; then
+    # The web-server user must be able to enter every parent directory of the
+    # installation. Debian 12+/Trixie and Raspberry Pi OS create home
+    # directories as 0700, so a checkout in /home/<user> is unreachable for
+    # www-data no matter how open custom/ itself is. Detect that case and
+    # explain it instead of failing on a bare "Permission denied".
+    # Everything below the first blocked directory also fails the test, so
+    # walking up from INSTALL_DIR the highest failing directory is the cause.
+    BLOCKED_DIR=
+    dir="$INSTALL_DIR"
+    while :; do
+        if ! runuser -u "$WEB_USER" -- test -x "$dir"; then
+            BLOCKED_DIR="$dir"
+        fi
+        [ "$dir" = "/" ] && break
+        dir=$(dirname -- "$dir")
+    done
+    if [ -n "$BLOCKED_DIR" ]; then
+        echo "$WEB_USER cannot enter $BLOCKED_DIR ($(stat -c '%a %U:%G' "$BLOCKED_DIR"))," >&2
+        echo "so it cannot reach $INSTALL_DIR at all. Changing the permissions" >&2
+        echo "of custom/ cannot fix this. Either let $WEB_USER pass through" >&2
+        echo "(but not list) that directory:" >&2
+        echo "  sudo chmod o+x '$BLOCKED_DIR'" >&2
+        echo "or move Dashticz to a web-server location such as /var/www/dashticz." >&2
+        echo "Then run this script again." >&2
+        exit 73
+    fi
+
     TEST_FILE="$CUSTOM_DIR/.dashticz-write-test.$$"
     if ! runuser -u "$WEB_USER" -- touch "$TEST_FILE"; then
         echo "The custom directory is still not writable by $WEB_USER" >&2

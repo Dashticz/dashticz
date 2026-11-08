@@ -1,6 +1,38 @@
 Release Notes
 =============
 
+v4.20.31 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Installer: when the web-server user cannot enter a parent folder of the
+  Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such
+  as /home/pi private), the write-access step now names that folder and the
+  command that fixes it, instead of only reporting Permission denied on
+  custom/.
+
+v4.20.30 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Tests: the Weather Info drag test measures the list once the popup has
+  stopped moving and tries the drag again when it did not land, so it no
+  longer fails in WebKit.
+
+v4.20.29 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Home Connect widget: each open message shows once. The Status text no
+  longer repeats the first message, and the per-message devices are not added
+  again next to Notifications.
+- Home Connect widget: the open messages of an appliance that is switched
+  off, such as a coffee machine in stand-by with a full drip tray, stay
+  visible.
+
 v4.20.28 (07-11-2026)
 ----------------------
 

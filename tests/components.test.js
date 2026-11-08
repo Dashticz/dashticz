@@ -519,3 +519,269 @@ test('Mower finds its devices by name and shows only Start and Park', () => {
   assert.match(html, /data-level="60">Park/);
   assert.doesNotMatch(html, /Pause|Resume/);
 });
+
+test('Home Connect widget groups the plugin devices per appliance', () => {
+  const dev = (idx, Name, Data, Status) => ({
+    idx,
+    Name,
+    Data,
+    Status,
+    HardwareName: 'Home Connect',
+  });
+  const devices = {
+    1: dev(1, '$Wasmachine Power', 'On', 'On'),
+    2: dev(2, '$Wasmachine Progress', '40 %'),
+    3: dev(3, '$Wasmachine Remaining time', '1h 20min'),
+    4: dev(4, 'Droger Aan/uit', 'Off', 'Off'),
+    5: dev(5, 'Droger Voortgang', '100 %'),
+    6: dev(6, 'Koffieautomaat Power', 'On', 'On'),
+    7: dev(7, 'Koffieautomaat Notifications', 'No active alerts.'),
+    8: dev(8, 'Vaatwasser Power', 'On', 'On'),
+    9: dev(9, 'Vaatwasser Progress', '100 %'),
+    11: dev(11, 'Home Connect - Oven Power', 'Off', 'Off'),
+    10: { idx: 10, Name: 'Other Progress', Data: '5 %', HardwareName: 'X' },
+  };
+  const hc = loadComponent('js/components/homeconnect.js', {
+    Domoticz: { getAllDevices: () => devices },
+    DT_function: {
+      escapeHtml: (v) => String(v),
+      t: (key, fallback) => fallback,
+    },
+  });
+  assert.equal(hc.canHandle({ hcmode: 'appliances' }), true);
+  assert.equal(hc.canHandle({ mowermode: 'info' }), false);
+  assert.equal(
+    JSON.stringify(hc.appliances({}).map((a) => a.name)),
+    JSON.stringify([
+      'Wasmachine',
+      'Droger',
+      'Koffieautomaat',
+      'Vaatwasser',
+      'Oven',
+    ])
+  );
+  assert.equal(hc.remainingMinutes('1h 20min'), 80);
+  assert.equal(hc.remainingMinutes('45 min'), 45);
+  assert.equal(hc.remainingMinutes('45'), 45);
+  assert.equal(hc.remainingMinutes('soon'), null);
+  const now = new Date(2026, 10, 8, 10, 0).getTime();
+  assert.equal(hc.finishTime('1h 20min', now), '11:20');
+  assert.equal(hc.alertText(devices[7]), '');
+  const html = hc.homeconnectHtml({}, now);
+  assert.match(html, /Wasmachine/);
+  assert.match(html, /<svg class="homeconnect-icon homeconnect-icon-washer"/);
+  assert.doesNotMatch(html, /Home Connect/);
+  assert.match(html, /<b class="homeconnect-pct">40%<\/b> ready at 11:20/);
+  assert.match(html, /Vaatwasser<\/span><span[^>]*homeconnect-done/);
+  assert.doesNotMatch(html, /Droger|Koffieautomaat|Other/);
+  // Hide an appliance, and set a device by idx.
+  assert.equal(
+    JSON.stringify(
+      hc.appliances({ hcexclude: 'droger, vaatwasser' }).map((a) => a.name)
+    ),
+    JSON.stringify(['Wasmachine', 'Koffieautomaat', 'Oven'])
+  );
+  const manual = hc.appliances({
+    hcdevices: { Oven: { power: 1, progress: 2, name: 'Bakoven' } },
+  });
+  assert.equal(manual[manual.length - 1].name, 'Bakoven');
+  // An alert shows as a warning.
+  devices[7].Data = 'Drip tray full';
+  assert.match(hc.homeconnectHtml({}, now), /homeconnect-warning">Drip tray/);
+});
+
+test('Home Connect widget reads the devices of the Dutch plugin', () => {
+  const dev = (idx, Name, Data, Status, SubType) => ({
+    idx,
+    Name,
+    Data,
+    Status,
+    SubType,
+    HardwareName: 'HomeConnect_API',
+  });
+  const devices = {};
+  [
+    ['Home Connect', 'Aangemeld'],
+    ['Wasmachine Status', 'Bezig, Katoen, Vergrendeld', '', 'Alert'],
+    ['Wasmachine Aan/uit', 'On', 'On'],
+    ['Wasmachine Voortgang', '57%'],
+    ['Wasmachine Resterende tijd', '38 min'],
+    ['Wasmachine Programma', 'Katoen, klaar om ongeveer 16:03'],
+    [
+      'Wasmachine Bediening op afstand',
+      'Op afstand starten toegestaan',
+      '',
+      'Alert',
+    ],
+    ['Wasmachine Programma klaar', 'Geen melding', '', 'Alert'],
+    ['Droger Aan/uit', 'Off', 'Off'],
+    ['Droger Voortgang', '0%'],
+    ['Droger Resterende tijd', '0 min'],
+    ['Koffieautomaat Aan/uit', 'On', 'On'],
+    ['Koffieautomaat Voortgang', '0%'],
+    ['Koffieautomaat Status', 'Niet actief', '', 'Alert'],
+    ['Koffieautomaat Leeg lekbakjes', 'Geen melding', '', 'Alert'],
+  ].forEach((item, i) => {
+    devices[i + 1] = dev(i + 1, item[0], item[1], item[2], item[3]);
+  });
+  const hc = loadComponent('js/components/homeconnect.js', {
+    Domoticz: { getAllDevices: () => devices },
+    DT_function: {
+      escapeHtml: (v) => String(v),
+      t: (key, fallback) => fallback,
+    },
+  });
+  const now = new Date(2026, 10, 8, 15, 25).getTime();
+  // The hardware name is set in the block.
+  assert.equal(hc.appliances({ hchardware: 'huishoud' }).length, 0);
+  assert.equal(hc.appliances({}).length, 3);
+  assert.equal(hc.appliances({ hchardware: 'HomeConnect_API' }).length, 3);
+  // The name must be exactly the same.
+  assert.equal(hc.appliances({ hchardware: 'homeconnect_api' }).length, 0);
+  assert.equal(hc.appliances({ hchardware: 'Home Connect' }).length, 0);
+  let html = hc.homeconnectHtml({}, now);
+  assert.match(html, /Wasmachine<\/span><span.*57%<\/b> ready at 16:03/);
+  assert.doesNotMatch(html, /Droger|Koffieautomaat|Katoen|afstand/);
+  // A finished program without a progress device: the check mark.
+  devices[2].Data = 'Klaar, Katoen';
+  assert.match(
+    hc.homeconnectHtml({}, now),
+    /Wasmachine<\/span><span[^>]*homeconnect-done/
+  );
+  devices[2].Data = 'Bezig, Katoen, 0%, klaar om ongeveer 16:03';
+  // Without Progress and Remaining time devices: from the status text.
+  const progress = devices[4];
+  const remaining = devices[5];
+  delete devices[4];
+  delete devices[5];
+  assert.match(
+    hc.homeconnectHtml({}, now),
+    /Wasmachine<\/span><span.*0%<\/b> ready at 16:03/
+  );
+  // With a Progress device but no Remaining time: the time of the status.
+  devices[4] = progress;
+  assert.match(
+    hc.homeconnectHtml({}, now),
+    /Wasmachine<\/span><span.*57%<\/b> ready at 16:03/
+  );
+  devices[5] = remaining;
+  devices[2].Data = 'Bezig, Katoen, Vergrendeld';
+  // A status that needs attention is a warning.
+  devices[2].Data = 'Actie vereist: lekbak vol (+2)';
+  assert.match(
+    hc.homeconnectHtml({}, now),
+    /Wasmachine<\/span><span[^>]*homeconnect-warning">Actie vereist: lekbak vol \(\+2\)/
+  );
+  devices[2].Data = 'Bezig, Katoen, Vergrendeld';
+  // The coffee machine gets a message: a warning, no status.
+  devices[15].Data = 'Lekbakje vol';
+  html = hc.homeconnectHtml({}, now);
+  assert.match(
+    html,
+    /Koffieautomaat<\/span><span[^>]*homeconnect-warning">Lekbakje vol/
+  );
+  assert.equal(hc.appliances({})[2].alerts.length, 1);
+});
+
+test('Home Connect widget shows each coffee machine message once', () => {
+  const dev = (idx, Name, Data, Status, SubType) => ({
+    idx,
+    Name,
+    Data,
+    Status,
+    SubType,
+    HardwareName: 'Home Connect',
+  });
+  const devices = {
+    1: dev(1, 'Koffieautomaat Aan/uit', 'On', 'On'),
+    2: dev(
+      2,
+      'Koffieautomaat Status',
+      'Actie vereist: lekbak vol (+1)',
+      '',
+      'Alert'
+    ),
+    3: dev(
+      3,
+      'Koffieautomaat Meldingen',
+      'Lekbak vol, Waterreservoir leeg',
+      '',
+      'Alert'
+    ),
+    // The per-message "$" devices, read when use_hidden is on.
+    4: dev(4, '$Koffieautomaat Lekbak vol', 'Lekbak vol', '', 'Alert'),
+    5: dev(
+      5,
+      '$Koffieautomaat Waterreservoir leeg',
+      'Waterreservoir leeg',
+      '',
+      'Alert'
+    ),
+  };
+  const hc = loadComponent('js/components/homeconnect.js', {
+    Domoticz: { getAllDevices: () => devices },
+    DT_function: {
+      escapeHtml: (v) => String(v),
+      t: (key, fallback) => fallback,
+    },
+  });
+  assert.match(
+    hc.homeconnectHtml({}),
+    /homeconnect-warning">Actie vereist: Lekbak vol, Waterreservoir leeg<\/span>/
+  );
+  // Without the Notifications device the per-message devices are used.
+  delete devices[3];
+  devices[2].Data = 'Gereed';
+  assert.match(
+    hc.homeconnectHtml({}),
+    /homeconnect-warning">Lekbak vol, Waterreservoir leeg<\/span>/
+  );
+  // In stand-by (Power off) an open message still shows, the status does not.
+  devices[1].Status = 'Off';
+  devices[1].Data = 'Off';
+  devices[2].Data = 'Actie vereist: lekbak vol (+1)';
+  devices[5].Data = 'Geen melding';
+  assert.match(
+    hc.homeconnectHtml({}),
+    /Koffieautomaat<\/span><span[^>]*homeconnect-warning">Lekbak vol<\/span>/
+  );
+  // Off without messages: left out.
+  devices[4].Data = 'Geen melding';
+  assert.match(hc.homeconnectHtml({}), /No active appliances/);
+});
+
+test('Home Connect widget can read another Domoticz', () => {
+  const hc = loadComponent('js/components/homeconnect.js', {
+    DT_function: { escapeHtml: String, t: (key, fallback) => fallback },
+  });
+  assert.equal(hc.remoteBase({}), '');
+  assert.equal(
+    hc.remoteBase({ hcip: '192.168.1.190' }),
+    'http://192.168.1.190:8080'
+  );
+  assert.equal(
+    hc.remoteBase({ hcip: ' 192.168.1.190 ', hcport: '8081' }),
+    'http://192.168.1.190:8081'
+  );
+  assert.equal(
+    hc.remoteBase({ hcip: 'https://dz.local:443/' }),
+    'https://dz.local:443'
+  );
+  // The devices of that Domoticz are passed in.
+  const devices = {
+    1: {
+      idx: '1',
+      Name: 'Droger Aan/uit',
+      Status: 'On',
+      HardwareName: 'HomeConnect_API',
+    },
+    2: {
+      idx: '2',
+      Name: 'Droger Voortgang',
+      Data: '30%',
+      HardwareName: 'HomeConnect_API',
+    },
+  };
+  assert.match(hc.homeconnectHtml({}, undefined, devices), /Droger/);
+  assert.match(hc.homeconnectHtml({}, undefined, {}), /No active appliances/);
+});
