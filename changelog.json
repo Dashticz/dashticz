@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.20.33": "Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so it no longer fails with 'phpunit: command not found'.",
     "4.20.32": "CI: new checks. ESLint (npm run lint) runs next to Prettier, PHPUnit tests for the PHP helpers in vendor/dashticz/security.php run on every supported PHP version together with a PHP syntax check, Claude Code reviews pull requests and answers @claude mentions, and a Scrutinizer configuration is added.",
     "4.20.31": "Installer: when the web-server user cannot enter a parent folder of the Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such as /home/pi private), the write-access step now names that folder and the command that fixes it, instead of only reporting Permission denied on custom/.",
     "4.20.30": "Tests: the Weather Info drag test measures the list once the popup has stopped moving and tries the drag again when it did not land, so it no longer fails in WebKit.",
