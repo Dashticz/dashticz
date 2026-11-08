@@ -10640,6 +10640,13 @@ input[id$='-carstatus-fontsize'] {
   background: currentColor;
 }
 
+.homeconnect-ready {
+  display: inline-block;
+  min-width: 7em;
+  text-align: left;
+  white-space: nowrap;
+}
+
 .homeconnect-pct {
   display: inline-block;
   min-width: 2.4em;

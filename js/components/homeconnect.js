@@ -363,6 +363,12 @@ var DT_homeconnect = (function () {
 
   // A small progress bar, then the percentage. The bar is drawn in the colour
   // of the appliance icon (.homeconnect-icon-<type>), on one line with the text.
+  // The text after the percentage, in a column of a fixed width: the bars of all
+  // appliances start at the same place.
+  function readyHtml(text) {
+    return '<span class="homeconnect-ready">' + text + '</span>';
+  }
+
   function barHtml(app, pct) {
     var level = Math.max(0, Math.min(100, Math.round(pct)));
     return (
@@ -480,9 +486,11 @@ var DT_homeconnect = (function () {
       html += row(
         app,
         barHtml(app, progress) +
-          (ready
-            ? tr('homeconnect_ready_at', 'ready at') + ' ' + ready
-            : tr('homeconnect_unknown_time', 'time unknown'))
+          readyHtml(
+            ready
+              ? tr('homeconnect_ready_at', 'ready at') + ' ' + ready
+              : tr('homeconnect_unknown_time', 'time unknown')
+          )
       );
     } else if (!app.progress && app.state) {
       var info = stateInfo(app);
@@ -491,7 +499,9 @@ var DT_homeconnect = (function () {
           app,
           (info.pct !== null ? barHtml(app, info.pct) : '') +
             (info.ready
-              ? tr('homeconnect_ready_at', 'ready at') + ' ' + info.ready
+              ? readyHtml(
+                  tr('homeconnect_ready_at', 'ready at') + ' ' + info.ready
+                )
               : '')
         );
     }
