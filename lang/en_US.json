@@ -363,6 +363,8 @@
       "reverseicon": "Reverse",
       "reverseicon_help": "Reverse the dimming: show the icon or image at full strength when Off and dimmed when On.",
       "text_style": "Text",
+      "config_height": "Height (px)",
+      "config_height_help": "Block height in pixels (50-2000). Leave empty for the default height. Not used on a grid screen: resize the block in the Layout Editor there.",
       "text_fontsize_title": "Title size",
       "text_fontsize_value": "Value size",
       "text_align": "Alignment",
