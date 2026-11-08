@@ -5047,6 +5047,44 @@ img.icon {
   color: var(--text-status);
 }
 
+/* Temperature mode: name, a thin meter and the value on one line. The
+   fill is a blue-green-orange gradient stretched over the full track
+   (background-size is set per row), so a colour always means the same
+   temperature. */
+.cluster-row .cluster-row-title:has(+ .cluster-temp-bar) {
+  flex: 0 0 34%;
+}
+
+.cluster-temp-bar {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 30px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.cluster-temp-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  background-image: linear-gradient(
+    90deg,
+    #3a86d8 0%,
+    #4cc38a 40%,
+    #f0b840 70%,
+    #ee6a4a 100%
+  );
+}
+
+.cluster-temp-bar + .cluster-row-temp {
+  flex: 0 0 4.2em;
+  text-align: right;
+}
+
 .cluster-row-switch {
   /* --cluster-switch-scale (default 1) resizes the whole switch - .cluster
      -row-track/-thumb below scale their actual box size via calc() rather
