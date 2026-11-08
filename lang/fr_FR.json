@@ -653,7 +653,7 @@
       "homeconnect_block_fontsize": "Taille de police (px)",
       "homeconnect_block_fontsize_help": "Taille de police en pixels (8-60). Laisser vide pour la taille par défaut.",
       "homeconnect_block_hardware": "Nom du matériel",
-      "homeconnect_block_hardware_help": "Partie du nom du matériel Domoticz du plugin Home Connect (Setup > Hardware).",
+      "homeconnect_block_hardware_help": "Le nom exact du matériel Domoticz du plugin Home Connect (Setup > Hardware). L'orthographe, les majuscules et les espaces doivent correspondre. Laisser vide pour chercher un matériel nommé comme Home Connect.",
       "homeconnect_block_server": "Serveur Domoticz",
       "homeconnect_block_server_default": "Default Domoticz",
       "homeconnect_block_server_custom": "Custom",

@@ -9262,8 +9262,8 @@ var DashticzDeviceEditor = (function () {
     fieldClass: 'de-homeconnect-field',
     saveOrder: 'hardware ip port fontsize',
     settings: [
-      // Part of the name of the Domoticz hardware of the plugin.
-      { key: 'hardware', type: 'text', def: 'Home Connect', max: 100 },
+      // The exact name of the Domoticz hardware of the plugin (empty: automatic).
+      { key: 'hardware', type: 'text', def: '', max: 100 },
       // Another Domoticz to read the devices from (for testing).
       { key: 'ip', type: 'text', def: '', max: 100 },
       { key: 'port', type: 'number', def: null, range: [1, 65535, 1] },

@@ -635,7 +635,10 @@ test('Home Connect widget reads the devices of the Dutch plugin', () => {
   // The hardware name is set in the block.
   assert.equal(hc.appliances({ hchardware: 'huishoud' }).length, 0);
   assert.equal(hc.appliances({}).length, 3);
-  assert.equal(hc.appliances({ hchardware: 'homeconnect api' }).length, 3);
+  assert.equal(hc.appliances({ hchardware: 'HomeConnect_API' }).length, 3);
+  // The name must be exactly the same.
+  assert.equal(hc.appliances({ hchardware: 'homeconnect_api' }).length, 0);
+  assert.equal(hc.appliances({ hchardware: 'Home Connect' }).length, 0);
   let html = hc.homeconnectHtml({}, now);
   assert.match(html, /Wasmachine<\/span><span.*57%<\/b> ready at 16:03/);
   assert.doesNotMatch(html, /Droger|Koffieautomaat|Katoen|afstand/);

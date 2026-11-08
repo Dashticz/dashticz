@@ -29,7 +29,8 @@ block is the standard title of a widget.
 How the devices are found
 -------------------------
 
-The widget takes the devices of the hardware whose name contains ``Home Connect`` and groups
+The widget takes the devices of the hardware with the name from ``hchardware`` (or, when empty, a
+hardware whose name looks like ``Home Connect``) and groups
 them by name. The plugin names a device ``<appliance> <value>``, for example ``Washer
 Progress`` or, in Dutch, ``Wasautomaat Voortgang``. A leading ``$`` is ignored.
 
@@ -58,8 +59,9 @@ Progress`` or, in Dutch, ``Wasautomaat Voortgang``. A leading ``$`` is ignored.
       (``Program finished``, ``Programma klaar``, ...) are not shown as a warning
 
 An appliance is shown while its progress is above 0% (or there is remaining time). The
-hardware name is matched on ``Home Connect`` (also ``Home-Connect`` or ``HomeConnect``); when
-no device matches, all devices are looked at.
+hardware name is matched exactly on ``hchardware``. When that is empty, a name that looks like
+``Home Connect`` (also ``Home-Connect`` or ``HomeConnect_API``) is used; when no device matches,
+all devices are looked at.
 
 Settings
 --------
@@ -76,7 +78,8 @@ Settings
   * - hcfontsize
     - Optional: font size of the tile in pixels (``8``-``60``). Default: the size of the theme
   * - hchardware
-    - Optional: part of the hardware name of the plugin. Default: ``Home Connect``
+    - Optional: the exact name of the hardware of the plugin (spelling, capitals and spaces must
+      match, so ``HomeConnect`` and ``Home Connect`` are two different hardware). Default: empty
   * - hcdebug
     - ``true``: a test view below the rows with the hardware names that Domoticz has and the
       devices that were found per appliance. Default: false
