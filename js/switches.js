@@ -157,7 +157,7 @@ function switchDevice(block, pMode, pAskConfirm) {
         doStatus = toggleItem(block, 'on');
         break;
       default:
-        console.log('Incorrect mode in SwitchDevice for device ' + idx);
+        console.error('Incorrect mode in SwitchDevice for device ' + idx);
         return;
     }
   } else {

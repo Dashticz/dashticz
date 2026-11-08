@@ -6218,58 +6218,6 @@ canvas {
 
 /* END: CAMERA COMPONENT */
 
-/* START: CORONAVIRUS */
-
-.coronavirus .graphheader {
-  height: 20px;
-}
-
-.coronavirus .graphtitle {
-  width: 90%;
-}
-
-.coronavirus .graphheader .fx {
-  font-size: 16px !important;
-  margin-left: 10px;
-}
-
-.coronavirus .graphheader img {
-  height: 20%;
-  margin-right: 5px;
-}
-
-.coronavirus.block_report {
-  font-size: 24px !important;
-  padding: 15px 5px !important;
-}
-
-.coronavirus.block_report .fx {
-  font-size: 150% !important;
-}
-
-.coronavirus.block_report .title {
-  font-size: 14px !important;
-  color: #ccc;
-}
-
-.coronavirus.block_report .title {
-  font-weight: 900;
-}
-
-.coronavirus.block_report .flag {
-  max-width: 100%;
-}
-
-.vertical-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-}
-
-/* END: CORONAVIRUS */
-
 /* START: AGENDA */
 
 .agenda table {
@@ -9210,6 +9158,38 @@ canvas {
   text-align: right !important;
 }
 
+/* Separator (blocktitle): title size and horizontal alignment from Device
+   Config -> Text, set by js/dashticz.js renderBlock() through
+   applyBlockTextStyle(). The extra class keeps these above the theme rules
+   for .titlegroups .dt_content/.dt_title. */
+.dt_block.blocktitle.dt-fs-title .dt_title {
+  font-size: var(--dt-fs-title) !important;
+}
+
+.dt_block.blocktitle.dt-align-left .dt_content {
+  justify-content: flex-start !important;
+}
+
+.dt_block.blocktitle.dt-align-center .dt_content {
+  justify-content: center !important;
+}
+
+.dt_block.blocktitle.dt-align-right .dt_content {
+  justify-content: flex-end !important;
+}
+
+.dt_block.blocktitle.dt-align-left .dt_title {
+  text-align: left !important;
+}
+
+.dt_block.blocktitle.dt-align-center .dt_title {
+  text-align: center !important;
+}
+
+.dt_block.blocktitle.dt-align-right .dt_title {
+  text-align: right !important;
+}
+
 /* Block without an icon (Icon toggle off): the empty .col-icon column still
    takes up space, which pushed aligned text off the block. Drop the empty
    column and let the data span the full width. */
@@ -10638,6 +10618,13 @@ input[id$='-carstatus-fontsize'] {
   height: 100%;
   border-radius: 0.2em;
   background: currentColor;
+}
+
+.homeconnect-ready {
+  display: inline-block;
+  min-width: 7em;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .homeconnect-pct {

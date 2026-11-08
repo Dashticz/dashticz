@@ -1,4 +1,4 @@
 {
-    "version": "4.20.31",
-    "last_changes": "Installer: when the web-server user cannot enter a parent folder of the Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such as /home/pi private), the write-access step now names that folder and the command that fixes it, instead of only reporting Permission denied on custom/."
+    "version": "4.20.34",
+    "last_changes": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed."
 }

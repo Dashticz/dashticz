@@ -103,7 +103,7 @@ var DT_simpleblock = (function () {
               renderBlock(me, render);
             })
             .catch(function () {
-              console.log('Error loading script ' + script);
+              console.error('Error loading script ' + script);
             });
         else renderBlock(me, render);
       };
@@ -112,7 +112,7 @@ var DT_simpleblock = (function () {
           .prepare()
           .then(loadAndRender)
           .catch(function () {
-            console.log('Error loading dependency for ' + me.block.type);
+            console.error('Error loading dependency for ' + me.block.type);
           });
       } else loadAndRender();
 

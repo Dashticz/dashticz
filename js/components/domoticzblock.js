@@ -63,12 +63,10 @@ var DT_domoticzblock = (function () {
           .find('.block_' + block.key)[0]
           .addEventListener('long-press', function (e) {
             e.preventDefault();
-            console.log('long press');
             if (DT_function.idxIsScene(me.deviceIdx))
               Domoticz.request('getscenedevices', false, {
                 idx: me.deviceIdx.substring(1),
               }).then(function (res) {
-                console.log(res);
                 var devices = res.result.map(function (device) {
                   return device.DevRealIdx;
                 });

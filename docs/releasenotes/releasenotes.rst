@@ -1,6 +1,49 @@
 Release Notes
 =============
 
+v4.20.34 (08-11-2026)
+----------------------
+
+* **Enhancements**
+
+- The Coronavirus block (``type: 'corona'``) is removed. Its data source
+  stopped long ago. Remove such a block from your CONFIG.js.
+
+* **Code**
+
+- Graphs: the formulas of custom data and ``customHeader`` are no longer run
+  with ``eval``. A formula sees only ``d`` (custom data), ``device`` and
+  ``devices`` (customHeader), as described in the graph documentation, and
+  not the internal variables of the graph code.
+- Unused functions and variables and leftover debug logging are removed.
+  Error messages in the browser console are logged as errors or warnings.
+- ESLint no longer warns about the shared globals of the js/ files.
+- The Scrutinizer configuration is removed.
+
+v4.20.33 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so
+  it no longer fails with ``phpunit: command not found``.
+
+v4.20.32 (08-11-2026)
+----------------------
+
+* **Code**
+
+- CI: ESLint checks the JavaScript (``npm run lint``) next to the Prettier
+  format check. Rules that still have findings in the existing code warn
+  instead of failing.
+- CI: PHPUnit tests (``tests/php``) for the helpers in
+  ``vendor/dashticz/security.php`` and a PHP syntax check run on every
+  supported PHP version.
+- CI: Claude Code reviews pull requests and answers ``@claude`` mentions in
+  issues and pull requests (needs a repository secret).
+- A Scrutinizer configuration (``.scrutinizer.yml``) for the PHP and
+  JavaScript quality analysis.
+
 v4.20.31 (08-11-2026)
 ----------------------
 

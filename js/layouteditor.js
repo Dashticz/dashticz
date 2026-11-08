@@ -2646,10 +2646,6 @@ var DashticzLayoutEditor = (function () {
       });
   }
 
-  function _activeScreenNumber() {
-    return _activeScreenPayload();
-  }
-
   // A device removed earlier in this editing round may have been re-added
   // (same idx) before Save, on this screen or another one touched in the
   // same round - its Automation must survive that. Building this set from

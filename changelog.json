@@ -1,5 +1,8 @@
 {
   "changelog": {
+    "4.20.34": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed.",
+    "4.20.33": "Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so it no longer fails with 'phpunit: command not found'.",
+    "4.20.32": "CI: new checks. ESLint (npm run lint) runs next to Prettier, PHPUnit tests for the PHP helpers in vendor/dashticz/security.php run on every supported PHP version together with a PHP syntax check, Claude Code reviews pull requests and answers @claude mentions, and a Scrutinizer configuration is added.",
     "4.20.31": "Installer: when the web-server user cannot enter a parent folder of the Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such as /home/pi private), the write-access step now names that folder and the command that fixes it, instead of only reporting Permission denied on custom/.",
     "4.20.30": "Tests: the Weather Info drag test measures the list once the popup has stopped moving and tries the drag again when it did not land, so it no longer fails in WebKit.",
     "4.20.29": "Home Connect widget: each open message shows once (the Status text no longer repeats the first message, and the per-message devices are not added again next to Notifications), and the open messages of an appliance that is switched off, such as a coffee machine in stand-by with a full drip tray, stay visible.",

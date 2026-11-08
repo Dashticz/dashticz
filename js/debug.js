@@ -242,7 +242,6 @@ var Debug = (function () {
     $el.find('.debug-status').html(requestCount + ': ' + lastRequest.msg);
   }
 
-  // eslint-disable-next-line no-unused-vars
   function tst() {
     console.log('test');
   }
