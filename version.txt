@@ -1,4 +1,4 @@
 {
     "version": "4.20.34",
-    "last_changes": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed."
+    "last_changes": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed. Separator: title size and horizontal alignment can be set in Device Config. Camera, iFrame and Timegraph: the height can be changed afterwards in Device Config (#1379)."
 }
