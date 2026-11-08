@@ -186,7 +186,6 @@
     "homeconnect_ready_at": "klaar om",
     "homeconnect_unknown_time": "tijd onbekend",
     "homeconnect_done": "Klaar",
-    "homeconnect_none": "Geen actieve apparaten",
     "homeconnect_unreachable": "Domoticz niet bereikbaar op",
     "weatherinfo_rainfall": "Neerslag",
     "weatherinfo_nolocation": "Geen locatie gevonden. Vul de breedte- en lengtegraad in bij de instellingen van de widget.",

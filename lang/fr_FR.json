@@ -190,7 +190,6 @@
     "homeconnect_ready_at": "prêt à",
     "homeconnect_unknown_time": "durée inconnue",
     "homeconnect_done": "Terminé",
-    "homeconnect_none": "Aucun appareil actif",
     "homeconnect_unreachable": "Domoticz injoignable à",
     "weatherinfo_rainfall": "Précipitations",
     "weatherinfo_nolocation": "Aucune position trouvée. Saisissez la latitude et la longitude dans les réglages du widget.",
