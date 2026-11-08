@@ -547,7 +547,8 @@ var DT_homeconnect = (function () {
     return html + '</div>';
   }
 
-  // The content of the tile: one row per appliance that has something to show.
+  // The content of the tile: one row per appliance that has something to show,
+  // or an empty line when no appliance is active.
   function homeconnectHtml(block, now, devices) {
     var html = appliances(block, devices)
       .map(function (app) {
@@ -555,10 +556,7 @@ var DT_homeconnect = (function () {
       })
       .join('');
     return (
-      (html ||
-        '<div class="homeconnect-empty">' +
-          tr('homeconnect_none', 'No active appliances') +
-          '</div>') +
+      (html || '<div class="homeconnect-empty">&nbsp;</div>') +
       (String(block && block.hcdebug).toLowerCase() === 'true'
         ? debugHtml(block, devices)
         : '')

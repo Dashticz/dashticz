@@ -753,7 +753,10 @@ test('Home Connect widget shows each coffee machine message once', () => {
   );
   // Off without messages: left out.
   devices[4].Data = 'Geen melding';
-  assert.match(hc.homeconnectHtml({}), /No active appliances/);
+  assert.match(
+    hc.homeconnectHtml({}),
+    /<div class="homeconnect-empty">&nbsp;<\/div>/
+  );
 });
 
 test('Home Connect widget can read another Domoticz', () => {
@@ -789,5 +792,8 @@ test('Home Connect widget can read another Domoticz', () => {
     },
   };
   assert.match(hc.homeconnectHtml({}, undefined, devices), /Droger/);
-  assert.match(hc.homeconnectHtml({}, undefined, {}), /No active appliances/);
+  assert.match(
+    hc.homeconnectHtml({}, undefined, {}),
+    /<div class="homeconnect-empty">&nbsp;<\/div>/
+  );
 });
