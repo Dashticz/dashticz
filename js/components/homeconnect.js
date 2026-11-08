@@ -24,7 +24,8 @@
  * Options (all optional):
  *
  *   hcfontsize   font size of the tile in pixels (8-60); empty = the theme's
- *   hchardware   part of the name of the Domoticz hardware of the plugin
+ *   hchardware   exact name of the Domoticz hardware of the plugin (empty: a
+ *                hardware whose name looks like 'Home Connect')
  *                (Setup -> Hardware); default 'Home Connect' (spaces, _ and
  *                - are ignored, so it also finds 'HomeConnect_API')
  *   hcdebug      true: a test view with the devices found per appliance
@@ -242,10 +243,16 @@ var DT_homeconnect = (function () {
       .replace(/[\s_-]+/g, '');
   }
 
-  // The devices of the plugin: the hardware name contains hchardware (default
-  // 'Home Connect').
+  // The devices of the plugin. With hchardware filled in the hardware name must
+  // be exactly that name (spelling, capitals and spaces); without it the name
+  // of the hardware must look like 'Home Connect'.
   function hardwareFilter(block) {
-    var part = plain((block && block.hchardware) || 'Home Connect');
+    var exact = String((block && block.hchardware) || '').trim();
+    if (exact)
+      return function (dev) {
+        return String(dev.HardwareName || '').trim() === exact;
+      };
+    var part = plain('Home Connect');
     return function (dev) {
       return plain(dev.HardwareName).indexOf(part) >= 0;
     };

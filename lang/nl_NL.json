@@ -567,7 +567,7 @@
       "homeconnect_block_fontsize": "Lettergrootte (px)",
       "homeconnect_block_fontsize_help": "Lettergrootte in pixels (8-60). Laat leeg voor de standaardgrootte.",
       "homeconnect_block_hardware": "Hardwarenaam",
-      "homeconnect_block_hardware_help": "Deel van de naam van de Domoticz-hardware van de Home Connect plugin (Setup > Hardware).",
+      "homeconnect_block_hardware_help": "De exacte naam van de Domoticz-hardware van de Home Connect-plugin (Setup > Hardware). Spelling, hoofdletters en spaties moeten kloppen. Laat leeg om te zoeken naar een hardware die lijkt op Home Connect.",
       "homeconnect_block_server": "Domoticz-server",
       "homeconnect_block_server_default": "Default Domoticz",
       "homeconnect_block_server_custom": "Custom",
