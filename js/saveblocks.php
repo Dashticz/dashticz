@@ -513,6 +513,37 @@ foreach ($data['devices'] as $entry) {
                     dashticz_json_error(400, 'A Toon block requires a mode.');
                 }
                 dashticz_validate_source_fields($customFields, 'toon');
+            } elseif ($kind === 'homeconnect') {
+                // hcmode is otherwise just another custom field, but
+                // js/components/homeconnect.js dispatches on it, so it is required.
+                if (!isset($customFields['hcmode']) || $customFields['hcmode'] !== 'appliances') {
+                    dashticz_json_error(400, 'A Home Connect block requires a mode.');
+                }
+                if (isset($customFields['hchardware'])
+                    && (!is_string($customFields['hchardware']) || strlen($customFields['hchardware']) > 100)) {
+                    dashticz_json_error(400, 'Enter a valid hardware name for the Home Connect block.');
+                }
+                if (isset($customFields['hcip'])
+                    && $customFields['hcip'] !== ''
+                    && (!is_string($customFields['hcip'])
+                        || strlen($customFields['hcip']) > 100
+                        || !preg_match('/^(https?:\/\/)?[A-Za-z0-9.\-_]+(:\d{1,5})?\/?$/', $customFields['hcip']))) {
+                    dashticz_json_error(400, 'Enter a valid IP address or host for the Home Connect block.');
+                }
+                if (isset($customFields['hcport'])
+                    && $customFields['hcport'] !== ''
+                    && (!is_numeric($customFields['hcport'])
+                        || (float) $customFields['hcport'] < 1
+                        || (float) $customFields['hcport'] > 65535)) {
+                    dashticz_json_error(400, 'Enter a valid port for the Home Connect block.');
+                }
+                if (isset($customFields['hcfontsize'])
+                    && $customFields['hcfontsize'] !== ''
+                    && (!is_numeric($customFields['hcfontsize'])
+                        || (float) $customFields['hcfontsize'] < 8
+                        || (float) $customFields['hcfontsize'] > 60)) {
+                    dashticz_json_error(400, 'Enter a font size between 8 and 60 for the Home Connect block.');
+                }
             } elseif ($kind === 'mower') {
                 // mowermode is otherwise just another custom field, but
                 // js/components/mower.js dispatches on it, so it is required.

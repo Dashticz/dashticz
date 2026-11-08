@@ -47,6 +47,7 @@ var Dashticz = (function () {
     'fullykiosk',
     'weatherinfo',
     'carstatus',
+    'homeconnect',
     'group',
     'cluster',
     'waqi',
