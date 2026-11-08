@@ -10624,7 +10624,7 @@ input[id$='-carstatus-fontsize'] {
    icon (.homeconnect-icon-<type>), then the percentage, on one line. */
 .homeconnect-bar {
   display: inline-block;
-  width: 3em;
+  width: 6em;
   height: 0.4em;
   border-radius: 0.2em;
   vertical-align: middle;
