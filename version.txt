@@ -1,4 +1,4 @@
 {
-    "version": "4.20.24",
-    "last_changes": "Car status widget: the line below the battery bar is always shown."
+    "version": "4.20.28",
+    "last_changes": "Updated dependencies: sass 1.108.1 and @playwright/test 1.65.0."
 }

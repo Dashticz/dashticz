@@ -9944,6 +9944,11 @@ canvas {
   grid-column: 1 / -1;
 }
 
+/* Starts a new row, e.g. the three color levels next to each other. */
+.de-carstatus-grid > .de-carstatus-field-rowstart {
+  grid-column-start: 1;
+}
+
 @media (max-width: 767px) {
   .de-carstatus-grid,
   .de-fully-grid {
@@ -10361,10 +10366,12 @@ canvas {
 /* The bar of the Mower widget (.mower-bar): a thin track with a green
    gradient fill; below 50% the fill has the color of the level. */
 .carstatus-bar {
-  height: 6px;
-  border-radius: 3px;
+  height: 11px;
+  border-radius: 1px;
   background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
   overflow: hidden;
+  /* The end of the bar is slanted, like the battery bar of the BMW. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
 .carstatus-bar-fill {
@@ -10372,6 +10379,8 @@ canvas {
   height: 100%;
   background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
   transition: width 0.6s ease;
+  /* The end of the filled part is slanted too. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
 .carstatus-batt-mid .carstatus-bar-fill {
@@ -10390,9 +10399,22 @@ canvas {
   gap: 10px;
 }
 
-.carstatus-pct {
+.carstatus-pct,
+.carstatus-km {
   font-weight: bold;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.carstatus-pct {
   color: var(--carstatus-color);
+}
+
+.carstatus-battery-text .carstatus-icon {
+  width: 1.3em;
+  height: 1.3em;
+  margin: 0 6px 0 0;
+  vertical-align: -0.3em;
 }
 
 .carstatus-batt-critical .carstatus-pct,
@@ -10426,15 +10448,7 @@ canvas {
 
 .carstatus-chargetime {
   font-weight: bold;
-  background: linear-gradient(90deg, white, yellow, red, white, green);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  display: inline-block;
   align-self: flex-start;
-  animation: carstatus-gradient 4s linear infinite;
 }
 
 .carstatus-warning b,
@@ -10460,15 +10474,6 @@ canvas {
   }
 }
 
-@keyframes carstatus-gradient {
-  0% {
-    background-position: 200% 0%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
-}
-
 /* The font size field of the Car status settings is 5 characters wide (the
    extra width is for the spinner of the number field). */
 input[id$='-carstatus-fontsize'] {
@@ -10481,6 +10486,11 @@ input[id$='-carstatus-fontsize'] {
   flex: 1 1 auto;
   min-width: 0;
   align-self: flex-end;
+  /* Some space between the icon or image and the battery with its bar.
+     flow-root: the box is placed beside the floating icon column, and (unlike
+     a margin) the padding then counts from the end of that column. */
+  display: flow-root;
+  padding-left: 10px;
 }
 
 /* The part below the line: status and the rows Charging until, Doors and
@@ -10492,6 +10502,10 @@ input[id$='-carstatus-fontsize'] {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.carstatus-below > * {
+  padding-left: var(--carstatus-indent, 0);
 }
 
 .carstatus-row {
