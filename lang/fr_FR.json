@@ -414,6 +414,8 @@
       "reverseicon": "Inverser",
       "reverseicon_help": "Inverser l'atténuation : icône ou image à pleine intensité à l'arrêt et atténuée à l'état allumé.",
       "text_style": "Texte",
+      "config_height": "Hauteur (px)",
+      "config_height_help": "Hauteur du bloc en pixels (50-2000). Laisser vide pour la hauteur par défaut. Non utilisé sur un écran en grille : redimensionnez le bloc dans le Layout Editor.",
       "text_fontsize_title": "Taille du titre",
       "text_fontsize_value": "Taille de la valeur",
       "text_align": "Alignement",

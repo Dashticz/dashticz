@@ -34,6 +34,7 @@ var DashticzDeviceEditor = (function () {
   // update/Title among the Device Config display options (no Data/
   // Switch) - every special except a plain dummy/custom device.
   var NO_DIAL_SPECIAL_KINDS = DT_function.widgetKinds('noDial');
+  var HEIGHT_EDITABLE_KINDS = ['camera', 'iframe', 'timegraph'];
 
   // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
   // own optional idx)" branch - a subset of NO_DIAL_SPECIAL_KINDS
@@ -140,6 +141,9 @@ var DashticzDeviceEditor = (function () {
         compact_selector_help:
           'Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.',
         text_style: 'Text',
+        config_height: 'Height (px)',
+        config_height_help:
+          'Block height in pixels (50-2000). Leave empty for the default height. Not used on a grid screen: resize the block in the Layout Editor there.',
         text_fontsize_title: 'Title size',
         text_fontsize_value: 'Value size',
         text_align: 'Horizontal',
@@ -10724,7 +10728,7 @@ var DashticzDeviceEditor = (function () {
   /* Build the Device Config popup. Switch visibility is not exposed as a
      checkbox here; title text remains available as a typed field, and its
      visibility is exposed via the Title checkbox below. */
-  function _textStyleHtml(options, t) {
+  function _textStyleHtml(options, t, titleOnly) {
     var fontSizeInput = function (id, label, value) {
       return (
         '<span class="d-flex align-items-center gap-2">' +
@@ -10801,21 +10805,26 @@ var DashticzDeviceEditor = (function () {
         t.text_fontsize_title,
         options.fontsizeTitle
       ) +
-      fontSizeInput(
-        'de-config-fontsize-value',
-        t.text_fontsize_value,
-        options.fontsizeValue
-      ) +
+      (titleOnly
+        ? ''
+        : fontSizeInput(
+            'de-config-fontsize-value',
+            t.text_fontsize_value,
+            options.fontsizeValue
+          )) +
       '<span class="d-flex align-items-center gap-2"><span>' +
       _esc(t.text_align) +
       '</span><span class="btn-group de-text-align-group" role="group">' +
       alignButtons +
       '</span></span>' +
-      '<span class="d-flex align-items-center gap-2"><span>' +
-      _esc(t.text_valign) +
-      '</span><span class="btn-group de-text-align-group" role="group">' +
-      valignButtons +
-      '</span></span></div>' +
+      (titleOnly
+        ? ''
+        : '<span class="d-flex align-items-center gap-2"><span>' +
+          _esc(t.text_valign) +
+          '</span><span class="btn-group de-text-align-group" role="group">' +
+          valignButtons +
+          '</span></span>') +
+      '</div>' +
       '<div class="form-text">' +
       _esc(t.text_style_help) +
       '</div></div>'
@@ -11294,6 +11303,11 @@ var DashticzDeviceEditor = (function () {
     // devices and idx-backed Custom devices. The three fields are protected
     // custom-field names, so they never show up in Custom fields as well.
     var supportsTextStyle = !isSpecial || (isCustom && !!special.idx);
+    // Block kinds whose quick-add popup asks for a height (px): the height can
+    // be changed afterwards here. Ignored on a grid screen (the grid row span
+    // sets the height there).
+    var supportsHeight =
+      !!special && HEIGHT_EDITABLE_KINDS.indexOf(special.specialType) > -1;
     var supportsCompactSelector =
       (!isSpecial || (isCustom && !!special.idx)) &&
       hasDial &&
@@ -11541,6 +11555,21 @@ var DashticzDeviceEditor = (function () {
 
     if (supportsTextStyle) {
       html += _textStyleHtml(options, t);
+    } else if (isTitle) {
+      // Separator: title size and horizontal alignment only.
+      html += _textStyleHtml(options, t, true);
+    }
+    if (supportsHeight) {
+      html +=
+        '<div class="mb-3"><label class="form-label" for="de-config-height">' +
+        _esc(t.config_height) +
+        '</label>' +
+        '<input type="number" class="form-control" id="de-config-height" min="0" autocomplete="off" value="' +
+        _esc(special.height || '') +
+        '">' +
+        '<div class="form-text">' +
+        _esc(t.config_height_help) +
+        '</div></div>';
     }
 
     if (!isTitle) {
@@ -12401,6 +12430,16 @@ var DashticzDeviceEditor = (function () {
           updated.compactIcons = pendingCompactIcons;
         }
       }
+      if (isTitle) {
+        updated.fontsizeTitle = _parseTextFontSize(
+          $('#de-config-fontsize-title').val(),
+          String(options.fontsizeTitle) ===
+            String(parseInt($('#de-config-fontsize-title').val(), 10))
+        );
+        updated.textalign = _parseTextAlign(
+          $popup.find('input[name="de-config-textalign"]:checked').val()
+        );
+      }
       if (hasDial) {
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
@@ -12884,6 +12923,9 @@ var DashticzDeviceEditor = (function () {
         if (isCustom || isGroupBlock) special.idx = pendingIdx;
         if (isGraphBlock && pendingGraph) {
           special.height = pendingGraph.height;
+        }
+        if (supportsHeight) {
+          special.height = _parseHeight($('#de-config-height').val());
         }
         if (isLmsBlock && pendingLms) {
           special.lmsServer = pendingLms.server;
@@ -14077,6 +14119,10 @@ var DashticzDeviceEditor = (function () {
             // an image independently rather than one replacing the other).
             specialEntry.icon = SEPARATOR_DEFAULT_ICON;
           }
+          _applyTextStyleFields(specialCustomFields, titleOptions);
+          if (Object.keys(specialCustomFields).length)
+            specialEntry.custom_fields = specialCustomFields;
+          else delete specialEntry.custom_fields;
         } else if (special.specialType === 'lms') {
           // js/components/lms.js dispatches on type: 'lms' - configwriter.php
           // writes it unconditionally for this kind, like Group's own
