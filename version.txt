@@ -1,4 +1,4 @@
 {
-    "version": "4.20.32",
-    "last_changes": "CI: new checks. ESLint (npm run lint) runs next to Prettier, PHPUnit tests for the PHP helpers in vendor/dashticz/security.php run on every supported PHP version together with a PHP syntax check, Claude Code reviews pull requests and answers @claude mentions, and a Scrutinizer configuration is added."
+    "version": "4.20.33",
+    "last_changes": "Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so it no longer fails with 'phpunit: command not found'."
 }

@@ -9,9 +9,15 @@ build:
     php: 8.3
     node: v22
   dependencies:
-    # Nothing to install: the analysis reads the sources only.
+    # Scrutinizer finds phpunit.xml.dist and runs `phpunit`, which its image
+    # does not have, so the PHPUnit PHAR is downloaded first.
     override:
-      - 'true'
+      - mkdir -p "$HOME/bin"
+      - wget -q -O "$HOME/bin/phpunit" https://phar.phpunit.de/phpunit-12.phar
+      - chmod +x "$HOME/bin/phpunit"
+  tests:
+    override:
+      - '"$HOME/bin/phpunit"'
   nodes:
     analysis:
       tests:

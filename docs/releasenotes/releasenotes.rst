@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.20.33 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so
+  it no longer fails with ``phpunit: command not found``.
+
 v4.20.32 (08-11-2026)
 ----------------------
 
