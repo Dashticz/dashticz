@@ -464,6 +464,19 @@
   margin: 5px 5px;
 }
 
+/* The title of a special block or button (icon and title in .dt_content) has
+   a 5px margin on top, which put its text about 4px lower than the title of
+   a device block (.title, no margin). Same position as the device title. */
+.dt_block > .dt_content > .dt_title {
+  margin-top: 1px;
+}
+
+/* Likewise the icon of a special block or button: no extra 5px on top, like
+   the icon of a device block (.mh.dt_block .col-icon above). */
+.dt_block:not(.mh) .col-icon {
+  margin-top: 0;
+}
+
 .dt-hide-title .dt_title,
 .dt-hide-title .title,
 .dt-hide-title .titlegroups h3,
