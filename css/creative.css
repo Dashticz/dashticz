@@ -9290,12 +9290,38 @@ canvas {
   padding-left: 0;
 }
 
-/* The rows are laid out in 3 columns: every switch has its label right
+/* The header (icon and title) lines up with the rows below: the icon starts
+   at the left edge, the title ends at the right edge, like the values. */
+.fullykiosk-block .dt_content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fullykiosk-block .dt_content .col-icon {
+  flex: none;
+  width: auto !important;
+  margin: 0;
+  text-align: left;
+}
+
+.fullykiosk-block .dt_content .col-icon .icon {
+  margin-left: 0;
+}
+
+.fullykiosk-block .dt_content .dt_title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  text-align: right;
+}
+
+/* The rows are laid out in as many columns as fit: every switch has its label right
    next to it on the same line. The charger group (charge data and its
    button), the brightness slider and the error text use the full width. */
 .fullykiosk-rows {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11em, 1fr));
   gap: 10px 14px;
   padding: 4px 0;
 }
@@ -9316,21 +9342,10 @@ canvas {
 
 .fullykiosk-group,
 .fullykiosk-row.fullykiosk-battery {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 25%;
-  column-gap: 10px;
-}
-
-@media (max-width: 767px) {
-  .fullykiosk-rows {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 479px) {
-  .fullykiosk-rows {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .fullykiosk-data {
@@ -9354,6 +9369,8 @@ canvas {
 .fullykiosk-label {
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fullykiosk-value {
@@ -9377,6 +9394,8 @@ canvas {
   order: 0;
 }
 
+/* Rows without a button (Plugged in, brightness) start at the left edge, in
+   line with the battery rows. */
 .fullykiosk-control:empty {
   display: none;
 }
@@ -9388,59 +9407,44 @@ canvas {
   height: 3.4em;
 }
 
-/* The charger button runs over the rows of the charge data, at the right of
-   the data in column 2. */
-.fullykiosk-group {
-  align-items: stretch;
-}
-
-.fullykiosk-group .fullykiosk-control,
-.fullykiosk-row.fullykiosk-battery .fullykiosk-control {
-  order: 2;
-  margin-left: 10px;
-  margin-right: 5px;
-  width: calc(100% - 15px);
-}
-
-.fullykiosk-group .fullykiosk-btn {
-  flex: 1 1 0;
-  width: auto;
-}
-
-.fullykiosk-group .fullykiosk-btn {
-  height: auto;
-}
-
-/* The charger button shows the battery level as a progress fill
-   (--fully-level, set by fullykiosk.js), where 100% of the bar is the target
-   level of the charger. The fill is as wide as the level and its gradient runs
-   over the filled part only: from #c0fce1 at the start to #059956 at the end
-   of the fill. It sits behind the icon so the icon stays visible. */
-.fullykiosk-btn[data-progress] {
+/* The battery bar (as .mower-bar): 100% wide, green up to the battery level
+   and grey from there to 100%. The dot marks the percentage at which the
+   charger is switched next. */
+.fullykiosk-bar {
   position: relative;
-  overflow: hidden;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
 }
 
-.fullykiosk-btn[data-progress]::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: var(--fully-level, 0%);
+.fullykiosk-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
   background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
-  pointer-events: none;
   transition: width 0.6s ease;
 }
 
-.fullykiosk-btn[data-progress] > .fas {
-  position: relative;
-  z-index: 1;
+/* The dot looks like the sun of the Lux arc (.lux-arc-sun): a white dot with
+   a soft yellow glow. */
+.fullykiosk-bar-dot {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 4px rgba(255, 214, 0, 0.8);
 }
 
 /* A power button that is off has a grey icon. */
 .fullykiosk-btn[role='switch']:not(.on) {
   color: var(--text-muted);
+}
+
+.fullykiosk-btn[data-action='readonly'] {
+  cursor: default;
 }
 
 .fullykiosk-btn:disabled {
