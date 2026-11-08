@@ -40,8 +40,11 @@ Do not bypass, disable, or postpone this check. A branch is not ready while `npm
 For JavaScript/CSS/build-related changes, the normal local verification sequence is:
 
     npm run format:check
+    npm run lint
     npm test
     npm run build
+
+`npm run lint` (ESLint, `eslint.config.js`) must report no errors; warnings come from older code and don't fail CI, but don't add new ones. For PHP changes, also run `phpunit` from the repository root (tests in `tests/php`, config in `phpunit.xml.dist`).
 
 If the agent is modifying GitHub through an API/connector and cannot execute the local npm toolchain, it must not claim the branch is ready until the Node CI job has run and the `npm run format:check` step is green. If CI reports a formatting failure, fix it before asking for or performing a merge.
 

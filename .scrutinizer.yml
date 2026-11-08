@@ -1,0 +1,42 @@
+# Scrutinizer CI (https://scrutinizer-ci.com): static quality and security
+# analysis of the PHP and JavaScript code. Scrutinizer reports its result as a
+# check on every push and pull request once the repository is added there.
+build:
+  # Node 22 needs a newer glibc than the older default build images have,
+  # so the Ubuntu 22.04 image is used.
+  image: default-jammy
+  environment:
+    php: 8.3
+    node: v22
+  dependencies:
+    # Nothing to install: the analysis reads the sources only.
+    override:
+      - 'true'
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
+          - js-scrutinizer-run
+
+filter:
+  excluded_paths:
+    # Built bundle and third-party code.
+    - 'dist/*'
+    - 'node_modules/*'
+    - 'vendor/dashticz/ical/vendor/*'
+    - 'vendor/*.js'
+    - 'vendor/weather/*'
+    - 'font/*'
+    # Documentation (Sphinx theme) and tests.
+    - 'docs/*'
+    - 'tests/*'
+    # Per-installation content.
+    - 'custom/*'
+
+checks:
+  php: true
+  javascript: true
+
+tools:
+  external_code_coverage: false

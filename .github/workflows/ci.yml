@@ -45,6 +45,7 @@ jobs:
           coverage: none
       - run: npm ci
       - run: npm run format:check
+      - run: npm run lint
       - run: npm test
       - run: npm run build
       - name: dist/ is up to date
@@ -68,8 +69,16 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: curl
           coverage: none
+          # The newest PHPUnit that supports this PHP version (PHPUnit 9
+          # for PHP 7.4). The tests in tests/php run on all of them.
+          tools: phpunit
       - run: php --version
       - run: php -m | grep -qi '^curl$'
+      - name: PHP syntax check
+        run: |
+          git ls-files '*.php' ':!:vendor/dashticz/ical/vendor/**' | xargs -n1 php -l > /dev/null
+      - name: PHPUnit
+        run: phpunit
       - run: node --test tests/php-security.test.js
 
   docs:
