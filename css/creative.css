@@ -10546,9 +10546,15 @@ input[id$='-carstatus-fontsize'] {
 
 .homeconnect-row {
   display: flex;
+  width: 100%;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
+}
+
+.homeconnect-name {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .homeconnect-name i {
@@ -10622,6 +10628,23 @@ input[id$='-carstatus-fontsize'] {
 
 /* The progress of an appliance: a small bar in the colour of the appliance
    icon (.homeconnect-icon-<type>), then the percentage, on one line. */
+.homeconnect-value.homeconnect-progress {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+/* The bar fills the space between the name of the appliance and the
+   percentage, so a short name gives a longer bar. */
+.homeconnect-progress .homeconnect-bar {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 1.5em;
+  margin: 0 0.5em;
+}
+
 .homeconnect-bar {
   display: inline-block;
   width: 3em;
