@@ -84,7 +84,9 @@ Settings
     - Optional: IP address (or host, or a complete ``http://...`` address) of another Domoticz
       to read the devices from, for testing. The browser reads that Domoticz directly, so it
       must be reachable from the browser (and allow it, no login). Default: the Domoticz of
-      the dashboard
+      the dashboard.
+      In the editor choose ``Default Domoticz`` (the address from ``config.js``, hcip and hcport stay
+      empty) or ``Custom`` (shows the IP address and port fields)
   * - hcport
     - Optional: port of that Domoticz. Default: ``8080``
   * - hcexclude

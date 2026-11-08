@@ -9281,6 +9281,8 @@ var DashticzDeviceEditor = (function () {
   function _homeconnectFontsizeHtml(prefix, values) {
     var t = _translations();
     var v = $.extend(_homeconnectValuesFromRows([]), values || {});
+    // Default Domoticz (as in config.js) unless another server is filled in.
+    var custom = !!v.ip;
     function field(key) {
       var setting = HOMECONNECT_SECTION.settings.filter(function (item) {
         return item.key === key;
@@ -9290,7 +9292,23 @@ var DashticzDeviceEditor = (function () {
     return (
       '<div class="mb-3 de-homeconnect-hardware">' +
       field('hardware') +
-      '</div><div class="mb-3 de-homeconnect-server">' +
+      '</div><div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-homeconnect-server">' +
+      _esc(t.homeconnect_block_server) +
+      '</label><select class="form-select de-homeconnect-serverselect" id="' +
+      _esc(prefix) +
+      '-homeconnect-server"><option value="default"' +
+      (custom ? '' : ' selected') +
+      '>' +
+      _esc(t.homeconnect_block_server_default) +
+      '</option><option value="custom"' +
+      (custom ? ' selected' : '') +
+      '>' +
+      _esc(t.homeconnect_block_server_custom) +
+      '</option></select></div><div class="mb-3 de-homeconnect-server"' +
+      (custom ? '' : ' style="display:none"') +
+      '>' +
       field('ip') +
       field('port') +
       '</div>' +
@@ -9298,11 +9316,23 @@ var DashticzDeviceEditor = (function () {
     );
   }
 
+  // The IP address and port only count when 'Custom' is selected.
+  $(document).on('change', '.de-homeconnect-serverselect', function () {
+    $(this)
+      .closest('.mb-3')
+      .next('.de-homeconnect-server')
+      .toggle($(this).val() === 'custom');
+  });
+
   function _readHomeconnectFields(prefix) {
     var values = {};
     HOMECONNECT_SECTION.settings.forEach(function (setting) {
       values[setting.key] = _settingValue(HOMECONNECT_SECTION, prefix, setting);
     });
+    if ($('#' + prefix + '-homeconnect-server').val() !== 'custom') {
+      values.ip = '';
+      values.port = null;
+    }
     return values;
   }
 
