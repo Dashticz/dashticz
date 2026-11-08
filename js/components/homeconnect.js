@@ -447,8 +447,7 @@ var DT_homeconnect = (function () {
         barHtml(app, progress) +
           (ready
             ? tr('homeconnect_ready_at', 'ready at') + ' ' + ready
-            : tr('homeconnect_unknown_time', 'time unknown')),
-        'homeconnect-progress'
+            : tr('homeconnect_unknown_time', 'time unknown'))
       );
     } else if (!app.progress && app.state) {
       var info = stateInfo(app);
@@ -458,8 +457,7 @@ var DT_homeconnect = (function () {
           (info.pct !== null ? barHtml(app, info.pct) : '') +
             (info.ready
               ? tr('homeconnect_ready_at', 'ready at') + ' ' + info.ready
-              : ''),
-          'homeconnect-progress'
+              : '')
         );
     }
     var warning = warningText(app);
