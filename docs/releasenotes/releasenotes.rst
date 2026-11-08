@@ -19,6 +19,8 @@ v4.20.34 (08-11-2026)
   Error messages in the browser console are logged as errors or warnings.
 - ESLint no longer warns about the shared globals of the js/ files.
 - The Scrutinizer configuration is removed.
+- Separator: the title size and the horizontal alignment can be set in Device Config (#1379).
+- Camera, iFrame and Timegraph: the height can be changed afterwards in Device Config (#1379).
 
 v4.20.33 (08-11-2026)
 ----------------------
