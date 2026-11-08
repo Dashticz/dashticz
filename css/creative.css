@@ -9290,32 +9290,6 @@ canvas {
   padding-left: 0;
 }
 
-/* The header (icon and title) lines up with the rows below: the icon starts
-   at the left edge, the title ends at the right edge, like the values. */
-.fullykiosk-block .dt_content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.fullykiosk-block .dt_content .col-icon {
-  flex: none;
-  width: auto !important;
-  margin: 0;
-  text-align: left;
-}
-
-.fullykiosk-block .dt_content .col-icon .icon {
-  margin-left: 0;
-}
-
-.fullykiosk-block .dt_content .dt_title {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
-  text-align: right;
-}
-
 /* The rows are laid out in as many columns as fit: every switch has its label right
    next to it on the same line. The charger group (charge data and its
    button), the brightness slider and the error text use the full width. */
