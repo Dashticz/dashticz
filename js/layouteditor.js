@@ -1429,6 +1429,20 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && definition.hcmode === 'appliances') {
+      // Home Connect block (js/deviceeditor.js's _showHomeconnectPopup()),
+      // dispatched purely on hcmode (js/components/homeconnect.js's canHandle()).
+      return {
+        definition: definition,
+        kind: 'homeconnect',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && definition.mowermode === 'info') {
       // Mower block (js/deviceeditor.js's _showMowerPopup()), dispatched purely
       // on mowermode (js/components/mower.js's canHandle()).

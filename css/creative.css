@@ -10519,3 +10519,119 @@ input[id$='-carstatus-fontsize'] {
   margin-top: 0;
   padding-top: 0;
 }
+
+/* Home Connect widget (js/components/homeconnect.js): one row per appliance
+   with its icon and name, and the progress, the ready time or a warning. */
+.homeconnect-block .dt_state {
+  overflow: auto;
+}
+
+.homeconnect-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px 4px;
+}
+
+.homeconnect-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.homeconnect-name i {
+  width: 1.2em;
+  text-align: center;
+}
+
+.homeconnect-icon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.35em;
+  margin-right: 0.15em;
+}
+
+/* The colour of each icon (the drawing uses currentColor). */
+.homeconnect-icon-washer {
+  color: #4fa8ff;
+}
+
+.homeconnect-icon-dryer {
+  color: #ff9f43;
+}
+
+.homeconnect-icon-coffee {
+  color: #d9a066;
+}
+
+.homeconnect-icon-dishwasher {
+  color: #2ecfc0;
+}
+
+.homeconnect-icon-oven {
+  color: #ff6b5e;
+}
+
+.homeconnect-icon-fridge {
+  color: #8fd3ff;
+}
+
+.homeconnect-icon-plug {
+  color: #b8c0cc;
+}
+
+.homeconnect-value {
+  text-align: right;
+}
+
+.homeconnect-warning {
+  color: yellow;
+  font-weight: bold;
+}
+
+.homeconnect-empty {
+  opacity: 0.6;
+}
+
+/* The font size field of the Home Connect block: room for 5 characters. */
+.de-section-fontsize input[id$='-homeconnect-fontsize'] {
+  width: calc(5ch + 2.75rem);
+  max-width: 100%;
+}
+
+.homeconnect-debug {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.75em;
+  opacity: 0.8;
+  word-break: break-word;
+}
+
+/* The progress of an appliance: a small bar in the colour of the appliance
+   icon (.homeconnect-icon-<type>), then the percentage, on one line. */
+.homeconnect-bar {
+  display: inline-block;
+  width: 3em;
+  height: 0.4em;
+  border-radius: 0.2em;
+  vertical-align: middle;
+  margin-right: 0.5em;
+  background: color-mix(in srgb, currentColor 25%, transparent);
+  overflow: hidden;
+}
+
+.homeconnect-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 0.2em;
+  background: currentColor;
+}
+
+.homeconnect-pct {
+  display: inline-block;
+  min-width: 2.4em;
+  text-align: right;
+  margin-right: 0.2em;
+}

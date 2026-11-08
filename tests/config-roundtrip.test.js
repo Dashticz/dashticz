@@ -209,3 +209,17 @@ test('a key with a trailing newline is quoted, not written as it is', () => {
   const line = runPhp('echo configwriter_format_props(["ab\\n" => 1]);');
   assert.equal(line, '{"ab\\n":1}');
 });
+
+// A Home Connect block (js/components/homeconnect.js) is dispatched on hcmode.
+test('a Home Connect block is written with its mode', () => {
+  const line = specialLine(
+    "['kind' => 'homeconnect', 'name' => 'Appliances', 'width' => 4, 'icon' => 'fas fa-home', 'custom_fields' => ['hcmode' => 'appliances', 'hcfontsize' => 18, 'hchardware' => 'Huishoud', 'hcip' => '192.168.1.190', 'hcport' => 8080]]"
+  );
+  assert.match(line, /hcmode:'appliances'/);
+  assert.match(line, /hcfontsize:18/);
+  assert.match(line, /hchardware:'Huishoud'/);
+  assert.match(line, /hcip:'192.168.1.190'/);
+  assert.match(line, /hcport:8080/);
+  assert.match(line, /width:4/);
+  assert.doesNotMatch(line, /type:/);
+});

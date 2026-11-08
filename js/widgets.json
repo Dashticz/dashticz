@@ -183,6 +183,15 @@
       "saved": true,
       "defaultWidth": 4
     },
+    "homeconnect": {
+      "idxLess": true,
+      "titleOptional": true,
+      "noDial": true,
+      "simpleIconPayload": true,
+      "referenceBased": true,
+      "saved": true,
+      "defaultWidth": 4
+    },
     "carstatus": {
       "idxLess": true,
       "titleOptional": true,
