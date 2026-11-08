@@ -8530,6 +8530,10 @@ test('Car status test view shows every row', () => {
     csdebug: 'true',
   });
   assert.match(withBar, /class="carstatus-battery [^"]*carstatus-charging/);
+  // The icons are SVG: a battery filled to the level, and a road.
+  assert.match(withBar, /<svg class="carstatus-icon"[^>]*>\s*<rect/);
+  assert.equal((withBar.match(/<svg class="carstatus-icon"/g) || []).length, 2);
+  assert.doesNotMatch(withBar, /fa-battery|fa-plug/);
   const noTest = context.DT_carstatus.carstatusHtml({
     csmode: 'status',
     csbattery: 5,
@@ -8564,6 +8568,17 @@ test('Car status battery bar: colour thresholds', () => {
   assert.equal(car.batteryClass(50), 'carstatus-batt-ok');
   assert.equal(car.batteryClass(99), 'carstatus-batt-ok');
   assert.equal(car.batteryClass(100), 'carstatus-batt-full');
+  // The levels are options of the block.
+  const limits = car.limitsOf({ cscritical: 20, cslow: '40', csmid: 70 });
+  assert.equal(car.batteryClass(19, limits), 'carstatus-batt-critical');
+  assert.equal(car.batteryClass(39, limits), 'carstatus-batt-low');
+  assert.equal(car.batteryClass(69, limits), 'carstatus-batt-mid');
+  assert.equal(car.batteryClass(70, limits), 'carstatus-batt-ok');
+  assert.deepEqual(JSON.parse(JSON.stringify(car.limitsOf({}))), {
+    critical: 15,
+    low: 30,
+    mid: 50,
+  });
 });
 
 test('Car is a repeatable Widgets card with its own settings table', () => {

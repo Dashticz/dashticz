@@ -1,6 +1,28 @@
 Release Notes
 =============
 
+v4.20.28 (07-11-2026)
+----------------------
+
+* **Code**
+
+- Updated dependencies: sass 1.108.1 and @playwright/test 1.65.0.
+
+v4.20.27 (07-11-2026)
+----------------------
+
+* **Code**
+
+- Updated dependencies: swiper 14.4.0, @babel/core 8.1.0, sass 1.107.1 and webpack-cli 7.3.1.
+
+v4.20.26 (04-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a little more space between the image and the battery
+  icon and progress bar.
+
 v4.20.25 (03-11-2026)
 ----------------------
 

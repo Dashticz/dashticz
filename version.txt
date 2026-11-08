@@ -1,4 +1,4 @@
 {
-    "version": "4.20.25",
-    "last_changes": "Car status widget: the text below the line starts at the same left position as the battery and the progress bar."
+    "version": "4.20.28",
+    "last_changes": "Updated dependencies: sass 1.108.1 and @playwright/test 1.65.0."
 }

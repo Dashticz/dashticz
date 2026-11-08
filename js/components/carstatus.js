@@ -16,6 +16,9 @@
  *   csbattery     battery level (%)
  *   csdriving     On while the car is driving
  *   cshome        On while the car is at home
+ *   cscritical    below this level (%) the battery blinks red; default 15
+ *   cslow         below this level (%) the battery is red; default 30
+ *   csmid         below this level (%) the battery is orange; default 50
  *   csdebug       test view: the state of every device below the status
  *   csfontsize    optional font size in px (8-60); empty = the theme's
  *
@@ -29,9 +32,9 @@
  *                  door or window is open
  *
  * The battery level is a progress bar like the one of the Mower widget. The
- * colour follows the level: below 15% blinking red, below 30% red, below 50%
- * orange, from 50% the green bar of the mower with a white percentage, and
- * 100% a light green percentage.
+ * colour follows the level: below cscritical (15%) blinking red, below cslow
+ * (30%) red, below csmid (50%) orange, from there the green bar of the mower
+ * with a white percentage, and 100% a light green percentage.
  */
 var DT_carstatus = (function () {
   var IDX_FIELDS = [
@@ -73,6 +76,7 @@ var DT_carstatus = (function () {
     render: render,
     carstatusHtml: carstatusHtml,
     batteryClass: batteryClass,
+    limitsOf: limitsOf,
     timePlus: timePlus,
   };
 
@@ -131,12 +135,27 @@ var DT_carstatus = (function () {
     );
   }
 
+  // The levels (%) below which the battery turns blinking red (critical), red
+  // (low) and orange (mid): cscritical (15), cslow (30) and csmid (50).
+  function limitsOf(block) {
+    var limit = function (field, fallback) {
+      var value = parseFloat(block && block[field]);
+      return isNaN(value) ? fallback : Math.max(0, Math.min(100, value));
+    };
+    return {
+      critical: limit('cscritical', 15),
+      low: limit('cslow', 30),
+      mid: limit('csmid', 50),
+    };
+  }
+
   // The colour class of a battery level.
-  function batteryClass(pct) {
+  function batteryClass(pct, limits) {
+    var l = limits || limitsOf(null);
     if (pct > 99) return 'carstatus-batt-full';
-    if (pct < 15) return 'carstatus-batt-critical';
-    if (pct < 30) return 'carstatus-batt-low';
-    if (pct < 50) return 'carstatus-batt-mid';
+    if (pct < l.critical) return 'carstatus-batt-critical';
+    if (pct < l.low) return 'carstatus-batt-low';
+    if (pct < l.mid) return 'carstatus-batt-mid';
     return 'carstatus-batt-ok';
   }
 
@@ -144,14 +163,37 @@ var DT_carstatus = (function () {
     return Math.max(0, Math.min(100, Math.round(pct)));
   }
 
-  // The battery percentage and the mileage.
-  function batteryTextHtml(pct, mileage) {
+  // The icons are drawn here as SVG: no icon font, and they follow the
+  // colour of the text. The battery is filled up to the battery level.
+  function batterySvg(pct) {
+    var width = Math.round((pct / 100) * 13 * 10) / 10;
+    return (
+      '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="2" y="6" width="18" height="12" rx="2"></rect><path d="M22 10.5v3"></path>' +
+      '<rect x="4.5" y="8.5" width="' +
+      width +
+      '" height="7" fill="currentColor" stroke="none"></rect></svg>'
+    );
+  }
+
+  function roadSvg() {
+    return (
+      '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M8 3 4 21M16 3l4 18M12 4v3M12 10.5v3M12 17v3"></path></svg>'
+    );
+  }
+
+  // The battery percentage with a battery icon and the mileage with a road
+  // icon.
+  function batteryTextHtml(pct, mileage, limits) {
     return (
       '<div class="carstatus-battery-text ' +
-      batteryClass(batteryLevel(pct)) +
+      batteryClass(batteryLevel(pct), limits) +
       '"><span class="carstatus-pct">' +
+      batterySvg(batteryLevel(pct)) +
       batteryLevel(pct) +
       '%</span><span class="carstatus-km">' +
+      roadSvg() +
       esc(Math.round(mileage)) +
       ' km</span></div>'
     );
@@ -160,19 +202,19 @@ var DT_carstatus = (function () {
   // The battery: the percentage at the start and the mileage at the end of
   // the progress bar, above it. Empty when the battery is shown next to the
   // icon (see render()).
-  function batteryHtml(pct, mileage, charging, inHeader) {
+  function batteryHtml(pct, mileage, charging, inHeader, limits) {
     if (inHeader) return '';
-    return fullBatteryHtml(pct, mileage, charging);
+    return fullBatteryHtml(pct, mileage, charging, limits);
   }
 
-  function fullBatteryHtml(pct, mileage, charging) {
+  function fullBatteryHtml(pct, mileage, charging, limits) {
     var level = batteryLevel(pct);
     return (
       '<div class="carstatus-battery ' +
-      batteryClass(level) +
+      batteryClass(level, limits) +
       (charging ? ' carstatus-charging' : '') +
       '">' +
-      batteryTextHtml(pct, mileage) +
+      batteryTextHtml(pct, mileage, limits) +
       '<div class="carstatus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
       level +
       '"><span class="carstatus-bar-fill" style="width:' +
@@ -272,7 +314,8 @@ var DT_carstatus = (function () {
             numberOf(block, 'battery'),
             numberOf(block, 'mileage'),
             charging,
-            batteryInHeader
+            batteryInHeader,
+            limitsOf(block)
           )
         : '') +
       '<div class="carstatus-below">' +
@@ -296,7 +339,8 @@ var DT_carstatus = (function () {
           fullBatteryHtml(
             numberOf(block, 'battery'),
             numberOf(block, 'mileage'),
-            isCharging(block)
+            isCharging(block),
+            limitsOf(block)
           ) +
           '</div>'
       );
@@ -310,7 +354,58 @@ var DT_carstatus = (function () {
           carstatusHtml(block, undefined, inHeader) +
           '</div>'
       );
+    sizeIcon(me);
     alignBelow(me);
+  }
+
+  // An image as icon: its smaller side gets the icon size of the theme
+  // (--icon-image-size), the larger side follows, so a wide or tall logo is not
+  // squeezed into the width of the icon column.
+  function sizeIcon(me) {
+    var root = me.$mountPoint && me.$mountPoint[0];
+    if (!root || !root.querySelector || typeof window === 'undefined') return;
+    var img = root.querySelector('.col-icon img.icon');
+    if (!img) return;
+    var apply = function () {
+      var width = img.naturalWidth;
+      var height = img.naturalHeight;
+      if (!width || !height) return;
+      var size =
+        parseFloat(
+          window.getComputedStyle(root).getPropertyValue('--icon-image-size')
+        ) || 30;
+      var wide = width >= height;
+      var other = Math.round(
+        wide ? (size * width) / height : (size * height) / width
+      );
+      img.style.setProperty('max-width', 'none', 'important');
+      img.style.setProperty('max-height', 'none', 'important');
+      img.style.setProperty('width', (wide ? other : size) + 'px', 'important');
+      img.style.setProperty(
+        'height',
+        (wide ? size : other) + 'px',
+        'important'
+      );
+      // The icon column grows with the image, so the battery next to it
+      // does not run under it.
+      var column = img.parentNode;
+      var imageWidth = wide ? other : size;
+      column.style.setProperty('width', imageWidth + 'px', 'important');
+      // The theme may offset the image inside the column: the column then
+      // ends where the image ends.
+      var overflow = Math.round(
+        img.getBoundingClientRect().right - column.getBoundingClientRect().right
+      );
+      if (overflow > 0)
+        column.style.setProperty(
+          'width',
+          imageWidth + overflow + 'px',
+          'important'
+        );
+      alignBelow(me);
+    };
+    if (img.complete) apply();
+    else img.addEventListener('load', apply);
   }
 
   // The text below the line starts at the left of the battery: with the
