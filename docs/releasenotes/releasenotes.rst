@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.20.30 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Tests: the Weather Info drag test measures the list once the popup has
+  stopped moving and tries the drag again when it did not land, so it no
+  longer fails in WebKit.
+
 v4.20.29 (08-11-2026)
 ----------------------
 
