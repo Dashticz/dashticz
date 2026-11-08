@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v4.20.29 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Home Connect widget: each open message shows once. The Status text no
+  longer repeats the first message, and the per-message devices are not added
+  again next to Notifications.
+- Home Connect widget: the open messages of an appliance that is switched
+  off, such as a coffee machine in stand-by with a full drip tray, stay
+  visible.
+
 v4.20.28 (07-11-2026)
 ----------------------
 

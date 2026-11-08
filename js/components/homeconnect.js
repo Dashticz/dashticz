@@ -41,8 +41,9 @@
  *
  * What the tile shows, per appliance: the icon and the name; while a program
  * runs the progress and "ready at HH:MM" (now + the remaining time); at 100% a
- * check mark; a warning when there is an alert (not for "no notification").
- * An appliance that is off, or has nothing to show, is left out.
+ * check mark; a warning when there is an alert (not for "no notification"),
+ * each message once, also while the appliance is off. An appliance that is
+ * off without messages, or has nothing to show, is left out.
  */
 var DT_homeconnect = (function () {
   var FIELDS = ['power', 'progress', 'time', 'state'];
@@ -391,13 +392,38 @@ var DT_homeconnect = (function () {
     );
   }
 
-  // The messages of an appliance, without the ones that mean nothing, with a
-  // status that needs attention first.
+  // The messages of an appliance, without the ones that mean nothing, each
+  // once. The plugin's Notifications / Meldingen device already lists every
+  // open message (most serious first), so when it is there the per-message
+  // devices ("$" devices, read with use_hidden) are not added again. A status
+  // that needs attention leads: 'Actie vereist: lekbak vol (+2)' becomes
+  // 'Actie vereist: Lekbak vol, Waterreservoir leeg' instead of naming the
+  // first message twice.
   function warningText(app) {
-    var status = dataOf(app.state);
-    return (STATE_WARNING.test(status) ? [status] : [])
-      .concat(app.alerts.map(alertText).filter(Boolean))
-      .join(', ');
+    var summary = app.alerts.filter(function (dev) {
+      return ALERT_NAME.test(cleanName(dev.Name));
+    });
+    var seen = {};
+    var messages = [];
+    (summary.length ? summary : app.alerts)
+      .map(alertText)
+      .filter(Boolean)
+      .forEach(function (text) {
+        text.split(/\s*,\s*/).forEach(function (part) {
+          var key = part.toLowerCase();
+          if (part && !seen[key]) {
+            seen[key] = true;
+            messages.push(part);
+          }
+        });
+      });
+    var status = isOff(app.power) ? '' : dataOf(app.state);
+    if (!STATE_WARNING.test(status)) return messages.join(', ');
+    if (!messages.length) return status;
+    var colon = status.indexOf(':');
+    return colon >= 0
+      ? status.slice(0, colon) + ': ' + messages.join(', ')
+      : status + ', ' + messages.join(', ');
   }
 
   // Whether the status of the appliance says that the program has finished
@@ -423,14 +449,16 @@ var DT_homeconnect = (function () {
   }
 
   // The rows of one appliance: the progress while a program runs, and its
-  // warnings. Nothing for an appliance that is switched off or idle.
+  // warnings. An appliance that is switched off (a coffee machine in stand-by)
+  // still shows its open messages, such as a full drip tray; nothing for one
+  // that is off or idle without messages.
   function rowsHtml(app, now) {
-    if (
-      app.power
-        ? isOff(app.power)
-        : !app.progress && !app.state && !app.alerts.length
-    )
+    if (app.power ? false : !app.progress && !app.state && !app.alerts.length)
       return '';
+    if (app.power && isOff(app.power)) {
+      var open = warningText(app);
+      return open ? row(app, esc(open), 'homeconnect-warning') : '';
+    }
     var html = '';
     var progress = app.progress
       ? parseFloat(dataOf(app.progress).replace(',', '.')) || 0
