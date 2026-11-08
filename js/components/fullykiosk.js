@@ -106,7 +106,7 @@ var DT_fullykiosk = (function () {
   };
 
   // The data column of a row: icon, label and value.
-  function dataHtml(icon, label, value, extraClass) {
+  function dataHtml(icon, label, value, extraClass, middle) {
     return (
       '<span class="fullykiosk-data' +
       (extraClass ? ' ' + extraClass : '') +
@@ -117,6 +117,7 @@ var DT_fullykiosk = (function () {
       '<span class="fullykiosk-label">' +
       label +
       '</span>' +
+      (middle || '') +
       (value ? '<span class="fullykiosk-value">' + value + '</span>' : '') +
       '</span>'
     );
@@ -330,8 +331,8 @@ var DT_fullykiosk = (function () {
     return 'fa-battery-empty';
   }
 
-  // The battery bar, as the bar of the Husqvarna widget: the bar is 100%
-  // wide, green up to the battery level and grey from there to 100%. A dot on
+  // The battery bar, as the bar of the Husqvarna widget: the bar fills the
+  // space between the label and the percentage, green up to the battery level and grey from there to 100%. A dot on
   // the bar marks the percentage at which the charger is switched next.
   function barHtml(level, mark, markLabel) {
     var pct =
@@ -372,18 +373,11 @@ var DT_fullykiosk = (function () {
       .toggleClass('on', charger === 'On')
       .toggleClass('off', charger === 'Off');
     var html = '<div class="fullykiosk-rows">';
-    var batteryHtml = isOn(block.fullyshowbattery, true)
-      ? dataHtml(
-          batteryIcon(level),
-          esc(DT_function.t('fullykiosk_battery', 'Battery')),
-          level === null ? '-' : esc(level + ' %'),
-          'fullykiosk-battery'
-        )
-      : '';
-    if (batteryHtml || switchIdx(block)) {
-      // The battery level with a bar below the text, then the percentage at
-      // which the charger is switched next. The charger itself is switched
-      // by clicking the tile.
+    var showBattery = isOn(block.fullyshowbattery, true);
+    if (showBattery || switchIdx(block)) {
+      // The battery level with the bar between the text and the percentage,
+      // then the percentage at which the charger is switched next. The
+      // charger itself is switched by clicking the tile.
       var nextHtml = '';
       var mark = null;
       var markLabel = '';
@@ -396,10 +390,18 @@ var DT_fullykiosk = (function () {
         );
         nextHtml = dataHtml('fa-arrows-up-down', markLabel, esc(mark + ' %'));
       }
+      var batteryHtml = showBattery
+        ? dataHtml(
+            batteryIcon(level),
+            esc(DT_function.t('fullykiosk_battery', 'Battery')),
+            level === null ? '-' : esc(level + ' %'),
+            'fullykiosk-battery',
+            barHtml(level, mark, markLabel)
+          )
+        : '';
       html +=
         '<div class="fullykiosk-row fullykiosk-group">' +
         batteryHtml +
-        (batteryHtml ? barHtml(level, mark, markLabel) : '') +
         nextHtml +
         '</div>';
     }
