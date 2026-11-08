@@ -683,6 +683,73 @@ test('Home Connect widget reads the devices of the Dutch plugin', () => {
   assert.equal(hc.appliances({})[2].alerts.length, 1);
 });
 
+test('Home Connect widget shows each coffee machine message once', () => {
+  const dev = (idx, Name, Data, Status, SubType) => ({
+    idx,
+    Name,
+    Data,
+    Status,
+    SubType,
+    HardwareName: 'Home Connect',
+  });
+  const devices = {
+    1: dev(1, 'Koffieautomaat Aan/uit', 'On', 'On'),
+    2: dev(
+      2,
+      'Koffieautomaat Status',
+      'Actie vereist: lekbak vol (+1)',
+      '',
+      'Alert'
+    ),
+    3: dev(
+      3,
+      'Koffieautomaat Meldingen',
+      'Lekbak vol, Waterreservoir leeg',
+      '',
+      'Alert'
+    ),
+    // The per-message "$" devices, read when use_hidden is on.
+    4: dev(4, '$Koffieautomaat Lekbak vol', 'Lekbak vol', '', 'Alert'),
+    5: dev(
+      5,
+      '$Koffieautomaat Waterreservoir leeg',
+      'Waterreservoir leeg',
+      '',
+      'Alert'
+    ),
+  };
+  const hc = loadComponent('js/components/homeconnect.js', {
+    Domoticz: { getAllDevices: () => devices },
+    DT_function: {
+      escapeHtml: (v) => String(v),
+      t: (key, fallback) => fallback,
+    },
+  });
+  assert.match(
+    hc.homeconnectHtml({}),
+    /homeconnect-warning">Actie vereist: Lekbak vol, Waterreservoir leeg<\/span>/
+  );
+  // Without the Notifications device the per-message devices are used.
+  delete devices[3];
+  devices[2].Data = 'Gereed';
+  assert.match(
+    hc.homeconnectHtml({}),
+    /homeconnect-warning">Lekbak vol, Waterreservoir leeg<\/span>/
+  );
+  // In stand-by (Power off) an open message still shows, the status does not.
+  devices[1].Status = 'Off';
+  devices[1].Data = 'Off';
+  devices[2].Data = 'Actie vereist: lekbak vol (+1)';
+  devices[5].Data = 'Geen melding';
+  assert.match(
+    hc.homeconnectHtml({}),
+    /Koffieautomaat<\/span><span[^>]*homeconnect-warning">Lekbak vol<\/span>/
+  );
+  // Off without messages: left out.
+  devices[4].Data = 'Geen melding';
+  assert.match(hc.homeconnectHtml({}), /No active appliances/);
+});
+
 test('Home Connect widget can read another Domoticz', () => {
   const hc = loadComponent('js/components/homeconnect.js', {
     DT_function: { escapeHtml: String, t: (key, fallback) => fallback },
