@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.20.31 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Installer: when the web-server user cannot enter a parent folder of the
+  Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such
+  as /home/pi private), the write-access step now names that folder and the
+  command that fixes it, instead of only reporting Permission denied on
+  custom/.
+
 v4.20.30 (08-11-2026)
 ----------------------
 

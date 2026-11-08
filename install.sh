@@ -125,7 +125,8 @@ if [ -f "$WRITE_ACCESS" ]; then
         echo "Web-server write access configured for custom/."
     else
         echo "Warning: could not configure web-server write access automatically."
-        echo "After your web server is installed, run:"
+        echo "Fix the problem reported above (or install your web server first),"
+        echo "then run:"
         echo "  sudo sh $WRITE_ACCESS"
     fi
 else
