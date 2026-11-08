@@ -72,7 +72,6 @@ var Domoticz = (function () {
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
     var selectWS = useWS && !selectHTTP;
     if (reconnecting) return $.Deferred().reject('reconnecting');
-    //      console.log(lastRequest.state(), query);
     if (lastRequest.state() === 'rejected') {
       lastRequest = $.Deferred().resolve();
     }
@@ -112,11 +111,9 @@ var Domoticz = (function () {
           }
           setTimeout(function () {
             if (newPromise.state() === 'pending') {
-              //                            console.log('rejected by timeout: ', query);
               newPromise.reject('timeout: ' + query);
             }
             //                    else
-            //                        console.log('was resolved or failed already')
           }, cfg.domoticz_timeout); //reject promise after timeout of 2000ms
         } else
           $.get({
@@ -192,7 +189,6 @@ var Domoticz = (function () {
               newPromise.reject(query + ' ' + textStatus);
             },
           }).then(function (res) {
-            //                        console.log('ajax resolved ' + query);
             newPromise.resolve(res);
           });
         return newPromise;
@@ -318,7 +314,7 @@ var Domoticz = (function () {
             } else {
               console.log('not authenticated');
               if (cfg.code) {
-                console.log('We had a code, but authorization failed');
+                console.error('We had a code, but authorization failed');
                 throw new Error('Authorization error after code request');
               }
               //Maybe we can use a cookie from a previous session
@@ -338,7 +334,7 @@ var Domoticz = (function () {
               }
               if (cfg.authenticationMethod === 'basic') {
                 // Trusted network check failed. Now activate Basic Auth and retry.
-                console.log(
+                console.warn(
                   'Trusted network not available, retrying with Basic Auth'
                 );
                 cfg.basicAuthEnc = window.btoa(
@@ -353,7 +349,7 @@ var Domoticz = (function () {
                     console.log('Authenticated via Basic Auth!');
                     return;
                   }
-                  console.log('Invalid user credentials');
+                  console.error('Invalid user credentials');
                   var err =
                     'Invalid user credentials. Check user_name and pass_word in CONFIG.js.';
                   var ishttp = !cfg.url.toLowerCase().startsWith('https');
@@ -438,7 +434,7 @@ var Domoticz = (function () {
         } else throw new Error(oAuthErrorStr);
       })
       .catch(function () {
-        console.log('failed.');
+        console.error('failed.');
         throw new Error(oAuthErrorStr);
       });
   }
@@ -512,14 +508,14 @@ var Domoticz = (function () {
     initPromise = authenticate()
       .then(getVersion)
       .fail(function (err) {
-        console.log(err);
+        console.error(err);
         throw err;
       })
       .then(checkWSSupport)
       .catch(function (err) {
         if (!useWS) throw err;
         useWS = false;
-        console.log(
+        console.warn(
           'Websocket failed, switch back to http. Check IP whitelisting in Domoticz.'
         );
         Debug.log(
@@ -582,13 +578,12 @@ var Domoticz = (function () {
     try {
       socket = new WebSocket(wsurl + 'json', ['domoticz']);
     } catch (ev) {
-      console.log('websocket failed');
+      console.error('websocket failed');
       initialUpdate.reject('websocket creation failed');
       throw new Error('websocket creation failed');
     }
     //var mysocket=this.socket;
     socket.onopen = function () {
-      //            console.log(e)
       console.log('[open] Connection established');
       Debug.log('[open] Connection established');
 
@@ -607,8 +602,6 @@ var Domoticz = (function () {
       requestAllDevices(false);
     };
     socket.onmessage = function (event) {
-      //            console.log(`[message] Data received from server: ${event.data}`);
-      //console.log(event.data);
       var res;
       var res2;
       try {
@@ -844,7 +837,6 @@ var Domoticz = (function () {
   }
 
   function _setAllDevices(data) {
-    //        console.log(data.ActTime);
     if (!data) {
       console.log(' no data');
       return;
@@ -877,7 +869,6 @@ var Domoticz = (function () {
 
   function _setDevice(data) {
     //not tested!
-    //        console.log(data.ActTime);
     if (!data) {
       console.log(' no data');
       return;
@@ -913,7 +904,6 @@ var Domoticz = (function () {
   }
 
   function _setAllVariables(data) {
-    //console.log('Variables:',data)
     //lastUpdate.variables = data.ActTime;
     for (var r in data.result) {
       var variable = data.result[r];
@@ -1034,7 +1024,6 @@ var Domoticz = (function () {
   }
 
   function hold(idx) {
-    //console.log('hold ', idx);
     deviceObservable.hold(idx);
   }
 

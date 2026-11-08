@@ -819,13 +819,13 @@ function loadCustomCss() {
               applyCss(data, fallbackFilename);
             },
             error: function () {
-              console.log(
+              console.warn(
                 'No valid custom css file: ' + fallbackFilename + '. Skipping.'
               );
             },
           });
         } else {
-          console.log('No valid custom css file: ' + filename + '. Skipping.');
+          console.warn('No valid custom css file: ' + filename + '. Skipping.');
         }
       },
     });
@@ -852,7 +852,6 @@ function loadCustomCss() {
 }
 
 function enableLogRocket(enable_logrocket) {
-  console.log('enabling LogRocket');
   if (!window.LogRocket) return;
   window.LogRocket.init('ewgztp/dashticz');
   window.LogRocket.identify(enable_logrocket);

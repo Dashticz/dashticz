@@ -21,7 +21,7 @@ var DT_tvguide = {
     var tvobject = $(me.mountPoint + ' .dt_state');
     loadChannels(me)
       .fail(function () {
-        console.log('TVGuide error');
+        console.error('TVGuide error');
       })
       .then(function () {
         var cache = new Date().getTime();
@@ -107,7 +107,7 @@ var DT_tvguide = {
           return allchannels;
         })
         .fail(function () {
-          console.log(
+          console.error(
             'error getting channel info from tvgids. Retrying later.'
           );
         });

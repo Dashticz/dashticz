@@ -104,12 +104,6 @@ Dashticz.register(DT_button);
   var observer = null;
   var styleId = 'dt-wizard-170-171-style';
 
-  function esc(value) {
-    return $('<div>')
-      .text(value == null ? '' : String(value))
-      .html();
-  }
-
   function ensureStyle() {
     if (document.getElementById(styleId)) return;
     var style = document.createElement('style');

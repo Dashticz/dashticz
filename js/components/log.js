@@ -16,7 +16,6 @@ var DT_log = {
   defaultContent: '<div class="items"></div>',
   refresh: function (me) {
     var LOG_QUERY = 'type=command&param=getlog&loglevel=' + me.block.level;
-    //console.log(LOG_QUERY);
     Domoticz.request(LOG_QUERY).then(function (logdata) {
       var $items = $(me.mountPoint + ' .items');
       if (me.popup) $(me.mountPoint + ' .log').addClass('popup'); //temporary. Move to generic handler

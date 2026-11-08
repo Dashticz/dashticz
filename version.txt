@@ -1,4 +1,4 @@
 {
-    "version": "4.20.33",
-    "last_changes": "Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so it no longer fails with 'phpunit: command not found'."
+    "version": "4.20.34",
+    "last_changes": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed."
 }

@@ -118,7 +118,7 @@ function initVersion() {
       }
     })
     .then(null, function () {
-      console.log('Error loading version info. Skipping version check');
+      console.warn('Error loading version info. Skipping version check');
       return $.Deferred().resolve();
     });
 }
@@ -207,7 +207,7 @@ function checkForUpdate() {
       });
     })
     .then(null, function () {
-      console.log('Error loading git info. Probably no internet');
+      console.warn('Error loading git info. Probably no internet');
     });
 }
 

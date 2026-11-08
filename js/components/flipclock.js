@@ -1656,10 +1656,7 @@ var FlipClock;
         date = this.getDateObject();
       }
 
-      console.log(date);
-
       var hours = date.getHours();
-      var merid = hours > 12 ? 'PM' : 'AM';
       var data = [
         hours > 12 ? hours - 12 : hours === 0 ? 12 : hours,
         date.getMinutes(),
@@ -2423,8 +2420,6 @@ var FlipClock;
      */
 
     build: function () {
-      var t = this;
-
       var time = this.factory.time.getTime(false, this.showSeconds);
 
       this.base(time);

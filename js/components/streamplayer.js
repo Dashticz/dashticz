@@ -136,7 +136,7 @@ var DT_streamplayer = {
         callback(data || {});
       })
       .fail(function () {
-        console.log('StreamPlayer: unable to load the local logo list');
+        console.error('StreamPlayer: unable to load the local logo list');
         callback({});
       });
   },
@@ -325,8 +325,8 @@ var DT_streamplayer = {
               $('.update').remove();
             })
             .catch(function (err) {
-              console.log(err);
-              console.log(err.message);
+              console.error(err);
+              console.error(err.message);
               infoMessage('Streamplayer', err.message);
             });
         };

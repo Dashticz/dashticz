@@ -453,7 +453,7 @@ function prepareGraphData(me) {
             me.realrange = 'day';
             break;
           default:
-            console.log('invalid range: ' + me.graphConfig.range);
+            console.error('invalid range: ' + me.graphConfig.range);
         }
         if (me.graphConfig.groupBy) {
           me.groupBy = me.graphConfig.groupBy;
@@ -469,7 +469,7 @@ function prepareGraphData(me) {
       me.aggregate = me.graphConfig.aggregate || me.block.aggregate; //todo: we should merge all keys of graphConfig into me at once, or create copy of block (_block) and merge graphProperties and block into _block
     }
     if (!me.customRange) {
-      console.log(
+      console.error(
         'custom graph, but graph selector ' + me.range + ' not found'
       );
     }
@@ -715,7 +715,7 @@ function groupData(graph, idx, data, labels) {
   var returnData = [];
 
   if (!data.length) {
-    console.log('dataset without data: No grouping');
+    console.warn('dataset without data: No grouping');
     return;
   }
 
@@ -764,7 +764,7 @@ function groupData(graph, idx, data, labels) {
 
 function groupLabels(graph, labels) {
   if (!labels.length) {
-    console.log('dataset without labels: No grouping');
+    console.warn('dataset without labels: No grouping');
     return [];
   }
 
@@ -990,7 +990,6 @@ function filterGraphDataTodayTomorrow(graph) {
     .endOf('day')
     .add(1, 'day')
     .format('YYYY-MM-DD HH:mm');
-  console.log(today, tomorrow);
   graph.data.result = graph.data.result.filter(function (element) {
     return element.d >= today && element.d <= tomorrow;
   });
@@ -1031,12 +1030,31 @@ function graphRender(graph, graphProperties) {
     if (parseInt(height) > 0)
       //only change height is we have a valid height value
       $('.' + graphIdx + ' .graphcontent').css('height', height);
-    //console.log('test');
   }
 */
 
   Chart.defaults.color = graph.block.fontColor;
   new Chart(graph.chartctx, graphProperties);
+}
+
+/* Compiles a formula from the graph config (the custom data of a graph or a
+   customHeader entry) into a function of the given variable names, such as
+   d for custom data or devices for a customHeader. The formula only sees
+   these variables and the globals, not the local variables of the graph
+   code that the earlier eval call exposed. */
+function compileGraphFormula(expression, names) {
+  var body = 'return (' + String(expression).replace(/[\s;]+$/, '') + '\n);';
+  return Function.apply(null, names.concat([body]));
+}
+
+function evaluateGraphFormula(expression, scope) {
+  var names = Object.keys(scope);
+  return compileGraphFormula(expression, names).apply(
+    null,
+    names.map(function (name) {
+      return scope[name];
+    })
+  );
 }
 
 function createCustomData(graph) {
@@ -1049,6 +1067,17 @@ function createCustomData(graph) {
   graph.ykeys = Object.keys(graph.graphConfig.data);
 
   var d = {}; //object to store the latest value of each key
+  var formulas = {};
+  graph.ykeys.forEach(function (_value) {
+    try {
+      formulas[_value] = compileGraphFormula(graph.graphConfig.data[_value], [
+        'd',
+      ]);
+    } catch (error) {
+      console.error('error in custom data ' + graph.graphConfig.data[_value]);
+      console.error(error);
+    }
+  });
   var previousDataPoint;
   var customResult = [];
   graph.data.result.forEach(function (y) {
@@ -1060,14 +1089,14 @@ function createCustomData(graph) {
     }
     dataPoint.d = y.d;
     graph.ykeys.forEach(function (_value) {
-      var customValue = graph.graphConfig.data[_value];
+      if (!formulas[_value]) return;
       try {
-        var res = eval(customValue).toFixed(2);
+        var res = formulas[_value](d).toFixed(2);
         valid = true;
         dataPoint[_value] = res;
       } catch (error) {
-        console.log('error in eval ' + customValue);
-        console.log(error);
+        console.error('error in custom data ' + graph.graphConfig.data[_value]);
+        console.error(error);
       }
     });
     if (valid) {
@@ -1432,7 +1461,10 @@ function createCurrentValues(me) {
               if (device.idx === parseInt(key)) {
                 //the header element is the current device. Fill in the current value
                 currentValues.push(
-                  eval(header[key].replace('data', 'device.currentValue'))
+                  evaluateGraphFormula(
+                    header[key].replace('data', 'device.currentValue'),
+                    { device: device, devices: Domoticz.getAllDevices() }
+                  )
                 );
               } else if (isNaN(key)) {
                 header[key] = header[key].replace(
@@ -1443,22 +1475,28 @@ function createCurrentValues(me) {
               }
             });
             if (isNaN(key)) {
-              currentValues.push(eval(header[key]));
+              currentValues.push(
+                evaluateGraphFormula(header[key], {
+                  devices: Domoticz.getAllDevices(),
+                })
+              );
             }
           } catch (error) {
-            console.log('Error in customHeader:', key, header[key]);
-            console.log(error);
+            console.error('Error in customHeader:', key, header[key]);
+            console.error(error);
           }
         }
         break;
       case 'string': //customHeader is a string. We just evaluate the complete string
-        // eslint-disable-next-line no-unused-vars
-        var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
         try {
-          currentValues.push(eval(me.block.customHeader));
+          currentValues.push(
+            evaluateGraphFormula(me.block.customHeader, {
+              devices: Domoticz.getAllDevices(),
+            })
+          );
         } catch (error) {
-          console.log('Error in customHeader:', me.block.customHeader);
-          console.log(error);
+          console.error('Error in customHeader:', me.block.customHeader);
+          console.error(error);
         }
         break;
       case 'function':
@@ -1466,7 +1504,7 @@ function createCurrentValues(me) {
         try {
           cv = me.block.customHeader(me);
         } catch (err) {
-          console.log('Invalid customHeader function for block ', me.key);
+          console.error('Invalid customHeader function for block ', me.key);
         }
         currentValues.push(cv);
         break;
@@ -1765,7 +1803,7 @@ function getDefaultGraphProperties(graph, block) {
               try {
                 val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
               } catch (err) {
-                console.log('error in tooltip');
+                console.error('error in tooltip');
               }
               //The tooltip body text is formatted by Chart.js with the browser locale (e.g. '2,19').
               //parseFloat of that text drops the decimals, so prefer the numeric data point value.

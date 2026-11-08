@@ -6218,58 +6218,6 @@ canvas {
 
 /* END: CAMERA COMPONENT */
 
-/* START: CORONAVIRUS */
-
-.coronavirus .graphheader {
-  height: 20px;
-}
-
-.coronavirus .graphtitle {
-  width: 90%;
-}
-
-.coronavirus .graphheader .fx {
-  font-size: 16px !important;
-  margin-left: 10px;
-}
-
-.coronavirus .graphheader img {
-  height: 20%;
-  margin-right: 5px;
-}
-
-.coronavirus.block_report {
-  font-size: 24px !important;
-  padding: 15px 5px !important;
-}
-
-.coronavirus.block_report .fx {
-  font-size: 150% !important;
-}
-
-.coronavirus.block_report .title {
-  font-size: 14px !important;
-  color: #ccc;
-}
-
-.coronavirus.block_report .title {
-  font-weight: 900;
-}
-
-.coronavirus.block_report .flag {
-  max-width: 100%;
-}
-
-.vertical-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-}
-
-/* END: CORONAVIRUS */
-
 /* START: AGENDA */
 
 .agenda table {

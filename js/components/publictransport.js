@@ -261,11 +261,9 @@
   }
 
   function transformDRGL(me, data) {
-    var block = me.block;
     var result = {
       departures: [],
     };
-    //console.log(data);
     $(data)
       .find('.list-group-item')
       .each(function () {
@@ -482,16 +480,6 @@ voertuigNummer: "330265"
     } else {
       return input;
     }
-  }
-
-  function addMinutes(time /*"hh:mm"*/, minsToAdd /*"N"*/) {
-    function z(n) {
-      return (n < 10 ? '0' : '') + n;
-    }
-    var bits = time.split(':');
-    var mins = bits[0] * 60 + +bits[1] + +minsToAdd;
-
-    return z(((mins % (24 * 60)) / 60) | 0) + ':' + z(mins % 60);
   }
 
   Dashticz.register(DT_publictransport);

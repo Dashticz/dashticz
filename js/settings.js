@@ -1268,7 +1268,7 @@ function loadSettings() {
     },
   })
     .catch(function () {
-      console.log('PHP not installed.');
+      console.warn('PHP not installed.');
     })
     .then(function () {
       // If config_mode was not explicitly set in CONFIG.js, persist the
@@ -1284,7 +1284,7 @@ function loadSettings() {
           _CORS_PATH = settings['dashticz_php_path'] + 'cors.php?';
         else {
           _CORS_PATH = 'https://cors-anywhere.herokuapp.com/';
-          console.log('PHP not enabled and default_cors_url not set.');
+          console.warn('PHP not enabled and default_cors_url not set.');
           console.log('CORS proxy: ' + _CORS_PATH);
         }
         //    _CORS_PATH = 'http://192.168.178.18:8081/';
