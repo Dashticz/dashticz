@@ -1,6 +1,25 @@
 Release Notes
 =============
 
+v4.20.34 (08-11-2026)
+----------------------
+
+* **Enhancements**
+
+- The Coronavirus block (``type: 'corona'``) is removed. Its data source
+  stopped long ago. Remove such a block from your CONFIG.js.
+
+* **Code**
+
+- Graphs: the formulas of custom data and ``customHeader`` are no longer run
+  with ``eval``. A formula sees only ``d`` (custom data), ``device`` and
+  ``devices`` (customHeader), as described in the graph documentation, and
+  not the internal variables of the graph code.
+- Unused functions and variables and leftover debug logging are removed.
+  Error messages in the browser console are logged as errors or warnings.
+- ESLint no longer warns about the shared globals of the js/ files.
+- The Scrutinizer configuration is removed.
+
 v4.20.33 (08-11-2026)
 ----------------------
 

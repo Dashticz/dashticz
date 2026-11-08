@@ -197,7 +197,7 @@ var DT_timegraph = (function () {
   function getValueUnit(data) {
     var dataScale = data.scale || 1;
     if (!data.value) {
-      console.log('Invalid data ', data);
+      console.error('Invalid data ', data);
       return;
     }
     if (typeof data.value === 'number') {
@@ -220,7 +220,7 @@ var DT_timegraph = (function () {
         unit: unit,
       };
     } else {
-      console.log('invalid dial data');
+      console.error('invalid dial data');
       return {
         value: 0,
         unit: data.unit,
@@ -260,7 +260,7 @@ var DT_timegraph = (function () {
       res.image = id.image;
     }
     if (typeof inputData.value === 'undefined') {
-      console.log(
+      console.error(
         'Value not found for field ' +
           id.value +
           ' in device ' +
@@ -280,11 +280,10 @@ var DT_timegraph = (function () {
   }
 
   function addData(me, setIdx, device) {
-    //    console.log('Adding ', device);
     var dataset = me.datasets[setIdx];
     var timestamp = moment(device.LastUpdate);
     if (timestamp < dataset.lastUpdate) {
-      console.log('wrong order. Skippihg');
+      console.error('wrong order. Skippihg');
       return;
     }
     dataset.lastUpdate = timestamp;
@@ -338,10 +337,8 @@ var DT_timegraph = (function () {
       me.datasets[setIdx].tick = true;
       while (dataset.data.length > 2 && dataset.data[1].x < minTime) {
         dataset.data.shift();
-        //      console.log('shifting');
       }
     });
-    //    console.log(length);
     me.chart.update();
   }
 })();

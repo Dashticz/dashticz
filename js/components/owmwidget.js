@@ -84,7 +84,6 @@ var DT_owmwidget = (function () {
       me.$block.css('font-size', fontSize + 'px');
       var dimension = dimensions[me.block.layout];
       if (dimension) {
-        var bw = me.$block.width();
         var scale = (1.0 * me.$block.width()) / dimension.x;
         $('#' + me.containerid)
           .css('transform', 'scale(' + scale + ')')

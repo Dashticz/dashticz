@@ -225,7 +225,6 @@ var DT_weather = (function () {
     var findProviderPromise = providers.reduce(function (acc, provider) {
       return acc.then(function (res) {
         if (res) return res;
-        console.log('test weather provider ' + provider.id);
         return DT_function.cached(provider.url, $.getJSON)
           .then(function (data) {
             if (!provider.json) {

@@ -21,7 +21,6 @@ var Dashticz = (function () {
     'alarmmeldingen',
     'secpanel',
     'graph',
-    'coronavirus',
     'camera',
     'nzbget',
     'garbage', //place before calendar, to detect company: ical with icalurl as garbage block
@@ -229,9 +228,6 @@ var Dashticz = (function () {
           renderBlock(me);
           special.refresh(me);
         });
-      }
-      if (me.block.styling) {
-        console.log('styling', me.block.styling);
       }
     });
   }

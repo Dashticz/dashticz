@@ -2046,14 +2046,6 @@ var DashticzDeviceEditor = (function () {
     return preserved;
   }
 
-  function _customFieldsObject(rows) {
-    var customFields = {};
-    (rows || []).forEach(function (row) {
-      if (row && row.field) customFields[row.field] = row.value;
-    });
-    return customFields;
-  }
-
   function _deviceCustomFieldsObject(rows, preserved) {
     var customFields = $.extend({}, preserved || {});
     (rows || []).forEach(function (row) {
@@ -4335,14 +4327,6 @@ var DashticzDeviceEditor = (function () {
   // Row type -> candidate device list / help text. Switch is the default
   // (mode '' or absent); Temperature and Other are the two sensor-style
   // rows without a toggle.
-  function _clusterDeviceListForMode(mode) {
-    return mode === 'temperature'
-      ? _clusterTemperatureDeviceList()
-      : mode === 'other'
-        ? _clusterOtherDeviceList()
-        : _clusterAvailableDeviceList();
-  }
-
   function _clusterHelpTextForMode(t, mode) {
     return mode === 'temperature'
       ? t.cluster_devices_help_temperature

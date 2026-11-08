@@ -63,7 +63,12 @@ module.exports = [
     // other rule of eslint:recommended fails the check.
     rules: {
       'no-undef': 'warn',
-      'no-unused-vars': 'warn',
+      // Top-level names in js/ are globals shared with other files, and
+      // unused callback arguments document the callback's signature.
+      'no-unused-vars': [
+        'warn',
+        { vars: 'local', args: 'none', caughtErrors: 'none' },
+      ],
       'no-useless-escape': 'warn',
       'no-useless-assignment': 'warn',
       'no-redeclare': 'warn',

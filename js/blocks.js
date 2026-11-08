@@ -157,7 +157,6 @@ function convertBlock(blocktype, c) {
 
 function getCustomFunction(functionname, block, afterupdate) {
   var functiondevname = functionname + '_' + block.key;
-  //  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
   if (typeof window[functiondevname] === 'function') {
     try {
       if (functionname === 'getBlock') return window[functiondevname](block);
@@ -677,7 +676,6 @@ function getBlockClick(block, selector) {
   var url = block.url; //todo: undocumented feature
   var graph = block.graph;
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
-  //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
   var $div = block.$mountPoint.find(
     typeof selector === 'undefined' ? '.mh' : selector
@@ -1274,7 +1272,6 @@ function selectBlockValues(parentBlock) {
 function createBlocks(origBlock) {
   /* I assume this function gets called once per block
   // That means we first have to remove the previous content
-  // console.log('createBlocks for '+blockParent.idx);
   //
   */
 
@@ -1429,7 +1426,6 @@ function loadMaps(b, map) {
 
 // eslint-disable-next-line no-unused-vars
 function getAllDevicesHandler(value) {
-  //    console.log('alldevices update');
   alldevices = Domoticz.getAllDevices();
   $('.solar').remove();
   if ($('.sunrise').length > 0) {

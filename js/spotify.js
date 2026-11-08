@@ -105,8 +105,8 @@ var SpotifyModule = (function () {
     spotifyApi.getMe(function (err, user) {
       if (!err) userinfo = user;
       else {
-        console.log('Error getting Spotify user info. Retry in 5 seconds');
-        console.log(err.status);
+        console.error('Error getting Spotify user info. Retry in 5 seconds');
+        console.error(err.status);
         if (err.status == 401) {
           //token expired or not authorized
           console.log('token expired');
@@ -129,7 +129,7 @@ var SpotifyModule = (function () {
         '<option>' + language.misc.spotify_select_device + '</option>'
       );
     if (typeof userinfo == 'undefined') {
-      console.log('no valid user info');
+      console.error('no valid user info');
       return;
     }
     spotifyApi.getMyDevices(function (err, data) {
@@ -174,7 +174,7 @@ var SpotifyModule = (function () {
     spotifyApi.getUserPlaylists(function (err, playlists) {
       if (err) {
         infoMessage('Spotify getUserPlahylists error ' + err.status, 4000);
-        console.log('Spotify getUserPlahylists error ' + err.status);
+        console.error('Spotify getUserPlahylists error ' + err.status);
         return;
       }
       var html =
@@ -239,7 +239,6 @@ var SpotifyModule = (function () {
       $('body').append(html);
       $('#spotify_' + rand).on('hidden.bs.modal', function () {
         $(this).data('bs.modal', null);
-        console.log('destroyed spotframe');
       });
 
       $('#spotify_' + rand).modal();
