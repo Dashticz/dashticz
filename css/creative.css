@@ -9842,6 +9842,8 @@ canvas {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  font-size: 1em;
+  line-height: 1.2;
 }
 
 .mower-location {
@@ -9855,6 +9857,8 @@ canvas {
 
 .mower-value {
   text-align: right;
+  font-size: 1em;
+  line-height: inherit;
 }
 
 .mower-actions {
