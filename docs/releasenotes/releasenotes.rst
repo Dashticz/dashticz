@@ -1,6 +1,22 @@
 Release Notes
 =============
 
+v4.20.32 (08-11-2026)
+----------------------
+
+* **Code**
+
+- CI: ESLint checks the JavaScript (``npm run lint``) next to the Prettier
+  format check. Rules that still have findings in the existing code warn
+  instead of failing.
+- CI: PHPUnit tests (``tests/php``) for the helpers in
+  ``vendor/dashticz/security.php`` and a PHP syntax check run on every
+  supported PHP version.
+- CI: Claude Code reviews pull requests and answers ``@claude`` mentions in
+  issues and pull requests (needs a repository secret).
+- A Scrutinizer configuration (``.scrutinizer.yml``) for the PHP and
+  JavaScript quality analysis.
+
 v4.20.31 (08-11-2026)
 ----------------------
 
