@@ -9354,7 +9354,7 @@ canvas {
 }
 
 .fullykiosk-label {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9365,6 +9365,11 @@ canvas {
   margin-left: auto;
   text-align: right;
   white-space: nowrap;
+}
+
+/* Rows without a bar keep the value at the right edge: the label grows. */
+.fullykiosk-data:not(.fullykiosk-battery) .fullykiosk-label {
+  flex: 1 1 auto;
 }
 
 .fullykiosk-battery .fullykiosk-value {
@@ -9399,6 +9404,8 @@ canvas {
    charger is switched next. */
 .fullykiosk-bar {
   position: relative;
+  flex: 1 1 4em;
+  min-width: 3em;
   height: 6px;
   border-radius: 3px;
   background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
