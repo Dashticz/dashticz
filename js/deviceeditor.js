@@ -34,6 +34,7 @@ var DashticzDeviceEditor = (function () {
   // update/Title among the Device Config display options (no Data/
   // Switch) - every special except a plain dummy/custom device.
   var NO_DIAL_SPECIAL_KINDS = DT_function.widgetKinds('noDial');
+  var HEIGHT_EDITABLE_KINDS = ['camera', 'iframe', 'timegraph'];
 
   // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
   // own optional idx)" branch - a subset of NO_DIAL_SPECIAL_KINDS
@@ -140,6 +141,9 @@ var DashticzDeviceEditor = (function () {
         compact_selector_help:
           'Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.',
         text_style: 'Text',
+        config_height: 'Height (px)',
+        config_height_help:
+          'Block height in pixels (50-2000). Leave empty for the default height. Not used on a grid screen: resize the block in the Layout Editor there.',
         text_fontsize_title: 'Title size',
         text_fontsize_value: 'Value size',
         text_align: 'Horizontal',
@@ -577,6 +581,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showToonPopup();
+  }
+
+  /** Open the dedicated Home Connect popup used by the Widgets menu. */
+  function openHomeconnect() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showHomeconnectPopup();
   }
 
   /** Open the dedicated Mower popup used by the Widgets menu. */
@@ -1257,6 +1270,14 @@ var DashticzDeviceEditor = (function () {
       kind = 'toon';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      definition.hcmode === 'appliances'
+    ) {
+      // Home Connect block, added via the Widgets menu's Home Connect card
+      // (_showHomeconnectPopup()). Matches js/components/homeconnect.js's own
+      // canHandle(): dispatched on hcmode, no `type` of its own.
+      kind = 'homeconnect';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       definition.mowermode === 'info'
     ) {
       // Mower block, added via the Widgets menu's Mower card (_showMowerPopup()).
@@ -1930,6 +1951,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'carstatus') return 'fas fa-car';
       if (special.specialType === 'weatherinfo') return 'fas fa-cloud-sun-rain';
       if (special.specialType === 'car') return 'fas fa-car';
+      if (special.specialType === 'homeconnect') return 'fas fa-home';
       if (special.specialType === 'mower') return 'fas fa-robot';
       if (special.specialType === 'toon') return 'fas fa-temperature-half';
     }
@@ -2022,14 +2044,6 @@ var DashticzDeviceEditor = (function () {
       preserved.c = definition.c;
     }
     return preserved;
-  }
-
-  function _customFieldsObject(rows) {
-    var customFields = {};
-    (rows || []).forEach(function (row) {
-      if (row && row.field) customFields[row.field] = row.value;
-    });
-    return customFields;
   }
 
   function _deviceCustomFieldsObject(rows, preserved) {
@@ -4313,14 +4327,6 @@ var DashticzDeviceEditor = (function () {
   // Row type -> candidate device list / help text. Switch is the default
   // (mode '' or absent); Temperature and Other are the two sensor-style
   // rows without a toggle.
-  function _clusterDeviceListForMode(mode) {
-    return mode === 'temperature'
-      ? _clusterTemperatureDeviceList()
-      : mode === 'other'
-        ? _clusterOtherDeviceList()
-        : _clusterAvailableDeviceList();
-  }
-
   function _clusterHelpTextForMode(t, mode) {
     return mode === 'temperature'
       ? t.cluster_devices_help_temperature
@@ -9234,6 +9240,97 @@ var DashticzDeviceEditor = (function () {
     );
   }
 
+  /* Home Connect (js/components/homeconnect.js): the only setting is the font
+     size; the appliances are found by their device names. Dispatched on
+     hcmode ('appliances'). */
+  var HOMECONNECT_SECTION = {
+    fieldPrefix: 'hc',
+    idPart: 'homeconnect',
+    labelPrefix: 'homeconnect_block_',
+    fieldClass: 'de-homeconnect-field',
+    saveOrder: 'hardware ip port fontsize',
+    settings: [
+      // The exact name of the Domoticz hardware of the plugin (empty: automatic).
+      { key: 'hardware', type: 'text', def: '', max: 100 },
+      // Another Domoticz to read the devices from (for testing).
+      { key: 'ip', type: 'text', def: '', max: 100 },
+      { key: 'port', type: 'number', def: null, range: [1, 65535, 1] },
+      { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
+    ],
+  };
+  var HOMECONNECT_FIELDS = _settingFieldNames(HOMECONNECT_SECTION, 'hcmode');
+
+  function _homeconnectValuesFromRows(rows) {
+    return _settingsFromRows(HOMECONNECT_SECTION, rows, HOMECONNECT_FIELDS);
+  }
+
+  // The hardware name, the IP address and port of another Domoticz, and the
+  // font size field of the Home Connect block.
+  function _homeconnectFontsizeHtml(prefix, values) {
+    var t = _translations();
+    var v = $.extend(_homeconnectValuesFromRows([]), values || {});
+    // Default Domoticz (as in config.js) unless another server is filled in.
+    var custom = !!v.ip;
+    function field(key) {
+      var setting = HOMECONNECT_SECTION.settings.filter(function (item) {
+        return item.key === key;
+      })[0];
+      return _settingHtml(HOMECONNECT_SECTION, prefix, setting, v[key], t);
+    }
+    return (
+      '<div class="mb-3 de-homeconnect-hardware">' +
+      field('hardware') +
+      '</div><div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-homeconnect-server">' +
+      _esc(t.homeconnect_block_server) +
+      '</label><select class="form-select de-homeconnect-serverselect" id="' +
+      _esc(prefix) +
+      '-homeconnect-server"><option value="default"' +
+      (custom ? '' : ' selected') +
+      '>' +
+      _esc(t.homeconnect_block_server_default) +
+      '</option><option value="custom"' +
+      (custom ? ' selected' : '') +
+      '>' +
+      _esc(t.homeconnect_block_server_custom) +
+      '</option></select></div><div class="mb-3 de-homeconnect-server"' +
+      (custom ? '' : ' style="display:none"') +
+      '>' +
+      field('ip') +
+      field('port') +
+      '</div>' +
+      _sectionFontsizeHtml(HOMECONNECT_SECTION, prefix, v.fontsize)
+    );
+  }
+
+  // The IP address and port only count when 'Custom' is selected.
+  $(document).on('change', '.de-homeconnect-serverselect', function () {
+    $(this)
+      .closest('.mb-3')
+      .next('.de-homeconnect-server')
+      .toggle($(this).val() === 'custom');
+  });
+
+  function _readHomeconnectFields(prefix) {
+    var values = {};
+    HOMECONNECT_SECTION.settings.forEach(function (setting) {
+      values[setting.key] = _settingValue(HOMECONNECT_SECTION, prefix, setting);
+    });
+    if ($('#' + prefix + '-homeconnect-server').val() !== 'custom') {
+      values.ip = '';
+      values.port = null;
+    }
+    return values;
+  }
+
+  // Home Connect values -> custom_fields rows, without the default values.
+  function _homeconnectCustomRows(values) {
+    return [
+      { field: 'hcmode', setting: 'appliances', value: 'appliances' },
+    ].concat(_settingRows(HOMECONNECT_SECTION, values));
+  }
+
   function _showCarstatusPopup() {
     var t = _translations();
     $('#carstatusblockpopup').remove();
@@ -10058,6 +10155,120 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  function _showHomeconnectPopup() {
+    var t = _translations();
+    $('#homeconnectblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="homeconnectblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-home me-2" aria-hidden="true"></i>' +
+      _esc(t.homeconnect_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('homeconnect', {
+      icon: true,
+      iconValue: 'fas fa-home',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html += _homeconnectFontsizeHtml('homeconnect', {});
+    html +=
+      '<div class="mb-3"><label class="form-label" for="homeconnect-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="homeconnect-device-title" autocomplete="off" value="' +
+      _esc(t.homeconnect_block) +
+      '"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="homeconnect-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#homeconnectblockpopup');
+    _wireQuickOptions('homeconnect', $popup);
+    _wireBackButton('homeconnectblockpopup');
+
+    $('#homeconnect-save-btn').on('click', function () {
+      var title = _cutUtf8(
+        $.trim(String($('#homeconnect-device-title').val() || '')),
+        100
+      );
+      var quickOptions = _readQuickOptions('homeconnect');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows = customRows.concat(
+        _homeconnectCustomRows(_readHomeconnectFields('homeconnect'))
+      );
+
+      var reference = _nextSpecialReference('homeconnect');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'homeconnect',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 4,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      // The modal fades out; a second click must not add a second block.
+      $(this).prop('disabled', true);
+      _hideModal(document.getElementById('homeconnectblockpopup'));
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('homeconnectblockpopup')
+    ).show();
+  }
+
   function _showCarPopup() {
     var t = _translations();
     $('#carblockpopup').remove();
@@ -10501,7 +10712,7 @@ var DashticzDeviceEditor = (function () {
   /* Build the Device Config popup. Switch visibility is not exposed as a
      checkbox here; title text remains available as a typed field, and its
      visibility is exposed via the Title checkbox below. */
-  function _textStyleHtml(options, t) {
+  function _textStyleHtml(options, t, titleOnly) {
     var fontSizeInput = function (id, label, value) {
       return (
         '<span class="d-flex align-items-center gap-2">' +
@@ -10578,21 +10789,26 @@ var DashticzDeviceEditor = (function () {
         t.text_fontsize_title,
         options.fontsizeTitle
       ) +
-      fontSizeInput(
-        'de-config-fontsize-value',
-        t.text_fontsize_value,
-        options.fontsizeValue
-      ) +
+      (titleOnly
+        ? ''
+        : fontSizeInput(
+            'de-config-fontsize-value',
+            t.text_fontsize_value,
+            options.fontsizeValue
+          )) +
       '<span class="d-flex align-items-center gap-2"><span>' +
       _esc(t.text_align) +
       '</span><span class="btn-group de-text-align-group" role="group">' +
       alignButtons +
       '</span></span>' +
-      '<span class="d-flex align-items-center gap-2"><span>' +
-      _esc(t.text_valign) +
-      '</span><span class="btn-group de-text-align-group" role="group">' +
-      valignButtons +
-      '</span></span></div>' +
+      (titleOnly
+        ? ''
+        : '<span class="d-flex align-items-center gap-2"><span>' +
+          _esc(t.text_valign) +
+          '</span><span class="btn-group de-text-align-group" role="group">' +
+          valignButtons +
+          '</span></span>') +
+      '</div>' +
       '<div class="form-text">' +
       _esc(t.text_style_help) +
       '</div></div>'
@@ -10615,6 +10831,7 @@ var DashticzDeviceEditor = (function () {
     var isTvgidsBlock = special && special.specialType === 'tvgids';
     var isFullyBlock = special && special.specialType === 'fullykiosk';
     var isCarstatusBlock = special && special.specialType === 'carstatus';
+    var isHomeconnectBlock = special && special.specialType === 'homeconnect';
     var isWeatherinfoBlock = special && special.specialType === 'weatherinfo';
     var isCarBlock = special && special.specialType === 'car';
     var sourceDef =
@@ -10715,6 +10932,16 @@ var DashticzDeviceEditor = (function () {
       carstatusValues = _carstatusValuesFromRows(customRows);
       customRows = customRows.filter(function (row) {
         return !CARSTATUS_FIELDS[
+          _normaliseCustomFieldName(row && row.field).toLowerCase()
+        ];
+      });
+    }
+    var homeconnectValues = null;
+    if (isHomeconnectBlock) {
+      // The Home Connect section owns these fields.
+      homeconnectValues = _homeconnectValuesFromRows(customRows);
+      customRows = customRows.filter(function (row) {
+        return !HOMECONNECT_FIELDS[
           _normaliseCustomFieldName(row && row.field).toLowerCase()
         ];
       });
@@ -11060,6 +11287,11 @@ var DashticzDeviceEditor = (function () {
     // devices and idx-backed Custom devices. The three fields are protected
     // custom-field names, so they never show up in Custom fields as well.
     var supportsTextStyle = !isSpecial || (isCustom && !!special.idx);
+    // Block kinds whose quick-add popup asks for a height (px): the height can
+    // be changed afterwards here. Ignored on a grid screen (the grid row span
+    // sets the height there).
+    var supportsHeight =
+      !!special && HEIGHT_EDITABLE_KINDS.indexOf(special.specialType) > -1;
     var supportsCompactSelector =
       (!isSpecial || (isCustom && !!special.idx)) &&
       hasDial &&
@@ -11219,6 +11451,8 @@ var DashticzDeviceEditor = (function () {
     if (isFullyBlock) html += _fullyFontsizeHtml('de-config', fullyValues);
     if (isCarstatusBlock)
       html += _carstatusFontsizeHtml('de-config', carstatusValues);
+    if (isHomeconnectBlock)
+      html += _homeconnectFontsizeHtml('de-config', homeconnectValues);
     if (isF1Block) html += _f1FontsizeHtml('de-config', f1Values);
     if (isTvgidsBlock) html += _tvgidsFontsizeHtml('de-config', tvgidsValues);
     if (isWeatherinfoBlock)
@@ -11305,6 +11539,21 @@ var DashticzDeviceEditor = (function () {
 
     if (supportsTextStyle) {
       html += _textStyleHtml(options, t);
+    } else if (isTitle) {
+      // Separator: title size and horizontal alignment only.
+      html += _textStyleHtml(options, t, true);
+    }
+    if (supportsHeight) {
+      html +=
+        '<div class="mb-3"><label class="form-label" for="de-config-height">' +
+        _esc(t.config_height) +
+        '</label>' +
+        '<input type="number" class="form-control" id="de-config-height" min="0" autocomplete="off" value="' +
+        _esc(special.height || '') +
+        '">' +
+        '<div class="form-text">' +
+        _esc(t.config_height_help) +
+        '</div></div>';
     }
 
     if (!isTitle) {
@@ -11911,6 +12160,11 @@ var DashticzDeviceEditor = (function () {
           customKeys[key] = true;
         });
       }
+      if (isHomeconnectBlock) {
+        Object.keys(HOMECONNECT_FIELDS).forEach(function (key) {
+          customKeys[key] = true;
+        });
+      }
       if (isWeatherinfoBlock) {
         Object.keys(WEATHERINFO_FIELDS).forEach(function (key) {
           customKeys[key] = true;
@@ -12057,6 +12311,9 @@ var DashticzDeviceEditor = (function () {
           $('#de-config-carstatus-battery').trigger('focus');
         }
       }
+      var pendingHomeconnect = isHomeconnectBlock
+        ? _readHomeconnectFields('de-config')
+        : null;
       var pendingWeatherinfo = null;
       if (isWeatherinfoBlock) {
         pendingWeatherinfo = _readWeatherinfoFields('de-config');
@@ -12156,6 +12413,16 @@ var DashticzDeviceEditor = (function () {
           });
           updated.compactIcons = pendingCompactIcons;
         }
+      }
+      if (isTitle) {
+        updated.fontsizeTitle = _parseTextFontSize(
+          $('#de-config-fontsize-title').val(),
+          String(options.fontsizeTitle) ===
+            String(parseInt($('#de-config-fontsize-title').val(), 10))
+        );
+        updated.textalign = _parseTextAlign(
+          $popup.find('input[name="de-config-textalign"]:checked').val()
+        );
       }
       if (hasDial) {
         updated.dial = pendingVisualMode === 'dial';
@@ -12451,6 +12718,10 @@ var DashticzDeviceEditor = (function () {
         storedRows = storedRows.concat(_fullyCustomRows(pendingFully));
       if (pendingCarstatus)
         storedRows = storedRows.concat(_carstatusCustomRows(pendingCarstatus));
+      if (pendingHomeconnect)
+        storedRows = storedRows.concat(
+          _homeconnectCustomRows(pendingHomeconnect)
+        );
       if (pendingWeatherinfo)
         storedRows = storedRows.concat(
           _weatherinfoCustomRows(pendingWeatherinfo)
@@ -12636,6 +12907,9 @@ var DashticzDeviceEditor = (function () {
         if (isCustom || isGroupBlock) special.idx = pendingIdx;
         if (isGraphBlock && pendingGraph) {
           special.height = pendingGraph.height;
+        }
+        if (supportsHeight) {
+          special.height = _parseHeight($('#de-config-height').val());
         }
         if (isLmsBlock && pendingLms) {
           special.lmsServer = pendingLms.server;
@@ -12931,6 +13205,7 @@ var DashticzDeviceEditor = (function () {
     else if (special.specialType === 'carstatus') label = t.carstatus_block;
     else if (special.specialType === 'weatherinfo') label = t.weatherinfo_block;
     else if (special.specialType === 'car') label = t.car_block;
+    else if (special.specialType === 'homeconnect') label = t.homeconnect_block;
     else if (special.specialType === 'mower') label = t.mower_block;
     else if (special.specialType === 'toon') label = t.toon_block;
     var htmlFileRow =
@@ -13029,6 +13304,8 @@ var DashticzDeviceEditor = (function () {
     else if (special.specialType === 'weatherinfo')
       specialIconClass = 'fa-cloud-sun-rain';
     else if (special.specialType === 'car') specialIconClass = 'fa-car';
+    else if (special.specialType === 'homeconnect')
+      specialIconClass = 'fa-home';
     else if (special.specialType === 'mower') specialIconClass = 'fa-robot';
     else if (special.specialType === 'toon')
       specialIconClass = 'fa-temperature-half';
@@ -13191,6 +13468,7 @@ var DashticzDeviceEditor = (function () {
     weatherinfo: 'weatherinfo_',
     car: 'car_',
     mower: 'mower_',
+    homeconnect: 'homeconnect_',
     toon: 'toon_',
     // Matches the legacy hand-written 'graph_<idx>' convention (see
     // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
@@ -13825,6 +14103,10 @@ var DashticzDeviceEditor = (function () {
             // an image independently rather than one replacing the other).
             specialEntry.icon = SEPARATOR_DEFAULT_ICON;
           }
+          _applyTextStyleFields(specialCustomFields, titleOptions);
+          if (Object.keys(specialCustomFields).length)
+            specialEntry.custom_fields = specialCustomFields;
+          else delete specialEntry.custom_fields;
         } else if (special.specialType === 'lms') {
           // js/components/lms.js dispatches on type: 'lms' - configwriter.php
           // writes it unconditionally for this kind, like Group's own
@@ -14715,6 +14997,7 @@ var DashticzDeviceEditor = (function () {
     openWeatherinfo: openWeatherinfo,
     openCar: openCar,
     openMower: openMower,
+    openHomeconnect: openHomeconnect,
     openToon: openToon,
     openGraph: openGraph,
     openLms: openLms,

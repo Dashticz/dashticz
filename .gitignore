@@ -36,3 +36,7 @@ Thumbs.db
 Desktop.ini
 *.tmp
 *.temp
+
+# PHPUnit cache
+.phpunit.result.cache
+.phpunit.cache/

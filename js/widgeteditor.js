@@ -2242,6 +2242,7 @@ var DashticzWidgetEditor = (function () {
     html += _carWidgetCardHtml();
     html += _mowerWidgetCardHtml();
     html += _toonWidgetCardHtml();
+    html += _homeconnectWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2903,6 +2904,38 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openToon();
+    });
+  }
+
+  /* Home Connect (docs/blocks/specials/homeconnect.rst, js/components/homeconnect.js):
+     a card that adds a Home Connect tile through its quick-add popup
+     (DashticzDeviceEditor.openHomeconnect()). */
+  function _homeconnectWidgetCardHtml() {
+    var itemTitle = _t('homeconnect_title', 'Home Connect');
+    return (
+      '<div class="we-widget-card we-widget-card-homeconnect" data-special-widget="homeconnect" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-home" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'homeconnect_description',
+        'Washing machine, dryer, coffee machine and other appliances of the Home Connect plugin.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openHomeconnectFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openHomeconnect();
     });
   }
 
@@ -6038,6 +6071,10 @@ var DashticzWidgetEditor = (function () {
         _openToonFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'homeconnect') {
+        _openHomeconnectFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -6111,6 +6148,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'toon') {
         _openToonFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'homeconnect') {
+        _openHomeconnectFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

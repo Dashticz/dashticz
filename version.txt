@@ -1,4 +1,4 @@
 {
-    "version": "4.20.28",
-    "last_changes": "Updated dependencies: sass 1.108.1 and @playwright/test 1.65.0."
+    "version": "4.20.34",
+    "last_changes": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed."
 }

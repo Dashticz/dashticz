@@ -1,6 +1,6 @@
 {
   "name": "dashticz",
-  "version": "4.20.28",
+  "version": "4.20.34",
   "description": "Alternative dashboard for Domoticz",
   "main": "index.js",
   "directories": {
@@ -29,10 +29,13 @@
   "devDependencies": {
     "@babel/core": "^8.1.0",
     "@babel/preset-env": "^8.0.7",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.5",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
     "mini-css-extract-plugin": "^2.10.2",
     "prettier": "^3.9.10",
     "sass": "1.108.1",
@@ -52,6 +55,7 @@
     "build": "webpack --config build/webpack.config.js --mode production",
     "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{build,css,custom,js,lang,src,tests,themes}/**/*.{ts,css,less,scss,js,json}\" \".github/**/*.{yml,yaml}\" \"docs/_static/**/*.{css,js}\" \"*.{html,js,json,yaml}\" \"tools/*.html\" --write",
     "format:check": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{build,css,custom,js,lang,src,tests,themes}/**/*.{ts,css,less,scss,js,json}\" \".github/**/*.{yml,yaml}\" \"docs/_static/**/*.{css,js}\" \"*.{html,js,json,yaml}\" \"tools/*.html\" --check",
+    "lint": "eslint .",
     "prepare": "node build/setup-git-hooks.js",
     "test": "node --test",
     "test:playwright": "playwright test --project=chromium",
@@ -59,7 +63,7 @@
     "test:live": "playwright test tests/live-integrations.spec.js --project=chromium",
     "test:playwright:update": "playwright test --project=chromium --update-snapshots",
     "test:playwright:report": "playwright show-report",
-    "verify": "npm run format:check && npm test && npm run build"
+    "verify": "npm run format:check && npm run lint && npm test && npm run build"
   },
   "repository": {
     "type": "git",

@@ -4,12 +4,11 @@
 // The Google Maps script needs a callback function after loading the Google maps script
 // I don't know a cleaner way ...
 window.GoogleMapsCallback = function () {
-  console.log('GoogleMapsLoaded');
   Dashticz.googleMapsPromise.resolve();
 };
 
 function gm_authFailure() {
-  console.log('Google Maps Authentication problem');
+  console.error('Google Maps Authentication problem');
   $('.map .dt_state').html(
     language.misc.map_api_invalid +
       '<br>' +
@@ -236,7 +235,6 @@ function gm_authFailure() {
     if (me.showRoute) {
       // get route from A to B
       var travelMode = me.block.travelmode.toUpperCase();
-      var asTransit = travelMode === 'TRANSIT';
       me.directionsService.route(
         {
           origin: me.pointA,
@@ -272,7 +270,6 @@ function gm_authFailure() {
                 );
               if (me.block.instructions) {
                 var items = $('<table class="items"></div>');
-                var startText = routeInfo.departure_time.text;
                 var currentDate = routeInfo.departure_time.value;
                 var endDate = currentDate;
 
@@ -300,7 +297,7 @@ function gm_authFailure() {
                     );
                     currentDate = endDate;
                   } catch (ev) {
-                    console.log('Error while generating instruction', step);
+                    console.error('Error while generating instruction', step);
                   }
                 });
                 me.$mountPoint.find('.state_route').append(items);
@@ -327,8 +324,6 @@ function gm_authFailure() {
     var year = now.year();
     var month = now.month();
     var day = now.date();
-    var hours = now.hours();
-    var minutes = now.minutes();
     var found = me.refreshWindows.find(function (refreshWindow) {
       var startMoment = moment([
         year,
@@ -346,12 +341,10 @@ function gm_authFailure() {
       ]);
       return now.isBetween(startMoment, stopMoment, 'minute', '[]');
     });
-    console.log('in window: ', found);
     return found;
   }
 
   function handlePosDevice(me, pos) {
-    //  console.log(pos);
     var coordinates = getCoordinates(pos.Data);
     if (coordinates) {
       me.pointA = coordinates;

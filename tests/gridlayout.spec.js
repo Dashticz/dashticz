@@ -1142,23 +1142,34 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     await popup.locator('.de-parts-item[data-part="desc"] label').click();
     // jQuery UI sortable follows the pointer, so move it in steps to the top
     // edge of the first item instead of jumping there (dragTo), which can
-    // drop the logo one place too low.
-    const handle = await popup
-      .locator('.de-parts-item[data-part="logo"] .de-parts-handle')
-      .boundingBox();
-    const first = await popup
-      .locator('.de-parts-item[data-part="status"]')
-      .boundingBox();
-    await page.mouse.move(
-      handle.x + handle.width / 2,
-      handle.y + handle.height / 2
+    // drop the logo one place too low. The boxes are measured right before
+    // each attempt, once the popup has stopped moving: in WebKit the popup
+    // can still be sliding in, and a box measured then misses the list. A
+    // drag that did not land is tried again from where the logo is now.
+    const logoHandle = popup.locator(
+      '.de-parts-item[data-part="logo"] .de-parts-handle'
     );
-    await page.mouse.down();
-    await page.mouse.move(first.x + 40, first.y + first.height / 2, {
-      steps: 20,
-    });
-    await page.mouse.move(first.x + 40, first.y + 2, { steps: 5 });
-    await page.mouse.up();
+    await expect(async () => {
+      await logoHandle.scrollIntoViewIfNeeded();
+      const before = await logoHandle.boundingBox();
+      await page.waitForTimeout(100);
+      const handle = await logoHandle.boundingBox();
+      expect(handle).toEqual(before);
+      const first = await items.first().boundingBox();
+      await page.mouse.move(
+        handle.x + handle.width / 2,
+        handle.y + handle.height / 2
+      );
+      await page.mouse.down();
+      await page.mouse.move(first.x + 40, first.y + first.height / 2, {
+        steps: 20,
+      });
+      await page.mouse.move(first.x + 40, first.y + 2, { steps: 5 });
+      await page.mouse.up();
+      await expect(items.first()).toHaveAttribute('data-part', 'logo', {
+        timeout: 1000,
+      });
+    }).toPass({ timeout: 15000 });
     await expect(items.first()).toHaveAttribute('data-part', 'logo');
     await page.locator('#weatherinfo-save-btn').click();
 

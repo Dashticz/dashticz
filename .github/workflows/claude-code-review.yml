@@ -1,0 +1,70 @@
+name: Claude Code Review
+
+# Reviews every pull request with Claude Code and posts the findings as PR
+# comments. Needs the CLAUDE_CODE_OAUTH_TOKEN (Claude subscription) or
+# ANTHROPIC_API_KEY (API) repository secret; without one of them the review
+# step is skipped and the check stays green. Pull requests from forks and
+# from Dependabot get no secrets, so they are skipped as well.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+  id-token: write
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude review
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_CLAUDE_SECRET: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' || secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: No Claude secret configured
+        if: env.HAS_CLAUDE_SECRET != 'true'
+        run: echo "::notice::Claude review skipped - add the CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY repository secret to enable it."
+      - uses: actions/checkout@v7
+        if: env.HAS_CLAUDE_SECRET == 'true'
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        if: env.HAS_CLAUDE_SECRET == 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. The PR branch is checked out in the
+            current directory. Read AGENTS.md first: it holds the rules of
+            this repository (release bookkeeping on every change, the
+            committed dist/ bundle, every tile keeping its config cog,
+            Prettier formatting).
+
+            Focus on:
+            - bugs and regressions in the changed code
+            - security issues, especially in the PHP proxies under
+              vendor/dashticz and js/*.php (SSRF, path traversal, CSRF)
+            - missing release bookkeeping or a stale dist/ bundle
+            - missing or weak tests for the change
+
+            Only report real problems; skip style nits that Prettier or
+            ESLint already handle. Write the review in Dutch.
+
+            Use `mcp__github_inline_comment__create_inline_comment` (with
+            `confirmed: true`) for findings on specific lines, and one
+            `gh pr comment` with a short summary. If there is nothing to
+            report, post a single short comment saying so.
+          claude_args: |
+            --max-turns 30
+            --allowedTools "Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

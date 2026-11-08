@@ -116,7 +116,7 @@ var DT_dial = (function () {
       if (me.devices.length) {
         me.device = Domoticz.getAllDevices(me.devices[0]);
         if (!me.device) {
-          console.log('Device not found: ', me.idx);
+          console.error('Device not found: ', me.idx);
           //          me.$mountPoint.find('.dial').html('Device not found: '+me.idx);
           //          return;
         } else {
@@ -1143,7 +1143,7 @@ var DT_dial = (function () {
     function getValueUnit(data) {
       var dataScale = data.scale || 1;
       if (typeof data.value === 'undefined') {
-        console.log('Invalid data ', data);
+        console.error('Invalid data ', data);
         return {
           value: '',
           unit: choose(data.unit, ''),
@@ -1175,7 +1175,7 @@ var DT_dial = (function () {
           unit: unit,
         };
       } else {
-        console.log('invalid dial data');
+        console.error('invalid dial data');
         return {
           value: 0,
           unit: data.unit,

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PHPUnit tests for the PHP helpers in vendor/dashticz and js/*.php.
+     Run with `phpunit` from the repository root; CI runs them on every
+     supported PHP version. -->
+<phpunit bootstrap="tests/php/bootstrap.php" colors="true">
+  <testsuites>
+    <testsuite name="dashticz">
+      <directory suffix="Test.php">tests/php</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

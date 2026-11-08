@@ -198,15 +198,21 @@ var DT_weather = (function () {
     var providers = [
       {
         id: 'owm3',
-        url: 'https://api.openweathermap.org/data/3.0/onecall?appid=' + key,
+        url:
+          'https://api.openweathermap.org/data/3.0/onecall?lat=0&lon=0&appid=' +
+          key,
       },
       {
         id: 'owm',
-        url: 'https://api.openweathermap.org/data/2.5/onecall?appid=' + key,
+        url:
+          'https://api.openweathermap.org/data/2.5/onecall?lat=0&lon=0&appid=' +
+          key,
       },
       {
         id: 'owmfree',
-        url: 'https://api.openweathermap.org/data/2.5/forecast?appid=' + key,
+        url:
+          'https://api.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=' +
+          key,
       },
       {
         id: 'knmi',
@@ -219,9 +225,13 @@ var DT_weather = (function () {
     var findProviderPromise = providers.reduce(function (acc, provider) {
       return acc.then(function (res) {
         if (res) return res;
-        console.log('test weather provider ' + provider.id);
         return DT_function.cached(provider.url, $.getJSON)
           .then(function (data) {
+            if (!provider.json) {
+              //OWM endpoint answered with data: the key is valid for this API
+              console.log('Valid API key for weather provider: ' + provider.id);
+              return provider.id;
+            }
             if (data[provider.json]) {
               //we have a certain json key (currently for knmi)
               console.log('Valid API key for weather provider: ' + provider.id);
@@ -230,7 +240,7 @@ var DT_weather = (function () {
           })
           .catch(function (xhr, textStatus) {
             if (xhr.status && xhr.status === 400) {
-              //we have a valid api (for owm apis)
+              //OWM answers 400 (bad request) when the key is accepted
               console.log('Valid API key for weather provider: ' + provider.id);
               return provider.id;
             }
@@ -373,8 +383,14 @@ var DT_weather = (function () {
     return $.getJSON(getOWM3url(me), function (result) {
       me.data.weather = result.current;
       me.data.forecast = result;
-    }).catch(function () {
-      var err = me.provider + ' error. No valid API key?';
+    }).catch(function (xhr) {
+      var err = me.provider + ' error';
+      if (xhr && xhr.status) err += ' ' + xhr.status;
+      if (xhr && xhr.responseJSON && xhr.responseJSON.message)
+        err += ': ' + xhr.responseJSON.message;
+      if (xhr && xhr.status === 401)
+        err +=
+          ' (API key has no access to One Call 3.0, see openweathermap.org/api)';
       throw new Error(err);
     });
   }

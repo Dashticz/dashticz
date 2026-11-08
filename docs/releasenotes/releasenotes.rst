@@ -1,6 +1,81 @@
 Release Notes
 =============
 
+v4.20.34 (08-11-2026)
+----------------------
+
+* **Enhancements**
+
+- The Coronavirus block (``type: 'corona'``) is removed. Its data source
+  stopped long ago. Remove such a block from your CONFIG.js.
+
+* **Code**
+
+- Graphs: the formulas of custom data and ``customHeader`` are no longer run
+  with ``eval``. A formula sees only ``d`` (custom data), ``device`` and
+  ``devices`` (customHeader), as described in the graph documentation, and
+  not the internal variables of the graph code.
+- Unused functions and variables and leftover debug logging are removed.
+  Error messages in the browser console are logged as errors or warnings.
+- ESLint no longer warns about the shared globals of the js/ files.
+- The Scrutinizer configuration is removed.
+
+v4.20.33 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Scrutinizer: the build downloads PHPUnit before it runs the PHP tests, so
+  it no longer fails with ``phpunit: command not found``.
+
+v4.20.32 (08-11-2026)
+----------------------
+
+* **Code**
+
+- CI: ESLint checks the JavaScript (``npm run lint``) next to the Prettier
+  format check. Rules that still have findings in the existing code warn
+  instead of failing.
+- CI: PHPUnit tests (``tests/php``) for the helpers in
+  ``vendor/dashticz/security.php`` and a PHP syntax check run on every
+  supported PHP version.
+- CI: Claude Code reviews pull requests and answers ``@claude`` mentions in
+  issues and pull requests (needs a repository secret).
+- A Scrutinizer configuration (``.scrutinizer.yml``) for the PHP and
+  JavaScript quality analysis.
+
+v4.20.31 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Installer: when the web-server user cannot enter a parent folder of the
+  Dashticz folder (Debian Trixie and Raspberry Pi OS make home folders such
+  as /home/pi private), the write-access step now names that folder and the
+  command that fixes it, instead of only reporting Permission denied on
+  custom/.
+
+v4.20.30 (08-11-2026)
+----------------------
+
+* **Code**
+
+- Tests: the Weather Info drag test measures the list once the popup has
+  stopped moving and tries the drag again when it did not land, so it no
+  longer fails in WebKit.
+
+v4.20.29 (08-11-2026)
+----------------------
+
+* **Fixes**
+
+- Home Connect widget: each open message shows once. The Status text no
+  longer repeats the first message, and the per-message devices are not added
+  again next to Notifications.
+- Home Connect widget: the open messages of an appliance that is switched
+  off, such as a coffee machine in stand-by with a full drip tray, stay
+  visible.
+
 v4.20.28 (07-11-2026)
 ----------------------
 
