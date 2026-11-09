@@ -7462,10 +7462,63 @@ var DashticzDeviceEditor = (function () {
      parameters not covered by this quick popup (custom formulas, zoom,
      per-button styling, ...) remain reachable via the Custom fields
      section of the Device Editor's own config popup for this instance. */
+  // Legend names are edited as one 'key=name' line per dataset, e.g.
+  // 'v_399=Setpoint' (value key + '_' + device idx), and stored as the
+  // legend object that js/components/graph.js expects.
+  function _legendNamesToText(names) {
+    if (!names || typeof names !== 'object' || Array.isArray(names)) return '';
+    return Object.keys(names)
+      .map(function (key) {
+        return key + '=' + names[key];
+      })
+      .join('\n');
+  }
+
+  function _legendNamesFromText(text) {
+    var names = {};
+    var valid = true;
+    String(text || '')
+      .split(/\r?\n/)
+      .forEach(function (line) {
+        line = $.trim(line);
+        if (!line) return;
+        var pos = line.indexOf('=');
+        var key = $.trim(pos > 0 ? line.slice(0, pos) : '');
+        var name = $.trim(pos > 0 ? line.slice(pos + 1) : '');
+        if (!key || !name) {
+          valid = false;
+          return;
+        }
+        names[key] = name;
+      });
+    return { names: names, valid: valid };
+  }
+
+  function _graphTypesFromText(text) {
+    var types = String(text || '')
+      .split(/[\s,]+/)
+      .filter(function (part) {
+        return part !== '';
+      })
+      .map(function (part) {
+        return part.toLowerCase();
+      });
+    var valid =
+      types.length > 0 &&
+      types.every(function (type) {
+        return type === 'line' || type === 'bar';
+      });
+    return { types: types, valid: valid };
+  }
+
   function _graphFieldsHtml(prefix, values) {
     var t = _translations();
     values = values || {};
     var graphType = String(values.graphType || 'line');
+    var graphTypes = Array.isArray(values.graphTypes)
+      ? values.graphTypes.join(', ')
+      : '';
+    var legendNames = _legendNamesToText(values.legendNames);
     var groupBy = String(values.groupBy || '');
     var devices = Array.isArray(values.devices)
       ? values.devices.join(', ')
@@ -7498,7 +7551,7 @@ var DashticzDeviceEditor = (function () {
     html += '<select class="form-select" id="' + _esc(prefix) + '-graph-type">';
     html +=
       '<option value="line"' +
-      (graphType === 'bar' ? '' : ' selected') +
+      (graphType === 'bar' || graphType === 'mixed' ? '' : ' selected') +
       '>' +
       _esc(t.graph_block_type_line) +
       '</option>';
@@ -7507,7 +7560,23 @@ var DashticzDeviceEditor = (function () {
       (graphType === 'bar' ? ' selected' : '') +
       '>' +
       _esc(t.graph_block_type_bar) +
-      '</option></select></div>';
+      '</option>';
+    html +=
+      '<option value="mixed"' +
+      (graphType === 'mixed' ? ' selected' : '') +
+      '>' +
+      _esc(t.graph_block_type_mixed) +
+      '</option></select>';
+    html +=
+      '<input type="text" class="form-control mt-2" id="' +
+      _esc(prefix) +
+      '-graph-types" placeholder="bar, line" value="' +
+      _esc(graphTypes) +
+      '" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.graph_block_types_help) +
+      '</div></div>';
     html +=
       '<div class="mb-3"><label class="form-label" for="' +
       _esc(prefix) +
@@ -7545,6 +7614,22 @@ var DashticzDeviceEditor = (function () {
       '-graph-legend">' +
       _esc(t.graph_block_legend) +
       '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-legend-names">' +
+      _esc(t.graph_block_legend_names) +
+      '</label>';
+    html +=
+      '<textarea class="form-control" rows="3" id="' +
+      _esc(prefix) +
+      '-graph-legend-names" placeholder="v_399=Setpoint" autocomplete="off">' +
+      _esc(legendNames) +
+      '</textarea>';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.graph_block_legend_names_help) +
+      '</div></div>';
     html +=
       '<div class="mb-3"><label class="form-label" for="' +
       _esc(prefix) +
@@ -7625,12 +7710,24 @@ var DashticzDeviceEditor = (function () {
       String($('#' + prefix + '-graph-height').val() || '')
     );
     var parsedHeight = parseInt(rawHeight, 10);
+    var graphType = String($('#' + prefix + '-graph-type').val() || 'line');
+    var typesParsed = _graphTypesFromText(
+      $('#' + prefix + '-graph-types').val()
+    );
+    var legendParsed = _legendNamesFromText(
+      $('#' + prefix + '-graph-legend-names').val()
+    );
+    var legendOn = $('#' + prefix + '-graph-legend').is(':checked');
     return {
       devices: devices,
       validDevices: devices.length > 0 && !invalidDevices,
-      graphType: String($('#' + prefix + '-graph-type').val() || 'line'),
+      graphType: graphType,
+      graphTypes: typesParsed.types,
+      validTypes: graphType !== 'mixed' || typesParsed.valid,
       groupBy: String($('#' + prefix + '-graph-groupby').val() || ''),
-      legend: $('#' + prefix + '-graph-legend').is(':checked'),
+      legend: legendOn,
+      legendNames: legendOn ? legendParsed.names : {},
+      validLegendNames: !legendOn || legendParsed.valid,
       height: parsedHeight > 0 ? parsedHeight : null,
     };
   }
@@ -7699,6 +7796,16 @@ var DashticzDeviceEditor = (function () {
         $('#gr-graph-devices').trigger('focus');
         return;
       }
+      if (!graphFields.validTypes) {
+        $message.addClass('text-danger').text(t.invalid_graph_types);
+        $('#gr-graph-types').trigger('focus');
+        return;
+      }
+      if (!graphFields.validLegendNames) {
+        $message.addClass('text-danger').text(t.invalid_graph_legend_names);
+        $('#gr-graph-legend-names').trigger('focus');
+        return;
+      }
 
       var quickOptions = _readQuickOptions('gr');
       var iconIsImage =
@@ -7724,11 +7831,25 @@ var DashticzDeviceEditor = (function () {
         setting: JSON.stringify(graphFields.devices),
         value: graphFields.devices,
       });
-      if (graphFields.graphType === 'bar') {
+      if (graphFields.graphType === 'mixed') {
+        customRows.push({
+          field: 'graph',
+          setting: JSON.stringify(graphFields.graphTypes),
+          value: graphFields.graphTypes,
+        });
+      } else if (graphFields.graphType === 'bar') {
         customRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
       }
       if (graphFields.legend) {
-        customRows.push({ field: 'legend', setting: 'true', value: true });
+        if (Object.keys(graphFields.legendNames).length) {
+          customRows.push({
+            field: 'legend',
+            setting: JSON.stringify(graphFields.legendNames),
+            value: graphFields.legendNames,
+          });
+        } else {
+          customRows.push({ field: 'legend', setting: 'true', value: true });
+        }
       }
       if (graphFields.groupBy) {
         customRows.push({
@@ -11001,8 +11122,8 @@ var DashticzDeviceEditor = (function () {
     }
     var graphFields = null;
     // What the popup shows for graph/legend/groupBy, and what CONFIG.js had:
-    // a value the popup cannot represent (legend as an object, graph as an
-    // array, an unknown groupBy) is written back unless the user changes it.
+    // a value the popup cannot represent (legend as an array, an unknown
+    // groupBy or graph type) is written back unless the user changes it.
     var graphInitial = null;
     var graphOriginal = {};
     if (isGraphBlock) {
@@ -11013,12 +11134,19 @@ var DashticzDeviceEditor = (function () {
       });
       graphFields = {
         devices: Array.isArray(graphValues.devices) ? graphValues.devices : [],
-        graphType:
-          String(graphValues.graph || '').toLowerCase() === 'bar'
+        graphType: Array.isArray(graphValues.graph)
+          ? 'mixed'
+          : String(graphValues.graph || '').toLowerCase() === 'bar'
             ? 'bar'
             : 'line',
+        graphTypes: Array.isArray(graphValues.graph) ? graphValues.graph : [],
         groupBy: String(graphValues.groupby || ''),
-        legend: graphValues.legend === true,
+        legend:
+          graphValues.legend === true ||
+          (!!graphValues.legend &&
+            typeof graphValues.legend === 'object' &&
+            !Array.isArray(graphValues.legend)),
+        legendNames: graphValues.legend,
         height: special.height,
       };
       graphOriginal = {
@@ -12340,6 +12468,20 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_graph_devices);
           $('#de-config-graph-devices').trigger('focus');
+        } else if (!pendingGraph.validTypes) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_graph_types);
+          $('#de-config-graph-types').trigger('focus');
+        } else if (!pendingGraph.validLegendNames) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_graph_legend_names);
+          $('#de-config-graph-legend-names').trigger('focus');
         }
       }
       if (isClusterBlock && !clusterPendingDevices.length) {
@@ -12751,7 +12893,13 @@ var DashticzDeviceEditor = (function () {
           });
           return true;
         };
-        if (
+        if (pendingGraph.graphType === 'mixed') {
+          storedRows.push({
+            field: 'graph',
+            setting: JSON.stringify(pendingGraph.graphTypes),
+            value: pendingGraph.graphTypes,
+          });
+        } else if (
           !keepOriginal(
             'graph',
             'graph',
@@ -12762,16 +12910,25 @@ var DashticzDeviceEditor = (function () {
         ) {
           storedRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
         }
-        if (
-          !keepOriginal(
+        if (pendingGraph.legend) {
+          if (Object.keys(pendingGraph.legendNames).length) {
+            storedRows.push({
+              field: 'legend',
+              setting: JSON.stringify(pendingGraph.legendNames),
+              value: pendingGraph.legendNames,
+            });
+          } else {
+            storedRows.push({ field: 'legend', setting: 'true', value: true });
+          }
+        } else {
+          // a legend value the popup cannot represent (e.g. an array) is
+          // written back unless the user changed it
+          keepOriginal(
             'legend',
             'legend',
             pendingGraph.legend,
             graphInitial.legend
-          ) &&
-          pendingGraph.legend
-        ) {
-          storedRows.push({ field: 'legend', setting: 'true', value: true });
+          );
         }
         if (
           keepOriginal(
