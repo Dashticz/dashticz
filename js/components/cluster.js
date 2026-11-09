@@ -150,11 +150,27 @@ var DT_cluster = (function () {
     );
   }
 
+  // Temperature rows show name, a thin meter and the value on one line. The
+  // meter fills from the left up to the current reading on a fixed
+  // blue-green-orange scale of 0-30 degrees Celsius (32-86 for Fahrenheit);
+  // colours step with the temperature in Celsius.
+  function tempCelsius(value) {
+    return _TEMP_SYMBOL === '\u00b0F' ? ((value - 32) * 5) / 9 : value;
+  }
+
+  function tempColor(c) {
+    if (c < 12) return '#3a86d8';
+    if (c < 17) return '#4aa9c9';
+    if (c < 23) return '#4cc38a';
+    if (c < 26) return '#f0b840';
+    return '#ee6a4a';
+  }
+
   function temperatureRowHtml(idx, device, title, icon) {
-    var reading =
-      typeof device.Temp === 'number'
-        ? device.Temp.toFixed(1) + _TEMP_SYMBOL
-        : '';
+    var hasTemp = typeof device.Temp === 'number';
+    var reading = hasTemp ? device.Temp.toFixed(1) + _TEMP_SYMBOL : '';
+    var celsius = hasTemp ? tempCelsius(device.Temp) : 0;
+    var pct = Math.max(0, Math.min(1, celsius / 30)) * 100;
     return (
       '<div class="cluster-row" data-idx="' +
       idx +
@@ -163,7 +179,20 @@ var DT_cluster = (function () {
       '<span class="cluster-row-title">' +
       title +
       '</span>' +
-      (reading ? '<span class="cluster-row-temp">' + reading + '</span>' : '') +
+      '<span class="cluster-temp-bar">' +
+      (hasTemp
+        ? '<span class="cluster-temp-fill" style="width:' +
+          pct.toFixed(1) +
+          '%;background-size:' +
+          (pct > 0 ? (10000 / pct).toFixed(1) : 100) +
+          '% 100%"></span>'
+        : '') +
+      '</span>' +
+      '<span class="cluster-row-temp" style="color:' +
+      tempColor(celsius) +
+      '">' +
+      reading +
+      '</span>' +
       '</div>'
     );
   }
