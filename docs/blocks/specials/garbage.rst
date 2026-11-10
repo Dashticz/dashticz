@@ -200,6 +200,7 @@ omrin                   Leeuwarden, Opsterland, Heerenveen, Waadhoeke, ...
 purmerend               Purmerend (NL)
 rd4                     RD4: Beekdaelen, Brunssum, Eijsden-Margraten, Gulpen-Wittem, Heerlen, Kerkrade, Landgraaf, Simpelveld, Vaals en Voerendaal
 recycleapp              RecycleApp (BE)
+reinis                  Reinis (NL). Requires ``garbage_icalurl``: the iCal subscription link from reinis.nl/kalender ("Toevoegen aan agenda", "Link kopiëren")
 rmn                     RMN: Baarn, Zeist, Nieuwegein,  (NL)  
 rova                    Rova (NL)
 suez                    Suez: Arnhem (NL)  
