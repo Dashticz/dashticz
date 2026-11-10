@@ -723,6 +723,14 @@ SENSOR_LOCATIONS_TO_URL = {
         handler: getIcalData,
         param: me.block.icalurl,
       },
+      reinis: {
+        //Reinis moved to a new platform; the old Opzet API no longer exists.
+        //Use the public iCal subscription link from reinis.nl/kalender
+        //(Toevoegen aan agenda > Link kopiëren) as garbage_icalurl. The
+        //server-side calendar bridge fetches it, so CORS is not an issue.
+        handler: getIcalData,
+        param: me.block.icalurl,
+      },
       afvalalert: {
         handler: getAfvalAlertData,
       },

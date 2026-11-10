@@ -391,6 +391,7 @@ var DashticzWidgetEditor = (function () {
     purmerend: 'Purmerend',
     rd4: 'Rd4',
     recycleapp: 'RecycleApp (BE)',
+    reinis: 'Reinis (NL, iCal URL)',
     rmn: 'RMN (NL)',
     rova: 'Rova (NL)',
     sudwestfryslan: 'Sudwest Fryslan (NL)',

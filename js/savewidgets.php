@@ -138,7 +138,7 @@ $allowedGarbageCompanies = [
     'avalex','avri','barafvalbeheer','best','blink','circulusberkel','cure','cyclusnv',
     'dar','deafvalapp','edg','gad','gemeenteberkelland','goes','googlecalendar',
     'groningen','hvc','ical','katwijk','maashorst','meerlanden','mijnafvalwijzer',
-    'omrin','purmerend','rd4','recycleapp','rmn','rova','sudwestfryslan','suez',
+    'omrin','purmerend','rd4','recycleapp','reinis','rmn','rova','sudwestfryslan','suez',
     'twentemilieu','uden','veldhoven','venlo','venray','vianen','waalre','waardlanden',
 ];
 
