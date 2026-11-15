@@ -10,7 +10,7 @@
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@jaames/iro": "^5.5.2",
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.8",
+    "bootstrap": "^5.3.9",
     "chart.js": "^4.6.1",
     "chartjs-plugin-zoom": "^2.2.0",
     "dayjs": "^1.11.23",
@@ -27,7 +27,7 @@
     "swiper": "^14.4.0"
   },
   "devDependencies": {
-    "@babel/core": "^8.1.0",
+    "@babel/core": "^8.1.2",
     "@babel/preset-env": "^8.0.7",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.0",
@@ -37,8 +37,8 @@
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
     "mini-css-extract-plugin": "^2.10.2",
-    "prettier": "^3.9.10",
-    "sass": "1.108.1",
+    "prettier": "^3.10.1",
+    "sass": "1.108.2",
     "sass-loader": "^17.1.0",
     "terser-webpack-plugin": "^5.6.1",
     "webpack": "^5.112.0",
