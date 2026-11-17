@@ -9324,6 +9324,7 @@ canvas {
   display: flex;
   flex-direction: column;
   overflow: auto;
+  overflow-x: hidden;
   margin-left: 0;
   padding-left: 0;
 }
@@ -9971,6 +9972,14 @@ canvas {
   grid-column: 1 / -1;
 }
 
+/* The logo width and height: two fields below the icon row (Image source). */
+.de-carstatus-iconsize {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  grid-column: 1 / -1;
+}
+
 /* Starts a new row, e.g. the three color levels next to each other. */
 .de-carstatus-grid > .de-carstatus-field-rowstart {
   grid-column-start: 1;
@@ -10390,40 +10399,40 @@ canvas {
   --carstatus-color: red;
 }
 
-/* The bar of the Mower widget (.mower-bar): a thin track with a green
-   gradient fill; below 50% the fill has the color of the level. */
+/* The bar has the look of the Home Connect bar (.homeconnect-bar), scaling
+   to the space between the percentage and the mileage, in the colour of the level. */
 .carstatus-bar {
-  height: 11px;
-  border-radius: 1px;
-  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
+  display: inline-block;
+  flex: 1 1 0;
+  min-width: 1em;
+  height: 0.4em;
+  border-radius: 0.2em;
+  margin: 0 0.5em;
+  color: var(--carstatus-color);
+  background: color-mix(in srgb, currentColor 25%, transparent);
   overflow: hidden;
-  /* The end of the bar is slanted, like the battery bar of the BMW. */
-  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
 .carstatus-bar-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+  border-radius: 0.2em;
+  background: currentColor;
   transition: width 0.6s ease;
-  /* The end of the filled part is slanted too. */
-  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
-.carstatus-batt-mid .carstatus-bar-fill {
-  background: orange;
-}
-
-.carstatus-batt-low .carstatus-bar-fill,
-.carstatus-batt-critical .carstatus-bar-fill {
-  background: red;
-}
-
+/* One line: percentage, bar, mileage at the end. */
 .carstatus-battery-text {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.carstatus-battery {
+  min-width: 0;
 }
 
 .carstatus-pct,
@@ -10431,10 +10440,18 @@ canvas {
   font-weight: bold;
   font-family: inherit;
   font-size: inherit;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .carstatus-pct {
   color: var(--carstatus-color);
+  min-width: 3.6em;
+}
+
+.carstatus-km {
+  margin-left: auto;
+  padding-left: 0.5em;
 }
 
 .carstatus-battery-text .carstatus-icon {
@@ -10523,9 +10540,9 @@ input[id$='-carstatus-fontsize'] {
 /* The part below the line: status and the rows Charging until, Doors and
    Windows. The line always shows, also when there is nothing below it. */
 .carstatus-below {
-  margin-top: 8px;
+  margin-top: 25px;
   padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -10549,6 +10566,18 @@ input[id$='-carstatus-fontsize'] {
 .carstatus-block .dt_content {
   margin-bottom: 0;
   padding-bottom: 0;
+}
+
+/* The header row is as high as the battery line; a higher logo or image sticks
+   out of it, so (unlike other list widgets of a grid screen) it is not
+   clipped there. */
+.carstatus-block .dt_content,
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .dt-widget-rows.carstatus-block
+  .dt_content {
+  overflow: visible;
 }
 
 .carstatus-block .dt_state {

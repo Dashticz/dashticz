@@ -9275,7 +9275,7 @@ var DashticzDeviceEditor = (function () {
     labelPrefix: 'carstatus_block_',
     fieldClass: 'de-carstatus-field',
     saveOrder:
-      'door windows mileage charging chargetime battery driving home critical low mid debug fontsize',
+      'door windows mileage charging chargetime battery driving home critical low mid iconwidth iconheight iconoffset linegap debug fontsize',
     settings: [
       { key: 'battery', type: 'device', anydevice: true, def: '' },
       { key: 'mileage', type: 'device', anydevice: true, def: '' },
@@ -9296,6 +9296,19 @@ var DashticzDeviceEditor = (function () {
       },
       { key: 'low', type: 'number', def: 30, range: [0, 100, 1] },
       { key: 'mid', type: 'number', def: 50, range: [0, 100, 1] },
+      // The size (px) of the logo / image of the car; empty = the theme's.
+      {
+        key: 'iconwidth',
+        type: 'number',
+        def: null,
+        range: [8, 400, 1],
+        rowstart: 1,
+      },
+      { key: 'iconheight', type: 'number', def: null, range: [8, 400, 1] },
+      // Moves the logo up (negative) or down (positive), in px.
+      { key: 'iconoffset', type: 'number', def: 0, range: [-100, 100, 1] },
+      // The distance (px) between the battery line and the line below it.
+      { key: 'linegap', type: 'number', def: 25, range: [0, 200, 1] },
       // A test view: the raw state of every device, below the status.
       { key: 'debug', type: 'switch', def: false, full: 1 },
       { key: 'fontsize', type: 'number', def: null, range: [8, 60, 1] },
@@ -9452,6 +9465,41 @@ var DashticzDeviceEditor = (function () {
     ].concat(_settingRows(HOMECONNECT_SECTION, values));
   }
 
+  /* The logo width and height of the Car widget only apply to an image: they
+     show directly below the icon row while its source is Image, and are
+     hidden otherwise (the rows and the Icon option can change at any time, so
+     the state is re-read on every click or change in the popup). */
+  function _wireCarstatusIconSize($popup, iconOptionId) {
+    var $fields = $popup
+      .find(
+        'input[id$="-carstatus-iconwidth"], input[id$="-carstatus-iconheight"], input[id$="-carstatus-iconoffset"]'
+      )
+      .closest('.de-carstatus-field')
+      .removeClass('de-carstatus-field-rowstart');
+    if (!$fields.length) return;
+    $fields.first().before('<div class="de-carstatus-iconsize d-none"></div>');
+    var $box = $popup.find('.de-carstatus-iconsize');
+    $box.append($fields);
+    function refresh() {
+      var $row = $popup
+        .find('.de-icon-field-row')
+        .filter(function () {
+          return $(this).find('.de-icon-source').val() === 'image';
+        })
+        .first();
+      var show =
+        $row.length > 0 &&
+        $row.css('display') !== 'none' &&
+        (!iconOptionId || $('#' + iconOptionId).hasClass('active'));
+      if (show && !$row.next().is($box)) $box.insertAfter($row);
+      $box.toggleClass('d-none', !show);
+    }
+    $popup.on('click change input', function () {
+      setTimeout(refresh, 0);
+    });
+    refresh();
+  }
+
   function _showCarstatusPopup() {
     var t = _translations();
     $('#carstatusblockpopup').remove();
@@ -9502,6 +9550,7 @@ var DashticzDeviceEditor = (function () {
     var $popup = $('#carstatusblockpopup');
     _wireQuickOptions('carstatus', $popup);
     _wireBackButton('carstatusblockpopup');
+    _wireCarstatusIconSize($popup, 'carstatus-opt-icon');
 
     $('#carstatus-save-btn').on('click', function () {
       var $message = $popup
@@ -11841,6 +11890,7 @@ var DashticzDeviceEditor = (function () {
     $('body').append(html);
 
     var $popup = $('#de-config-popup');
+    if (isCarstatusBlock) _wireCarstatusIconSize($popup);
     // Whether the user actually interacted with the icon controls this time
     // the popup is open - see the generatedIcon skip-check in the save
     // handler below, which relies on this to tell "the pre-filled Icon
