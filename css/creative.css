@@ -1596,10 +1596,11 @@ next css sets the default height of the frame popup
 .colbar .logo {
   /* The logo carries a col-xs-N percentage width that is far too narrow on a
      tablet (app title cut to "D..." next to the version). Size it to its
-     content instead (the bar still lets it shrink if it really overflows). */
+     content instead; only the clock shrinks. */
   flex: 0 1 auto;
+  /* The logo never gives up room: only the clock shrinks. */
+  flex-shrink: 0;
   width: auto;
-  max-width: 60%;
   min-width: 0;
 }
 
@@ -1639,6 +1640,13 @@ next css sets the default height of the frame popup
   margin-left: 0;
 }
 
+/* Flex shrink is distributed in proportion to flex-basis, so the wide clock
+   text and the logo shrank together and the app title was cut to "Da...".
+   Make the clock give way far faster than the logo. */
+.colbar .miniclock {
+  flex-shrink: 100;
+}
+
 .colbar .text-right {
   display: flex;
   align-items: center;
@@ -1669,6 +1677,8 @@ next css sets the default height of the frame popup
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  /* A very long app title still gets an ellipsis. */
+  max-width: 50vw;
 }
 
 .colbar.transbg .logo .logo-version {

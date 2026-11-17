@@ -1,4 +1,4 @@
 {
-    "version": "4.20.35",
-    "last_changes": "Dependencies: bootstrap 5.3.9, @babel/core 8.1.2, prettier 3.10.0 and sass 1.108.2."
+    "version": "4.20.36",
+    "last_changes": "Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo)."
 }

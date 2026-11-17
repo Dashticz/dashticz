@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.20.36 (17-11-2026)
+----------------------
+
+* **Fixes**
+
+- Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo).
+
 v4.20.35 (14-11-2026)
 ----------------------
 
