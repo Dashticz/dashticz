@@ -1594,7 +1594,12 @@ next css sets the default height of the frame popup
 }
 
 .colbar .logo {
+  /* The logo carries a col-xs-N percentage width that is far too narrow on a
+     tablet (app title cut to "D..." next to the version). Size it to its
+     content instead (the bar still lets it shrink if it really overflows). */
   flex: 0 1 auto;
+  width: auto;
+  max-width: 60%;
   min-width: 0;
 }
 
@@ -1663,11 +1668,13 @@ next css sets the default height of the frame popup
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .colbar.transbg .logo .logo-version {
   line-height: 1.2;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .colbar.transbg .fab,
