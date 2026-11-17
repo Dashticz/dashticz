@@ -19,6 +19,12 @@
  *   cscritical    below this level (%) the battery blinks red; default 15
  *   cslow         below this level (%) the battery is red; default 30
  *   csmid         below this level (%) the battery is orange; default 50
+ *   csiconwidth   optional width (px) of the logo/image; empty = the theme's
+ *   csiconheight  optional height (px) of the logo/image; empty = the theme's
+ *   csiconoffset  optional vertical shift (px) of the logo: negative up,
+ *                 positive down; default 0
+ *   cslinegap     distance (px) between the battery line and the grey line
+ *                 below it; default 25
  *   csdebug       test view: the state of every device below the status
  *   csfontsize    optional font size in px (8-60); empty = the theme's
  *
@@ -183,43 +189,43 @@ var DT_carstatus = (function () {
     );
   }
 
-  // The battery percentage with a battery icon and the mileage with a road
-  // icon.
-  function batteryTextHtml(pct, mileage, limits) {
+  // One line: the battery percentage with a battery icon, the progress bar
+  // (same look as the bar of the Home Connect widget) and the mileage with a
+  // road icon at the end.
+  function batteryTextHtml(pct, mileage, limits, charging) {
+    var level = batteryLevel(pct);
     return (
       '<div class="carstatus-battery-text ' +
-      batteryClass(batteryLevel(pct), limits) +
+      batteryClass(level, limits) +
+      (charging ? ' carstatus-charging' : '') +
       '"><span class="carstatus-pct">' +
-      batterySvg(batteryLevel(pct)) +
-      batteryLevel(pct) +
-      '%</span><span class="carstatus-km">' +
+      batterySvg(level) +
+      level +
+      '%</span><span class="carstatus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
+      level +
+      '"><span class="carstatus-bar-fill" style="width:' +
+      level +
+      '%"></span></span><span class="carstatus-km">' +
       roadSvg() +
       esc(Math.round(mileage)) +
       ' km</span></div>'
     );
   }
 
-  // The battery: the percentage at the start and the mileage at the end of
-  // the progress bar, above it. Empty when the battery is shown next to the
-  // icon (see render()).
+  // The battery line. Empty when the battery is shown next to the icon (see
+  // render()).
   function batteryHtml(pct, mileage, charging, inHeader, limits) {
     if (inHeader) return '';
     return fullBatteryHtml(pct, mileage, charging, limits);
   }
 
   function fullBatteryHtml(pct, mileage, charging, limits) {
-    var level = batteryLevel(pct);
     return (
       '<div class="carstatus-battery ' +
-      batteryClass(level, limits) +
-      (charging ? ' carstatus-charging' : '') +
+      batteryClass(batteryLevel(pct), limits) +
       '">' +
-      batteryTextHtml(pct, mileage, limits) +
-      '<div class="carstatus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
-      level +
-      '"><span class="carstatus-bar-fill" style="width:' +
-      level +
-      '%"></span></div></div>'
+      batteryTextHtml(pct, mileage, limits, charging) +
+      '</div>'
     );
   }
 
@@ -378,18 +384,29 @@ var DT_carstatus = (function () {
       var other = Math.round(
         wide ? (size * width) / height : (size * height) / width
       );
+      var imageWidth = wide ? other : size;
+      var imageHeight = wide ? size : other;
+      // A width and/or height from the settings wins; with only one of them
+      // the other follows the proportions of the image.
+      var setWidth = parseInt(me.block.csiconwidth, 10);
+      var setHeight = parseInt(me.block.csiconheight, 10);
+      if (setWidth > 0 && setHeight > 0) {
+        imageWidth = setWidth;
+        imageHeight = setHeight;
+      } else if (setWidth > 0) {
+        imageWidth = setWidth;
+        imageHeight = Math.round((setWidth * height) / width);
+      } else if (setHeight > 0) {
+        imageHeight = setHeight;
+        imageWidth = Math.round((setHeight * width) / height);
+      }
       img.style.setProperty('max-width', 'none', 'important');
       img.style.setProperty('max-height', 'none', 'important');
-      img.style.setProperty('width', (wide ? other : size) + 'px', 'important');
-      img.style.setProperty(
-        'height',
-        (wide ? size : other) + 'px',
-        'important'
-      );
+      img.style.setProperty('width', imageWidth + 'px', 'important');
+      img.style.setProperty('height', imageHeight + 'px', 'important');
       // The icon column grows with the image, so the battery next to it
       // does not run under it.
       var column = img.parentNode;
-      var imageWidth = wide ? other : size;
       column.style.setProperty('width', imageWidth + 'px', 'important');
       // The theme may offset the image inside the column: the column then
       // ends where the image ends.
@@ -408,6 +425,31 @@ var DT_carstatus = (function () {
     else img.addEventListener('load', apply);
   }
 
+  // The height of the header row is the height of the battery line: the logo
+  // or image next to it (centred on that line) does not make the row, and so
+  // the distance to the grey line, any higher.
+  function fitHeader(root, block) {
+    var header = root.querySelector('.dt_content');
+    var text = root.querySelector('.carstatus-headtext');
+    var column = header && header.querySelector('.col-icon');
+    if (!header || !text) return;
+    header.style.height = '';
+    if (column) column.style.transform = '';
+    var textHeight = text.offsetHeight;
+    if (!textHeight) return;
+    header.style.height = textHeight + 'px';
+    if (!column) return;
+    // The logo itself (not the column around it) is centred on the battery
+    // line, plus the vertical shift from the settings.
+    var logo = column.querySelector('img, em, i') || column;
+    var box = logo.getBoundingClientRect();
+    var top = text.getBoundingClientRect().top;
+    var shift = parseInt(block && block.csiconoffset, 10) || 0;
+    var move =
+      Math.round(top + (textHeight - box.height) / 2 - box.top) + shift;
+    column.style.transform = 'translateY(' + move + 'px)';
+  }
+
   // The text below the line starts at the left of the battery: with the
   // battery next to the icon (no title) it is indented by the width of the
   // icon column, measured from the page because the theme sets that width.
@@ -417,9 +459,28 @@ var DT_carstatus = (function () {
     var apply = function () {
       var below = root.querySelector('.carstatus-below');
       if (!below) return;
+      fitHeader(root, me.block);
       below.style.setProperty('--carstatus-indent', '0px');
+      // The line ends where the battery line (the mileage) ends: whichever of
+      // the two is wider is made as narrow as the other, so nothing sticks
+      // out of the tile (no scrollbar).
+      var lineGap = parseInt(me.block.cslinegap, 10);
+      below.style.marginTop =
+        (lineGap >= 0 && lineGap <= 200 ? lineGap : 25) + 'px';
+      below.style.marginRight = '';
+      var headtext = root.querySelector('.carstatus-headtext');
+      if (headtext) headtext.style.paddingRight = '';
+      var battery = root.querySelector('.carstatus-battery');
+      if (battery) {
+        var gap = Math.round(
+          below.getBoundingClientRect().right -
+            battery.getBoundingClientRect().right
+        );
+        if (gap > 0) below.style.marginRight = gap + 'px';
+        else if (gap < 0 && headtext) headtext.style.paddingRight = -gap + 'px';
+      }
       // The bar itself: the box around it starts at the icon.
-      var head = root.querySelector('.carstatus-headtext .carstatus-bar');
+      var head = root.querySelector('.carstatus-headtext .carstatus-battery');
       if (!head) return;
       var delta = Math.round(
         head.getBoundingClientRect().left - below.getBoundingClientRect().left
