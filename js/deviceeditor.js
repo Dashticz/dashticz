@@ -9027,7 +9027,7 @@ var DashticzDeviceEditor = (function () {
       { key: 'port', type: 'number', def: 2323, range: [1, 65535, 1] },
       { key: 'password', type: 'password', def: '', max: 100 },
       { key: 'https', type: 'switch', def: false },
-      { key: 'switch', type: 'device', def: '', full: 1 },
+      { key: 'switch', type: 'device', def: '' },
       { key: 'auto', type: 'switch', def: true, full: 1 },
       { key: 'startmin', type: 'number', def: 25, range: [1, 100, 1] },
       { key: 'startmax', type: 'number', def: 30, range: [1, 100, 1] },
@@ -9064,7 +9064,24 @@ var DashticzDeviceEditor = (function () {
     html += '<h6 class="de-section-title">' + _esc(t.fully_block) + '</h6>';
     html += '<div class="de-fully-grid">';
     FULLY_SETTINGS.forEach(function (setting) {
+      // The charger switch and the font size share one row, half the width
+      // each.
       if (setting.key === 'fontsize') return;
+      if (setting.key === 'switch') {
+        html += '<div class="de-fully-pair">';
+        html += _settingHtml(FULLY_SECTION, prefix, setting, v.switch, t);
+        html += _settingHtml(
+          FULLY_SECTION,
+          prefix,
+          FULLY_SETTINGS.filter(function (item) {
+            return item.key === 'fontsize';
+          })[0],
+          v.fontsize,
+          t
+        );
+        html += '</div>';
+        return;
+      }
       html += _settingHtml(FULLY_SECTION, prefix, setting, v[setting.key], t);
     });
     html += '</div></div>';
@@ -9083,11 +9100,6 @@ var DashticzDeviceEditor = (function () {
       _settingHtml(section, prefix, setting, value, _translations()) +
       '</div>'
     );
-  }
-
-  function _fullyFontsizeHtml(prefix, values) {
-    var v = $.extend(_fullyValuesFromRows([]), values || {});
-    return _sectionFontsizeHtml(FULLY_SECTION, prefix, v.fontsize);
   }
 
   function _f1FontsizeHtml(prefix, values) {
@@ -9163,7 +9175,6 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
-    html += _fullyFontsizeHtml('fullykiosk', {});
     html +=
       '<div class="mb-3"><label class="form-label" for="fullykiosk-device-title">' +
       _esc(t.html_block_title) +
@@ -11625,7 +11636,6 @@ var DashticzDeviceEditor = (function () {
       html += '</div>';
     }
     html += '</div>';
-    if (isFullyBlock) html += _fullyFontsizeHtml('de-config', fullyValues);
     if (isCarstatusBlock)
       html += _carstatusFontsizeHtml('de-config', carstatusValues);
     if (isHomeconnectBlock)
