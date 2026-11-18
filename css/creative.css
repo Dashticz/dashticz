@@ -9980,6 +9980,61 @@ canvas {
   grid-column: 1 / -1;
 }
 
+/* Fully Kiosk: a number field (the percentages, not the port) is compact: the input, 5
+   characters wide, stands behind its label on the same line. The label
+   takes the free space, so the inputs line up vertically at the right edge
+   of their column. */
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  > .mb-3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  .form-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  input {
+  flex: none;
+  width: calc(5ch + 2.75rem);
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  .form-text {
+  flex: 0 0 100%;
+}
+
+/* The port: label above, as the host next to it, so label and input are on
+   the same lines as those of the host; the input is 5 characters wide. */
+.de-fully-grid > .de-fully-field input[id$='-fully-port'] {
+  width: calc(5ch + 2.75rem);
+  max-width: 100%;
+}
+
+/* The charger switch and the font size: one row, 50% width each. */
+.de-fully-grid > .de-fully-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 479px) {
+  .de-fully-grid > .de-fully-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* The logo width and height: two fields below the icon row (Image source). */
 .de-carstatus-iconsize {
   display: grid;
