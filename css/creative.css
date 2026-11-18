@@ -10418,9 +10418,21 @@ canvas {
   height: 0.4em;
   border-radius: 0.2em;
   margin: 0 0.5em;
-  color: var(--carstatus-color);
+  color: var(--carstatus-bar-color, var(--carstatus-color));
   background: color-mix(in srgb, currentColor 25%, transparent);
   overflow: hidden;
+}
+
+/* From the orange level up the bar is green with a gradient, like the bar of
+   the Mower widget (the percentage keeps its own colour). */
+.carstatus-batt-ok,
+.carstatus-batt-full {
+  --carstatus-bar-color: #059956;
+}
+
+.carstatus-batt-ok .carstatus-bar-fill,
+.carstatus-batt-full .carstatus-bar-fill {
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
 }
 
 .carstatus-bar-fill {
