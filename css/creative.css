@@ -9455,17 +9455,15 @@ canvas {
   transition: width 0.6s ease;
 }
 
-/* The dot looks like the sun of the Lux arc (.lux-arc-sun): a white dot with
-   a soft yellow glow. */
+/* The marker is a vertical line, 3px wide, white; it extends 4px above and below the bar. */
 .fullykiosk-bar-dot {
   position: absolute;
-  top: 50%;
-  width: 11px;
-  height: 11px;
-  margin: -5.5px 0 0 -5.5px;
-  border-radius: 50%;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 1px;
   background: #fff;
-  box-shadow: 0 0 6px 4px rgba(255, 214, 0, 0.8);
 }
 
 /* A power button that is off has a grey icon. */
