@@ -133,10 +133,19 @@ jobs:
         run: |
           sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|mirror+http://mirrors.ubuntu.com/mirrors.txt|g' /etc/apt/sources.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
           echo 'Acquire::http::Timeout "20"; Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/99ci-timeouts
+      - name: Install browser system dependencies
+        # apt on the runner sometimes stalls for the whole job (the WebKit job
+        # was cancelled by the job timeout while still downloading packages).
+        # Give each attempt 5 minutes and retry; downloaded packages stay in
+        # the apt cache, so a retry continues where the stalled one stopped.
+        run: |
+          for attempt in 1 2 3; do
+            timeout 300 npx playwright install-deps ${{ matrix.browser }} && exit 0
+            echo "install-deps attempt $attempt failed or timed out"
+          done
+          exit 1
       - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps ${{ matrix.browser }}
-      - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps ${{ matrix.browser }}
+        run: npx playwright install ${{ matrix.browser }}
       - name: Start PHP test server
         # PHP's built-in server handles one request at a time unless it gets
         # workers; the parallel Playwright workers would queue behind it.
