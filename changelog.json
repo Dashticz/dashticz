@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.20.37": "Configurations: a new Configurations category in the settings menu lists the extra configuration files (CONFIG2.js, ...), opens one, copies its link and creates a new one (empty or a copy). The active extra configuration is shown next to the logo in the top bar.",
     "4.20.36": "Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo).",
     "4.20.35": "Dependencies: bootstrap 5.3.9, @babel/core 8.1.2, prettier 3.10.0 and sass 1.108.2.",
     "4.20.34": "Cleanup: the Coronavirus block is removed (its data source no longer exists), custom graph data and customHeader formulas no longer use eval, unused code and debug logging are removed and error messages are logged as errors or warnings. The Scrutinizer configuration is removed. Separator: title size and horizontal alignment can be set in Device Config. Camera, iFrame and Timegraph: the height can be changed afterwards in Device Config (#1379).",
