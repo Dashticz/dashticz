@@ -1,6 +1,32 @@
 Release Notes
 =============
 
+v4.20.37 (21-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Configurations: a new *Configurations* category in the settings menu lists the extra configuration files (``CONFIG2.js``, ...), opens one, copies its link and creates a new one (empty, or a copy of an existing configuration, optionally with its stylesheet). The active extra configuration is shown next to the logo in the top bar.
+
+* **Code**
+
+- New ``js/configs.php`` endpoint (list and create) with tests.
+- Documentation: the ``cfg`` example is ``CONFIG2.js``; file names with a dot are not accepted by the editors.
+
+v4.20.36 (17-11-2026)
+----------------------
+
+* **Fixes**
+
+- Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo).
+
+v4.20.35 (14-11-2026)
+----------------------
+
+* **Code**
+
+- Dependencies: bootstrap 5.3.9, @babel/core 8.1.2, prettier 3.10.0 and sass 1.108.2.
+
 v4.20.34 (08-11-2026)
 ----------------------
 
