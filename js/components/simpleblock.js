@@ -170,7 +170,23 @@ var DT_simpleblock = (function () {
           $('<div>').text(dashticz_version).html() +
           '</span>'
         : '') +
+      renderLogoConfig() +
       '</div>'
+    );
+  }
+
+  // Name of the active extra configuration (?cfg=CONFIG2.js), so it is clear
+  // which one is being viewed and edited. Nothing for the default CONFIG.js.
+  function renderLogoConfig() {
+    var cfg = typeof _PARAMS !== 'undefined' && _PARAMS ? _PARAMS['cfg'] : '';
+    if (!cfg || cfg === 'CONFIG.js') return '';
+    var label = String(cfg).replace(/\.js$/i, '');
+    return (
+      '<span class="logo-config" title="' +
+      $('<div>').text(cfg).html() +
+      '">' +
+      $('<div>').text(label).html() +
+      '</span>'
     );
   }
 

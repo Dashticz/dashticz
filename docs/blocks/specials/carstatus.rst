@@ -73,6 +73,22 @@ set is treated as off (or 0).
   * - csmid
     - Below this battery level (%) the bar is orange; from there it is green.
       Default: ``50``
+  * - csiconwidth
+    - Optional: width of the logo / image of the car in pixels (``8``-``400``).
+      With only a width the height follows the proportions of the image.
+      Default: the size of the theme
+  * - csiconheight
+    - Optional: height of the logo / image in pixels (``8``-``400``). With only
+      a height the width follows the proportions of the image.
+      Default: the size of the theme
+  * - csiconoffset
+    - Optional: moves the logo / image up (negative) or down (positive), in
+      pixels (``-100``-``100``).
+      Default: ``0``
+  * - cslinegap
+    - Optional: the distance in pixels between the battery line and the grey
+      line below it (``0``-``200``).
+      Default: ``25``
   * - csdebug
     - ``true``: a test view that always shows the rows *Charging until*, *Doors*
       and *Windows* (also when they do not apply) and the charging glow in the

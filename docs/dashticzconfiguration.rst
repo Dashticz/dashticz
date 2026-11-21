@@ -315,7 +315,7 @@ Besides the Dashticz configuration parameters, the following additional paramete
     - Description
   * - cfg 
     - | The Dashticz configuration file to be used instead of CONFIG.js.
-      | ``CONFIG.room2.js``
+      | ``CONFIG2.js``
   * - cfg2 
     - | The name of a second configuration file, which will be loaded after CONFIG.js.
       | ``CONFIG.extra.js``
@@ -328,7 +328,11 @@ Besides the Dashticz configuration parameters, the following additional paramete
 
 So, to load Dashticz with a different config file, use the following URL::
 
-  http://<dashticz ip:port>/?cfg=CONFIG.room2.js
+  http://<dashticz ip:port>/?cfg=CONFIG2.js
+
+The editors save to the configuration file that is currently loaded, and the name of an extra configuration is shown next to the logo in the top bar. The configuration file name can contain letters, numbers, ``-`` and ``_`` only (``CONFIG2.js``, ``CONFIGkitchen.js``).
+
+You can switch between configurations, and create a new one (empty, or a copy of an existing one), in the settings menu under *Configurations*. A configuration ``CONFIG2.js`` automatically uses ``custom2.css`` when that file exists.
 
 The URL parameters can be accessed in CONFIG.js or custom.js via the global variable _PARAMS::
 

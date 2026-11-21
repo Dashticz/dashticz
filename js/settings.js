@@ -732,11 +732,18 @@ var settingsCategoryIcons = {
   general: 'fas fa-sliders-h',
   screen: 'fas fa-desktop',
   theme: 'fas fa-paint-brush',
+  configs: 'fas fa-layer-group',
   standby: 'fas fa-moon',
   localize: 'fas fa-globe',
   widgets: 'fas fa-puzzle-piece',
   other: 'fas fa-ellipsis-h',
   about: 'fas fa-info-circle',
+};
+
+settingList['configs'] = {
+  title:
+    (language.settings.configs && language.settings.configs.title) ||
+    'Configurations',
 };
 
 settingList['theme'] = {
@@ -1348,6 +1355,7 @@ function loadSettings() {
         addSettingsAboutItems();
         bindSettingsCategoryTiles();
         bindThemePicker();
+        bindConfigsPanel();
         bindBackgroundPickers();
         bindSettingsUpdateControls();
         bindClockTypeToggle();
@@ -1373,6 +1381,7 @@ function getSettingsCategories() {
     'standby',
     'localize',
     'widgets',
+    'configs',
     'other',
     'about',
   ];
@@ -1446,6 +1455,8 @@ function renderSettingsCategoryHome() {
       html += renderWidgetSettingsTab();
     } else if (id === 'theme') {
       html += renderThemeSettingsPanel();
+    } else if (id === 'configs') {
+      html += renderConfigsPanel();
     } else {
       var twoColumns = id === 'general' || id === 'screen';
       if (twoColumns) html += '<div class="settings-two-col">';
@@ -2400,6 +2411,370 @@ function _cssValueToHex(value) {
     }
   }
   return '';
+}
+
+/* Configurations: switch between, and create, extra CONFIG<name>.js files.
+   A configuration is opened with ?cfg=<file>; the editors follow that
+   parameter, so each file keeps its own devices, layout and settings. */
+function getActiveConfigFile() {
+  return (
+    (typeof _PARAMS !== 'undefined' && _PARAMS && _PARAMS['cfg']) || 'CONFIG.js'
+  );
+}
+
+function configsLabel(key, fallback) {
+  var configsL = (language.settings && language.settings.configs) || {};
+  return configsL[key] || fallback;
+}
+
+/* Dashboard URL that opens the given config. The default CONFIG.js needs no
+   cfg parameter; a custom folder parameter is kept. */
+function getConfigUrl(cfgFile) {
+  var params = [];
+  if (typeof _PARAMS !== 'undefined' && _PARAMS && _PARAMS['folder']) {
+    params.push('folder=' + encodeURIComponent(_PARAMS['folder']));
+  }
+  if (cfgFile && cfgFile !== 'CONFIG.js') {
+    params.push('cfg=' + encodeURIComponent(cfgFile));
+  }
+  return (
+    window.location.origin +
+    window.location.pathname +
+    (params.length ? '?' + params.join('&') : '')
+  );
+}
+
+function renderConfigsPanel() {
+  var active = getActiveConfigFile();
+  return (
+    '<div id="settings-configs">' +
+    '<p class="settings-intro">' +
+    escapeSettingsHtml(
+      configsLabel(
+        'intro',
+        'Each configuration has its own devices, layout and settings. Open one to edit it.'
+      )
+    ) +
+    '</p>' +
+    '<p>' +
+    escapeSettingsHtml(configsLabel('active', 'Active configuration:')) +
+    ' <strong id="settings-configs-active">' +
+    escapeSettingsHtml(active) +
+    '</strong></p>' +
+    '<ul class="list-group mb-3" id="settings-configs-list"></ul>' +
+    '<h5>' +
+    escapeSettingsHtml(configsLabel('new_title', 'New configuration')) +
+    '</h5>' +
+    '<div class="row g-2 align-items-end">' +
+    '<div class="col-sm-4"><label class="form-label" for="settings-configs-name">' +
+    escapeSettingsHtml(configsLabel('name', 'Name')) +
+    '</label>' +
+    '<input type="text" class="form-control" id="settings-configs-name" maxlength="40" placeholder="' +
+    escapeSettingsHtml(configsLabel('name_placeholder', 'e.g. 2')) +
+    '" autocomplete="off"></div>' +
+    '<div class="col-sm-4"><label class="form-label" for="settings-configs-source">' +
+    escapeSettingsHtml(configsLabel('source', 'Start from')) +
+    '</label>' +
+    '<select class="form-select" id="settings-configs-source"></select></div>' +
+    '<div class="col-sm-4"><button type="button" class="btn btn-primary" id="settings-configs-create">' +
+    escapeSettingsHtml(configsLabel('create', 'Create')) +
+    '</button></div></div>' +
+    '<div class="form-check mt-2">' +
+    '<input type="checkbox" class="form-check-input" id="settings-configs-copycss" checked>' +
+    '<label class="form-check-label" for="settings-configs-copycss">' +
+    escapeSettingsHtml(
+      configsLabel('copy_css', 'Also copy the custom stylesheet')
+    ) +
+    '</label></div>' +
+    '<p class="text-muted small mt-2">' +
+    escapeSettingsHtml(
+      configsLabel(
+        'name_help',
+        'Letters, numbers, - and _. The name 2 creates CONFIG2.js, opened with ?cfg=CONFIG2.js.'
+      )
+    ) +
+    '</p>' +
+    '<div class="text-danger" id="settings-configs-error" role="alert"></div>' +
+    '</div>'
+  );
+}
+
+function copyConfigLink(url, $button) {
+  var done = function () {
+    var original = $button.data('label');
+    $button.text(configsLabel('copied', 'Copied'));
+    setTimeout(function () {
+      $button.text(original);
+    }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done, function () {});
+    return;
+  }
+  var $tmp = $('<textarea readonly></textarea>')
+    .css({ position: 'fixed', opacity: 0 })
+    .val(url)
+    .appendTo('body');
+  $tmp[0].select();
+  try {
+    document.execCommand('copy');
+    done();
+  } catch (e) {
+    /* ignore */
+  }
+  $tmp.remove();
+}
+
+function bindConfigsPanel() {
+  var $list = $('#settingspopup #settings-configs-list');
+  if (!$list.length) return;
+  var active = getActiveConfigFile();
+
+  // Two-step delete without a browser dialog: the first click turns the
+  // cross into a check mark to confirm, the second click (within 4 seconds)
+  // deletes the file.
+  function buildConfigDeleteButton(file) {
+    var label = configsLabel('delete', 'Delete');
+    var timer = null;
+    var $icon = $('<i class="fas fa-xmark" aria-hidden="true"></i>');
+    var $btn = $(
+      '<button type="button" class="settings-config-delete ms-2"></button>'
+    )
+      .attr({ title: label, 'aria-label': label })
+      .append($icon);
+    function reset() {
+      timer = null;
+      $btn.removeClass('confirm').attr({ title: label, 'aria-label': label });
+      $icon.attr('class', 'fas fa-xmark');
+    }
+    return $btn.on('click', function () {
+      if (!timer) {
+        var confirmLabel = configsLabel('delete_confirm', 'Sure?');
+        $btn
+          .addClass('confirm')
+          .attr({ title: confirmLabel, 'aria-label': confirmLabel });
+        $icon.attr('class', 'fas fa-check');
+        timer = setTimeout(reset, 4000);
+        return;
+      }
+      clearTimeout(timer);
+      timer = null;
+      deleteConfig(file, $btn);
+    });
+  }
+
+  function deleteConfig(file, $btn) {
+    var $error = $('#settingspopup #settings-configs-error').text('');
+    $btn.prop('disabled', true);
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (csrf) {
+        return $.ajax({
+          url: 'js/configs.php',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ action: 'delete', file: file }),
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': csrf.token },
+        });
+      })
+      .done(function () {
+        $.getJSON('js/configs.php').done(function (list) {
+          renderList((list && list.configs) || []);
+        });
+        $error
+          .removeClass('text-danger')
+          .addClass('text-success')
+          .text(
+            configsLabel('deleted', 'Deleted {file}.').replace('{file}', file)
+          );
+      })
+      .fail(function (xhr) {
+        $btn.prop('disabled', false);
+        $error
+          .removeClass('text-success')
+          .addClass('text-danger')
+          .text(
+            xhr.responseJSON && xhr.responseJSON.error
+              ? xhr.responseJSON.error
+              : configsLabel(
+                  'delete_failed',
+                  'Could not delete the configuration.'
+                )
+          );
+      });
+  }
+
+  function renderList(configs) {
+    // Only files in custom/ can be a copy source; the active config stays
+    // listed even when it is loaded from elsewhere (?folder=).
+    var sources = configs;
+    if (configs.indexOf(active) === -1) configs = [active].concat(configs);
+    $list.empty();
+    var $source = $('#settingspopup #settings-configs-source').empty();
+    $source.append(
+      $('<option></option>')
+        .attr('value', '')
+        .text(configsLabel('source_empty', 'Empty configuration'))
+    );
+    if (sources.indexOf('CONFIG.js') !== -1) {
+      $source.append(
+        $('<option></option>')
+          .attr('value', '__base__')
+          .text(
+            configsLabel(
+              'source_base',
+              'Base of CONFIG.js (settings and logins only, no tiles)'
+            )
+          )
+      );
+    }
+    configs.forEach(function (file) {
+      var isActive = file === active;
+      var $row = $(
+        '<li class="list-group-item d-flex align-items-center"></li>'
+      );
+      $row.append($('<span class="flex-grow-1"></span>').text(file));
+      if (isActive) {
+        $row.append(
+          $('<span class="badge bg-primary me-2"></span>').text(
+            configsLabel('active_badge', 'Active')
+          )
+        );
+      } else {
+        $row.append(
+          $('<a class="btn btn-sm btn-outline-primary me-2"></a>')
+            .attr('href', getConfigUrl(file))
+            .text(configsLabel('open', 'Open'))
+        );
+      }
+      var copyLabel = configsLabel('copy_link', 'Copy link');
+      $row.append(
+        $(
+          '<button type="button" class="btn btn-sm btn-outline-secondary"></button>'
+        )
+          .data('label', copyLabel)
+          .text(copyLabel)
+          .on('click', function () {
+            copyConfigLink(getConfigUrl(file), $(this));
+          })
+      );
+      if (!isActive && file !== 'CONFIG.js') {
+        $row.append(buildConfigDeleteButton(file));
+      }
+      $list.append($row);
+      if (sources.indexOf(file) !== -1) {
+        $source.append(
+          $('<option></option>')
+            .attr('value', file)
+            .text(
+              configsLabel('source_copy', 'Copy of {file}').replace(
+                '{file}',
+                file
+              )
+            )
+        );
+      }
+    });
+    $source.val(sources.indexOf(active) !== -1 ? active : '');
+
+    // Suggest the next free number as name (CONFIG2.js, CONFIG3.js, ...),
+    // unless the user already typed something.
+    var $name = $('#settingspopup #settings-configs-name');
+    if (!$name.val() || $name.data('auto')) {
+      var next = 2;
+      while (configs.indexOf('CONFIG' + next + '.js') !== -1) next++;
+      $name.val(String(next)).data('auto', true);
+    }
+  }
+
+  renderList([]);
+  $.getJSON('js/configs.php')
+    .done(function (data) {
+      renderList((data && data.configs) || []);
+    })
+    .fail(function () {
+      $('#settingspopup #settings-configs-error').text(
+        configsLabel(
+          'load_failed',
+          'Could not load the list of configurations.'
+        )
+      );
+    });
+
+  $('#settingspopup #settings-configs-name').on('input', function () {
+    $(this).data('auto', false);
+  });
+
+  $('#settingspopup #settings-configs-create').on('click', function () {
+    var $error = $('#settingspopup #settings-configs-error').text('');
+    var name = String(
+      $('#settingspopup #settings-configs-name').val() || ''
+    ).trim();
+    if (!name) {
+      $error.text(configsLabel('name_required', 'Enter a name first.'));
+      return;
+    }
+    if (!/^[A-Za-z0-9_-]{1,40}$/.test(name)) {
+      $error.text(
+        configsLabel(
+          'name_invalid',
+          'Use only letters, numbers, - and _ in the name.'
+        )
+      );
+      return;
+    }
+    var chosenSource = $('#settingspopup #settings-configs-source').val() || '';
+    var $button = $(this).prop('disabled', true);
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (csrf) {
+        return $.ajax({
+          url: 'js/configs.php',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            name: name,
+            source: chosenSource === '__base__' ? 'CONFIG.js' : chosenSource,
+            base_only: chosenSource === '__base__',
+            copy_css: $('#settingspopup #settings-configs-copycss').is(
+              ':checked'
+            ),
+          }),
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': csrf.token },
+        });
+      })
+      .done(function (data) {
+        $('#settingspopup #settings-configs-name').val('');
+        $.getJSON('js/configs.php').done(function (list) {
+          renderList((list && list.configs) || []);
+        });
+        $error
+          .removeClass('text-danger')
+          .addClass('text-success')
+          .text(
+            configsLabel(
+              'created',
+              'Created {file}. Use Open to switch to it.'
+            ).replace('{file}', data.file)
+          );
+      })
+      .fail(function (xhr) {
+        $error
+          .removeClass('text-success')
+          .addClass('text-danger')
+          .text(
+            xhr.responseJSON && xhr.responseJSON.error
+              ? xhr.responseJSON.error
+              : configsLabel(
+                  'create_failed',
+                  'Could not create the configuration.'
+                )
+          );
+      })
+      .always(function () {
+        $button.prop('disabled', false);
+      });
+  });
 }
 
 function bindThemePicker() {
