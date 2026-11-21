@@ -1687,6 +1687,23 @@ next css sets the default height of the frame popup
   flex: 0 0 auto;
 }
 
+/* Name of the active extra configuration (?cfg=CONFIG2.js). */
+.colbar.transbg .logo .logo-config {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 20vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6em;
+  font-weight: normal;
+  line-height: 1.4;
+  padding: 0 8px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  opacity: 0.85;
+}
+
 .colbar.transbg .fab,
 .colbar.transbg .fas,
 .colbar.transbg .far {
@@ -10781,4 +10798,34 @@ input[id$='-carstatus-fontsize'] {
   min-width: 2.4em;
   text-align: right;
   margin-right: 0.2em;
+}
+
+/* Delete button of an extra configuration: a cross in a circle. The first
+   click turns the cross into a check mark that has to be clicked to confirm. */
+.settings-config-delete {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 26px;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--bs-danger, #dc3545);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bs-danger, #dc3545);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.settings-config-delete:hover,
+.settings-config-delete:focus-visible,
+.settings-config-delete.confirm {
+  background: var(--bs-danger, #dc3545);
+  color: #fff;
+}
+
+.settings-config-delete:disabled {
+  opacity: 0.5;
 }

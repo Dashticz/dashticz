@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v4.20.37 (21-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Configurations: a new *Configurations* category in the settings menu lists the extra configuration files (``CONFIG2.js``, ...), opens one, copies its link and creates a new one (empty, or a copy of an existing configuration, optionally with its stylesheet). The active extra configuration is shown next to the logo in the top bar.
+
+* **Code**
+
+- New ``js/configs.php`` endpoint (list and create) with tests.
+- Documentation: the ``cfg`` example is ``CONFIG2.js``; file names with a dot are not accepted by the editors.
+
 v4.20.36 (17-11-2026)
 ----------------------
 

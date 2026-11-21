@@ -1,4 +1,4 @@
 {
-    "version": "4.20.36",
-    "last_changes": "Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo)."
+    "version": "4.20.37",
+    "last_changes": "Configurations: a new Configurations category in the settings menu lists the extra configuration files (CONFIG2.js, ...), opens one, copies its link and creates a new one (empty or a copy). The active extra configuration is shown next to the logo in the top bar."
 }
