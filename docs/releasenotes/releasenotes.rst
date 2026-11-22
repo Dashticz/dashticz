@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2057 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- External stylesheets, such as the Google Fonts Montserrat font of the Hayman clock, no longer get a ``?v=`` version parameter appended to their URL. That produced an invalid URL (``css2?family=Montserrat?v=211``) and Chrome reported 'Response was blocked by CORB'. Local stylesheets that already have a query string now get ``&v=`` instead.
+
 v4.2056 (22-11-2026)
 ----------------------
 

@@ -212,11 +212,21 @@ var DT_function = (function () {
     loadedResources[id] = true;
 
     $('head').append(
-      '<link rel="stylesheet" type="text/css" href="' +
-        filename +
-        '?v=' +
-        _DASHTICZ_VERSION +
-        '">'
+      '<link rel="stylesheet" type="text/css" href="' + cssURL(filename) + '">'
+    );
+  }
+
+  /* Local stylesheets get a cache busting version parameter. External ones
+   * (for example Google Fonts) must stay untouched: appending '?v=' to a URL
+   * that already has a query string breaks it ('?family=X?v=211'), and the
+   * browser then reports 'Response was blocked by CORB'. */
+  function cssURL(filename) {
+    if (/^([a-z][a-z0-9+.-]*:)?\/\//i.test(filename)) return filename;
+    return (
+      filename +
+      (filename.indexOf('?') >= 0 ? '&' : '?') +
+      'v=' +
+      _DASHTICZ_VERSION
     );
   }
 
@@ -534,6 +544,7 @@ var DT_function = (function () {
     promptPassword: promptPassword,
     loadFont: loadFont,
     loadCSS: loadCSS,
+    cssURL: cssURL,
     loadScript: loadScript,
     loadDTScript: loadDTScript,
     nameFormFields: nameFormFields,
