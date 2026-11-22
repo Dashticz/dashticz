@@ -1,4 +1,4 @@
 {
-    "version": "4.2045",
-    "last_changes": "Cleanup: removed unused files (about 17 MB): an unused 15 MB documentation GIF and 18 unused documentation images, the vendored sphinx_rtd_theme copy, legacy Audiowide .eot/.svg fonts, css/sortable.css, unused test helpers and an unused image. The Slovenian language file is now sl_SI (was sl_SL); an existing sl_SL setting still works."
+    "version": "4.2046",
+    "last_changes": "Installer: tools/install-dashticz-write-access.sh now makes every dashboard configuration writable for the web-server user (CONFIG.js and extra files such as CONFIG2.js), plus their existing stylesheets (custom2.css), not only CONFIG.js and custom.css (#1401)."
 }
