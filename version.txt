@@ -1,4 +1,4 @@
 {
-    "version": "4.20.37",
-    "last_changes": "Configurations: a new Configurations category in the settings menu lists the extra configuration files (CONFIG2.js, ...), opens one, copies its link and creates a new one (empty or a copy). The active extra configuration is shown next to the logo in the top bar."
+    "version": "4.2038",
+    "last_changes": "Languages: removed unused and misplaced keys from the language files, added the missing en_US keys, and a CI check that validates the language files."
 }

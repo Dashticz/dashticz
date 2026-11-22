@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v4.2038 (22-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Version numbers now have the form ``4.xxxx`` (for example ``4.2038``); the number goes up by one with every change.
+- Language files: unused and misplaced keys removed, missing ``en_US`` keys added.
+
+* **Code**
+
+- CI: CodeQL analysis for JavaScript, and a check that validates the language files (invalid JSON, duplicate keys) and reports missing translations as a warning.
+
 v4.20.37 (21-11-2026)
 ----------------------
 
