@@ -276,8 +276,8 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // POST-only credentials: a username/password never appears in a URL
   // (query string, <img src>) where it could end up in logs/browser history.
   assert.doesNotMatch(source, /\$_GET\[.username.\]|\$_GET\[.password.\]/);
-  assert.match(source, /CURLOPT_USERPWD/);
-  assert.match(source, /CURLAUTH_BASIC/);
+  assert.match(source, /'userpwd'/);
+  assert.match(read('vendor/dashticz/security.php'), /CURLAUTH_BASIC/);
   // Every failure path is a fixed, generic message - never the raw curl
   // error or response body, which might otherwise echo a password back. The
   // connect-failure reason is narrowed by curl_errno() alone (a fixed,
@@ -298,7 +298,7 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   assert.match(source, /Authentication failed\./);
   // No SSL-verification opt-out (unlike the known legacy garbage/index.php
   // ignoressl option flagged in AGENTS.md - LMS has no such precedent to follow).
-  assert.doesNotMatch(source, /CURLOPT_SSL_VERIFYPEER/);
+  assert.doesNotMatch(source, /verifyTls/);
   // Cover artwork is returned as a data: URI (base64), never a URL the
   // browser would fetch directly - so LMS/radio credentials and any LAN-only
   // hostname never reach the browser's own network requests.
@@ -311,9 +311,9 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // own worst case, plus a shutdown handler as a last-resort net for any
   // other fatal error, guarantee a parseable JSON body either way.
   // Comfortably above the image-proxy cover fetch's own worst case
-  // (CONNECTTIMEOUT 4 + the 20s CURLOPT_TIMEOUT override below).
+  // (CONNECTTIMEOUT 4 + the 20s timeout override below).
   assert.match(source, /set_time_limit\(30\)/);
-  assert.match(source, /CURLOPT_TIMEOUT => 20/);
+  assert.match(source, /'timeout' => 20/);
   assert.match(source, /register_shutdown_function\(function \(\) \{/);
   assert.match(source, /error_get_last\(\)/);
   assert.match(source, /E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR/);
@@ -1805,10 +1805,11 @@ echo json_encode(array('method' => $_SERVER['REQUEST_METHOD'], 'user' => isset($
 echo json_encode(array(
   dashticz_http_request('${base}', array('method' => 'POST', 'body' => 'hello', 'userpwd' => 'user:secret', 'headers' => array('X-Test: 1'))),
   dashticz_http_request('${base}?s=401'),
+  dashticz_http_request('http://127.0.0.1:1/', array('connectTimeout' => 2)),
 ));`;
     const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
-    const [ok, denied] = JSON.parse(result.stdout);
+    const [ok, denied, unreachable] = JSON.parse(result.stdout);
     assert.equal(ok.failed, false);
     assert.equal(ok.status, 200);
     assert.deepEqual(JSON.parse(ok.body), {
@@ -1818,6 +1819,9 @@ echo json_encode(array(
       body: 'hello',
     });
     assert.equal(denied.status, 401);
+    assert.match(ok.headers['content-type'], /text\/html/);
+    assert.equal(unreachable.failed, true);
+    assert.equal(unreachable.errno, 7);
   } finally {
     server.kill();
     fs.rmSync(dir, { recursive: true, force: true });
