@@ -600,3 +600,54 @@ function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $al
 
     throw new RuntimeException('Too many redirects.');
 }
+
+/* One HTTP request through curl, for the bridges that talk to a device or
+   service the user configured themselves (Fully Kiosk, iLO, Toon, Husqvarna).
+   Unlike dashticz_fetch_remote() it does no address checks: the caller is
+   responsible for validating the host.
+   $options: method (default GET), headers (list of "Name: value"), body,
+   userpwd ("user:password", basic auth), verifyTls (default true; false for
+   the self-signed certificate of a LAN device), connectTimeout (default 5)
+   and timeout (default 15) in seconds. Redirects are never followed.
+   Returns array('failed' => bool, 'status' => int, 'body' => string,
+   'contentType' => string); 'failed' is true when no response was received. */
+function dashticz_http_request($url, $options = array())
+{
+    $ch = curl_init($url);
+    $curlOptions = array(
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => isset($options['connectTimeout']) ? $options['connectTimeout'] : 5,
+        CURLOPT_TIMEOUT => isset($options['timeout']) ? $options['timeout'] : 15,
+        CURLOPT_FOLLOWLOCATION => false,
+    );
+    if (isset($options['method'])) {
+        $curlOptions[CURLOPT_CUSTOMREQUEST] = $options['method'];
+    }
+    if (!empty($options['headers'])) {
+        $curlOptions[CURLOPT_HTTPHEADER] = $options['headers'];
+    }
+    if (isset($options['body'])) {
+        $curlOptions[CURLOPT_POSTFIELDS] = $options['body'];
+    }
+    if (isset($options['userpwd'])) {
+        $curlOptions[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
+        $curlOptions[CURLOPT_USERPWD] = $options['userpwd'];
+    }
+    if (isset($options['verifyTls']) && !$options['verifyTls']) {
+        $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+        $curlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
+    }
+    curl_setopt_array($ch, $curlOptions);
+    $body = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+    $failed = ($body === false);
+    curl_close($ch);
+
+    return array(
+        'failed' => $failed,
+        'status' => $status,
+        'body' => $failed ? '' : (string) $body,
+        'contentType' => $contentType,
+    );
+}

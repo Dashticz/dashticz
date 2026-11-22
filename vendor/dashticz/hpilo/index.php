@@ -167,24 +167,15 @@ function dashticz_hpilo_write_cache($file, $data)
 
 function dashticz_hpilo_get($input, $path)
 {
-    $ch = curl_init('https://' . $input['host'] . ':' . $input['port'] . $path);
-    curl_setopt_array($ch, array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_TIMEOUT => 15,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => 0,
-        CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-        CURLOPT_USERPWD => $input['username'] . ':' . $input['password'],
-        CURLOPT_HTTPHEADER => array('Accept: application/json', 'OData-Version: 4.0'),
+    $response = dashticz_http_request('https://' . $input['host'] . ':' . $input['port'] . $path, array(
+        'verifyTls' => false,
+        'userpwd' => $input['username'] . ':' . $input['password'],
+        'headers' => array('Accept: application/json', 'OData-Version: 4.0'),
     ));
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $failed = ($body === false);
-    curl_close($ch);
+    $status = $response['status'];
+    $body = $response['body'];
 
-    if ($failed) {
+    if ($response['failed']) {
         throw new RuntimeException('Unable to reach the iLO.');
     }
     if ($status === 401 || $status === 403) {

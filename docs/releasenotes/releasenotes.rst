@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2048 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The Fully Kiosk, HP iLO, Toon and Husqvarna bridges now share one curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) instead of four copies of the curl code. Behaviour is unchanged.
+
 v4.2047 (22-11-2026)
 ----------------------
 

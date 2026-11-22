@@ -1585,7 +1585,12 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
   assert.match(source, /dashticz_require_same_origin\(\);/);
   assert.match(source, /Cache-Control: no-store/);
   assert.match(source, /dashticz_normalize_host_input\(/);
-  assert.match(source, /CURLOPT_FOLLOWLOCATION => false/);
+  assert.match(source, /dashticz_http_request\(/);
+  // The shared helper never follows redirects.
+  assert.match(
+    read('vendor/dashticz/security.php'),
+    /CURLOPT_FOLLOWLOCATION => false/
+  );
 });
 
 /* The Toon bridge (vendor/dashticz/toon/toon.php) uses the calls of the
@@ -1777,4 +1782,44 @@ test('Weather Info bridge only downloads the two Buienradar feeds of the plugin'
   assert.match(helpers, /dashticz_cached_json\(/);
   // The request only supplies numbers, never a URL.
   assert.doesNotMatch(index, /\$input\['url'\]/);
+});
+
+test('dashticz_http_request sends method, body, basic auth and headers and reports the status', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-http-'));
+  fs.writeFileSync(
+    path.join(dir, 'echo.php'),
+    `<?php
+http_response_code(isset($_GET['s']) ? (int) $_GET['s'] : 200);
+echo json_encode(array('method' => $_SERVER['REQUEST_METHOD'], 'user' => isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] : null, 'header' => isset($_SERVER['HTTP_X_TEST']) ? $_SERVER['HTTP_X_TEST'] : null, 'body' => file_get_contents('php://input')));
+`
+  );
+  const port = 30000 + (process.pid % 10000);
+  const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+    const base = `http://127.0.0.1:${port}/echo.php`;
+    const script = `require '${securityPhp}';
+echo json_encode(array(
+  dashticz_http_request('${base}', array('method' => 'POST', 'body' => 'hello', 'userpwd' => 'user:secret', 'headers' => array('X-Test: 1'))),
+  dashticz_http_request('${base}?s=401'),
+));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const [ok, denied] = JSON.parse(result.stdout);
+    assert.equal(ok.failed, false);
+    assert.equal(ok.status, 200);
+    assert.deepEqual(JSON.parse(ok.body), {
+      method: 'POST',
+      user: 'user:secret',
+      header: '1',
+      body: 'hello',
+    });
+    assert.equal(denied.status, 401);
+  } finally {
+    server.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
