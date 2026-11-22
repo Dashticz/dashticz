@@ -6498,12 +6498,9 @@ canvas {
 
 @font-face {
   font-family: 'Audiowide';
-  src: url('../font/Audiowide.eot');
   src:
-    url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
     url('../font/Audiowide.woff') format('woff'),
-    url('../font/Audiowide.ttf') format('truetype'),
-    url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+    url('../font/Audiowide.ttf') format('truetype');
 }
 
 .sec-modal {

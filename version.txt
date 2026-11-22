@@ -1,4 +1,4 @@
 {
-    "version": "4.2044",
-    "last_changes": "Cleanup: the unused jquery-migrate is removed (the jQuery 3 helpers $.trim, $.now and $.isArray are replaced by native code), together with the dead js/calendar.js, the commented-out Google Analytics code and the dead cors-anywhere fallback. The .aac versions of the sounds are removed (mp3 and ogg stay)."
+    "version": "4.2045",
+    "last_changes": "Cleanup: removed unused files (about 17 MB): an unused 15 MB documentation GIF and 18 unused documentation images, the vendored sphinx_rtd_theme copy, legacy Audiowide .eot/.svg fonts, css/sortable.css, unused test helpers and an unused image. The Slovenian language file is now sl_SI (was sl_SL); an existing sl_SL setting still works."
 }

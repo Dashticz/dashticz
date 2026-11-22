@@ -145,7 +145,7 @@ $allowedGarbageCompanies = [
 $allowedCalendarLanguages = [
     'zh_CN','da_DK','de_DE','en_US','es_ES','fi_FI','fr_FR','hu_HU','it_IT',
     'ja_JP','lt_LT','nl_NL','nb_NO','pl_PL','pt_PT','ro_RO','ru_RU','sk_SK',
-    'sl_SL','sv_SE','uk_UA',
+    'sl_SI','sv_SE','uk_UA',
 ];
 
 $allowedWeatherIcons = ['line', 'linestatic', 'fill', 'static', 'meteo'];
