@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2053 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The dimmer and blinds sliders are now built in Dashticz itself (pointer events and keyboard, with the same markup and styling as before) instead of with jQuery UI. They work with mouse and touch. jQuery UI is removed in a following version.
+
 v4.2052 (22-11-2026)
 ----------------------
 
