@@ -230,7 +230,7 @@ var DT_cluster = (function () {
       '</span>' +
       (usage ? '<span class="cluster-row-usage">' + usage + '</span>' : '') +
       '<label class="cluster-row-switch">' +
-      '<input type="checkbox" class="cluster-row-checkbox"' +
+      '<input type="checkbox" class="cluster-row-checkbox" name="cluster-row-state"' +
       (status === 'on' ? ' checked' : '') +
       '>' +
       '<span class="cluster-row-track">' +

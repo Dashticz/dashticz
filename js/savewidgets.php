@@ -1405,25 +1405,3 @@ function _widgetBlockProps($widget)
 
     return $props;
 }
-
-function _widgetChunks($widgets, $columnWidth)
-{
-    $chunks = [];
-    $current = [];
-    $width = 0;
-
-    foreach ($widgets as $widget) {
-        if (!empty($current) && ($width + $widget['width']) > $columnWidth) {
-            $chunks[] = $current;
-            $current = [];
-            $width = 0;
-        }
-        $current[] = $widget;
-        $width += $widget['width'];
-    }
-
-    if (!empty($current)) {
-        $chunks[] = $current;
-    }
-    return $chunks;
-}

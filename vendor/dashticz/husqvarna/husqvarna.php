@@ -22,24 +22,14 @@ function dashticz_husqvarna_actions()
 // One request; returns the decoded JSON ({} for an empty answer).
 function dashticz_husqvarna_request($method, $url, $headers, $body = null)
 {
-    $ch = curl_init($url);
-    $options = array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_TIMEOUT => 15,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_CUSTOMREQUEST => $method,
-        CURLOPT_HTTPHEADER => $headers,
-    );
+    $options = array('method' => $method, 'headers' => $headers);
     if ($body !== null) {
-        $options[CURLOPT_POSTFIELDS] = $body;
+        $options['body'] = $body;
     }
-    curl_setopt_array($ch, $options);
-    $answer = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $failed = ($answer === false);
-    curl_close($ch);
-    if ($failed) {
+    $response = dashticz_http_request($url, $options);
+    $answer = $response['body'];
+    $status = $response['status'];
+    if ($response['failed']) {
         throw new RuntimeException('Unable to reach the Husqvarna service.');
     }
     if ($status === 401 || $status === 403) {

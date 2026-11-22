@@ -600,3 +600,85 @@ function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $al
 
     throw new RuntimeException('Too many redirects.');
 }
+
+/* One HTTP request through curl, for the bridges that talk to a device or
+   service the user configured themselves (Fully Kiosk, iLO, Toon, Husqvarna).
+   Unlike dashticz_fetch_remote() it does no address checks: the caller is
+   responsible for validating the host.
+   $options: method (default GET), headers (list of "Name: value"), body,
+   userpwd ("user:password", basic auth), verifyTls (default true; false for
+   the self-signed certificate of a LAN device), connectTimeout (default 5)
+   and timeout (default 15) in seconds, post (true: send a POST also without
+   a body), cookieFile (cookies are read from and saved to this file) and
+   userAgent. headerCallback (callable($ch, $headerLine), replaces the
+   collection of the response headers) and curlOptions (raw CURLOPT_* => value
+   pairs, applied last, for the legacy garbage providers). A timeout of 0
+   means no limit. Redirects are not followed unless curlOptions says so.
+   Returns array('failed' => bool, 'errno' => int (curl error number when
+   failed), 'status' => int, 'body' => string, 'contentType' => string,
+   'headers' => array of response headers: lower-case name => value);
+   'failed' is true when no response was received. */
+function dashticz_http_request($url, $options = array())
+{
+    $ch = curl_init($url);
+    $curlOptions = array(
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => isset($options['connectTimeout']) ? $options['connectTimeout'] : 5,
+        CURLOPT_TIMEOUT => isset($options['timeout']) ? $options['timeout'] : 15,
+        CURLOPT_FOLLOWLOCATION => false,
+    );
+    if (isset($options['method'])) {
+        $curlOptions[CURLOPT_CUSTOMREQUEST] = $options['method'];
+    }
+    if (!empty($options['headers'])) {
+        $curlOptions[CURLOPT_HTTPHEADER] = $options['headers'];
+    }
+    if (!empty($options['post'])) {
+        $curlOptions[CURLOPT_POST] = true;
+    }
+    if (isset($options['body'])) {
+        $curlOptions[CURLOPT_POSTFIELDS] = $options['body'];
+    }
+    if (isset($options['cookieFile'])) {
+        $curlOptions[CURLOPT_COOKIEJAR] = $options['cookieFile'];
+        $curlOptions[CURLOPT_COOKIEFILE] = $options['cookieFile'];
+    }
+    if (isset($options['userAgent'])) {
+        $curlOptions[CURLOPT_USERAGENT] = $options['userAgent'];
+    }
+    $responseHeaders = array();
+    $curlOptions[CURLOPT_HEADERFUNCTION] = isset($options['headerCallback']) ? $options['headerCallback'] : function ($curlHandle, $headerLine) use (&$responseHeaders) {
+        $parts = explode(':', $headerLine, 2);
+        if (count($parts) === 2) {
+            $responseHeaders[strtolower(trim($parts[0]))] = trim($parts[1]);
+        }
+        return strlen($headerLine);
+    };
+    if (!empty($options['curlOptions'])) {
+        $curlOptions = array_replace($curlOptions, $options['curlOptions']);
+    }
+    if (isset($options['userpwd'])) {
+        $curlOptions[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
+        $curlOptions[CURLOPT_USERPWD] = $options['userpwd'];
+    }
+    if (isset($options['verifyTls']) && !$options['verifyTls']) {
+        $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+        $curlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
+    }
+    curl_setopt_array($ch, $curlOptions);
+    $body = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+    $failed = ($body === false);
+    $errno = $failed ? curl_errno($ch) : 0;
+    curl_close($ch);
+
+    return array(
+        'failed' => $failed,
+        'errno' => $errno,
+        'status' => $status,
+        'body' => $failed ? '' : (string) $body,
+        'contentType' => $contentType,
+        'headers' => $responseHeaders,
+    );
+}

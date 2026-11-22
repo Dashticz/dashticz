@@ -1619,7 +1619,7 @@ function showData(graph) {
     html += '       <div class="flex-row">';
     html += '         <div class="device-list"></div>';
     html +=
-      '         <textarea class="form-control" rows="20">' +
+      '         <textarea class="form-control" name="graph-definition" rows="20">' +
       JSON.stringify(graph, null, 2) +
       '</textarea>';
     html += '       </div>';

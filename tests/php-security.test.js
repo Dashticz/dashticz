@@ -276,8 +276,8 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // POST-only credentials: a username/password never appears in a URL
   // (query string, <img src>) where it could end up in logs/browser history.
   assert.doesNotMatch(source, /\$_GET\[.username.\]|\$_GET\[.password.\]/);
-  assert.match(source, /CURLOPT_USERPWD/);
-  assert.match(source, /CURLAUTH_BASIC/);
+  assert.match(source, /'userpwd'/);
+  assert.match(read('vendor/dashticz/security.php'), /CURLAUTH_BASIC/);
   // Every failure path is a fixed, generic message - never the raw curl
   // error or response body, which might otherwise echo a password back. The
   // connect-failure reason is narrowed by curl_errno() alone (a fixed,
@@ -298,7 +298,7 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   assert.match(source, /Authentication failed\./);
   // No SSL-verification opt-out (unlike the known legacy garbage/index.php
   // ignoressl option flagged in AGENTS.md - LMS has no such precedent to follow).
-  assert.doesNotMatch(source, /CURLOPT_SSL_VERIFYPEER/);
+  assert.doesNotMatch(source, /verifyTls/);
   // Cover artwork is returned as a data: URI (base64), never a URL the
   // browser would fetch directly - so LMS/radio credentials and any LAN-only
   // hostname never reach the browser's own network requests.
@@ -311,9 +311,9 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // own worst case, plus a shutdown handler as a last-resort net for any
   // other fatal error, guarantee a parseable JSON body either way.
   // Comfortably above the image-proxy cover fetch's own worst case
-  // (CONNECTTIMEOUT 4 + the 20s CURLOPT_TIMEOUT override below).
+  // (CONNECTTIMEOUT 4 + the 20s timeout override below).
   assert.match(source, /set_time_limit\(30\)/);
-  assert.match(source, /CURLOPT_TIMEOUT => 20/);
+  assert.match(source, /'timeout' => 20/);
   assert.match(source, /register_shutdown_function\(function \(\) \{/);
   assert.match(source, /error_get_last\(\)/);
   assert.match(source, /E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR/);
@@ -723,7 +723,6 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
-  assert.match(writer, /function configwriter_chunk_items_by_width/);
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
@@ -1585,7 +1584,12 @@ test('Fully Kiosk bridge is same-origin, never cached and keeps the password out
   assert.match(source, /dashticz_require_same_origin\(\);/);
   assert.match(source, /Cache-Control: no-store/);
   assert.match(source, /dashticz_normalize_host_input\(/);
-  assert.match(source, /CURLOPT_FOLLOWLOCATION => false/);
+  assert.match(source, /dashticz_http_request\(/);
+  // The shared helper never follows redirects.
+  assert.match(
+    read('vendor/dashticz/security.php'),
+    /CURLOPT_FOLLOWLOCATION => false/
+  );
 });
 
 /* The Toon bridge (vendor/dashticz/toon/toon.php) uses the calls of the
@@ -1777,4 +1781,92 @@ test('Weather Info bridge only downloads the two Buienradar feeds of the plugin'
   assert.match(helpers, /dashticz_cached_json\(/);
   // The request only supplies numbers, never a URL.
   assert.doesNotMatch(index, /\$input\['url'\]/);
+});
+
+test('dashticz_http_request sends method, body, basic auth and headers and reports the status', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-http-'));
+  fs.writeFileSync(
+    path.join(dir, 'echo.php'),
+    `<?php
+http_response_code(isset($_GET['s']) ? (int) $_GET['s'] : 200);
+echo json_encode(array('method' => $_SERVER['REQUEST_METHOD'], 'user' => isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] : null, 'header' => isset($_SERVER['HTTP_X_TEST']) ? $_SERVER['HTTP_X_TEST'] : null, 'body' => file_get_contents('php://input')));
+`
+  );
+  const port = 30000 + (process.pid % 10000);
+  const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+    const base = `http://127.0.0.1:${port}/echo.php`;
+    const script = `require '${securityPhp}';
+echo json_encode(array(
+  dashticz_http_request('${base}', array('method' => 'POST', 'body' => 'hello', 'userpwd' => 'user:secret', 'headers' => array('X-Test: 1'))),
+  dashticz_http_request('${base}?s=401'),
+  dashticz_http_request('http://127.0.0.1:1/', array('connectTimeout' => 2)),
+));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const [ok, denied, unreachable] = JSON.parse(result.stdout);
+    assert.equal(ok.failed, false);
+    assert.equal(ok.status, 200);
+    assert.deepEqual(JSON.parse(ok.body), {
+      method: 'POST',
+      user: 'user:secret',
+      header: '1',
+      body: 'hello',
+    });
+    assert.equal(denied.status, 401);
+    assert.match(ok.headers['content-type'], /text\/html/);
+    assert.equal(unreachable.failed, true);
+    assert.equal(unreachable.errno, 7);
+  } finally {
+    server.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('garbage curlWeb() goes through the shared helper, keeps the cookies and passes the provider options', async () => {
+  const source = read('vendor/dashticz/garbage/index.php');
+  assert.match(source, /dashticz_http_request\(/);
+  assert.doesNotMatch(source, /curl_init|curl_exec/);
+  const start = source.indexOf('function report(');
+  const end = source.indexOf('// A request parameter');
+  assert.ok(start !== -1 && end > start, 'garbage helper functions not found');
+  const functions = source.slice(start, end);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-garbage-'));
+  fs.writeFileSync(
+    path.join(dir, 'cookie.php'),
+    `<?php
+setcookie('CB_SESSION', 'abc');
+echo json_encode(array('method' => $_SERVER['REQUEST_METHOD'], 'body' => file_get_contents('php://input')));
+`
+  );
+  const port = 40000 + (process.pid % 10000);
+  const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+    const script = `require '${securityPhp}';
+$messages = array(); $debug = 0; $ignoressl = true; $cookies = array();
+${functions.replace(/^<\?php/, '')}
+$url = 'http://127.0.0.1:${port}/cookie.php';
+$posted = curlPostJson($url, 'a=b');
+$seenCookies = $cookies;
+$failed = curlWeb('http://127.0.0.1:1/');
+echo json_encode(array($posted, $seenCookies, $failed, $messages));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const [posted, cookies, failed, messages] = JSON.parse(result.stdout);
+    assert.deepEqual(posted, { method: 'POST', body: 'a=b' });
+    assert.match(cookies.CB_SESSION, /^abc/);
+    assert.equal(failed, false);
+    assert.equal(messages[0].dt_msg, 'SSL check disabled');
+  } finally {
+    server.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

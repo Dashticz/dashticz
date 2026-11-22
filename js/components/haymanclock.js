@@ -3,7 +3,9 @@
 var DT_haymanclock = {
   name: 'haymanclock',
   init: function () {
-    DT_function.loadCSS('https://fonts.googleapis.com/css2?family=Montserrat');
+    DT_function.loadCSS(
+      'https://fonts.googleapis.com/css2?family=Montserrat&display=swap'
+    );
     return DT_function.loadCSS('js/components/haymanclock.css');
   },
   canHandle: function (block) {

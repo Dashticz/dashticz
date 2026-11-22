@@ -469,7 +469,7 @@ var DT_fullykiosk = (function () {
         '',
         row.icon,
         label,
-        '<input type="range" class="fullykiosk-brightness-input" min="0" max="100" step="1" value="' +
+        '<input type="range" class="fullykiosk-brightness-input" name="fullykiosk-brightness" min="0" max="100" step="1" value="' +
           level +
           '"' +
           (info ? '' : ' disabled') +
