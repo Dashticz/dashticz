@@ -1,4 +1,4 @@
 {
-    "version": "4.2043",
-    "last_changes": "Security: the remaining CodeQL alerts are fixed. The news feed description is turned into plain text without parsing it as HTML, and the values in the Device Editor add-row and the Widget Config colour field are escaped."
+    "version": "4.2044",
+    "last_changes": "Cleanup: the unused jquery-migrate is removed (the jQuery 3 helpers $.trim, $.now and $.isArray are replaced by native code), together with the dead js/calendar.js, the commented-out Google Analytics code and the dead cors-anywhere fallback. The .aac versions of the sounds are removed (mp3 and ogg stay)."
 }

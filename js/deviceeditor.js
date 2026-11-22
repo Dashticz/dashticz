@@ -1761,13 +1761,15 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _normaliseCustomFieldName(value) {
-    value = $.trim(String(value || '')).replace(/[\s-]+/g, '_');
+    value = String(value || '')
+      .trim()
+      .replace(/[\s-]+/g, '_');
     if (value) value = value.charAt(0).toLowerCase() + value.slice(1);
     return value;
   }
 
   function _parseCustomSetting(value) {
-    var text = $.trim(String(value || ''));
+    var text = String(value || '').trim();
     if (text === 'true') return { valid: true, value: true };
     if (text === 'false') return { valid: true, value: false };
     if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
@@ -3109,8 +3111,8 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#cd-device-name').val() || ''));
-      var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
+      var reference = String($('#cd-device-name').val() || '').trim();
+      var rawIdx = String($('#cd-device-idx').val() || '').trim();
       var isVariableIdx = _isCustomVariableIdx(rawIdx);
       // docs/wizard/specialblocks.rst documents 's<idx>' (a group or scene)
       // for this field too; the rest of the editor already keeps that form.
@@ -3144,7 +3146,7 @@ var DashticzDeviceEditor = (function () {
       }
 
       var title = _cutUtf8(
-        $.trim(String($('#cd-device-title').val() || '')),
+        String($('#cd-device-title').val() || '').trim(),
         100
       );
       var customRows = [];
@@ -3152,12 +3154,12 @@ var DashticzDeviceEditor = (function () {
       var valid = true;
       $popup.find('.cd-custom-field-row').each(function () {
         if (!valid) return;
-        var rawField = $.trim(
-          String($(this).find('.cd-custom-field-name').val() || '')
-        );
-        var rawSetting = $.trim(
-          String($(this).find('.cd-custom-field-setting').val() || '')
-        );
+        var rawField = String(
+          $(this).find('.cd-custom-field-name').val() || ''
+        ).trim();
+        var rawSetting = String(
+          $(this).find('.cd-custom-field-setting').val() || ''
+        ).trim();
         if (!rawField && !rawSetting) return;
         // An empty predefined 'values' row is ignored until given a value.
         if (rawField && !rawSetting && rawField.toLowerCase() === 'values')
@@ -3406,9 +3408,9 @@ var DashticzDeviceEditor = (function () {
     var $iconRow = $('.' + prefix + '-opt-icon-field .de-icon-field-row');
     var iconSource =
       $iconRow.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
-    var rawValue = $.trim(
-      String($iconRow.find('.de-custom-field-setting').val() || '')
-    );
+    var rawValue = String(
+      $iconRow.find('.de-custom-field-setting').val() || ''
+    ).trim();
     return {
       icon: iconChecked,
       iconSource: iconSource,
@@ -3655,11 +3657,11 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#md-device-name').val() || ''));
-      var rawIdx = $.trim(String($('#md-device-idx').val() || ''));
+      var reference = String($('#md-device-name').val() || '').trim();
+      var rawIdx = String($('#md-device-idx').val() || '').trim();
       var idx = parseInt(rawIdx, 10);
       var title = _cutUtf8(
-        $.trim(String($('#md-device-title').val() || '')),
+        String($('#md-device-title').val() || '').trim(),
         100
       );
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
@@ -3685,12 +3687,12 @@ var DashticzDeviceEditor = (function () {
       var valid = true;
       $popup.find('.md-value-row').each(function () {
         if (!valid) return;
-        var rawRowIdx = $.trim(
-          String($(this).find('.md-value-idx').val() || '')
-        );
-        var rawValue = $.trim(
-          String($(this).find('.md-value-value').val() || '')
-        );
+        var rawRowIdx = String(
+          $(this).find('.md-value-idx').val() || ''
+        ).trim();
+        var rawValue = String(
+          $(this).find('.md-value-value').val() || ''
+        ).trim();
         if (!rawRowIdx && !rawValue) return; // silently skip a fully empty row
         if (!rawValue) {
           valid = false;
@@ -3863,9 +3865,9 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#gb-device-name').val() || ''));
+      var reference = String($('#gb-device-name').val() || '').trim();
       var title = _cutUtf8(
-        $.trim(String($('#gb-device-title').val() || '')),
+        String($('#gb-device-title').val() || '').trim(),
         100
       );
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
@@ -3882,7 +3884,7 @@ var DashticzDeviceEditor = (function () {
         return;
       }
 
-      var rawIdx = $.trim(String($('#gb-device-idx').val() || ''));
+      var rawIdx = String($('#gb-device-idx').val() || '').trim();
       var idx = null;
       if (rawIdx) {
         var parsedIdx = parseInt(rawIdx, 10);
@@ -3894,7 +3896,7 @@ var DashticzDeviceEditor = (function () {
         idx = parsedIdx;
       }
 
-      var rawDevices = $.trim(String($('#gb-device-devices').val() || ''));
+      var rawDevices = String($('#gb-device-devices').val() || '').trim();
       var devices = [];
       if (rawDevices) {
         var invalidDevices = false;
@@ -4492,7 +4494,7 @@ var DashticzDeviceEditor = (function () {
   // pixels saveblocks.php will accept (8-60), or null when it should be
   // left unset (empty or non-numeric - meaning "use the default size").
   function _readClusterFontSize(rawValue) {
-    var num = parseInt($.trim(String(rawValue || '')), 10);
+    var num = parseInt(String(rawValue || '').trim(), 10);
     if (!(num > 0)) return null;
     return Math.min(60, Math.max(8, num));
   }
@@ -4501,7 +4503,7 @@ var DashticzDeviceEditor = (function () {
   // .php will accept (0.3-3), or null when it should be left unset (empty,
   // non-numeric, or <= 0 - meaning "use the default size").
   function _readClusterSwitchScale(rawValue) {
-    var text = $.trim(String(rawValue || ''));
+    var text = String(rawValue || '').trim();
     if (!text) return null;
     var num = parseFloat(text);
     if (!(num > 0)) return null;
@@ -4684,7 +4686,7 @@ var DashticzDeviceEditor = (function () {
 
     $('#cl-device-pending').on('input', '.cl-name-input', function () {
       var idx = parseInt($(this).attr('data-idx'), 10);
-      var title = _cutUtf8($.trim(String($(this).val() || '')), 100);
+      var title = _cutUtf8(String($(this).val() || '').trim(), 100);
       var target = pendingDevices.find(function (d) {
         return d.idx === idx;
       });
@@ -4737,9 +4739,9 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#cl-device-name').val() || ''));
+      var reference = String($('#cl-device-name').val() || '').trim();
       var title = _cutUtf8(
-        $.trim(String($('#cl-device-title').val() || '')),
+        String($('#cl-device-title').val() || '').trim(),
         100
       );
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
@@ -4900,10 +4902,10 @@ var DashticzDeviceEditor = (function () {
    * connection" and before save, so the field always reflects what gets
    * persisted. */
   function _normalizeLmsServer(value) {
-    var host = $.trim(String(value || ''));
+    var host = String(value || '').trim();
     host = host.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
     host = host.replace(/[/?#].*$/, '');
-    host = $.trim(host);
+    host = String(host == null ? '' : host).trim();
     if (host.indexOf('[') === -1 && (host.match(/:/g) || []).length === 1) {
       host = host.slice(0, host.indexOf(':'));
     }
@@ -5169,9 +5171,9 @@ var DashticzDeviceEditor = (function () {
       var block = {
         server: server,
         port: port,
-        username: $.trim(
-          String($popup.find('#' + prefix + '-lms-username').val() || '')
-        ),
+        username: String(
+          $popup.find('#' + prefix + '-lms-username').val() || ''
+        ).trim(),
         password: String(
           $popup.find('#' + prefix + '-lms-password').val() || ''
         ),
@@ -5259,9 +5261,9 @@ var DashticzDeviceEditor = (function () {
     return {
       server: _cleanLmsServerInput($popup, prefix),
       port: parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000,
-      username: $.trim(
-        String($popup.find('#' + prefix + '-lms-username').val() || '')
-      ),
+      username: String(
+        $popup.find('#' + prefix + '-lms-username').val() || ''
+      ).trim(),
       password: String($popup.find('#' + prefix + '-lms-password').val() || ''),
       player: String($popup.find('#' + prefix + '-lms-player').val() || ''),
       playerLabel: String(
@@ -5343,7 +5345,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#lm-device-title').val() || '')),
+        String($('#lm-device-title').val() || '').trim(),
         100
       );
       var lms = _readLmsFields('lm', $popup);
@@ -5510,9 +5512,9 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#hb-device-name').val() || ''));
+      var reference = String($('#hb-device-name').val() || '').trim();
       var title = _cutUtf8(
-        $.trim(String($('#hb-device-title').val() || '')),
+        String($('#hb-device-title').val() || '').trim(),
         100
       );
       // Same pattern as saveblocks.php, without the names that the editors
@@ -5534,7 +5536,7 @@ var DashticzDeviceEditor = (function () {
         return;
       }
 
-      var htmlfile = $.trim(String($('#hb-device-file').val() || ''));
+      var htmlfile = String($('#hb-device-file').val() || '').trim();
       if (
         !/^[A-Za-z0-9_\-./ ]+\.html?$/i.test(htmlfile) ||
         htmlfile.indexOf('..') > -1
@@ -5718,10 +5720,10 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#if-device-title').val() || '')),
+        String($('#if-device-title').val() || '').trim(),
         100
       );
-      var frameurl = $.trim(String($('#if-device-url').val() || ''));
+      var frameurl = String($('#if-device-url').val() || '').trim();
       if (!frameurl || frameurl.length > 2048) {
         $message.addClass('text-danger').text(t.invalid_iframe_block_url);
         $('#if-device-url').trigger('focus');
@@ -5731,12 +5733,12 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('if');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var height = $.trim(String($('#if-device-height').val() || ''));
+      var height = String($('#if-device-height').val() || '').trim();
       var scrollbars = $('#if-device-scrollbars').is(':checked');
-      var scaletofit = $.trim(String($('#if-device-scaletofit').val() || ''));
-      var aspectratio = $.trim(String($('#if-device-aspectratio').val() || ''));
+      var scaletofit = String($('#if-device-scaletofit').val() || '').trim();
+      var aspectratio = String($('#if-device-aspectratio').val() || '').trim();
       var forcerefresh = $('#if-device-forcerefresh').is(':checked');
-      var refresh = $.trim(String($('#if-device-refresh').val() || ''));
+      var refresh = String($('#if-device-refresh').val() || '').trim();
 
       var customRows = [];
       if (title)
@@ -6002,13 +6004,13 @@ var DashticzDeviceEditor = (function () {
       .each(function () {
         var index = parseInt($(this).attr('data-calendar-index'), 10);
         if (!sources[index]) return;
-        sources[index].ics = $.trim(
-          String($(this).find('.de-calendar-url').val() || '')
-        );
+        sources[index].ics = String(
+          $(this).find('.de-calendar-url').val() || ''
+        ).trim();
         if (multi) {
-          sources[index].name = $.trim(
-            String($(this).find('.de-calendar-name').val() || '')
-          );
+          sources[index].name = String(
+            $(this).find('.de-calendar-name').val() || ''
+          ).trim();
           sources[index].color =
             $(this)
               .find('.de-calendar-color')
@@ -6069,7 +6071,7 @@ var DashticzDeviceEditor = (function () {
   function _readCalendarFields(prefix, $popup, sources, t) {
     _captureCalendarFields(prefix, $popup, sources);
     if (!_calendarIsMulti(sources)) {
-      var single = $.trim((sources[0] && sources[0].ics) || '');
+      var single = ((sources[0] && sources[0].ics) || '').trim();
       if (!single || single.length > 2048) {
         return { valid: false, reason: 'url' };
       }
@@ -6082,8 +6084,8 @@ var DashticzDeviceEditor = (function () {
     var names = Object.create(null);
     var result = Object.create(null);
     for (var i = 0; i < sources.length; i++) {
-      var name = $.trim(sources[i].name || '');
-      var ics = $.trim(sources[i].ics || '');
+      var name = (sources[i].name || '').trim();
+      var ics = (sources[i].ics || '').trim();
       if (!name || _utf8Length(name) > 100) {
         return { valid: false, reason: 'name' };
       }
@@ -6260,7 +6262,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#cal-device-title').val() || '')),
+        String($('#cal-device-title').val() || '').trim(),
         100
       );
       var calendarResult = _readCalendarFields(
@@ -6280,10 +6282,10 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('cal');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var holidayurl = $.trim(String($('#cal-device-holidayurl').val() || ''));
+      var holidayurl = String($('#cal-device-holidayurl').val() || '').trim();
       var layout = String($('#cal-device-layout').val() || '0');
-      var maxitems = $.trim(String($('#cal-device-maxitems').val() || ''));
-      var weeks = $.trim(String($('#cal-device-weeks').val() || ''));
+      var maxitems = String($('#cal-device-maxitems').val() || '').trim();
+      var weeks = String($('#cal-device-weeks').val() || '').trim();
       var lastweek = $('#cal-device-lastweek').is(':checked');
       var isoweek = $('#cal-device-isoweek').is(':checked');
       var startonly = $('#cal-device-startonly').is(':checked');
@@ -6522,11 +6524,11 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#pt-device-title').val() || '')),
+        String($('#pt-device-title').val() || '').trim(),
         100
       );
-      var station = $.trim(String($('#pt-device-station').val() || ''));
-      var tpc = $.trim(String($('#pt-device-tpc').val() || ''));
+      var station = String($('#pt-device-station').val() || '').trim();
+      var tpc = String($('#pt-device-tpc').val() || '').trim();
       if (!station && !tpc) {
         $message
           .addClass('text-danger')
@@ -6539,8 +6541,8 @@ var DashticzDeviceEditor = (function () {
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
       var provider = String($('#pt-device-provider').val() || 'treinen');
-      var direction = $.trim(String($('#pt-device-direction').val() || ''));
-      var results = $.trim(String($('#pt-device-results').val() || ''));
+      var direction = String($('#pt-device-direction').val() || '').trim();
+      var results = String($('#pt-device-results').val() || '').trim();
       var showVia = $('#pt-device-showvia').is(':checked');
 
       var customRows = [];
@@ -6736,7 +6738,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#tg-device-title').val() || '')),
+        String($('#tg-device-title').val() || '').trim(),
         100
       );
       var idx = parseInt($('#tg-device-idx').val(), 10) || 0;
@@ -6749,10 +6751,10 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('tg');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var duration = $.trim(String($('#tg-device-duration').val() || ''));
-      var height = $.trim(String($('#tg-device-height').val() || ''));
-      var xTicks = $.trim(String($('#tg-device-xticks').val() || ''));
-      var yTicks = $.trim(String($('#tg-device-yticks').val() || ''));
+      var duration = String($('#tg-device-duration').val() || '').trim();
+      var height = String($('#tg-device-height').val() || '').trim();
+      var xTicks = String($('#tg-device-xticks').val() || '').trim();
+      var yTicks = String($('#tg-device-yticks').val() || '').trim();
       var xLabels = $('#tg-device-xlabels').is(':checked');
 
       var customRows = [];
@@ -6958,10 +6960,10 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#xtv-device-title').val() || '')),
+        String($('#xtv-device-title').val() || '').trim(),
         100
       );
-      var xmltvurl = $.trim(String($('#xtv-device-url').val() || ''));
+      var xmltvurl = String($('#xtv-device-url').val() || '').trim();
       if (!xmltvurl || xmltvurl.length > 2048) {
         $message.addClass('text-danger').text(t.invalid_xmltvguide_block_url);
         $('#xtv-device-url').trigger('focus');
@@ -6971,7 +6973,7 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('xtv');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var channelsRaw = $.trim(String($('#xtv-device-channels').val() || ''));
+      var channelsRaw = String($('#xtv-device-channels').val() || '').trim();
       var channels = channelsRaw
         ? channelsRaw
             .split(',')
@@ -6980,9 +6982,9 @@ var DashticzDeviceEditor = (function () {
             })
             .filter(Boolean)
         : [];
-      var maxitems = $.trim(String($('#xtv-device-maxitems').val() || ''));
+      var maxitems = String($('#xtv-device-maxitems').val() || '').trim();
       var layout = String($('#xtv-device-layout').val() || '0');
-      var refresh = $.trim(String($('#xtv-device-refresh').val() || ''));
+      var refresh = String($('#xtv-device-refresh').val() || '').trim();
 
       var customRows = [];
       if (title)
@@ -7184,10 +7186,10 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#cam-device-title').val() || '')),
+        String($('#cam-device-title').val() || '').trim(),
         100
       );
-      var imageUrl = $.trim(String($('#cam-device-imageurl').val() || ''));
+      var imageUrl = String($('#cam-device-imageurl').val() || '').trim();
       if (!imageUrl || imageUrl.length > 2048) {
         $message.addClass('text-danger').text(t.invalid_camera_block_imageurl);
         $('#cam-device-imageurl').trigger('focus');
@@ -7197,9 +7199,9 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('cam');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var videoUrl = $.trim(String($('#cam-device-videourl').val() || ''));
-      var height = $.trim(String($('#cam-device-height').val() || ''));
-      var refresh = $.trim(String($('#cam-device-refresh').val() || ''));
+      var videoUrl = String($('#cam-device-videourl').val() || '').trim();
+      var height = String($('#cam-device-height').val() || '').trim();
+      var refresh = String($('#cam-device-refresh').val() || '').trim();
       var forcerefresh = $('#cam-device-forcerefresh').is(':checked');
 
       var customRows = [];
@@ -7371,10 +7373,10 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#nw-device-title').val() || '')),
+        String($('#nw-device-title').val() || '').trim(),
         100
       );
-      var feed = $.trim(String($('#nw-device-feed').val() || ''));
+      var feed = String($('#nw-device-feed').val() || '').trim();
       if (!feed || feed.length > 2048) {
         $message.addClass('text-danger').text(t.invalid_news_block_feed);
         $('#nw-device-feed').trigger('focus');
@@ -7384,7 +7386,7 @@ var DashticzDeviceEditor = (function () {
       var quickOptions = _readQuickOptions('nw');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var maxheight = $.trim(String($('#nw-device-maxheight').val() || ''));
+      var maxheight = String($('#nw-device-maxheight').val() || '').trim();
       var showimages = $('#nw-device-showimages').is(':checked');
 
       var customRows = [];
@@ -7488,11 +7490,11 @@ var DashticzDeviceEditor = (function () {
     String(text || '')
       .split(/\r?\n/)
       .forEach(function (line) {
-        line = $.trim(line);
+        line = String(line == null ? '' : line).trim();
         if (!line) return;
         var pos = line.indexOf('=');
-        var key = $.trim(pos > 0 ? line.slice(0, pos) : '');
-        var name = $.trim(pos > 0 ? line.slice(pos + 1) : '');
+        var key = (pos > 0 ? line.slice(0, pos) : '').trim();
+        var name = (pos > 0 ? line.slice(pos + 1) : '').trim();
         if (!key || !name) {
           valid = false;
           return;
@@ -7700,9 +7702,9 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _readGraphFields(prefix) {
-    var rawDevices = $.trim(
-      String($('#' + prefix + '-graph-devices').val() || '')
-    );
+    var rawDevices = String(
+      $('#' + prefix + '-graph-devices').val() || ''
+    ).trim();
     var invalidDevices = false;
     var devices = rawDevices
       .split(/[\s,]+/)
@@ -7714,9 +7716,9 @@ var DashticzDeviceEditor = (function () {
         if (!(value > 0 && String(value) === part)) invalidDevices = true;
         return value;
       });
-    var rawHeight = $.trim(
-      String($('#' + prefix + '-graph-height').val() || '')
-    );
+    var rawHeight = String(
+      $('#' + prefix + '-graph-height').val() || ''
+    ).trim();
     var parsedHeight = parseInt(rawHeight, 10);
     var graphType = String($('#' + prefix + '-graph-type').val() || 'line');
     var typesParsed = _graphTypesFromText(
@@ -7794,7 +7796,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#gr-device-title').val() || '')),
+        String($('#gr-device-title').val() || '').trim(),
         100
       );
 
@@ -8031,7 +8033,7 @@ var DashticzDeviceEditor = (function () {
     var parts = String(value === undefined || value === null ? '' : value)
       .split(',')
       .map(function (part) {
-        return $.trim(part);
+        return String(part == null ? '' : part).trim();
       })
       .filter(function (part, index, list) {
         return allowed.indexOf(part) > -1 && list.indexOf(part) === index;
@@ -8041,9 +8043,9 @@ var DashticzDeviceEditor = (function () {
 
   // '#rrggbb' or 'transparent'; anything else -> the default.
   function _settingColor(value, def) {
-    var text = $.trim(
-      String(value === undefined || value === null ? '' : value)
-    );
+    var text = String(
+      value === undefined || value === null ? '' : value
+    ).trim();
     if (text.toLowerCase() === 'transparent') return 'transparent';
     return /^#[0-9a-f]{6}$/i.test(text) ? text.toLowerCase() : def;
   }
@@ -8362,7 +8364,7 @@ var DashticzDeviceEditor = (function () {
   // anything invalid falls back to the default.
   function _settingValue(section, prefix, setting) {
     var $field = $('#' + prefix + '-' + section.idPart + '-' + setting.key);
-    var raw = $.trim(String($field.val() || ''));
+    var raw = String($field.val() || '').trim();
     var range = setting.range || [];
     if (setting.type === 'select') return _settingOption(setting, raw);
     if (setting.type === 'parts') {
@@ -8622,7 +8624,7 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var title = $.trim(String($('#f1-device-title').val() || ''));
+      var title = String($('#f1-device-title').val() || '').trim();
       var f1 = _readF1Fields('f1');
       if (!f1.validUrls) {
         $message.addClass('text-danger').text(t.invalid_f1_block_url);
@@ -8736,7 +8738,7 @@ var DashticzDeviceEditor = (function () {
     return String(value || '')
       .split(',')
       .map(function (id) {
-        return $.trim(id);
+        return String(id == null ? '' : id).trim();
       })
       .filter(function (id) {
         if (!/^[a-z0-9_]{1,40}$/.test(id) || seen[id]) return false;
@@ -8952,7 +8954,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#tvgids-device-title').val() || '')),
+        String($('#tvgids-device-title').val() || '').trim(),
         100
       );
       var tvgids = _readTvgidsFields('tvgids');
@@ -9216,7 +9218,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#fullykiosk-device-title').val() || '')),
+        String($('#fullykiosk-device-title').val() || '').trim(),
         100
       );
       var fully = _readFullyFields('fullykiosk');
@@ -9577,7 +9579,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#carstatus-device-title').val() || '')),
+        String($('#carstatus-device-title').val() || '').trim(),
         100
       );
       var car = _readCarstatusFields('carstatus');
@@ -9851,7 +9853,7 @@ var DashticzDeviceEditor = (function () {
         .removeClass('text-danger')
         .text('');
       var title = _cutUtf8(
-        $.trim(String($('#weatherinfo-device-title').val() || '')),
+        String($('#weatherinfo-device-title').val() || '').trim(),
         100
       );
       var weatherinfo = _readWeatherinfoFields('weatherinfo');
@@ -10167,7 +10169,7 @@ var DashticzDeviceEditor = (function () {
 
     $('#toon-save-btn').on('click', function () {
       var title = _cutUtf8(
-        $.trim(String($('#toon-device-title').val() || '')),
+        String($('#toon-device-title').val() || '').trim(),
         100
       );
       var quickOptions = _readQuickOptions('toon');
@@ -10282,7 +10284,7 @@ var DashticzDeviceEditor = (function () {
 
     $('#mower-save-btn').on('click', function () {
       var title = _cutUtf8(
-        $.trim(String($('#mower-device-title').val() || '')),
+        String($('#mower-device-title').val() || '').trim(),
         100
       );
       var quickOptions = _readQuickOptions('mower');
@@ -10396,7 +10398,7 @@ var DashticzDeviceEditor = (function () {
 
     $('#homeconnect-save-btn').on('click', function () {
       var title = _cutUtf8(
-        $.trim(String($('#homeconnect-device-title').val() || '')),
+        String($('#homeconnect-device-title').val() || '').trim(),
         100
       );
       var quickOptions = _readQuickOptions('homeconnect');
@@ -10511,7 +10513,7 @@ var DashticzDeviceEditor = (function () {
 
     $('#car-save-btn').on('click', function () {
       var title = _cutUtf8(
-        $.trim(String($('#car-device-title').val() || '')),
+        String($('#car-device-title').val() || '').trim(),
         100
       );
       var car = _readCarFields('car');
@@ -10684,22 +10686,19 @@ var DashticzDeviceEditor = (function () {
         .find('.cd-custom-message')
         .removeClass('text-danger')
         .text('');
-      var reference = $.trim(String($('#sb-button-name').val() || ''));
-      var buttonKey = $.trim(String($('#sb-button-key').val() || ''));
-      var buttonTitle = $.trim(String($('#sb-button-title').val() || ''));
-      var rawSlide = $.trim(String($('#sb-button-screen').val() || ''));
+      var reference = String($('#sb-button-name').val() || '').trim();
+      var buttonKey = String($('#sb-button-key').val() || '').trim();
+      var buttonTitle = String($('#sb-button-title').val() || '').trim();
+      var rawSlide = String($('#sb-button-screen').val() || '').trim();
       var slideTarget = parseInt(rawSlide, 10);
       var iconChecked = $('#sb-opt-icon').hasClass('active');
       var iconSource =
         $popup.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
       var iconValue = iconChecked
-        ? $.trim(
-            String(
-              $popup
-                .find('.de-icon-field-row .de-custom-field-setting')
-                .val() || ''
-            )
-          )
+        ? String(
+            $popup.find('.de-icon-field-row .de-custom-field-setting').val() ||
+              ''
+          ).trim()
         : '';
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_slide_button_name);
@@ -12022,7 +12021,7 @@ var DashticzDeviceEditor = (function () {
         '#de-config-cluster-pending .cl-name-input',
         function () {
           var idx = parseInt($(this).attr('data-idx'), 10);
-          var title = _cutUtf8($.trim(String($(this).val() || '')), 100);
+          var title = _cutUtf8(String($(this).val() || '').trim(), 100);
           var target = clusterPendingDevices.find(function (d) {
             return d.idx === idx;
           });
@@ -12392,7 +12391,7 @@ var DashticzDeviceEditor = (function () {
       var valid = true;
       var pendingIdx = isCustom || isGroupBlock ? special.idx : null;
       if (isCustom) {
-        var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
+        var rawIdx = String($('#de-config-idx').val() || '').trim();
         if (_isCustomVariableIdx(rawIdx)) {
           pendingIdx = _normalizeCustomVariableIdx(rawIdx);
         } else if (_isCustomSubdeviceIdx(rawIdx)) {
@@ -12415,7 +12414,7 @@ var DashticzDeviceEditor = (function () {
       } else if (isGroupBlock) {
         // Unlike Custom/Multi Device, a Group's idx is optional - it can
         // group plain device ids via its 'devices' custom field instead.
-        var rawGroupIdx = $.trim(String($('#de-config-idx').val() || ''));
+        var rawGroupIdx = String($('#de-config-idx').val() || '').trim();
         if (!rawGroupIdx) {
           pendingIdx = null;
         } else if (_isSceneIdx(rawGroupIdx)) {
@@ -12638,7 +12637,7 @@ var DashticzDeviceEditor = (function () {
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
         updated.needle = pendingVisualMode === 'needle';
-        var rawBarSteps = $.trim(String($('#de-config-barsteps').val() || ''));
+        var rawBarSteps = String($('#de-config-barsteps').val() || '').trim();
         var parsedBarSteps = parseInt(rawBarSteps, 10);
         if (barStepsApplies(pendingVisualMode)) {
           if (!(parsedBarSteps > 0 && String(parsedBarSteps) === rawBarSteps)) {
@@ -12687,12 +12686,12 @@ var DashticzDeviceEditor = (function () {
 
       $popup.find('.de-custom-field-row').each(function () {
         if (!valid) return;
-        var rawField = $.trim(
+        var rawField = (
           $(this).find('.de-custom-field-name').val() || ''
-        );
-        var rawSetting = $.trim(
+        ).trim();
+        var rawSetting = (
           $(this).find('.de-custom-field-setting').val() || ''
-        );
+        ).trim();
         if (!rawField && !rawSetting) return;
         // A stored property keeps its spelling (Naam stays Naam) as long as
         // the server accepts it; only new or invalid names are normalised.
@@ -12840,12 +12839,12 @@ var DashticzDeviceEditor = (function () {
         pendingValues = [];
         $popup.find('.md-value-row').each(function () {
           if (!valid) return;
-          var rawRowIdx = $.trim(
-            String($(this).find('.md-value-idx').val() || '')
-          );
-          var rawValue = $.trim(
-            String($(this).find('.md-value-value').val() || '')
-          );
+          var rawRowIdx = String(
+            $(this).find('.md-value-idx').val() || ''
+          ).trim();
+          var rawValue = String(
+            $(this).find('.md-value-value').val() || ''
+          ).trim();
           if (!rawRowIdx && !rawValue) return; // silently skip a fully empty row
           if (!rawValue) {
             valid = false;
