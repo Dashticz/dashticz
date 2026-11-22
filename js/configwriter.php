@@ -912,38 +912,6 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
 }
 
 /**
- * Width-only chunking (legacy). Prefer configwriter_pack_columns_by_height when
- * block heights are available.
- */
-function configwriter_chunk_items_by_width($items, $columnWidth)
-{
-    $packed = configwriter_pack_columns_by_height(
-        array_map(function ($item) {
-            // Force equal heights so the packer reduces to classic width chunking.
-            $copy = $item;
-            $copy['height'] = configwriter_default_row_height();
-            return $copy;
-        }, $items),
-        $columnWidth,
-        'chunk'
-    );
-
-    return array_map(function ($column) use ($items) {
-        $refs = $column['blocks'];
-        $chunk = [];
-        foreach ($refs as $ref) {
-            foreach ($items as $item) {
-                if (isset($item['ref']) && $item['ref'] === $ref) {
-                    $chunk[] = $item;
-                    break;
-                }
-            }
-        }
-        return $chunk;
-    }, $packed);
-}
-
-/**
  * Managed editor column keys as a JavaScript RegExp literal (including slashes).
  */
 function configwriter_managed_column_regex_js()
@@ -1287,22 +1255,6 @@ function configwriter_build_standby_layout_section($blockLines, $items, $width =
 
     $section .= "\n" . configwriter_emit_columns_standby($blockKeys, $width);
     return $section;
-}
-
-/**
- * Replace (or append) the marked standby-editor section in CONFIG.js.
- * Also strips legacy unmarked columns_standby definitions to avoid duplicates.
- */
-function configwriter_replace_standby_section($config, $blockKeys, $width = 12)
-{
-    $startMarker = '// [standby-editor-start]';
-    $endMarker = '// [standby-editor-end]';
-
-    $config = configwriter_remove_section($config, $startMarker, $endMarker);
-    $config = configwriter_strip_legacy_columns_standby($config);
-
-    $body = configwriter_emit_columns_standby($blockKeys, $width);
-    return rtrim($config) . configwriter_wrap_section($startMarker, $endMarker, $body);
 }
 
 /**

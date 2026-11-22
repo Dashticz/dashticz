@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2055": "Cleanup: a few unused functions and variables are removed (no change in behaviour).",
     "4.2054": "Cleanup: jQuery UI and jquery-ui-touch-punch are removed (the sliders and sortable lists no longer use them). The bundle is about 255 KB smaller and the unused jQuery UI icons and styles are gone. Custom JavaScript that used jQuery UI widgets (such as $.fn.slider or $.fn.sortable) has to bring its own copy.",
     "4.2053": "Dimmer and blinds sliders: the slider is now built in Dashticz itself (pointer events and keyboard, same markup and styling as before) instead of jQuery UI, for mouse and touch.",
     "4.2052": "Device Editor: the lists that can be reordered by dragging (devices of a cluster, parts of the Weather Info text) use native pointer events instead of jQuery UI, with the same behaviour, for mouse and touch.",
