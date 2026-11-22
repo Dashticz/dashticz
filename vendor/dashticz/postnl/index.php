@@ -180,57 +180,39 @@ function dashticz_postnl_write_cache($cacheFile, $refreshToken, $days, $incoming
 // -------------------------------------------------------------- http/curl
 
 // Shared curl helper for every request in the login/fetch flow. $cookieFile
-// is used as both CURLOPT_COOKIEJAR and CURLOPT_COOKIEFILE so cookies
+// is used as both cookie jar and cookie file (see dashticz_http_request()) so cookies
 // (notably the hosted login page's _csrf_token and the SSO session cookie
 // set in step 4) persist across the whole sequence of requests, exactly
 // like Python's requests.Session() does. Redirects are never auto-followed
-// (CURLOPT_FOLLOWLOCATION off) - several steps below need to read the
+// (dashticz_http_request() never does) - several steps below need to read the
 // Location header themselves (to detect the hosted-login redirect, or to
 // extract the final ?code= from it) rather than have curl swallow it.
 function dashticz_postnl_http($url, $postFields, $extraHeaders, $cookieFile)
 {
-    $ch = curl_init($url);
-    $responseHeaders = array();
     $options = array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_TIMEOUT => 20,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_COOKIEJAR => $cookieFile,
-        CURLOPT_COOKIEFILE => $cookieFile,
-        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        CURLOPT_HEADERFUNCTION => function ($curlHandle, $headerLine) use (&$responseHeaders) {
-            $length = strlen($headerLine);
-            $parts = explode(':', $headerLine, 2);
-            if (count($parts) === 2) {
-                $responseHeaders[strtolower(trim($parts[0]))] = trim($parts[1]);
-            }
-            return $length;
-        },
+        'connectTimeout' => 10,
+        'timeout' => 20,
+        'cookieFile' => $cookieFile,
+        'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
     );
     if ($postFields !== null) {
-        $options[CURLOPT_POST] = true;
+        $options['post'] = true;
         // Always a URL-encoded string, never a raw array: curl treats an
         // array CURLOPT_POSTFIELDS as multipart/form-data, but PostNL's
         // login endpoints expect the plain application/x-www-form-urlencoded
         // body Python's requests.post(data=dict) itself sends.
-        $options[CURLOPT_POSTFIELDS] = is_array($postFields) ? http_build_query($postFields) : $postFields;
+        $options['body'] = is_array($postFields) ? http_build_query($postFields) : $postFields;
     }
     if ($extraHeaders) {
-        $options[CURLOPT_HTTPHEADER] = $extraHeaders;
+        $options['headers'] = $extraHeaders;
     }
-    curl_setopt_array($ch, $options);
+    $response = dashticz_http_request($url, $options);
 
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $failed = ($body === false);
-    curl_close($ch);
-
-    if ($failed) {
+    if ($response['failed']) {
         throw new RuntimeException('Unable to reach PostNL.');
     }
 
-    return array('body' => (string) $body, 'status' => $status, 'headers' => $responseHeaders);
+    return array('body' => $response['body'], 'status' => $response['status'], 'headers' => $response['headers']);
 }
 
 function dashticz_postnl_first_match($pattern, $text, $exclude = null)

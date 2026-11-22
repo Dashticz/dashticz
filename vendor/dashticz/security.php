@@ -608,9 +608,13 @@ function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $al
    $options: method (default GET), headers (list of "Name: value"), body,
    userpwd ("user:password", basic auth), verifyTls (default true; false for
    the self-signed certificate of a LAN device), connectTimeout (default 5)
-   and timeout (default 15) in seconds. Redirects are never followed.
-   Returns array('failed' => bool, 'status' => int, 'body' => string,
-   'contentType' => string); 'failed' is true when no response was received. */
+   and timeout (default 15) in seconds, post (true: send a POST also without
+   a body), cookieFile (cookies are read from and saved to this file) and
+   userAgent. Redirects are never followed.
+   Returns array('failed' => bool, 'errno' => int (curl error number when
+   failed), 'status' => int, 'body' => string, 'contentType' => string,
+   'headers' => array of response headers: lower-case name => value);
+   'failed' is true when no response was received. */
 function dashticz_http_request($url, $options = array())
 {
     $ch = curl_init($url);
@@ -626,9 +630,27 @@ function dashticz_http_request($url, $options = array())
     if (!empty($options['headers'])) {
         $curlOptions[CURLOPT_HTTPHEADER] = $options['headers'];
     }
+    if (!empty($options['post'])) {
+        $curlOptions[CURLOPT_POST] = true;
+    }
     if (isset($options['body'])) {
         $curlOptions[CURLOPT_POSTFIELDS] = $options['body'];
     }
+    if (isset($options['cookieFile'])) {
+        $curlOptions[CURLOPT_COOKIEJAR] = $options['cookieFile'];
+        $curlOptions[CURLOPT_COOKIEFILE] = $options['cookieFile'];
+    }
+    if (isset($options['userAgent'])) {
+        $curlOptions[CURLOPT_USERAGENT] = $options['userAgent'];
+    }
+    $responseHeaders = array();
+    $curlOptions[CURLOPT_HEADERFUNCTION] = function ($curlHandle, $headerLine) use (&$responseHeaders) {
+        $parts = explode(':', $headerLine, 2);
+        if (count($parts) === 2) {
+            $responseHeaders[strtolower(trim($parts[0]))] = trim($parts[1]);
+        }
+        return strlen($headerLine);
+    };
     if (isset($options['userpwd'])) {
         $curlOptions[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
         $curlOptions[CURLOPT_USERPWD] = $options['userpwd'];
@@ -642,12 +664,15 @@ function dashticz_http_request($url, $options = array())
     $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
     $failed = ($body === false);
+    $errno = $failed ? curl_errno($ch) : 0;
     curl_close($ch);
 
     return array(
         'failed' => $failed,
+        'errno' => $errno,
         'status' => $status,
         'body' => $failed ? '' : (string) $body,
         'contentType' => $contentType,
+        'headers' => $responseHeaders,
     );
 }

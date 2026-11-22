@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2049 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The Lyrion Music Server and PostNL bridges now use the shared curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) instead of their own curl code. Behaviour is unchanged.
+
 v4.2048 (22-11-2026)
 ----------------------
 
