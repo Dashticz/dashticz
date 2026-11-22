@@ -1,4 +1,4 @@
 {
-    "version": "4.2046",
-    "last_changes": "Installer: tools/install-dashticz-write-access.sh now makes every dashboard configuration writable for the web-server user (CONFIG.js and extra files such as CONFIG2.js), plus their existing stylesheets (custom2.css), not only CONFIG.js and custom.css (#1401)."
+    "version": "4.2047",
+    "last_changes": "Settings: the RGB colorpicker option no longer talks about an old and a new style. Value 1 has shown the same picker as 2 for a long time, so the option is now described as: 0 off, 1 or 2 on. The English, Dutch and French texts are updated; other languages use the English text."
 }
