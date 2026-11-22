@@ -249,7 +249,7 @@ settingList['localize']['language']['options']['ru_RU'] =
   language.settings.localize.ru;
 settingList['localize']['language']['options']['sk_SK'] =
   language.settings.localize.sk;
-settingList['localize']['language']['options']['sl_SL'] =
+settingList['localize']['language']['options']['sl_SI'] =
   language.settings.localize.sl;
 settingList['localize']['language']['options']['sr_RS'] =
   language.settings.localize.sr;

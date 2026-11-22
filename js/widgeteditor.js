@@ -350,7 +350,7 @@ var DashticzWidgetEditor = (function () {
       ro_RO: localize.ro || 'Romanian',
       ru_RU: localize.ru || 'Russian',
       sk_SK: localize.sk || 'Slovak',
-      sl_SL: localize.sl || 'Slovenian',
+      sl_SI: localize.sl || 'Slovenian',
       sv_SE: localize.sv || 'Swedish',
       uk_UA: localize.uk || 'Ukrainian',
     };

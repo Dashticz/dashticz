@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.2045 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Cleanup: removed unused files (about 17 MB), such as unused documentation images, the vendored ``sphinx_rtd_theme`` copy (Read the Docs installs it from ``docs/requirements.txt``), the legacy Audiowide ``.eot``/``.svg`` fonts and ``css/sortable.css``.
+
+* **Changes**
+
+- The Slovenian language file is renamed from ``sl_SL.json`` to ``sl_SI.json`` (the correct locale code). An existing ``language: 'sl_SL'`` setting keeps working.
+
 v4.2044 (22-11-2026)
 ----------------------
 
