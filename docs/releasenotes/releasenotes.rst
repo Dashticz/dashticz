@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2046 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- ``tools/install-dashticz-write-access.sh`` made only ``custom/CONFIG.js`` and ``custom/custom.css`` writable for the web-server user. It now also prepares every extra configuration (``CONFIG2.js``, ``CONFIG<name>.js``) and the stylesheets that belong to them (``custom2.css``), so the editors and Device Rules can save in all configurations (#1401).
+
 v4.2045 (22-11-2026)
 ----------------------
 

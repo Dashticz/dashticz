@@ -667,6 +667,8 @@ test('Apache write-access installer derives the path and verifies a real write',
   assert.match(installer, /chmod 2775/);
   assert.match(installer, /runuser -u .* touch/);
   assert.match(installer, /Refusing --git-update/);
+  assert.match(installer, /CUSTOM_DIR"\/CONFIG\*\.js/);
+  assert.match(installer, /custom\[A-Za-z0-9_-\]\*\.css/);
   assert.doesNotMatch(installer, /chown -R/);
   assert.doesNotMatch(mainInstaller, /--git-update/);
   assert.doesNotMatch(installer, /sudoers/);
