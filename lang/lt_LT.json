@@ -231,9 +231,7 @@
       "owm_lang": "Nustatyti kalbą, skirtą prognozei (lietus, debesuota ir kt.)",
       "owm_lang_help": "Galimos kalbos, ieškokite https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map Šalis",
-      "owm_name": "Open Wehater Map rodomas pavadinimas ",
-      "longfonds_zipcode": "Longfonds pašto kodas",
-      "longfonds_housenumber": "Longfonds namųonumeris"
+      "owm_name": "Open Wehater Map rodomas pavadinimas "
     },
     "other": {
       "title": "Kita",

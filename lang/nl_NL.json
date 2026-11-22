@@ -833,17 +833,7 @@
       "configure_widget": "Widget configureren",
       "pending_new": "Nieuw – nog niet opgeslagen",
       "added_pending": "Item toegevoegd. Kies Opslaan om te bewaren, of Annuleren om te verwijderen.",
-      "discard_pending_confirm": "Zojuist toegevoegde item(s) verwijderen? Deze zijn nog niet opgeslagen.",
-      "calendar_source": "Kalender",
-      "calendar_source_plural": "kalenders",
-      "calendar_default_name": "Kalender",
-      "calendar_name": "Naam",
-      "calendar_color": "Kleur",
-      "calendar_add": "Kalender toevoegen",
-      "calendar_remove": "Kalender verwijderen",
-      "calendar_name_required": "Vul voor iedere kalender een naam in.",
-      "calendar_duplicate_name": "Kalendernamen moeten uniek zijn.",
-      "ics_url": "ICS-URL"
+      "discard_pending_confirm": "Zojuist toegevoegde item(s) verwijderen? Deze zijn nog niet opgeslagen."
     },
     "widgeteditor": {
       "title": "Widgets",
@@ -1343,7 +1333,9 @@
       "security_panel_lock_home_away": "Beveiligd (Thuis en Afwezig)",
       "security_panel_lock_help": "Kies wanneer Dashticz automatisch het beveiligingspaneel op volledig scherm opent: nooit, bij Beveiligd (Afwezig), of bij Beveiligd (Thuis en Afwezig).",
       "swiper_touch_move": "Schuif scherm met vegen.",
-      "swiper_touch_move_help": "0: Uitgeschakeld; 1: Ingeschakeld"
+      "swiper_touch_move_help": "0: Uitgeschakeld; 1: Ingeschakeld",
+      "topbar_timeout": "Bovenbalk automatisch verbergen na (seconden, 0 = uit)",
+      "topbar_timeout_help": "Verberg de bovenbalk na zoveel seconden. Beweeg de muisaanwijzer naar de bovenkant van het scherm om de balk weer te tonen."
     },
     "weather": {
       "idx_moonpicture": "IDX van maanfoto",

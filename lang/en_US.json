@@ -1333,7 +1333,9 @@
       "security_panel_lock_home_away": "Armed Home and Armed Away",
       "security_panel_lock_help": "Choose when Dashticz automatically opens the full-screen Security Panel: never, when Armed Away, or when Armed Home and Armed Away.",
       "swiper_touch_move": "Swipe screen on touch",
-      "swiper_touch_move_help": "0: Disabled; 1: Enabled"
+      "swiper_touch_move_help": "0: Disabled; 1: Enabled",
+      "topbar_timeout": "Topbar auto-hide (seconds, 0 = off)",
+      "topbar_timeout_help": "Hide the topbar after this many seconds. Move the pointer to the top of the screen to show it again."
     },
     "weather": {
       "idx_moonpicture": "IDX of moonpicture",
@@ -1452,10 +1454,12 @@
           "description": "Add a custom CSS class to the block."
         },
         "textOn": {
-          "description": "Text shown when the device is On."
+          "description": "Text shown when the device is On.",
+          "example": "On"
         },
         "textOff": {
-          "description": "Text shown when the device is Off."
+          "description": "Text shown when the device is Off.",
+          "example": "Off"
         },
         "unit": {
           "description": "Text placed behind the displayed device value."
@@ -1512,13 +1516,16 @@
           "description": "Play a sound when the device changes to Off."
         },
         "speak": {
-          "description": "Speak text when the device changes."
+          "description": "Speak text when the device changes.",
+          "example": "Device status has changed"
         },
         "speakOn": {
-          "description": "Speak text when the device changes to On."
+          "description": "Speak text when the device changes to On.",
+          "example": "Device is on"
         },
         "speakOff": {
-          "description": "Speak text when the device changes to Off."
+          "description": "Speak text when the device changes to Off.",
+          "example": "Device is off"
         },
         "gotoslide": {
           "description": "Go to this screen when the device changes."

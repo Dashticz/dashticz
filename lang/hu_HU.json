@@ -231,9 +231,7 @@
       "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
       "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map Ország",
-      "owm_name": "Megjelenítendő név Open Weather Map",
-      "longfonds_zipcode": "Longfonds zipcode",
-      "longfonds_housenumber": "Longfonds housenumber"
+      "owm_name": "Megjelenítendő név Open Weather Map"
     },
     "other": {
       "title": "Más",

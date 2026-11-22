@@ -231,9 +231,7 @@
       "owm_lang": "Nastavit jazyk pro popis předpovědi (déšť, zataženo atd.)",
       "owm_lang_help": "Pro možné jazyky se podívejte na https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map země",
-      "owm_name": "Zobrazované jméno Open Weather Map",
-      "longfonds_zipcode": "Longfonds PSČ",
-      "longfonds_housenumber": "Longfonds číslo domu"
+      "owm_name": "Zobrazované jméno Open Weather Map"
     },
     "other": {
       "title": "Ostatní",

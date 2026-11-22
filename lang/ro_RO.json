@@ -231,9 +231,7 @@
       "owm_lang": "Setați limba pentru descrierea prognozei (ploaie, noros etc.)",
       "owm_lang_help": "Pentru limbile disponibile, consultați https://openweathermap.org/forecast5/#multi",
       "owm_country": "Țara pe harta Open Weather ",
-      "owm_name": "Afisare nume pe harta Open Weather",
-      "longfonds_zipcode": "Longfonds zipcode",
-      "longfonds_housenumber": "Longfonds housenumber"
+      "owm_name": "Afisare nume pe harta Open Weather"
     },
     "other": {
       "title": "Alte",
