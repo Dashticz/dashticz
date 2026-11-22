@@ -10829,6 +10829,19 @@ input[id$='-carstatus-fontsize'] {
 /* Delete button of an extra configuration: a white trash can in a red circle.
    The first click turns the trash can into a check mark that has to be
    clicked to confirm. */
+/* Keep the texts of the buttons and the badge in the configuration list
+   vertically centred next to the round delete button. */
+#settings-configs-list .btn,
+#settings-configs-list .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  line-height: 1;
+}
+
 .settings-config-delete {
   box-sizing: border-box;
   display: inline-flex;
@@ -10842,6 +10855,15 @@ input[id$='-carstatus-fontsize'] {
   border-radius: 50%;
   background: #f44336;
   color: #fff;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.settings-config-delete .fas {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
   font-size: 13px;
   line-height: 1;
 }
