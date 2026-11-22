@@ -1594,7 +1594,13 @@ next css sets the default height of the frame popup
 }
 
 .colbar .logo {
+  /* The logo carries a col-xs-N percentage width that is far too narrow on a
+     tablet (app title cut to "D..." next to the version). Size it to its
+     content instead; only the clock shrinks. */
   flex: 0 1 auto;
+  /* The logo never gives up room: only the clock shrinks. */
+  flex-shrink: 0;
+  width: auto;
   min-width: 0;
 }
 
@@ -1634,6 +1640,13 @@ next css sets the default height of the frame popup
   margin-left: 0;
 }
 
+/* Flex shrink is distributed in proportion to flex-basis, so the wide clock
+   text and the logo shrank together and the app title was cut to "Da...".
+   Make the clock give way far faster than the logo. */
+.colbar .miniclock {
+  flex-shrink: 100;
+}
+
 .colbar .text-right {
   display: flex;
   align-items: center;
@@ -1663,11 +1676,32 @@ next css sets the default height of the frame popup
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  /* A very long app title still gets an ellipsis. */
+  max-width: 50vw;
 }
 
 .colbar.transbg .logo .logo-version {
   line-height: 1.2;
   white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* Name of the active extra configuration (?cfg=CONFIG2.js). */
+.colbar.transbg .logo .logo-config {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 20vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6em;
+  font-weight: normal;
+  line-height: 1.4;
+  padding: 0 8px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  opacity: 0.85;
 }
 
 .colbar.transbg .fab,
@@ -9317,6 +9351,7 @@ canvas {
   display: flex;
   flex-direction: column;
   overflow: auto;
+  overflow-x: hidden;
   margin-left: 0;
   padding-left: 0;
 }
@@ -9437,17 +9472,15 @@ canvas {
   transition: width 0.6s ease;
 }
 
-/* The dot looks like the sun of the Lux arc (.lux-arc-sun): a white dot with
-   a soft yellow glow. */
+/* The marker is a vertical line, 3px wide, white; it extends 4px above and below the bar. */
 .fullykiosk-bar-dot {
   position: absolute;
-  top: 50%;
-  width: 11px;
-  height: 11px;
-  margin: -5.5px 0 0 -5.5px;
-  border-radius: 50%;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 1px;
   background: #fff;
-  box-shadow: 0 0 6px 4px rgba(255, 214, 0, 0.8);
 }
 
 /* A power button that is off has a grey icon. */
@@ -9964,6 +9997,69 @@ canvas {
   grid-column: 1 / -1;
 }
 
+/* Fully Kiosk: a number field (the percentages, not the port) is compact: the input, 5
+   characters wide, stands behind its label on the same line. The label
+   takes the free space, so the inputs line up vertically at the right edge
+   of their column. */
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  > .mb-3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  .form-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  input {
+  flex: none;
+  width: calc(5ch + 2.75rem);
+}
+
+.de-fully-grid
+  > .de-fully-field:has(input[type='number']:not([id$='-fully-port']))
+  .form-text {
+  flex: 0 0 100%;
+}
+
+/* The port: label above, as the host next to it, so label and input are on
+   the same lines as those of the host; the input is 5 characters wide. */
+.de-fully-grid > .de-fully-field input[id$='-fully-port'] {
+  width: calc(5ch + 2.75rem);
+  max-width: 100%;
+}
+
+/* The charger switch and the font size: one row, 50% width each. */
+.de-fully-grid > .de-fully-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 479px) {
+  .de-fully-grid > .de-fully-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The logo width and height: two fields below the icon row (Image source). */
+.de-carstatus-iconsize {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  grid-column: 1 / -1;
+}
+
 /* Starts a new row, e.g. the three color levels next to each other. */
 .de-carstatus-grid > .de-carstatus-field-rowstart {
   grid-column-start: 1;
@@ -10383,40 +10479,52 @@ canvas {
   --carstatus-color: red;
 }
 
-/* The bar of the Mower widget (.mower-bar): a thin track with a green
-   gradient fill; below 50% the fill has the color of the level. */
+/* The bar has the look of the Home Connect bar (.homeconnect-bar), scaling
+   to the space between the percentage and the mileage, in the colour of the level. */
 .carstatus-bar {
-  height: 11px;
-  border-radius: 1px;
-  background: var(--main-bg-dark, rgba(255, 255, 255, 0.2));
+  display: inline-block;
+  flex: 1 1 0;
+  min-width: 1em;
+  height: 0.4em;
+  border-radius: 0.2em;
+  margin: 0 0.5em;
+  color: var(--carstatus-bar-color, var(--carstatus-color));
+  background: color-mix(in srgb, currentColor 25%, transparent);
   overflow: hidden;
-  /* The end of the bar is slanted, like the battery bar of the BMW. */
-  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+/* From the orange level up the bar is green with a gradient, like the bar of
+   the Mower widget (the percentage keeps its own colour). */
+.carstatus-batt-ok,
+.carstatus-batt-full {
+  --carstatus-bar-color: #059956;
+}
+
+.carstatus-batt-ok .carstatus-bar-fill,
+.carstatus-batt-full .carstatus-bar-fill {
+  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
 }
 
 .carstatus-bar-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+  border-radius: 0.2em;
+  background: currentColor;
   transition: width 0.6s ease;
-  /* The end of the filled part is slanted too. */
-  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 }
 
-.carstatus-batt-mid .carstatus-bar-fill {
-  background: orange;
-}
-
-.carstatus-batt-low .carstatus-bar-fill,
-.carstatus-batt-critical .carstatus-bar-fill {
-  background: red;
-}
-
+/* One line: percentage, bar, mileage at the end. */
 .carstatus-battery-text {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.carstatus-battery {
+  min-width: 0;
 }
 
 .carstatus-pct,
@@ -10424,10 +10532,18 @@ canvas {
   font-weight: bold;
   font-family: inherit;
   font-size: inherit;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .carstatus-pct {
   color: var(--carstatus-color);
+  min-width: 3.6em;
+}
+
+.carstatus-km {
+  margin-left: auto;
+  padding-left: 0.5em;
 }
 
 .carstatus-battery-text .carstatus-icon {
@@ -10516,9 +10632,9 @@ input[id$='-carstatus-fontsize'] {
 /* The part below the line: status and the rows Charging until, Doors and
    Windows. The line always shows, also when there is nothing below it. */
 .carstatus-below {
-  margin-top: 8px;
+  margin-top: 25px;
   padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -10542,6 +10658,18 @@ input[id$='-carstatus-fontsize'] {
 .carstatus-block .dt_content {
   margin-bottom: 0;
   padding-bottom: 0;
+}
+
+/* The header row is as high as the battery line; a higher logo or image sticks
+   out of it, so (unlike other list widgets of a grid screen) it is not
+   clipped there. */
+.carstatus-block .dt_content,
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .dt-widget-rows.carstatus-block
+  .dt_content {
+  overflow: visible;
 }
 
 .carstatus-block .dt_state {
@@ -10670,4 +10798,34 @@ input[id$='-carstatus-fontsize'] {
   min-width: 2.4em;
   text-align: right;
   margin-right: 0.2em;
+}
+
+/* Delete button of an extra configuration: a cross in a circle. The first
+   click turns the cross into a check mark that has to be clicked to confirm. */
+.settings-config-delete {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 26px;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--bs-danger, #dc3545);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bs-danger, #dc3545);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.settings-config-delete:hover,
+.settings-config-delete:focus-visible,
+.settings-config-delete.confirm {
+  background: var(--bs-danger, #dc3545);
+  color: #fff;
+}
+
+.settings-config-delete:disabled {
+  opacity: 0.5;
 }
