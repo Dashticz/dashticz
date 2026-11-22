@@ -1,6 +1,6 @@
 #!/bin/sh
-# Prepare Dashticz write access. CONFIG.js remains used by the normal Dashticz
-# setup/editors; Device Rules themselves are stored only in custom.js/custom.css.
+# Prepare Dashticz write access. CONFIG.js and the extra CONFIG<name>.js files
+# remain used by the normal Dashticz setup/editors; Device Rules themselves are stored only in custom.js/custom.css.
 # The application code and .git directory deliberately remain owned by the
 # deployment user, not by the web-server user.
 # The Dashticz directory is derived from this script's own location.
@@ -63,7 +63,6 @@ fi
 
 WEB_GROUP=$(id -gn "$WEB_USER")
 CUSTOM_DIR="$INSTALL_DIR/custom"
-CONFIG_FILE="$CUSTOM_DIR/CONFIG.js"
 CUSTOM_JS_FILE="$CUSTOM_DIR/custom.js"
 CUSTOM_CSS_FILE="$CUSTOM_DIR/custom.css"
 
@@ -79,14 +78,24 @@ else
     chmod 2775 "$CUSTOM_DIR"
 fi
 
-if [ -e "$CONFIG_FILE" ]; then
-    if [ -L "$CONFIG_FILE" ]; then
-        echo "Refusing symlink: $CONFIG_FILE" >&2
+# Every dashboard configuration (CONFIG.js, CONFIG2.js, CONFIGkitchen.js, ...)
+# must be writable, not only the default one. CONFIG_DEFAULT.js is a stock
+# example file and stays untouched. The pattern matches js/configs.php.
+for cfg in "$CUSTOM_DIR"/CONFIG*.js; do
+    [ -e "$cfg" ] || [ -L "$cfg" ] || continue
+    case "$(basename -- "$cfg")" in
+        CONFIG_DEFAULT.js) continue ;;
+        CONFIG[A-Za-z0-9_-]*.js|CONFIG.js) ;;
+        *) continue ;;
+    esac
+    if [ -L "$cfg" ]; then
+        echo "Refusing symlink: $cfg" >&2
         exit 65
     fi
-    chgrp "$WEB_GROUP" "$CONFIG_FILE"
-    chmod 0664 "$CONFIG_FILE"
-fi
+    [ -f "$cfg" ] || continue
+    chgrp "$WEB_GROUP" "$cfg"
+    chmod 0664 "$cfg"
+done
 
 # custom.js is optional in a stock checkout. Device Rules stores its managed
 # rule definitions here, so create a deliberately empty/safe file when missing.
@@ -142,6 +151,20 @@ fi
 
 chgrp "$WEB_GROUP" "$CUSTOM_CSS_FILE"
 chmod 0664 "$CUSTOM_CSS_FILE"
+
+# The stylesheets that belong to the extra configurations (CONFIG2.js ->
+# custom2.css) are written by Device Rules as well. Only existing files are
+# adjusted; custom.css itself is handled above.
+for css in "$CUSTOM_DIR"/custom[A-Za-z0-9_-]*.css; do
+    [ -e "$css" ] || [ -L "$css" ] || continue
+    if [ -L "$css" ]; then
+        echo "Refusing symlink: $css" >&2
+        exit 65
+    fi
+    [ -f "$css" ] || continue
+    chgrp "$WEB_GROUP" "$css"
+    chmod 0664 "$css"
+done
 
 if command -v runuser >/dev/null 2>&1; then
     # The web-server user must be able to enter every parent directory of the
