@@ -6,7 +6,9 @@
   if (typeof $ === 'undefined') return;
 
   function normalise(value) {
-    return $.trim(String(value || '')).toLowerCase();
+    return String(value || '')
+      .trim()
+      .toLowerCase();
   }
 
   function presetsForContext(context) {

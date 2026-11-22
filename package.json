@@ -1,6 +1,6 @@
 {
   "name": "dashticz",
-  "version": "4.2043.0",
+  "version": "4.2044.0",
   "description": "Alternative dashboard for Domoticz",
   "main": "index.js",
   "directories": {
@@ -17,7 +17,6 @@
     "hammerjs": "^2.0.8",
     "handlebars": "^4.7.10",
     "jquery": "^4.1.0",
-    "jquery-migrate": "^4.0.2",
     "jquery-ui-dist": "^1.13.3",
     "jquery-ui-touch-punch": "^0.2.3",
     "js-cookie": "^3.0.8",

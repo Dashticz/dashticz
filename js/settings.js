@@ -1290,9 +1290,10 @@ function loadSettings() {
         if (_PHP_INSTALLED)
           _CORS_PATH = settings['dashticz_php_path'] + 'cors.php?';
         else {
-          _CORS_PATH = 'https://cors-anywhere.herokuapp.com/';
-          console.warn('PHP not enabled and default_cors_url not set.');
-          console.log('CORS proxy: ' + _CORS_PATH);
+          _CORS_PATH = '';
+          console.error(
+            'PHP is not enabled and default_cors_url is not set: data from other domains (tvguide, news, ...) cannot be loaded. Enable PHP or set config["default_cors_url"].'
+          );
         }
         //    _CORS_PATH = 'http://192.168.178.18:8081/';
       } else _CORS_PATH = settings['default_cors_url'];

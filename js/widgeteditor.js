@@ -315,7 +315,7 @@ var DashticzWidgetEditor = (function () {
     var rows = options.customFields || [];
     for (var i = 0; i < rows.length; i++) {
       if (_normaliseCustomFieldName(rows[i].field) !== 'title') continue;
-      var configuredTitle = $.trim(String(rows[i].setting || ''));
+      var configuredTitle = String(rows[i].setting || '').trim();
       if (configuredTitle) return configuredTitle;
     }
     return _widgetTitle(item);
@@ -786,13 +786,15 @@ var DashticzWidgetEditor = (function () {
   }
 
   function _normaliseCustomFieldName(value) {
-    value = $.trim(String(value || '')).replace(/[\s-]+/g, '_');
+    value = String(value || '')
+      .trim()
+      .replace(/[\s-]+/g, '_');
     if (value) value = value.charAt(0).toLowerCase() + value.slice(1);
     return value;
   }
 
   function _parseCustomSetting(value) {
-    var text = $.trim(String(value || ''));
+    var text = String(value || '').trim();
     if (text === 'true') return { valid: true, value: true };
     if (text === 'false') return { valid: true, value: false };
     if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
@@ -921,7 +923,7 @@ var DashticzWidgetEditor = (function () {
   function _normaliseCalendarSources(icalurl, legacyCalendars) {
     var sources = [];
     if (typeof icalurl === 'string') {
-      if ($.trim(icalurl)) {
+      if (String(icalurl == null ? '' : icalurl).trim()) {
         var single = _defaultCalendarSource(0);
         single.name = _t('calendar_default_name', 'Calendar');
         single.ics = icalurl;
@@ -3649,7 +3651,7 @@ var DashticzWidgetEditor = (function () {
     return String(value || '')
       .split(',')
       .map(function (key) {
-        return $.trim(key);
+        return String(key == null ? '' : key).trim();
       })
       .filter(function (key) {
         if (!HPILO_ROWS[key] || seen[key]) return false;
@@ -5472,12 +5474,12 @@ var DashticzWidgetEditor = (function () {
       var customKeys = {};
       $cfgModal.find('.we-custom-field-row').each(function () {
         if (!valid) return;
-        var rawField = $.trim(
+        var rawField = (
           $(this).find('.we-custom-field-name').val() || ''
-        );
-        var rawSetting = $.trim(
+        ).trim();
+        var rawSetting = (
           $(this).find('.we-custom-field-setting').val() || ''
-        );
+        ).trim();
         if (!rawField && !rawSetting) return;
         var field = _normaliseCustomFieldName(rawField);
         if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field)) {
@@ -5614,8 +5616,8 @@ var DashticzWidgetEditor = (function () {
         $cfgModal.find('.we-calendar-row').each(function () {
           if (!valid) return;
           var $row = $(this);
-          var name = $.trim($row.find('.we-calendar-name').val() || '');
-          var url = $.trim($row.find('.we-calendar-url').val() || '');
+          var name = ($row.find('.we-calendar-name').val() || '').trim();
+          var url = ($row.find('.we-calendar-url').val() || '').trim();
           var color = String(
             $row.find('.we-calendar-color').attr('data-calendar-color-value') ||
               $row.find('.we-calendar-color').val() ||
@@ -5682,14 +5684,14 @@ var DashticzWidgetEditor = (function () {
       } else if (widgetId === 'publictransport') {
         widgetConfigs.publictransport = {
           provider: $('#we-cfg-pt-provider').val() || 'treinen',
-          station: $.trim($('#we-cfg-pt-station').val() || '') || 'UT',
+          station: ($('#we-cfg-pt-station').val() || '').trim() || 'UT',
         };
       } else if (widgetId === 'trafficinfo') {
         collected.showemptyroadsText =
           (widgetConfigs.trafficinfo || {}).showemptyroadsText || '';
         widgetConfigs.trafficinfo = collected;
       } else if (widgetId === 'alarmmeldingen') {
-        var rss = $.trim($('#we-cfg-alarm-rss').val() || '');
+        var rss = ($('#we-cfg-alarm-rss').val() || '').trim();
         if (!rss || !/^https?:\/\/\S+$/i.test(rss)) {
           $('.we-cfg-message')
             .addClass('text-danger')
@@ -5698,14 +5700,14 @@ var DashticzWidgetEditor = (function () {
         } else {
           widgetConfigs.alarmmeldingen = {
             rss: rss,
-            filter: $.trim($('#we-cfg-alarm-filter').val() || ''),
+            filter: ($('#we-cfg-alarm-filter').val() || '').trim(),
           };
         }
       } else if (widgetId === 'camera') {
         var cameras = [];
         $cfgModal.find('.we-camera-row').each(function (index) {
-          var imageUrl = $.trim($(this).find('.we-camera-image').val() || '');
-          var videoUrl = $.trim($(this).find('.we-camera-video').val() || '');
+          var imageUrl = ($(this).find('.we-camera-image').val() || '').trim();
+          var videoUrl = ($(this).find('.we-camera-video').val() || '').trim();
           if (
             !imageUrl ||
             !/^https?:\/\/\S+$/i.test(imageUrl) ||
@@ -5727,7 +5729,7 @@ var DashticzWidgetEditor = (function () {
           }
           cameras.push({
             title:
-              $.trim($(this).find('.we-camera-title').val() || '') ||
+              ($(this).find('.we-camera-title').val() || '').trim() ||
               _t('camera', 'Camera') + ' ' + (index + 1),
             imageUrl: imageUrl,
             videoUrl: videoUrl,
@@ -5744,7 +5746,7 @@ var DashticzWidgetEditor = (function () {
         widgetConfigs.news = collected;
       } else if (widgetId === 'iframe') {
         // Validate and store iframe-specific config
-        var iframeUrl = $.trim($('#we-cfg-iframe-url').val() || '');
+        var iframeUrl = ($('#we-cfg-iframe-url').val() || '').trim();
         if (!iframeUrl) {
           $('.we-cfg-message')
             .addClass('text-danger')
@@ -5759,34 +5761,34 @@ var DashticzWidgetEditor = (function () {
         } else {
           widgetConfigs.iframe = {
             frameurl: iframeUrl,
-            height: $.trim(
+            height: (
               $cfgModal.find('[data-cfg-key="iframe_height"]').val() || ''
-            ),
+            ).trim(),
             scrollbars: $cfgModal
               .find('[data-cfg-key="iframe_scrollbars"]')
               .is(':checked')
               ? 1
               : 0,
-            scaletofit: $.trim(
+            scaletofit: (
               $cfgModal.find('[data-cfg-key="iframe_scaletofit"]').val() || ''
-            ),
-            aspectratio: $.trim(
+            ).trim(),
+            aspectratio: (
               $cfgModal.find('[data-cfg-key="iframe_aspectratio"]').val() || ''
-            ),
+            ).trim(),
             forcerefresh: $cfgModal
               .find('[data-cfg-key="iframe_forcerefresh"]')
               .is(':checked')
               ? 1
               : 0,
             refresh:
-              $.trim(
+              (
                 $cfgModal.find('[data-cfg-key="iframe_refresh"]').val() || ''
-              ) || '300',
+              ).trim() || '300',
           };
         }
       } else if (widgetId === 'xmltvguide') {
         // Validate and store xmltvguide-specific config
-        var xmltvUrl = $.trim($('#we-cfg-xmltv-url').val() || '');
+        var xmltvUrl = ($('#we-cfg-xmltv-url').val() || '').trim();
         if (!xmltvUrl) {
           $('.we-cfg-message')
             .addClass('text-danger')
@@ -5801,33 +5803,33 @@ var DashticzWidgetEditor = (function () {
         } else {
           widgetConfigs.xmltvguide = {
             xmltvurl: xmltvUrl,
-            channels: $.trim(
+            channels: (
               $cfgModal.find('[data-cfg-key="xmltv_channels"]').val() || ''
-            ),
+            ).trim(),
             maxitems:
-              $.trim(
+              (
                 $cfgModal.find('[data-cfg-key="xmltv_maxitems"]').val() || ''
-              ) || '10',
+              ).trim() || '10',
             layout:
-              $.trim(
+              (
                 $cfgModal.find('[data-cfg-key="xmltv_layout"]').val() || ''
-              ) || '0',
+              ).trim() || '0',
             separator:
-              $.trim(
+              (
                 $cfgModal.find('[data-cfg-key="xmltv_separator"]').val() || ''
-              ) || '-',
+              ).trim() || '-',
             refresh:
-              $.trim(
+              (
                 $cfgModal.find('[data-cfg-key="xmltv_refresh"]').val() || ''
-              ) || '3600',
+              ).trim() || '3600',
           };
         }
       } else if (widgetId === 'radio') {
         var tracks = [];
         $cfgModal.find('.we-radio-row').each(function (index) {
-          var stationName = $.trim($(this).find('.we-radio-name').val() || '');
-          var stationFile = $.trim($(this).find('.we-radio-url').val() || '');
-          var stationLogo = $.trim($(this).find('.we-radio-logo').val() || '');
+          var stationName = ($(this).find('.we-radio-name').val() || '').trim();
+          var stationFile = ($(this).find('.we-radio-url').val() || '').trim();
+          var stationLogo = ($(this).find('.we-radio-logo').val() || '').trim();
           if (!stationName && !stationFile && !stationLogo) return; // skip a fully empty row
           if (!stationFile || !/^https?:\/\/\S+$/i.test(stationFile)) {
             $('.we-cfg-message')
@@ -5870,15 +5872,15 @@ var DashticzWidgetEditor = (function () {
         var timegraphValues = [];
         $cfgModal.find('.we-timegraph-value-row').each(function (index) {
           if (!valid) return;
-          var rowValue = $.trim(
+          var rowValue = (
             $(this).find('.we-timegraph-value-value').val() || ''
-          );
-          var rowIdx = $.trim(
+          ).trim();
+          var rowIdx = (
             $(this).find('.we-timegraph-value-idx').val() || ''
-          );
-          var rowLabel = $.trim(
+          ).trim();
+          var rowLabel = (
             $(this).find('.we-timegraph-value-label').val() || ''
-          );
+          ).trim();
           if (!rowValue && !rowIdx && !rowLabel) return; // skip a fully empty row
           if (!rowValue) {
             $('.we-cfg-message')
@@ -6551,7 +6553,8 @@ var DashticzWidgetEditor = (function () {
         return valueEntry;
       });
     }
-    if ($.trim(blockTitle)) entry.title = $.trim(blockTitle);
+    if (String(blockTitle == null ? '' : blockTitle).trim())
+      entry.title = String(blockTitle == null ? '' : blockTitle).trim();
     return entry;
   }
 

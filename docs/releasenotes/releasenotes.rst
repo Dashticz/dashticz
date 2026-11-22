@@ -1,6 +1,19 @@
 Release Notes
 =============
 
+v4.2044 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Cleanup: ``jquery-migrate`` is removed. The jQuery 3 helpers ``$.trim``, ``$.now`` and ``$.isArray`` that jQuery 4 no longer has are replaced by native code.
+- Cleanup: removed the unused ``js/calendar.js`` and the commented-out Google Analytics code.
+- Without PHP and without ``config['default_cors_url']`` Dashticz no longer falls back to the public cors-anywhere proxy (it no longer accepts requests); it writes an error to the browser console instead.
+
+* **Changes**
+
+- The ``.aac`` versions of the sounds in the ``sounds`` folder are removed. Use the ``.mp3`` or ``.ogg`` file in ``playsound`` instead, for example ``'sounds/doorbell.mp3'``.
+
 v4.2043 (22-11-2026)
 ----------------------
 

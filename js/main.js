@@ -1032,28 +1032,6 @@ function onLoad() {
       }
     }, 1000);
   }
-  /* //Error: URL invalid ...
-  if (
-    typeof settings['disable_googleanalytics'] == 'undefined' ||
-    parseFloat(settings['disable_googleanalytics']) == 0
-  ) {
-    var googleAnalytics = '<script>';
-    googleAnalytics +=
-      "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){";
-    googleAnalytics +=
-      '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),';
-    googleAnalytics +=
-      'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)';
-    googleAnalytics +=
-      "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');";
-
-    googleAnalytics += "ga('create', 'UA-102837285-1', 'auto');";
-    googleAnalytics += "ga('send', 'pageview');";
-
-    googleAnalytics += '</script>';
-    $('body').prepend(googleAnalytics);
-  }*/
-
   function registerUserActivity(event) {
     lastUserActivity = Date.now();
     swipebackTime = 0;

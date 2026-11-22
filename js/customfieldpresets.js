@@ -524,7 +524,9 @@
   }
 
   function normalise(value) {
-    return $.trim(String(value || '')).toLowerCase();
+    return String(value || '')
+      .trim()
+      .toLowerCase();
   }
 
   function isSupportedFieldInput(element) {
@@ -759,7 +761,7 @@
     if (
       $setting.length &&
       (previousField !== normalise(preset.field) ||
-        !$.trim(String($setting.val() || '')))
+        !String($setting.val() || '').trim())
     ) {
       $setting.val(presetExample(preset)).trigger('input').trigger('change');
     }
