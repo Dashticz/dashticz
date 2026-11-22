@@ -1,4 +1,4 @@
 {
-    "version": "4.2041",
-    "last_changes": "Configurations: the trash can icon of the delete button is shown at the right size, and the texts of the buttons in the list are centred vertically."
+    "version": "4.2042",
+    "last_changes": "Cleanup: removed unused code (js/sortable.js, a few unused functions and the debugstatus template) and the leftover Weather Underground texts from the language files."
 }

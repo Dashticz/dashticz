@@ -1,1 +1,0 @@
-<span>{requestCount}:{lastRequest}</span>
