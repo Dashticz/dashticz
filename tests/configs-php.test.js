@@ -210,6 +210,7 @@ test(
         'var config = {};\n'
       );
       fs.writeFileSync(path.join(tmp, 'custom/custom2.css'), 'x{}\n');
+      fs.writeFileSync(path.join(tmp, 'custom/custom.css'), 'y{}\n');
 
       let res = await post({ action: 'delete', file: 'CONFIG.js' });
       assert.equal(res.status, 400);
@@ -233,8 +234,9 @@ test(
       res = await post({ action: 'delete', file: 'CONFIG2.js' });
       assert.equal(res.status, 200);
       assert.ok(!fs.existsSync(path.join(tmp, 'custom/CONFIG2.js')));
-      // The stylesheet is left alone.
-      assert.ok(fs.existsSync(path.join(tmp, 'custom/custom2.css')));
+      // The stylesheet of that config goes with it, custom.css stays.
+      assert.ok(!fs.existsSync(path.join(tmp, 'custom/custom2.css')));
+      assert.ok(fs.existsSync(path.join(tmp, 'custom/custom.css')));
     });
   }
 );
