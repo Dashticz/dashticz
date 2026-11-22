@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2058 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- The color picker button of RGB lamps shows the color of the lamp again. A wrongly quoted color value made the browser ignore it, so the transparency checkerboard was visible instead.
+
 v4.2057 (22-11-2026)
 ----------------------
 

@@ -1,4 +1,4 @@
 {
-    "version": "4.2057",
-    "last_changes": "Fixes: external stylesheets (the Google Fonts Montserrat font of the Hayman clock) no longer get '?v=' appended to their URL, which broke it and made Chrome report 'Response was blocked by CORB'. Local stylesheets that already have a query string now get '&v=' instead."
+    "version": "4.2058",
+    "last_changes": "Fix: the color picker button of RGB lamps shows the lamp color again instead of a checkerboard."
 }
