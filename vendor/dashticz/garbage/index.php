@@ -110,25 +110,24 @@ function fileGetJson($url) {
 function curlWeb($url, $options=0) {
 	global $ignoressl;
 	global $cookies;
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HEADERFUNCTION, "curlResponseHeaderCallback");
 	$cookies = array();
+	$curlOptions = array();
 	if ($ignoressl) {
 		report('SSL check disabled', 'info');
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
 	}
 	if ($options) {
-		foreach($options as $key => $value) {
-			curl_setopt($ch, $key, $value);
-		}
+		$curlOptions = array_replace($curlOptions, $options);
 	}
-	$server_output = curl_exec ($ch);
-	curl_close ($ch);
-//	var_dump($server_output);
-	return $server_output;
-
+	// No time limits (as before): the providers are slow, and the options of
+	// the providers themselves are passed on as they are.
+	$response = dashticz_http_request($url, array(
+		'connectTimeout' => 0,
+		'timeout' => 0,
+		'headerCallback' => 'curlResponseHeaderCallback',
+		'curlOptions' => $curlOptions,
+	));
+	return $response['failed'] ? false : $response['body'];
 }
 
 function curlWebJson($url, $headers=array()) {

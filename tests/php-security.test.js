@@ -1827,3 +1827,47 @@ echo json_encode(array(
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('garbage curlWeb() goes through the shared helper, keeps the cookies and passes the provider options', async () => {
+  const source = read('vendor/dashticz/garbage/index.php');
+  assert.match(source, /dashticz_http_request\(/);
+  assert.doesNotMatch(source, /curl_init|curl_exec/);
+  const start = source.indexOf('function report(');
+  const end = source.indexOf('// A request parameter');
+  assert.ok(start !== -1 && end > start, 'garbage helper functions not found');
+  const functions = source.slice(start, end);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-garbage-'));
+  fs.writeFileSync(
+    path.join(dir, 'cookie.php'),
+    `<?php
+setcookie('CB_SESSION', 'abc');
+echo json_encode(array('method' => $_SERVER['REQUEST_METHOD'], 'body' => file_get_contents('php://input')));
+`
+  );
+  const port = 40000 + (process.pid % 10000);
+  const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+    const script = `require '${securityPhp}';
+$messages = array(); $debug = 0; $ignoressl = true; $cookies = array();
+${functions.replace(/^<\?php/, '')}
+$url = 'http://127.0.0.1:${port}/cookie.php';
+$posted = curlPostJson($url, 'a=b');
+$seenCookies = $cookies;
+$failed = curlWeb('http://127.0.0.1:1/');
+echo json_encode(array($posted, $seenCookies, $failed, $messages));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const [posted, cookies, failed, messages] = JSON.parse(result.stdout);
+    assert.deepEqual(posted, { method: 'POST', body: 'a=b' });
+    assert.match(cookies.CB_SESSION, /^abc/);
+    assert.equal(failed, false);
+    assert.equal(messages[0].dt_msg, 'SSL check disabled');
+  } finally {
+    server.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

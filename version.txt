@@ -1,4 +1,4 @@
 {
-    "version": "4.2049",
-    "last_changes": "Cleanup: the Lyrion Music Server and PostNL bridges use the shared curl helper (dashticz_http_request in vendor/dashticz/security.php) instead of their own curl code. Behaviour is unchanged."
+    "version": "4.2050",
+    "last_changes": "Cleanup: the garbage bridge uses the shared curl helper (dashticz_http_request in vendor/dashticz/security.php) for its curl requests. Behaviour is unchanged."
 }

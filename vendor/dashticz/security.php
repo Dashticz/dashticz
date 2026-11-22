@@ -610,7 +610,10 @@ function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $al
    the self-signed certificate of a LAN device), connectTimeout (default 5)
    and timeout (default 15) in seconds, post (true: send a POST also without
    a body), cookieFile (cookies are read from and saved to this file) and
-   userAgent. Redirects are never followed.
+   userAgent. headerCallback (callable($ch, $headerLine), replaces the
+   collection of the response headers) and curlOptions (raw CURLOPT_* => value
+   pairs, applied last, for the legacy garbage providers). A timeout of 0
+   means no limit. Redirects are not followed unless curlOptions says so.
    Returns array('failed' => bool, 'errno' => int (curl error number when
    failed), 'status' => int, 'body' => string, 'contentType' => string,
    'headers' => array of response headers: lower-case name => value);
@@ -644,13 +647,16 @@ function dashticz_http_request($url, $options = array())
         $curlOptions[CURLOPT_USERAGENT] = $options['userAgent'];
     }
     $responseHeaders = array();
-    $curlOptions[CURLOPT_HEADERFUNCTION] = function ($curlHandle, $headerLine) use (&$responseHeaders) {
+    $curlOptions[CURLOPT_HEADERFUNCTION] = isset($options['headerCallback']) ? $options['headerCallback'] : function ($curlHandle, $headerLine) use (&$responseHeaders) {
         $parts = explode(':', $headerLine, 2);
         if (count($parts) === 2) {
             $responseHeaders[strtolower(trim($parts[0]))] = trim($parts[1]);
         }
         return strlen($headerLine);
     };
+    if (!empty($options['curlOptions'])) {
+        $curlOptions = array_replace($curlOptions, $options['curlOptions']);
+    }
     if (isset($options['userpwd'])) {
         $curlOptions[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
         $curlOptions[CURLOPT_USERPWD] = $options['userpwd'];
