@@ -1,4 +1,4 @@
 {
-    "version": "4.2039",
-    "last_changes": "Security: fixes for the CodeQL code scanning alerts. Debug messages, the sortable widget title and the error message are now escaped, selectors escape backslashes, the garbage and block tag filters are stricter, and the CodeQL scan skips the test files."
+    "version": "4.2040",
+    "last_changes": "Device Editor: the Width and Title labels are shown once in a heading above the list instead of under every row. Configurations: the delete button is a white trash can in a red circle."
 }
