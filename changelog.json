@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2048": "Cleanup: the Fully Kiosk, HP iLO, Toon and Husqvarna bridges use one shared curl helper (dashticz_http_request in vendor/dashticz/security.php) instead of their own curl code. Behaviour is unchanged.",
     "4.2047": "Settings: the RGB colorpicker option no longer talks about an old and a new style. Value 1 has shown the same picker as 2 for a long time, so the option is now described as: 0 off, 1 or 2 on. The English, Dutch and French texts are updated; other languages use the English text.",
     "4.2046": "Installer: tools/install-dashticz-write-access.sh now makes every dashboard configuration writable for the web-server user (CONFIG.js and extra files such as CONFIG2.js), plus their existing stylesheets (custom2.css), not only CONFIG.js and custom.css (#1401).",
     "4.2045": "Cleanup: removed unused files (about 17 MB): an unused 15 MB documentation GIF and 18 unused documentation images, the vendored sphinx_rtd_theme copy, legacy Audiowide .eot/.svg fonts, css/sortable.css, unused test helpers and an unused image. The Slovenian language file is now sl_SI (was sl_SL); an existing sl_SL setting still works.",

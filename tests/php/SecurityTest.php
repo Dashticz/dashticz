@@ -167,6 +167,17 @@ class SecurityTest extends TestCase
         $this->assertSame(3, dashticz_widget_default_width('no-such-kind'));
     }
 
+    public function testHttpRequestReportsAnUnreachableHost(): void
+    {
+        if (!function_exists('curl_init')) {
+            $this->markTestSkipped('The curl extension is not available.');
+        }
+        $response = dashticz_http_request('http://127.0.0.1:1/', array('connectTimeout' => 1, 'timeout' => 2));
+        $this->assertTrue($response['failed']);
+        $this->assertSame(0, $response['status']);
+        $this->assertSame('', $response['body']);
+    }
+
     /** @param mixed $url */
     private function assertRejected($url): void
     {

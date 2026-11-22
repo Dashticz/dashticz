@@ -1,4 +1,4 @@
 {
-    "version": "4.2047",
-    "last_changes": "Settings: the RGB colorpicker option no longer talks about an old and a new style. Value 1 has shown the same picker as 2 for a long time, so the option is now described as: 0 off, 1 or 2 on. The English, Dutch and French texts are updated; other languages use the English text."
+    "version": "4.2048",
+    "last_changes": "Cleanup: the Fully Kiosk, HP iLO, Toon and Husqvarna bridges use one shared curl helper (dashticz_http_request in vendor/dashticz/security.php) instead of their own curl code. Behaviour is unchanged."
 }

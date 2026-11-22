@@ -77,21 +77,15 @@ try {
 function dashticz_fullykiosk_get($tablet, $params)
 {
     $params['password'] = $tablet['password'];
-    $ch = curl_init($tablet['base'] . '?' . http_build_query($params));
-    curl_setopt_array($ch, array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT => 5,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => 0,
+    $response = dashticz_http_request($tablet['base'] . '?' . http_build_query($params), array(
+        'connectTimeout' => 3,
+        'timeout' => 5,
+        'verifyTls' => false,
     ));
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $failed = ($body === false);
-    curl_close($ch);
+    $status = $response['status'];
+    $body = $response['body'];
 
-    if ($failed) {
+    if ($response['failed']) {
         throw new RuntimeException('Unable to reach the tablet.');
     }
     if ($status === 401 || $status === 403) {
