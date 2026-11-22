@@ -868,7 +868,7 @@ function addDebug() {
 }
 
 function showError(msg) {
-  if (msg) $('#error').html(msg);
+  if (msg) $('#error').text(msg);
   $('#hide').show();
   $('#loaderHolder').fadeOut();
 }

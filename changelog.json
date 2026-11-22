@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2039": "Security: fixes for the CodeQL code scanning alerts. Debug messages, the sortable widget title and the error message are now escaped, selectors escape backslashes, the garbage and block tag filters are stricter, and the CodeQL scan skips the test files.",
     "4.2038": "Languages: removed unused and misplaced keys from the language files, added the missing en_US keys, and a CI check that validates the language files.",
     "4.20.37": "Configurations: a new Configurations category in the settings menu lists the extra configuration files (CONFIG2.js, ...), opens one, copies its link and creates a new one (empty or a copy). The active extra configuration is shown next to the logo in the top bar.",
     "4.20.36": "Topbar: the app title and version number are no longer cut off on a tablet (the clock now shrinks before the logo).",

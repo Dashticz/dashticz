@@ -25,7 +25,7 @@ function startSortable() {
         html += '<div class="col-xs-8 col-data">';
         html +=
           '<strong class="title">' +
-          $(ui.item).find('.title').text() +
+          $('<div>').text($(ui.item).find('.title').text()).html() +
           '</strong><br>';
         html += '<span class="lastupdate">Save to see updates!</span>';
         html += '</div>';

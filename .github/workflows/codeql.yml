@@ -36,9 +36,11 @@ jobs:
           languages: javascript-typescript
           build-mode: none
           # dist/ is the generated bundle of the sources, scanned already.
+          # tests/ only holds test code that never runs in the dashboard.
           config: |
             paths-ignore:
               - dist
+              - tests
       - uses: github/codeql-action/analyze@v4
         with:
           category: /language:javascript-typescript

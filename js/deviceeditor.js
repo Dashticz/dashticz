@@ -5202,7 +5202,9 @@ var DashticzDeviceEditor = (function () {
           if (
             previousPlayer &&
             $player.find(
-              'option[value="' + previousPlayer.replace(/"/g, '\\"') + '"]'
+              'option[value="' +
+                previousPlayer.replace(/\\/g, '\\\\').replace(/"/g, '\\"') +
+                '"]'
             ).length
           ) {
             $player.val(previousPlayer);
@@ -13806,11 +13808,11 @@ var DashticzDeviceEditor = (function () {
         '<option value="' +
         _esc(ck) +
         '" data-type-order="' +
-        newTypeOrder +
+        _esc(newTypeOrder) +
         '">' +
         _esc(displayName) +
         ' (IDX\u00a0' +
-        dispIdx +
+        _esc(dispIdx) +
         ')</option>';
 
       var $select = $('#de-add-rows .de-device-select');
