@@ -2514,7 +2514,7 @@ function copyConfigLink(url, $button) {
     var $row = $button.closest('li');
     $row.find('.settings-config-link').remove();
     var $field = $(
-      '<input type="text" readonly class="form-control form-control-sm mt-2 settings-config-link">'
+      '<input type="text" name="settings-config-link" readonly class="form-control form-control-sm mt-2 settings-config-link">'
     )
       .val(url)
       .on('focus click', function () {
@@ -2528,7 +2528,9 @@ function copyConfigLink(url, $button) {
   var legacyCopy = function () {
     var $host = $button.closest('#settingspopup');
     if (!$host.length) $host = $('body');
-    var $tmp = $('<textarea readonly></textarea>')
+    var $tmp = $(
+      '<textarea name="settings-config-link-copy" readonly></textarea>'
+    )
       .css({ position: 'fixed', top: 0, left: 0, opacity: 0 })
       .val(url)
       .appendTo($host);

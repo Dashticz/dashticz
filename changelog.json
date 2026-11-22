@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2051": "Fixes: form controls in the editor popups (Device Editor, quick-add popups) and a few dashboard controls (Spotify device list, Fully Kiosk brightness, cluster switches, selector switch dropdown, graph definition) now have a name, so the browser no longer reports 'A form field element should have an id or name attribute'. No change in behaviour.",
     "4.2050": "Cleanup: the garbage bridge uses the shared curl helper (dashticz_http_request in vendor/dashticz/security.php) for its curl requests. Behaviour is unchanged.",
     "4.2049": "Cleanup: the Lyrion Music Server and PostNL bridges use the shared curl helper (dashticz_http_request in vendor/dashticz/security.php) instead of their own curl code. Behaviour is unchanged.",
     "4.2048": "Cleanup: the Fully Kiosk, HP iLO, Toon and Husqvarna bridges use one shared curl helper (dashticz_http_request in vendor/dashticz/security.php) instead of their own curl code. Behaviour is unchanged.",
