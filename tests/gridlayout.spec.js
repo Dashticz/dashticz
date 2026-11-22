@@ -1140,7 +1140,7 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
 
     // Hide the description and drag the logo to the top.
     await popup.locator('.de-parts-item[data-part="desc"] label').click();
-    // jQuery UI sortable follows the pointer, so move it in steps to the top
+    // The sortable list follows the pointer, so move it in steps to the top
     // edge of the first item instead of jumping there (dragTo), which can
     // drop the logo one place too low. The boxes are measured right before
     // each attempt, once the popup has stopped moving: in WebKit the popup
