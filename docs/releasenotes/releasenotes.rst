@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.2054 (22-11-2026)
+----------------------
+
+* **Code**
+
+- jQuery UI and jquery-ui-touch-punch are removed: the sliders and the sortable lists no longer use them. The bundle is about 255 KB smaller and the unused jQuery UI icons and styles are gone (the slider keeps the few styles it needs in src/slider.css).
+- If your own custom.js uses jQuery UI widgets (for example $.fn.slider or $.fn.sortable), it has to load its own copy of jQuery UI from now on.
+
 v4.2053 (22-11-2026)
 ----------------------
 
