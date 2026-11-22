@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2043": "Security: the remaining CodeQL alerts are fixed. The news feed description is turned into plain text without parsing it as HTML, and the values in the Device Editor add-row and the Widget Config colour field are escaped.",
     "4.2042": "Cleanup: removed unused code (js/sortable.js, a few unused functions and the debugstatus template) and the leftover Weather Underground texts from the language files.",
     "4.2041": "Configurations: the trash can icon of the delete button is shown at the right size, and the texts of the buttons in the list are centred vertically.",
     "4.2040": "Device Editor: the Width and Title labels are shown once in a heading above the list instead of under every row. Configurations: the delete button is a white trash can in a red circle.",

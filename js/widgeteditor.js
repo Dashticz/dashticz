@@ -3101,7 +3101,7 @@ var DashticzWidgetEditor = (function () {
         '" data-cfg-key="' +
         _esc(key) +
         '" value="' +
-        colorValue +
+        _esc(colorValue) +
         '">';
     }
     if (help) {

@@ -1,4 +1,4 @@
 {
-    "version": "4.2042",
-    "last_changes": "Cleanup: removed unused code (js/sortable.js, a few unused functions and the debugstatus template) and the leftover Weather Underground texts from the language files."
+    "version": "4.2043",
+    "last_changes": "Security: the remaining CodeQL alerts are fixed. The news feed description is turned into plain text without parsing it as HTML, and the values in the Device Editor add-row and the Widget Config colour field are escaped."
 }
