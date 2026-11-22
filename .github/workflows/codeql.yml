@@ -1,0 +1,44 @@
+name: CodeQL
+
+# Static security analysis of the JavaScript code with GitHub CodeQL (default
+# query suite). Results show up under Security > Code scanning. This needs
+# code scanning to be available for the repository (free for public repos);
+# on a private repo it needs GitHub Advanced Security.
+
+on:
+  push:
+    branches: [master, beta]
+  pull_request:
+    branches: [master, beta]
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          # dist/ is the generated bundle of the sources, scanned already.
+          config: |
+            paths-ignore:
+              - dist
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript

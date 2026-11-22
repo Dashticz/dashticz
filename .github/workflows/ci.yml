@@ -47,6 +47,11 @@ jobs:
       - run: npm run format:check
       - run: npm run lint
       - run: npm test
+      - name: Language files
+        # Fails on invalid JSON, duplicate keys or non-string values. Keys
+        # missing from a translation only give a warning and a summary.
+        if: matrix.node == 22
+        run: node tools/check-lang.js
       - run: npm run build
       - name: dist/ is up to date
         if: matrix.node == 22
