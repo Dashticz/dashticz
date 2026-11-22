@@ -4099,17 +4099,108 @@ var DashticzDeviceEditor = (function () {
     return html + '</span></span>';
   }
 
+  // Drag the rows of a vertical list into another order with the pointer
+  // (mouse, touch or pen), from the handle of a row. $list is the element
+  // that holds the rows, options.items the selector of a row, options.handle
+  // the selector of its drag handle and options.update is called after a drag
+  // that changed the order. Calling this again for the same list does
+  // nothing. A row only moves within its own list.
+  function _makeSortable($list, options) {
+    var list = $list[0];
+    if (!list || list._dtSortable) return;
+    list._dtSortable = true;
+    var dragged = null;
+    var startOrder = '';
+
+    function rows() {
+      return Array.prototype.slice.call(list.querySelectorAll(options.items));
+    }
+
+    function order() {
+      return rows()
+        .map(function (row) {
+          return row.getAttribute('data-idx') || row.getAttribute('data-part');
+        })
+        .join(',');
+    }
+
+    function moveTo(y) {
+      var rowsNow = rows();
+      var position = rowsNow.indexOf(dragged);
+      for (var i = 0; i < rowsNow.length; i++) {
+        var row = rowsNow[i];
+        if (row === dragged) continue;
+        var box = row.getBoundingClientRect();
+        var middle = box.top + box.height / 2;
+        if (i < position && y < middle) {
+          list.insertBefore(dragged, row);
+          return;
+        }
+        if (i > position && y > middle) {
+          list.insertBefore(dragged, row.nextSibling);
+          return;
+        }
+      }
+    }
+
+    function finish(event) {
+      if (!dragged) return;
+      var row = dragged;
+      dragged = null;
+      row.classList.remove('dt-sorting');
+      list.classList.remove('dt-sorting-list');
+      list.removeEventListener('pointermove', onMove);
+      list.removeEventListener('pointerup', finish);
+      list.removeEventListener('pointercancel', finish);
+      if (
+        event &&
+        event.pointerId !== undefined &&
+        list.releasePointerCapture
+      ) {
+        try {
+          list.releasePointerCapture(event.pointerId);
+        } catch (e) {
+          // The capture was already released.
+        }
+      }
+      if (order() !== startOrder && options.update) options.update();
+    }
+
+    function onMove(event) {
+      if (dragged) moveTo(event.clientY);
+    }
+
+    list.addEventListener('pointerdown', function (event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      var handle = event.target.closest(options.handle);
+      if (!handle || !list.contains(handle)) return;
+      var row = handle.closest(options.items);
+      if (!row || row.parentNode !== list) return;
+      event.preventDefault();
+      dragged = row;
+      startOrder = order();
+      row.classList.add('dt-sorting');
+      list.classList.add('dt-sorting-list');
+      if (list.setPointerCapture) {
+        try {
+          list.setPointerCapture(event.pointerId);
+        } catch (e) {
+          // Without capture the drag still follows the pointer over the list.
+        }
+      }
+      list.addEventListener('pointermove', onMove);
+      list.addEventListener('pointerup', finish);
+      list.addEventListener('pointercancel', finish);
+    });
+  }
+
   // Drag the device rows into the order they are shown in. The list element
   // itself is kept when the rows are re-rendered, so this is wired once;
   // getList/setList give access to the (re-assignable) pending device array.
   function _wireClusterSort($list, getList, setList) {
-    if (!$.fn.sortable) return;
-    $list.sortable({
+    _makeSortable($list, {
       items: '.cl-pending-item',
       handle: '.cl-pending-handle',
-      axis: 'y',
-      tolerance: 'pointer',
-      containment: 'parent',
       update: function () {
         var current = getList();
         var sorted = [];
@@ -9748,12 +9839,9 @@ var DashticzDeviceEditor = (function () {
 
   // Drag the parts of the text into the order they are shown in.
   function _wireWeatherinfoFields($popup) {
-    if (!$.fn.sortable) return;
-    $popup.find('.de-parts-list').sortable({
+    _makeSortable($popup.find('.de-parts-list'), {
+      items: '.de-parts-item',
       handle: '.de-parts-handle',
-      axis: 'y',
-      tolerance: 'pointer',
-      containment: 'parent',
     });
   }
 

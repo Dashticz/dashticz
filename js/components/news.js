@@ -94,37 +94,40 @@ var DT_news = {
         var countItems = 0;
         var items = [];
 
-        $(data)
-          .find('item')
-          .sort(function (l, r) {
-            return (
-              moment($(r).find('pubDate').html()) -
-              moment($(l).find('pubDate').html())
-            );
-          })
-          .each(function () {
-            if (me.maxItems && countItems >= me.maxItems) {
+        // jQuery 4 removed $.fn.sort, so sort a plain array of the items
+        $(
+          $(data)
+            .find('item')
+            .toArray()
+            .sort(function (l, r) {
+              return (
+                moment($(r).find('pubDate').html()) -
+                moment($(l).find('pubDate').html())
+              );
+            })
+        ).each(function () {
+          if (me.maxItems && countItems >= me.maxItems) {
+            return;
+          }
+          if (me.startDate) {
+            var pubDate = $(this).find('pubDate').html();
+            if (moment(pubDate) < me.startDate) {
               return;
             }
-            if (me.startDate) {
-              var pubDate = $(this).find('pubDate').html();
-              if (moment(pubDate) < me.startDate) {
-                return;
-              }
-            }
-            var newsItem = {
-              show: me.showImage,
-              image: safeExternalUrl(
-                $(this).find('media\\:content, content, enclosure').attr('url')
-              ),
-              title: $(this).find('title').text(),
-              link: safeExternalUrl($(this).find('link').text()),
-              desc: plainText($(this).find('description').text()),
-              pubd: moment($(this).find('pubDate').text()).format('llll'),
-            };
-            items.push(newsItem);
-            countItems++;
-          });
+          }
+          var newsItem = {
+            show: me.showImage,
+            image: safeExternalUrl(
+              $(this).find('media\\:content, content, enclosure').attr('url')
+            ),
+            title: $(this).find('title').text(),
+            link: safeExternalUrl($(this).find('link').text()),
+            desc: plainText($(this).find('description').text()),
+            pubd: moment($(this).find('pubDate').text()).format('llll'),
+          };
+          items.push(newsItem);
+          countItems++;
+        });
 
         templateEngine.load('news_row').then(function (template) {
           $(me.mountPoint + ' .dt_state').html(template({ news: items }));

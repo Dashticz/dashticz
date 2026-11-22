@@ -9,7 +9,6 @@ var dashticz_branch;
 // eslint-disable-next-line no-unused-vars
 var newVersion = '';
 var moved = false;
-var loginCredentials = '';
 // eslint-disable-next-line no-unused-vars
 //var domoversion = '';
 // eslint-disable-next-line no-unused-vars

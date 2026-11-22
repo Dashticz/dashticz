@@ -170,9 +170,9 @@ function dashticz_lms_request($request)
     ));
 
     $response = dashticz_lms_curl($url, $request, array(
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $body,
-        CURLOPT_HTTPHEADER => array('Content-Type: application/json'),
+        'post' => true,
+        'body' => $body,
+        'headers' => array('Content-Type: application/json'),
     ));
 
     $decoded = json_decode((string) $response['body'], true);
@@ -222,7 +222,7 @@ function dashticz_lms_fetch_cover($request)
             true
         );
         try {
-            $current = dashticz_lms_curl($url, $request, array(CURLOPT_TIMEOUT => 20));
+            $current = dashticz_lms_curl($url, $request, array('timeout' => 20));
             $dataUri = dashticz_lms_cover_data_uri($current);
             if ($dataUri !== null) {
                 return $dataUri;
@@ -241,7 +241,7 @@ function dashticz_lms_fetch_cover($request)
                 'http://' . $request['server'] . ':' . $request['port'] . $lmsPath,
                 true
             );
-            $response = dashticz_lms_curl($url, $request, array(CURLOPT_TIMEOUT => 20));
+            $response = dashticz_lms_curl($url, $request, array('timeout' => 20));
         } else {
             $url = dashticz_validate_remote_url($artworkUrl, false);
             $response = dashticz_lms_curl($url, array('username' => '', 'password' => ''), array());
@@ -277,26 +277,20 @@ function dashticz_lms_curl($url, $request, $extraOptions)
         throw new RuntimeException('The PHP curl extension is required for the Lyrion Music Server block.');
     }
 
-    $ch = curl_init($url);
-    curl_setopt_array($ch, $extraOptions + array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 4,
-        CURLOPT_TIMEOUT => 8,
-    ));
+    $options = $extraOptions + array('connectTimeout' => 4, 'timeout' => 8);
     // Basic auth only when a username is actually configured - matches the
     // reference domoticz_lyrion plugin (auth = (user, pwd) if user else None):
     // LMS authentication is optional and off by default.
     if (!empty($request['username'])) {
-        curl_setopt($ch, CURLOPT_USERPWD, $request['username'] . ':' . $request['password']);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        $options['userpwd'] = $request['username'] . ':' . $request['password'];
     }
 
-    $body = curl_exec($ch);
-    $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-    $failed = ($body === false);
-    $errno = $failed ? curl_errno($ch) : 0;
-    curl_close($ch);
+    $result = dashticz_http_request($url, $options);
+    $body = $result['body'];
+    $httpCode = $result['status'];
+    $contentType = $result['contentType'];
+    $failed = $result['failed'];
+    $errno = $result['errno'];
 
     if ($failed || $httpCode === 0) {
         // A fixed, curl-errno-based reason - never curl's own free-text error

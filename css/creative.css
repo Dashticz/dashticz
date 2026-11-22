@@ -10278,7 +10278,7 @@ canvas {
   touch-action: none;
 }
 
-.cl-pending-item.ui-sortable-helper {
+.cl-pending-item.dt-sorting {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
@@ -10287,8 +10287,13 @@ canvas {
   margin-right: 0.5rem;
 }
 
-.de-parts-item.ui-sortable-helper {
+.de-parts-item.dt-sorting {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.dt-sorting-list {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Weather Info animated icons (js/components/weatherinfo.js, SVG_ICONS). */

@@ -1,6 +1,84 @@
 Release Notes
 =============
 
+v4.2057 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- External stylesheets, such as the Google Fonts Montserrat font of the Hayman clock, no longer get a ``?v=`` version parameter appended to their URL. That produced an invalid URL (``css2?family=Montserrat?v=211``) and Chrome reported 'Response was blocked by CORB'. Local stylesheets that already have a query string now get ``&v=`` instead.
+
+v4.2056 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- The news block works again. jQuery 4 no longer has the sort function on jQuery objects, which caused the error "$(...).find(...).sort is not a function" (upstream issue 1404).
+
+v4.2055 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Unused code is removed: a few unused PHP helper functions (legacy column chunking in the config writer and widget saver, and unused helpers in the garbage script) and one unused JavaScript variable. No change in behaviour.
+
+v4.2054 (22-11-2026)
+----------------------
+
+* **Code**
+
+- jQuery UI and jquery-ui-touch-punch are removed: the sliders and the sortable lists no longer use them. The bundle is about 255 KB smaller and the unused jQuery UI icons and styles are gone (the slider keeps the few styles it needs in src/slider.css).
+- If your own custom.js uses jQuery UI widgets (for example $.fn.slider or $.fn.sortable), it has to load its own copy of jQuery UI from now on.
+
+v4.2053 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The dimmer and blinds sliders are now built in Dashticz itself (pointer events and keyboard, with the same markup and styling as before) instead of with jQuery UI. They work with mouse and touch. jQuery UI is removed in a following version.
+
+v4.2052 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Device Editor: the lists you can reorder by dragging (the devices of a cluster and the parts of the Weather Info text) no longer use jQuery UI, but native pointer events. The behaviour is the same, for mouse and touch.
+
+v4.2051 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- Form controls without an ``id`` or ``name`` attribute are fixed. The Device Editor and the quick-add popups now give every field a name, and so do the Spotify device list, the Fully Kiosk brightness slider, the cluster switches, the selector switch dropdown and the graph definition. Chrome no longer reports "A form field element should have an id or name attribute". Behaviour is unchanged.
+
+v4.2050 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The garbage bridge now uses the shared curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) for its curl requests. Behaviour is unchanged.
+
+v4.2049 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The Lyrion Music Server and PostNL bridges now use the shared curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) instead of their own curl code. Behaviour is unchanged.
+
+v4.2048 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The Fully Kiosk, HP iLO, Toon and Husqvarna bridges now share one curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) instead of four copies of the curl code. Behaviour is unchanged.
+
+v4.2047 (22-11-2026)
+----------------------
+
+* **Settings**
+
+- The RGB colorpicker option no longer mentions an old and a new style: value 1 has shown the same picker as 2 for a long time. The option is now described as 0 off, 1 or 2 on. Other languages show the English text until translated.
+
 v4.2046 (22-11-2026)
 ----------------------
 

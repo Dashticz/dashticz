@@ -20,18 +20,10 @@ function dashticz_toon_scene($activeState)
 // One GET request of the Toon API; returns the decoded JSON.
 function dashticz_toon_get($toon, $path)
 {
-    $ch = curl_init($toon['base'] . $path);
-    curl_setopt_array($ch, array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT => 8,
-        CURLOPT_FOLLOWLOCATION => false,
-    ));
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $failed = ($body === false);
-    curl_close($ch);
-    if ($failed) {
+    $response = dashticz_http_request($toon['base'] . $path, array('connectTimeout' => 3, 'timeout' => 8));
+    $body = $response['body'];
+    $status = $response['status'];
+    if ($response['failed']) {
         throw new RuntimeException('Unable to reach the Toon.');
     }
     if ($status !== 200) {

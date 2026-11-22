@@ -71,7 +71,7 @@ var SpotifyModule = (function () {
         language.misc.spotify_select_playlist +
         ' &raquo;</a>';
       html +=
-        '<select class="devices" onchange="SpotifyModule.changeDevice(this.value);"></select>';
+        '<select class="devices" name="spotify-device" onchange="SpotifyModule.changeDevice(this.value);"></select>';
 
       html += '</div>';
       $(columndiv).append(html);

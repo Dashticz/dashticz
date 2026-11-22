@@ -54,10 +54,6 @@ function errorMsg($msg) {
 	report( $msg, 'error');
 }
 
-function warningMsg($msg) {
-	report( $msg, 'warning');
-}
-
 function debugMsg($msg) {
 	global $debug;
 	if ($debug==1) {
@@ -66,10 +62,6 @@ function debugMsg($msg) {
 	if ($debug==2) {
 		print('debug: '.json_encode($msg, JSON_PRETTY_PRINT)."\n");
 	}
-}
-
-function logMsg($msg) {
-	report( $msg, 'msg');
 }
 
 $cookies = Array();
@@ -110,37 +102,29 @@ function fileGetJson($url) {
 function curlWeb($url, $options=0) {
 	global $ignoressl;
 	global $cookies;
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HEADERFUNCTION, "curlResponseHeaderCallback");
 	$cookies = array();
+	$curlOptions = array();
 	if ($ignoressl) {
 		report('SSL check disabled', 'info');
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
 	}
 	if ($options) {
-		foreach($options as $key => $value) {
-			curl_setopt($ch, $key, $value);
-		}
+		$curlOptions = array_replace($curlOptions, $options);
 	}
-	$server_output = curl_exec ($ch);
-	curl_close ($ch);
-//	var_dump($server_output);
-	return $server_output;
-
+	// No time limits (as before): the providers are slow, and the options of
+	// the providers themselves are passed on as they are.
+	$response = dashticz_http_request($url, array(
+		'connectTimeout' => 0,
+		'timeout' => 0,
+		'headerCallback' => 'curlResponseHeaderCallback',
+		'curlOptions' => $curlOptions,
+	));
+	return $response['failed'] ? false : $response['body'];
 }
 
 function curlWebJson($url, $headers=array()) {
 	return json_decode(curlWeb($url, array( CURLOPT_HTTPHEADER=>$headers)));
 }
-
-//get match with regexp from webpage
-function curlWebMatch($url, $regexp) {
-	preg_match($regexp, curlWeb($url), $match);
-	return $match;
-}
-
 
 // A request parameter, encoded for use in a URL or form body of a provider,
 // so that a value cannot add or replace parameters of the provider request.
