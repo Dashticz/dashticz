@@ -9000,3 +9000,14 @@ test('Weather Info is a repeatable Widgets card with its own settings table', ()
     }
   }
 });
+
+test('Color picker preview of RGB lamps uses a valid CSS color', () => {
+  const source = fs.readFileSync(path.join(root, 'js/colorpicker.js'), 'utf8');
+  /* a quoted value ("'rgb(1,2,3)'") is invalid CSS: the preview then shows
+     the transparency checkerboard instead of the lamp color */
+  assert.doesNotMatch(source, /thergb = "'rgb/);
+  assert.match(
+    source,
+    /thergb = 'rgb\(' \+ color\.r \+ ',' \+ color\.g \+ ',' \+ color\.b \+ '\)';/
+  );
+});

@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2058": "Fix: the color picker button of RGB lamps shows the lamp color again instead of a checkerboard.",
     "4.2057": "Fixes: external stylesheets (the Google Fonts Montserrat font of the Hayman clock) no longer get '?v=' appended to their URL, which broke it and made Chrome report 'Response was blocked by CORB'. Local stylesheets that already have a query string now get '&v=' instead.",
     "4.2056": "Fix: the news block works again (jQuery 4 no longer has $.fn.sort, which broke the RSS feed handling).",
     "4.2055": "Cleanup: a few unused functions and variables are removed (no change in behaviour).",
