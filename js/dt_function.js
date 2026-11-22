@@ -240,6 +240,47 @@ var DT_function = (function () {
     return loadScript(filename + '?v=' + _DASHTICZ_VERSION);
   }
 
+  /* Form controls inside the editor popups are generated in many places and
+   * rows are added and removed dynamically. They are read through their CSS
+   * class, so they never needed an id or name, but browsers (Chrome's Issues
+   * panel, autofill) flag every control that has neither. This gives each
+   * unnamed control inside a Bootstrap modal a name derived from its own
+   * class, made unique with a counter. No code reads or relies on it. */
+  var fieldNameCounter = 0;
+  var GENERIC_CLASS =
+    /^(form-|mt-|mb-|ms-|me-|m-|p[xytbse]?-|w-|d-|dt-no-|flex|align|text-|btn|input-|col-|row|fa|is-|disabled|active)/;
+
+  function nameFormFields(root) {
+    var $controls = $(root)
+      .find('input,select,textarea')
+      .addBack('input,select,textarea');
+    $controls.each(function () {
+      if (this.id || this.name) return;
+      var base = this.type || this.tagName.toLowerCase();
+      var classes = (this.getAttribute('class') || '').split(/\s+/);
+      for (var i = 0; i < classes.length; i++) {
+        if (classes[i] && !GENERIC_CLASS.test(classes[i])) {
+          base = classes[i];
+          break;
+        }
+      }
+      fieldNameCounter++;
+      this.name = base + '-' + fieldNameCounter;
+    });
+  }
+
+  if (typeof MutationObserver !== 'undefined' && document.body) {
+    new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) {
+          if (node.nodeType !== 1) return;
+          if (!node.closest('.modal') && !node.querySelector('.modal')) return;
+          nameFormFields(node);
+        });
+      });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   // Published documentation version that in-app help links point to. Keep
   // every deep link to the docs on docsUrl() so a change of docs version is
   // a one-line edit here.
@@ -495,6 +536,7 @@ var DT_function = (function () {
     loadCSS: loadCSS,
     loadScript: loadScript,
     loadDTScript: loadDTScript,
+    nameFormFields: nameFormFields,
     docsUrl: docsUrl,
     blockLoadFrame: blockLoadFrame,
     checkForceRefresh: checkForceRefresh,

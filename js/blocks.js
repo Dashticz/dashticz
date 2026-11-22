@@ -1750,7 +1750,7 @@ function getSelectorSwitch(block) {
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
-      html += '<select>';
+      html += '<select name="selector-level">';
       // No placeholder "Select..." option here on purpose: a Selector
       // Switch's dropdown is meant to show only its own real levels (a
       // device's own hidden/off level already stays out via LevelOffHidden

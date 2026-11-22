@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2051 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- Form controls without an ``id`` or ``name`` attribute are fixed. The Device Editor and the quick-add popups now give every field a name, and so do the Spotify device list, the Fully Kiosk brightness slider, the cluster switches, the selector switch dropdown and the graph definition. Chrome no longer reports "A form field element should have an id or name attribute". Behaviour is unchanged.
+
 v4.2050 (22-11-2026)
 ----------------------
 
