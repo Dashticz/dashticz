@@ -11,7 +11,8 @@
  * same pattern configwriter_resolve_config_path() accepts for ?cfg=, so every
  * editor can write to the files created here. An existing file is never
  * overwritten and the default CONFIG.js can only be used as a copy source:
- * it is never deleted. A stylesheet that belongs to a deleted config is kept.
+ * it is never deleted. The stylesheet that belongs to a deleted config
+ * (CONFIG2.js -> custom2.css) is deleted with it; custom.css never is.
  */
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 
@@ -86,8 +87,16 @@ if (isset($data['action']) && $data['action'] === 'delete') {
     if (!@unlink($customDir . '/' . $file)) {
         dashticz_json_error(500, 'Unable to delete the configuration file.');
     }
+    // Only the stylesheet that belongs to exactly this config: CONFIG<name>.js
+    // -> custom<name>.css with a non-empty name, so custom.css is never hit.
+    $cssDeleted = false;
+    $cssName = dashticz_config_css_name($file);
+    $cssPath = $customDir . '/' . $cssName;
+    if (preg_match('/^custom[A-Za-z0-9_-]+\.css$/', $cssName) && is_file($cssPath) && !is_link($cssPath)) {
+        $cssDeleted = @unlink($cssPath);
+    }
     header('Content-Type: application/json');
-    echo json_encode(['success' => true, 'file' => $file]);
+    echo json_encode(['success' => true, 'file' => $file, 'css_deleted' => $cssDeleted]);
     exit;
 }
 

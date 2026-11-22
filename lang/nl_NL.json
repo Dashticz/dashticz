@@ -2033,7 +2033,7 @@
       "name_placeholder": "bijv. 2",
       "name_required": "Vul eerst een naam in.",
       "delete": "Verwijderen",
-      "delete_confirm": "Zeker?",
+      "delete_confirm": "Zeker? De bijbehorende custom stylesheet wordt ook verwijderd.",
       "deleted": "{file} verwijderd.",
       "delete_failed": "De configuratie kon niet worden verwijderd.",
       "source_base": "Basis van CONFIG.js (alleen instellingen en logins, geen tegels)"
