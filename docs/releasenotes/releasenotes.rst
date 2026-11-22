@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2052 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Device Editor: the lists you can reorder by dragging (the devices of a cluster and the parts of the Weather Info text) no longer use jQuery UI, but native pointer events. The behaviour is the same, for mouse and touch.
+
 v4.2051 (22-11-2026)
 ----------------------
 
