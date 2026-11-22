@@ -86,8 +86,8 @@
       strict: true,
       values: [
         ['0', 'Disabled'],
-        ['1', 'Old colorpicker'],
-        ['2', 'New colorpicker'],
+        ['1', 'Colorpicker (same as 2)'],
+        ['2', 'Colorpicker'],
       ],
     },
     switchmode: {

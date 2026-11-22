@@ -429,7 +429,7 @@
       defaultValue: '0',
       example: '2',
       description:
-        'RGB colorpicker mode: 0 disabled, 1 old style, 2 new style.',
+        'RGB colorpicker mode: 0 disabled, 1 or 2 enabled (1 is the same as 2).',
     },
     {
       field: 'colorpickerscale',

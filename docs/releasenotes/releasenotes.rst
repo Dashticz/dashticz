@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2047 (22-11-2026)
+----------------------
+
+* **Settings**
+
+- The RGB colorpicker option no longer mentions an old and a new style: value 1 has shown the same picker as 2 for a long time. The option is now described as 0 off, 1 or 2 on. Other languages show the English text until translated.
+
 v4.2046 (22-11-2026)
 ----------------------
 
