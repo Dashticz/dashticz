@@ -231,12 +231,22 @@ var DT_mower = (function () {
     return result;
   }
 
+  // Removes html tags, repeated until none are left, plus stray angle brackets.
+  function stripTags(text) {
+    var previous;
+    do {
+      previous = text;
+      text = text.replace(/<[^>]*>/g, '');
+    } while (text !== previous);
+    return text.replace(/[<>]/g, '');
+  }
+
   // The text of a device, without html tags: ['Tomorrow 11:00', 'Grass too short'].
   function cleanText(value) {
     return String(value === undefined ? '' : value)
       .split('\n')
       .map(function (line) {
-        return line.replace(/<[^>]*>/g, '').trim();
+        return stripTags(line).trim();
       })
       .filter(Boolean);
   }

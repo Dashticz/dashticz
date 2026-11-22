@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.2039 (22-11-2026)
+----------------------
+
+* **Bug fixes**
+
+- Security: the CodeQL code scanning alerts are fixed. Debug messages, the sortable widget title and the startup error message are escaped before they are shown, attribute selectors escape backslashes, and the HTML filters of the garbage and block templates are stricter.
+
+* **Code**
+
+- CI: the CodeQL scan no longer analyses the test files.
+
 v4.2038 (22-11-2026)
 ----------------------
 

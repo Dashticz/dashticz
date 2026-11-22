@@ -208,12 +208,20 @@ var Debug = (function () {
     div.html('<pre>' + JSON.stringify(blocks, null, 2) + '</pre>');
   }
 
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function renderDebugRow(msg) {
     return (
       '<div>' +
       msg.timestamp.toISOString().slice(11, 23) +
       ': ' +
-      msg.msg +
+      escapeHtml(msg.msg) +
       '</div>'
     );
   }
@@ -239,7 +247,7 @@ var Debug = (function () {
   }
 
   function updateStatus() {
-    $el.find('.debug-status').html(requestCount + ': ' + lastRequest.msg);
+    $el.find('.debug-status').text(requestCount + ': ' + lastRequest.msg);
   }
 
   function tst() {

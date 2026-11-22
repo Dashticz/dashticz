@@ -465,7 +465,7 @@ function formatTemplateString(block, device, valueParam, isTitle) {
   var unit = block.unit;
   var format = block.format;
   var decimals = block.decimals;
-  var tagRegEx = /<[\w\s="/.':;#-/?]+>/gi;
+  var tagRegEx = /<[\w\s="/.':;#?-]+>/gi;
   var valueStr = Dashticz.getProperty(valueParam, device);
   var matches = valueStr.match(tagRegEx);
   var elements = [];
