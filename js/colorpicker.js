@@ -61,7 +61,7 @@ function Colorpicker(options) {
         if (typeof color.t !== 'undefined') thergb = temp2rgb(color.t, true);
         break;
       default:
-        thergb = "'rgb(" + color.r + ',' + color.g + ',' + color.b + ")'";
+        thergb = 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
     }
     $(this.container + ' .sp-preview-inner').css('background-color', thergb);
   }
