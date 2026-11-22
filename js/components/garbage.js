@@ -466,10 +466,14 @@ SENSOR_LOCATIONS_TO_URL = {
         me.block.housenumberSuffix
     ).then(function (data) {
       var returnDates = [];
+      var previous;
+      do {
+        previous = data;
+        data = data.replace(/<script\b[\s\S]*?<\/script[^>]*>/gi, '');
+      } while (data !== previous);
       data = data
         .replace(/<img .*?>/g, '')
         .replace(/<head>(?:.|\n|\r)+?<\/head>/g, '')
-        .replace(/<script (?:.|\n|\r)+?<\/script>/g, '')
         .replace(/<table class="contentTable" (?:.|\n|\r)+?<\/table>/g, '')
         .replace(/<input (?:.|\n|\r)+?\/>/g, '')
         .replace(/<div id="Afvalkalender1_pnlSearch"(?:.|\n|\r)+?<\/div>/g, '')

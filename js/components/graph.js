@@ -810,7 +810,7 @@ function createGraph(graph) {
   createYAxes(graph, mergedBlock, graphProperties);
 
   if (isDefined(mergedBlock.legend)) {
-    if ($.isArray(mergedBlock.legend)) {
+    if (Array.isArray(mergedBlock.legend)) {
       mergedBlock.legend.forEach(function (element, idx) {
         graphProperties.data.datasets[idx].label = element;
       });

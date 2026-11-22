@@ -61,14 +61,14 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 
 ## Release bookkeeping — on every change
 
-Version numbers have the form `x.xx.y` (for example `4.20.3`): `x` and `xx` are only raised when the maintainer asks for it; `y` is a change counter (plain number, no leading zeros) that goes up by one with **every** change - each commit/branch that changes code, tests, docs or dependencies gets its own next `y` (`4.20.3`, `4.20.4`, ...), without waiting to be asked. Do not reuse or amend an earlier version for a new change, even on the same day. When `xx` (or `x`) is raised, `y` restarts at `0`.
+Version numbers have the form `4.xxxx` (for example `4.2038`), used from 4.2038 on (older versions were `4.20.x`): the number after the dot is a change counter that goes up by one with **every** change - each commit/branch that changes code, tests, docs or dependencies gets its own next number (`4.2038`, `4.2039`, ...), without waiting to be asked. Do not reuse or amend an earlier version for a new change, even on the same day. `package.json` and `package-lock.json` need semver, so there the same version has a trailing `.0` (`4.2038.0`); everywhere else it is `4.2038`.
 
 Before picking the next number, sync to the latest branch tip (see the start of this file) and read `version.txt`, so two changes never get the same number.
 
 Every bump must include:
 
 - Bump `version.txt`'s `version` field (and its `last_changes`) and add a matching entry at the top of `changelog.json`. The changelog lives in its own file so that the small `version.txt`, which every dashboard start fetches, stays small.
-- Mirror the same version in `package.json`'s `version` field and in
+- Mirror the same version in `package.json`'s `version` field (with the trailing `.0`) and in
   `index.html`'s `<meta name="description">` content and `.loaderVersion`
   placeholder (the loading screen's static text before
   `js/version.js`'s `initVersion()` overwrites it from `version.txt`) - a

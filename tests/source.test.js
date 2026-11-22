@@ -512,17 +512,18 @@ test('package and runtime versions remain synchronized', () => {
   const loaderVersion = index.match(
     /<div class="loaderVersion">Version ([^<]+)<\/div>/
   );
-  assert.equal(runtimeVersion, packageVersion);
-  // x.xx.y: y is the change counter, raised with every change (AGENTS.md).
-  assert.match(packageVersion, /^\d+\.\d{2}\.(0|[1-9]\d*)$/);
+  // 4.xxxx: the number after the dot is the change counter, raised with every
+  // change (AGENTS.md). package.json needs semver, so it has a trailing .0.
+  assert.match(runtimeVersion, /^4\.[1-9]\d{3,}$/);
+  assert.equal(packageVersion, runtimeVersion + '.0');
   const changelog = JSON.parse(
     fs.readFileSync(path.join(root, 'changelog.json'), 'utf8')
   ).changelog;
-  assert.equal(Object.keys(changelog)[0], packageVersion);
+  assert.equal(Object.keys(changelog)[0], runtimeVersion);
   assert.ok(descriptionVersion);
-  assert.equal(descriptionVersion[1], packageVersion);
+  assert.equal(descriptionVersion[1], runtimeVersion);
   assert.ok(loaderVersion);
-  assert.equal(loaderVersion[1], packageVersion);
+  assert.equal(loaderVersion[1], runtimeVersion);
 });
 
 test('JavaScript and stylesheet bundles use the same cache version', () => {
@@ -4838,7 +4839,7 @@ test("Device Config popup lets a Custom/Multi device's main idx be corrected aft
   );
   assert.match(
     deviceEditor,
-    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else if \(_isCustomSubdeviceIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = rawIdx;[\s\S]{0,40}?\} else if \(_isSceneIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = _normalizeSceneIdx\(rawIdx\);[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
+    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\.trim\(\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else if \(_isCustomSubdeviceIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = rawIdx;[\s\S]{0,40}?\} else if \(_isSceneIdx\(rawIdx\)\) \{[\s\S]{0,40}?pendingIdx = _normalizeSceneIdx\(rawIdx\);[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
   );
   assert.match(
     deviceEditor,
@@ -6577,10 +6578,7 @@ test('Slide button quick-add popup gets an Icon toggle and a Background icon but
     deviceEditor,
     /var iconChecked = \$\('#sb-opt-icon'\)\.hasClass\('active'\);/
   );
-  assert.match(
-    deviceEditor,
-    /var iconValue = iconChecked\s*\n\s*\? \$\.trim\(/
-  );
+  assert.match(deviceEditor, /var iconValue = iconChecked\s*\n\s*\? String\(/);
 
   // button.js: the old "No background" checkbox is gone from
   // actionFieldsHtml() - injectButtonBackgroundOption() appends a matching

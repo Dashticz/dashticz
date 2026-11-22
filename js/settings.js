@@ -249,7 +249,7 @@ settingList['localize']['language']['options']['ru_RU'] =
   language.settings.localize.ru;
 settingList['localize']['language']['options']['sk_SK'] =
   language.settings.localize.sk;
-settingList['localize']['language']['options']['sl_SL'] =
+settingList['localize']['language']['options']['sl_SI'] =
   language.settings.localize.sl;
 settingList['localize']['language']['options']['sr_RS'] =
   language.settings.localize.sr;
@@ -1290,9 +1290,10 @@ function loadSettings() {
         if (_PHP_INSTALLED)
           _CORS_PATH = settings['dashticz_php_path'] + 'cors.php?';
         else {
-          _CORS_PATH = 'https://cors-anywhere.herokuapp.com/';
-          console.warn('PHP not enabled and default_cors_url not set.');
-          console.log('CORS proxy: ' + _CORS_PATH);
+          _CORS_PATH = '';
+          console.error(
+            'PHP is not enabled and default_cors_url is not set: data from other domains (tvguide, news, ...) cannot be loaded. Enable PHP or set config["default_cors_url"].'
+          );
         }
         //    _CORS_PATH = 'http://192.168.178.18:8081/';
       } else _CORS_PATH = settings['default_cors_url'];
@@ -2562,12 +2563,12 @@ function bindConfigsPanel() {
   var active = getActiveConfigFile();
 
   // Two-step delete without a browser dialog: the first click turns the
-  // cross into a check mark to confirm, the second click (within 4 seconds)
+  // trash can into a check mark to confirm, the second click (within 4 seconds)
   // deletes the file.
   function buildConfigDeleteButton(file) {
     var label = configsLabel('delete', 'Delete');
     var timer = null;
-    var $icon = $('<i class="fas fa-xmark" aria-hidden="true"></i>');
+    var $icon = $('<i class="fas fa-trash" aria-hidden="true"></i>');
     var $btn = $(
       '<button type="button" class="settings-config-delete ms-2"></button>'
     )
@@ -2576,7 +2577,7 @@ function bindConfigsPanel() {
     function reset() {
       timer = null;
       $btn.removeClass('confirm').attr({ title: label, 'aria-label': label });
-      $icon.attr('class', 'fas fa-xmark');
+      $icon.attr('class', 'fas fa-trash');
     }
     return $btn.on('click', function () {
       if (!timer) {

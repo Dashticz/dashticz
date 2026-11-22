@@ -152,7 +152,7 @@
 
   function irailbeURL(block) {
     //search for station id via https://irail.be/stations/NMBS/
-    var date = new Date($.now());
+    var date = new Date(Date.now());
     var todayDate = moment(date).format('DDMMYY');
     var todayTime = moment(date).format('HHmm');
     return (

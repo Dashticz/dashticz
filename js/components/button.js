@@ -394,7 +394,7 @@ Dashticz.register(DT_button);
         var save = event.target.closest && event.target.closest('#sb-save-btn');
         if (!save) return;
         var action = String($('#dt-button-action').val() || 'slide');
-        var reference = $.trim(String($('#sb-button-name').val() || ''));
+        var reference = String($('#sb-button-name').val() || '').trim();
         var custom = {};
         var message = $popup
           .find('.cd-custom-message')
@@ -402,7 +402,7 @@ Dashticz.register(DT_button);
           .text('');
 
         if (action === 'url') {
-          var url = $.trim(String($('#dt-button-url').val() || ''));
+          var url = String($('#dt-button-url').val() || '').trim();
           if (!url) {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -413,14 +413,14 @@ Dashticz.register(DT_button);
           custom.url = url;
           custom.newwindow = parseInt($('#dt-button-window').val(), 10);
           if (custom.newwindow === 2) {
-            var fw = $.trim(String($('#dt-button-framewidth').val() || ''));
-            var fh = $.trim(String($('#dt-button-frameheight').val() || ''));
+            var fw = String($('#dt-button-framewidth').val() || '').trim();
+            var fh = String($('#dt-button-frameheight').val() || '').trim();
             if (fw) custom.framewidth = fw;
             if (fh) custom.frameheight = fh;
           }
           $('#sb-button-screen').val('1');
         } else if (action === 'popup') {
-          var popupKey = $.trim(String($('#dt-button-popup').val() || ''));
+          var popupKey = String($('#dt-button-popup').val() || '').trim();
           if (!popupKey) {
             event.preventDefault();
             event.stopImmediatePropagation();
