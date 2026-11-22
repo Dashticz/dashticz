@@ -756,6 +756,228 @@ function renderBlindsSliderBlock(
   });
 }
 
+/* A vertical or horizontal slider with one handle, for the dimmer and blinds
+ * sliders. It builds the same markup (and sets the same inline styles) as the
+ * jQuery UI slider had, so the CSS of Dashticz and of the themes keeps working:
+ *   .slider.ui-slider.ui-slider-vertical|horizontal
+ *     .ui-slider-range.ui-slider-range-max (only with options.range 'max')
+ *     .ui-slider-handle  (tabindex 0, left/bottom: value%)
+ * options: value, min, max, step, disabled, orientation ('vertical' or
+ * 'horizontal'), range ('max' or false) and the callbacks start, slide,
+ * change and stop, called as callback(event, {value: ...}).
+ * start/slide/stop follow the pointer or the keyboard, change is called after
+ * a drag or key press, and when value() is called. Returns {value: function
+ * (newValue)}, which sets the value and then calls change. Works with mouse,
+ * touch and pen (pointer events). */
+function createSlider($element, options) {
+  var element = $element[0];
+  var vertical = options.orientation === 'vertical';
+  var min = Number(options.min);
+  var step = Number(options.step) > 0 ? Number(options.step) : 1;
+  var disabled = !!options.disabled;
+  var pointerSliding = false;
+  var keySliding = false;
+  var clickOffset = 0;
+  var trackRect = null;
+
+  function precisionOf(number) {
+    var text = String(number);
+    var dot = text.indexOf('.');
+    return dot === -1 ? 0 : text.length - dot - 1;
+  }
+
+  // The highest value that is a whole number of steps above min.
+  var max = (function () {
+    var limit = Number(options.max);
+    var top = Math.round((limit - min) / step) * step + min;
+    if (top > limit) top -= step;
+    return parseFloat(
+      top.toFixed(Math.max(precisionOf(step), precisionOf(min)))
+    );
+  })();
+
+  function trim(newValue) {
+    if (newValue <= min) return min;
+    if (newValue >= max) return max;
+    var rest = (newValue - min) % step;
+    var aligned = newValue - rest;
+    if (Math.abs(rest) * 2 >= step) aligned += rest > 0 ? step : -step;
+    return parseFloat(aligned.toFixed(5));
+  }
+
+  var value = trim(Number(options.value));
+
+  $element.addClass(
+    'ui-slider ui-slider-' +
+      (vertical ? 'vertical' : 'horizontal') +
+      ' ui-widget ui-widget-content ui-corner-all'
+  );
+  if (disabled) $element.addClass('ui-state-disabled');
+  var $range = null;
+  if (options.range === 'max') {
+    $range = $(
+      '<div class="ui-slider-range ui-corner-all ui-widget-header ui-slider-range-max"></div>'
+    ).appendTo($element);
+  }
+  var $handle = $(
+    '<span tabindex="0" class="ui-slider-handle ui-state-default ui-corner-all"></span>'
+  ).appendTo($element);
+
+  function refresh() {
+    var percent = max !== min ? ((value - min) / (max - min)) * 100 : 0;
+    $handle.css(vertical ? 'bottom' : 'left', percent + '%');
+    if ($range) $range.css(vertical ? 'height' : 'width', 100 - percent + '%');
+  }
+
+  function trigger(name, event, newValue) {
+    if (typeof options[name] !== 'function') return undefined;
+    return options[name].call(element, event, {
+      handle: $handle[0],
+      handleIndex: 0,
+      value: newValue === undefined ? value : newValue,
+    });
+  }
+
+  function change(event) {
+    if (!keySliding && !pointerSliding) trigger('change', event);
+  }
+
+  function setValue(newValue) {
+    value = trim(newValue);
+    refresh();
+    change(null);
+  }
+
+  function slide(event, newValue) {
+    if (newValue === value) return;
+    if (trigger('slide', event, newValue) === false) return;
+    setValue(newValue);
+  }
+
+  function valueFromPointer(event) {
+    var total = vertical ? trackRect.height : trackRect.width;
+    var pixels = vertical
+      ? event.clientY - trackRect.top - clickOffset
+      : event.clientX - trackRect.left - clickOffset;
+    var fraction = Math.min(1, Math.max(0, pixels / total));
+    if (vertical) fraction = 1 - fraction;
+    return trim(min + fraction * (max - min));
+  }
+
+  function onPointerMove(event) {
+    if (pointerSliding) slide(event, valueFromPointer(event));
+  }
+
+  function onPointerEnd(event) {
+    if (!pointerSliding) return;
+    pointerSliding = false;
+    element.removeEventListener('pointermove', onPointerMove);
+    element.removeEventListener('pointerup', onPointerEnd);
+    element.removeEventListener('pointercancel', onPointerEnd);
+    if (element.releasePointerCapture && event.pointerId !== undefined) {
+      try {
+        element.releasePointerCapture(event.pointerId);
+      } catch (e) {
+        // The capture was already released.
+      }
+    }
+    $handle.removeClass('ui-state-active');
+    trigger('stop', event);
+    change(event);
+  }
+
+  element.addEventListener('pointerdown', function (event) {
+    if (disabled) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    trackRect = element.getBoundingClientRect();
+    var onHandle = !!event.target.closest('.ui-slider-handle');
+    clickOffset = 0;
+    if (trigger('start', event) === false) return;
+    pointerSliding = true;
+    $handle.addClass('ui-state-active');
+    $handle[0].focus({ preventScroll: true });
+    if (onHandle) {
+      // Keep the grip point: the value follows the movement, it does not jump.
+      var box = $handle[0].getBoundingClientRect();
+      clickOffset = vertical
+        ? event.clientY - (box.top + box.height / 2)
+        : event.clientX - (box.left + box.width / 2);
+    } else {
+      slide(event, valueFromPointer(event));
+    }
+    if (element.setPointerCapture) {
+      try {
+        element.setPointerCapture(event.pointerId);
+      } catch (e) {
+        // Without capture the drag still follows the pointer over the slider.
+      }
+    }
+    element.addEventListener('pointermove', onPointerMove);
+    element.addEventListener('pointerup', onPointerEnd);
+    element.addEventListener('pointercancel', onPointerEnd);
+  });
+
+  var handleElement = $handle[0];
+  handleElement.addEventListener('keydown', function (event) {
+    if (disabled) return;
+    var keys = [33, 34, 35, 36, 37, 38, 39, 40];
+    if (keys.indexOf(event.keyCode) === -1) return;
+    event.preventDefault();
+    if (!keySliding) {
+      keySliding = true;
+      $handle.addClass('ui-state-active');
+      if (trigger('start', event) === false) return;
+    }
+    var newValue;
+    switch (event.keyCode) {
+      case 36: // Home
+        newValue = min;
+        break;
+      case 35: // End
+        newValue = max;
+        break;
+      case 33: // Page up
+        newValue = trim(value + (max - min) / 5);
+        break;
+      case 34: // Page down
+        newValue = trim(value - (max - min) / 5);
+        break;
+      case 38: // Up
+      case 39: // Right
+        if (value === max) return;
+        newValue = trim(value + step);
+        break;
+      default: // Down, Left
+        if (value === min) return;
+        newValue = trim(value - step);
+    }
+    slide(event, newValue);
+  });
+  handleElement.addEventListener('keyup', function (event) {
+    if (!keySliding) return;
+    keySliding = false;
+    $handle.removeClass('ui-state-active');
+    trigger('stop', event);
+    change(event);
+  });
+  $handle.on('focus', function () {
+    if (!disabled) $handle.addClass('ui-state-focus');
+  });
+  $handle.on('blur', function () {
+    $handle.removeClass('ui-state-focus');
+  });
+  $handle.on('mouseenter', function () {
+    if (!disabled) $handle.addClass('ui-state-hover');
+  });
+  $handle.on('mouseleave', function () {
+    $handle.removeClass('ui-state-hover');
+  });
+
+  refresh();
+  return { value: setValue };
+}
+
 function addSlider(block, sliderValues) {
   var idx = block.idx;
   var $divslider = block.$mountPoint.find('.slider');
@@ -763,6 +985,7 @@ function addSlider(block, sliderValues) {
   // Set by renderBlindsSliderBlock() only for Dimmers - see the flip
   // comment on mirror()/percentFromBottom() below.
   var isDimmerSlider = $wrap.hasClass('dimmer-slider');
+  var slider; // set by createSlider() below, once the scale and the ticks exist
   var min = Number(sliderValues.min);
   var max = Number(sliderValues.max);
 
@@ -771,11 +994,11 @@ function addSlider(block, sliderValues) {
   // but the same fixed layout the Bar dial subtype always uses
   // (js/components/dial.js's dialbar.tpl lists its 0%, then increasing,
   // segments top-to-bottom in plain DOM/flex order), regardless of an
-  // inverted SwitchType. jQuery UI itself has no such "flip" option, so
-  // every value handed to or read from the widget is mirrored around the
+  // inverted SwitchType. The slider itself has no such "flip" option, so
+  // every value handed to or read from the slider is mirrored around the
   // midpoint of [min, max] instead - that's self-inverse, so the same
   // function converts both directions. A Dimmer's Needle slider keeps
-  // jQuery UI's own normal min-at-bottom/max-at-top layout instead (0% Off
+  // the slider's own normal min-at-bottom/max-at-top layout instead (0% Off
   // at the bottom, 100% On at the top, matching a physical dimmer/volume
   // slider and the up/down button labels below) - a no-op (identity) here,
   // same as the plain (non-Needle) dimmer slider elsewhere in this file.
@@ -805,14 +1028,14 @@ function addSlider(block, sliderValues) {
   // .ui-slider-range (the gradient fill) is anchored 8px above the track's
   // own top by the CSS above (matching .slider::before's own extended top,
   // so the fill can reach into the zone reserved for the handle's overhang
-  // at the 0% extreme - see that CSS for the full picture) - jQuery UI
+  // at the 0% extreme - see that CSS for the full picture) - the slider
   // itself only ever sets this element's height (inline, as a % of the
   // *unextended* track), so without this the fill's top would stay pinned
   // 8px below where it now visually starts, leaving a gap there at every
   // value. +16 (not +8) here: +8 keeps the fill's bottom edge where it
   // would otherwise land relative to the shifted top, and a further +8
   // grows it past that point down to the handle's own *bottom* edge (the
-  // handle's center - which is what jQuery UI's own math tracks - sits 8px
+  // handle's center - which is what the slider math tracks - sits 8px
   // above its bottom edge, see the handle's own margin-bottom: -8px
   // above), so the fill always reaches all the way to the visible edge of
   // the handle instead of stopping at its middle - including the 100%
@@ -831,14 +1054,14 @@ function addSlider(block, sliderValues) {
   // exposes (js/components/dial.js), so both share one config-menu setting.
   // Independent of the slider's own command step - each tick jumps straight
   // to its real underlying value. The slider itself remains draggable
-  // everywhere; jQuery UI performs the snapping to sliderValues.step.
+  // everywhere; the slider performs the snapping to sliderValues.step.
   if ($wrap.length) {
     var $scale = $wrap.find('.slider-scale').empty();
     var barSteps = Math.max(1, parseInt(choose(block.barsteps, 10), 10) || 10);
 
     function addTick(value, label) {
       var target = Math.round(value);
-      // .slider-scale (below) is aria-hidden - the jQuery UI slider handle
+      // .slider-scale (below) is aria-hidden - the slider handle
       // is the real accessible control (native keyboard/arrow-key support),
       // these ticks are a click/touch-only shortcut. tabindex="-1" keeps
       // them out of the tab order so a focused tick is never left stranded
@@ -850,14 +1073,14 @@ function addSlider(block, sliderValues) {
         .attr('aria-label', label + '%')
         .attr('tabindex', '-1');
       if (!sliderValues.disabled) {
-        // Setting the jQuery UI value option itself triggers the slider's
+        // Calling slider.value() itself triggers the slider's
         // own "change" callback below (with a null event) - that already
         // re-highlights the active tick and calls slideDevice(), so don't
         // repeat that here or the command would be sent twice.
         $tick.on('click', function (event) {
           event.preventDefault();
           event.stopPropagation();
-          $divslider.slider('value', mirror(target));
+          slider.value(mirror(target));
         });
       }
       $tick.appendTo($scale);
@@ -873,28 +1096,26 @@ function addSlider(block, sliderValues) {
     }
   }
 
-  $divslider.slider({
+  slider = createSlider($divslider, {
     value: mirror(sliderValues.value),
     step: sliderValues.step,
     min: sliderValues.min,
     max: sliderValues.max,
     disabled: sliderValues.disabled,
-    // jQuery UI defaults to a horizontal slider (handle position and drag
-    // math both driven by the mouse's X-axis) - without this, the blinds
-    // slider only *looks* vertical via CSS while the handle stays visually
-    // static and dragging maps Y-axis movement almost randomly to a value.
+    // The blinds and dimmer sliders are vertical: the handle position and
+    // the drag math are driven by the Y-axis of the pointer.
     orientation: $wrap.length ? 'vertical' : 'horizontal',
-    // jQuery UI only creates the .ui-slider-range element (the gradient
-    // fill below the handle, styled in css/creative.css) when this is set.
+    // The .ui-slider-range element (the gradient fill below the handle,
+    // styled in css/creative.css) is only created when this is set.
     // Combined with the mirrored value above, 'max' (fill from the handle up
-    // to jQuery UI's own internal maximum) is what ends up transparent at
+    // to the slider's own maximum) is what ends up transparent at
     // 0% and completely filled at 100% here - matching the number shown in
     // the ticks, which is always the device's raw Level, 0-100 (the Bar
     // dial subtype, js/components/dial.js, shows that same raw, unconverted
     // value regardless of an inverted SwitchType - "inverted" only changes
     // which direction OPEN/DICHT move the blind, see asOn above). Left off
     // for the dimmer slider, which never had a range fill before and keeps
-    // jQuery UI's own unmirrored min-at-bottom layout.
+    // the slider's own unmirrored min-at-bottom layout.
     range: $wrap.length ? 'max' : false,
     start: function () {
       Domoticz.hold(idx); //hold message queue

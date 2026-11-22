@@ -1,4 +1,4 @@
 {
-    "version": "4.2052",
-    "last_changes": "Device Editor: the lists that can be reordered by dragging (devices of a cluster, parts of the Weather Info text) use native pointer events instead of jQuery UI, with the same behaviour, for mouse and touch."
+    "version": "4.2053",
+    "last_changes": "Dimmer and blinds sliders: the slider is now built in Dashticz itself (pointer events and keyboard, same markup and styling as before) instead of jQuery UI, for mouse and touch."
 }
