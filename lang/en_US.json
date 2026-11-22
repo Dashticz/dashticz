@@ -2018,7 +2018,7 @@
       "name_placeholder": "e.g. 2",
       "name_required": "Enter a name first.",
       "delete": "Delete",
-      "delete_confirm": "Sure?",
+      "delete_confirm": "Sure? The matching custom stylesheet is deleted too.",
       "deleted": "Deleted {file}.",
       "delete_failed": "Could not delete the configuration.",
       "source_base": "Base of CONFIG.js (settings and logins only, no tiles)"
