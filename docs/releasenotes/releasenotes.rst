@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2050 (22-11-2026)
+----------------------
+
+* **Code**
+
+- The garbage bridge now uses the shared curl helper (``dashticz_http_request()`` in ``vendor/dashticz/security.php``) for its curl requests. Behaviour is unchanged.
+
 v4.2049 (22-11-2026)
 ----------------------
 
