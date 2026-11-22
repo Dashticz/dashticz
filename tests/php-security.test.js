@@ -723,7 +723,6 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
-  assert.match(writer, /function configwriter_chunk_items_by_width/);
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);

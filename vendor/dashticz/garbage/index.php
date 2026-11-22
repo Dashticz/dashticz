@@ -54,10 +54,6 @@ function errorMsg($msg) {
 	report( $msg, 'error');
 }
 
-function warningMsg($msg) {
-	report( $msg, 'warning');
-}
-
 function debugMsg($msg) {
 	global $debug;
 	if ($debug==1) {
@@ -66,10 +62,6 @@ function debugMsg($msg) {
 	if ($debug==2) {
 		print('debug: '.json_encode($msg, JSON_PRETTY_PRINT)."\n");
 	}
-}
-
-function logMsg($msg) {
-	report( $msg, 'msg');
 }
 
 $cookies = Array();
@@ -133,13 +125,6 @@ function curlWeb($url, $options=0) {
 function curlWebJson($url, $headers=array()) {
 	return json_decode(curlWeb($url, array( CURLOPT_HTTPHEADER=>$headers)));
 }
-
-//get match with regexp from webpage
-function curlWebMatch($url, $regexp) {
-	preg_match($regexp, curlWeb($url), $match);
-	return $match;
-}
-
 
 // A request parameter, encoded for use in a URL or form body of a provider,
 // so that a value cannot add or replace parameters of the provider request.
