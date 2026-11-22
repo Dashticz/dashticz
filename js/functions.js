@@ -52,34 +52,6 @@ function setSrc(cur) {
   }
 }
 
-function hexToRgb(hex) {
-  hex = parseInt(hex.indexOf('#') > -1 ? hex.substring(1) : hex, 16);
-  return { r: hex >> 16, g: (hex & 0x00ff00) >> 8, b: hex & 0x0000ff };
-}
-
-function hexToHsb(hex) {
-  return rgbToHsb(hexToRgb(hex));
-}
-
-function rgbToHsb(rgb) {
-  var hsb = { h: 0, s: 0, b: 0 };
-  var min = Math.min(rgb.r, rgb.g, rgb.b);
-  var max = Math.max(rgb.r, rgb.g, rgb.b);
-  var delta = max - min;
-  hsb.b = max;
-  hsb.s = max != 0 ? (255 * delta) / max : 0;
-  if (hsb.s != 0) {
-    if (rgb.r == max) hsb.h = (rgb.g - rgb.b) / delta;
-    else if (rgb.g == max) hsb.h = 2 + (rgb.b - rgb.r) / delta;
-    else hsb.h = 4 + (rgb.r - rgb.g) / delta;
-  } else hsb.h = -1;
-  hsb.h *= 60;
-  if (hsb.h < 0) hsb.h += 360;
-  hsb.s *= 100 / 255;
-  hsb.b *= 100 / 255;
-  return hsb;
-}
-
 function ksort(inputArr, sort_flags) {
   // http://jsphp.co/jsphp/fn/view/ksort
   // +   original by: GeekFG (http://geekfg.blogspot.com)
@@ -651,20 +623,6 @@ function setHeight(obj) {
         Math.round((width / window.innerWidth) * window.innerHeight - 25),
         window.innerHeight - 50
       );
-}
-
-/**
- * Returns number formatted with thousand seperator with specified decimals.
- * @param {object} val      The input number to format.
- * @param {string} decimal  The number of decimal places.
- */
-function formatThousand(val, decimal) {
-  var nf = Intl.NumberFormat();
-  var config = {
-    minimumFractionDigits: decimal,
-    maximumFractionDigits: decimal,
-  };
-  return nf.format(val, config);
 }
 
 function getLocationParameters() {

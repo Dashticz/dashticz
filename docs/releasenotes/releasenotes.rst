@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2042 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Cleanup: removed the unused ``js/sortable.js``, the unused functions ``resumepauseNZBget``, ``hexToHsb``, ``hexToRgb``, ``rgbToHsb`` and ``formatThousand``, the unused ``tpl/debugstatus.tpl`` and the leftover Weather Underground texts from the language files.
+
 v4.2041 (22-11-2026)
 ----------------------
 
