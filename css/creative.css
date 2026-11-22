@@ -2284,6 +2284,35 @@ h6.de-section-title .fas {
   padding-right: 4px;
 }
 
+.de-device-list {
+  scrollbar-gutter: stable;
+}
+
+/* Column headings for the Width and Title fields of the rows below. */
+.de-device-head {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 13px 2px;
+  overflow-y: scroll;
+  scrollbar-color: transparent transparent;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.de-head-width {
+  flex: 0 0 48px;
+}
+
+.de-head-title {
+  flex: 0 0 180px;
+}
+
+.de-head-remove {
+  flex: 0 0 22px;
+}
+
 .de-device-item {
   display: flex;
   align-items: center;
@@ -2422,13 +2451,6 @@ h6.de-section-title .fas {
 
 .de-width-wrap {
   width: 48px;
-}
-
-.de-device-field label {
-  margin: 0;
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: center;
 }
 
 .de-device-width {
@@ -2897,6 +2919,10 @@ h6.de-section-title .fas {
 }
 
 @media (max-width: 1100px) {
+  .de-device-head {
+    display: none;
+  }
+
   .de-device-item {
     flex-wrap: wrap;
   }
@@ -10800,21 +10826,22 @@ input[id$='-carstatus-fontsize'] {
   margin-right: 0.2em;
 }
 
-/* Delete button of an extra configuration: a cross in a circle. The first
-   click turns the cross into a check mark that has to be clicked to confirm. */
+/* Delete button of an extra configuration: a white trash can in a red circle.
+   The first click turns the trash can into a check mark that has to be
+   clicked to confirm. */
 .settings-config-delete {
   box-sizing: border-box;
   display: inline-flex;
-  flex: 0 0 26px;
+  flex: 0 0 28px;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1px solid var(--bs-danger, #dc3545);
+  border: 0;
   border-radius: 50%;
-  background: transparent;
-  color: var(--bs-danger, #dc3545);
+  background: #f44336;
+  color: #fff;
   font-size: 13px;
   line-height: 1;
 }
@@ -10822,7 +10849,7 @@ input[id$='-carstatus-fontsize'] {
 .settings-config-delete:hover,
 .settings-config-delete:focus-visible,
 .settings-config-delete.confirm {
-  background: var(--bs-danger, #dc3545);
+  background: #c62828;
   color: #fff;
 }
 

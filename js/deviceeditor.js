@@ -2810,6 +2810,12 @@ var DashticzDeviceEditor = (function () {
     /* section 1 – current devices */
     html +=
       '<h6 class="de-section-title">' + _esc(t.configured_items) + '</h6>';
+    html +=
+      '<div class="de-device-head" aria-hidden="true"><span class="de-head-width">' +
+      _esc(t.width) +
+      '</span><span class="de-head-title">' +
+      _esc(t.title) +
+      '</span><span class="de-head-remove"></span></div>';
     html += '<div id="de-device-list" class="de-device-list">';
     if (managedOrder.length === 0) {
       html += '<div class="de-empty">' + _esc(t.empty_items) + '</div>';
@@ -13269,7 +13275,9 @@ var DashticzDeviceEditor = (function () {
     html +=
       '<input type="number" id="de-width-' +
       _esc(ck) +
-      '" class="form-control form-control-sm de-device-width" ';
+      '" class="form-control form-control-sm de-device-width" aria-label="' +
+      _esc(t.width) +
+      '" ';
     html +=
       'data-ck="' +
       _esc(ck) +
@@ -13278,22 +13286,20 @@ var DashticzDeviceEditor = (function () {
       '" min="1" max="12" size="2" value="' +
       _parseWidth(deviceWidths[ck]) +
       '">';
-    html +=
-      '<label for="de-width-' + _esc(ck) + '">' + _esc(t.width) + '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
     html +=
       '<input type="text" id="de-title-' +
       _esc(ck) +
-      '" class="form-control form-control-sm de-device-title" ';
+      '" class="form-control form-control-sm de-device-title" aria-label="' +
+      _esc(t.title) +
+      '" ';
     html +=
       'data-ck="' +
       _esc(ck) +
       '" value="' +
       _esc(deviceTitles[ck] || '') +
       '">';
-    html +=
-      '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
     html += '</span>';
     html +=
       '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' +
@@ -13339,33 +13345,25 @@ var DashticzDeviceEditor = (function () {
     html +=
       '<input type="number" id="de-width-' +
       _esc(widget.id) +
-      '" class="form-control form-control-sm de-device-width" data-order-key="' +
+      '" class="form-control form-control-sm de-device-width" aria-label="' +
+      _esc(t.width) +
+      '" data-order-key="' +
       _esc(orderKey) +
       '" min="1" max="12" size="2" value="' +
       _parseWidth(widgetWidths[orderKey]) +
       '">';
-    html +=
-      '<label for="de-width-' +
-      _esc(widget.id) +
-      '">' +
-      _esc(t.width) +
-      '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
     html +=
       '<input type="text" id="de-title-' +
       _esc(widget.id) +
-      '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
+      '" class="form-control form-control-sm de-device-title" aria-label="' +
+      _esc(t.title) +
+      '" maxlength="100" data-order-key="' +
       _esc(orderKey) +
       '" value="' +
       _esc(widgetTitles[orderKey] || '') +
       '">';
-    html +=
-      '<label for="de-title-' +
-      _esc(widget.id) +
-      '">' +
-      _esc(t.title) +
-      '</label>';
     html += '</span>';
     html +=
       '<span class="de-widget-managed" title="' +
@@ -13551,33 +13549,25 @@ var DashticzDeviceEditor = (function () {
     html +=
       '<input type="number" id="de-width-' +
       _esc(special.reference) +
-      '" class="form-control form-control-sm de-device-width" data-order-key="' +
+      '" class="form-control form-control-sm de-device-width" aria-label="' +
+      _esc(t.width) +
+      '" data-order-key="' +
       _esc(orderKey) +
       '" min="1" max="12" size="2" value="' +
       special.width +
       '">';
-    html +=
-      '<label class="de-device-width-label" for="de-width-' +
-      _esc(special.reference) +
-      '">' +
-      _esc(t.width) +
-      '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
     html +=
       '<input type="text" id="de-title-' +
       _esc(special.reference) +
-      '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
+      '" class="form-control form-control-sm de-device-title" aria-label="' +
+      _esc(t.title) +
+      '" maxlength="100" data-order-key="' +
       _esc(orderKey) +
       '" value="' +
       _esc(special.title || '') +
       '">';
-    html +=
-      '<label for="de-title-' +
-      _esc(special.reference) +
-      '">' +
-      _esc(t.title) +
-      '</label>';
     html += '</span>';
     html +=
       '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +

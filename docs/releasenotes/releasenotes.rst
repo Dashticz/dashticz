@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v4.2040 (22-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Device Editor: the Width and Title labels are shown once in a heading above the list, not under every row.
+- Configurations: the delete button is a white trash can in a red circle.
+
 v4.2039 (22-11-2026)
 ----------------------
 
