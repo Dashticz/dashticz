@@ -13594,11 +13594,11 @@ var DashticzDeviceEditor = (function () {
         '<option value="' +
         _esc(d.key) +
         '" data-type-order="' +
-        _typeOrder(d.type) +
+        _esc(_typeOrder(d.type)) +
         '">' +
         _esc(d.name) +
         ' (IDX\u00a0' +
-        dispIdx +
+        _esc(dispIdx) +
         ')</option>';
     });
     html += '</select>';

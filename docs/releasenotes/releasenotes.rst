@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2043 (22-11-2026)
+----------------------
+
+* **Bug fixes**
+
+- Security: the remaining CodeQL alerts are fixed. The description of a news item is converted to plain text without parsing it as HTML, and the values in the Device Editor add row and in the colour field of the Widget Config are escaped.
+
 v4.2042 (22-11-2026)
 ----------------------
 
