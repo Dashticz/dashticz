@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2056 (22-11-2026)
+----------------------
+
+* **Fixes**
+
+- The news block works again. jQuery 4 no longer has the sort function on jQuery objects, which caused the error "$(...).find(...).sort is not a function" (upstream issue 1404).
+
 v4.2055 (22-11-2026)
 ----------------------
 
