@@ -220,6 +220,8 @@ function loadLanguage() {
   } else if (typeof localStorage.dashticz_language !== 'undefined') {
     setLang = localStorage.dashticz_language;
   }
+  // Slovenian was previously registered as sl_SL; the correct code is sl_SI.
+  if (setLang === 'sl_SL') setLang = 'sl_SI';
   return $.ajax({
     url: 'lang/en_US.json?v=' + _DASHTICZ_VERSION,
     dataType: 'json',
