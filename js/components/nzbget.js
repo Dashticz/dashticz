@@ -61,19 +61,6 @@ function returnNZBGET(data) {
   }
 }
 
-function resumepauseNZBget(id, func) {
-  var _data = {
-    method: 'editqueue',
-    nocache: new Date().getTime(),
-    params: [func, 0, '', [id]],
-  };
-  NZBGET.rpcUrl = _CORS_PATH + settings['host_nzbget'] + '/jsonrpc';
-  NZBGET.call(_data, '');
-  $(
-    '#nzbget-' + id + ' .details.pause,#nzbget-' + id + ' .details.play'
-  ).toggle();
-}
-
 var NZBGET = new (function ($) {
   'use strict';
 

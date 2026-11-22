@@ -2849,7 +2849,9 @@
       cache: false,
     }).done(function (data) {
       var selector =
-        'style[data-dashticz-custom-css="' + path.replace(/"/g, '\\"') + '"]';
+        'style[data-dashticz-custom-css="' +
+        path.replace(/\\/g, '\\\\').replace(/"/g, '\\"') +
+        '"]';
       var $style = $(selector);
       if (!$style.length) {
         $style = $('<style></style>')

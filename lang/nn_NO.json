@@ -216,10 +216,6 @@
       "translate_windspeed_help": "'Nord-nordvest' i stedet for 'NNW'",
       "use_beaufort": "Bruk Bft i stedet for m/s",
       "use_fahrenheit": "Bruk Fahrenheit istedenfor Celcius",
-      "wu_api": "Wunderground API-Nøkkel",
-      "wu_city": "Wunderground Station (Byen eller Kode)",
-      "wu_country": "Wunderground Land",
-      "wu_name": "Visningsnavn",
       "owm_api": "Open Weather Map API-Nøkkel",
       "owm_city": "Open Weather Map Station (Byen eller Kode)",
       "owm_cnt": "Open Weather Map Station prognose telle (4 - 40)",
@@ -231,9 +227,7 @@
       "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
       "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map Land",
-      "owm_name": "Visningsnavn Open Weather Map",
-      "longfonds_zipcode": "Longfonds zipcode",
-      "longfonds_housenumber": "Longfonds housenumber"
+      "owm_name": "Visningsnavn Open Weather Map"
     },
     "other": {
       "title": "Annen",

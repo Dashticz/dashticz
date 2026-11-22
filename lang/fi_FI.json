@@ -216,10 +216,6 @@
       "translate_windspeed_help": "'Pohjois-luoteeseen \"eikä \" PLU'",
       "use_beaufort": "Käytä Bft m/s sijasta",
       "use_fahrenheit": "Käytä fahrenheitia celsiuksen sijasta",
-      "wu_api": "Wunderground API-Avain",
-      "wu_city": "Wunderground asema (kaupunki tai koodi)",
-      "wu_country": "Wunderground Maa",
-      "wu_name": "Näyttönimi",
       "owm_api": "Open Weather Map API-Avain",
       "owm_city": "Open Weather Map asema (kaupunki tai koodi)",
       "owm_cnt": "Open Weather Map ennuste lasketaan (4 - 40)",
@@ -231,9 +227,7 @@
       "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
       "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map Maa",
-      "owm_name": "Näyttönimi Open Weather Map",
-      "longfonds_zipcode": "Longfonds zipcode",
-      "longfonds_housenumber": "Longfonds housenumber"
+      "owm_name": "Näyttönimi Open Weather Map"
     },
     "other": {
       "title": "muut",

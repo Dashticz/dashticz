@@ -216,10 +216,6 @@
       "translate_windspeed_help": "'North northwest' instead of 'NNW'",
       "use_beaufort": "Use Bft instead of m/s",
       "use_fahrenheit": "Use Fahrenheit instead of Celcius",
-      "wu_api": "Wunderground API Key",
-      "wu_city": "Wunderground Station (City or Code)",
-      "wu_country": "Wunderground Country",
-      "wu_name": "Display Name",
       "owm_api": "Open Weather Map API Key",
       "owm_city": "Open Weather Map Station (City or Code)",
       "owm_cnt": "Open Weather Map forecast count (4 - 40)",
@@ -231,9 +227,7 @@
       "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
       "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
       "owm_country": "Open Weather Map Country",
-      "owm_name": "Display Name Open Weather Map",
-      "longfonds_zipcode": "Longfonds zipcode",
-      "longfonds_housenumber": "Longfonds housenumber"
+      "owm_name": "Display Name Open Weather Map"
     },
     "other": {
       "title": "Un altre",

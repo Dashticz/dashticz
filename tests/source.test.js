@@ -512,17 +512,18 @@ test('package and runtime versions remain synchronized', () => {
   const loaderVersion = index.match(
     /<div class="loaderVersion">Version ([^<]+)<\/div>/
   );
-  assert.equal(runtimeVersion, packageVersion);
-  // x.xx.y: y is the change counter, raised with every change (AGENTS.md).
-  assert.match(packageVersion, /^\d+\.\d{2}\.(0|[1-9]\d*)$/);
+  // 4.xxxx: the number after the dot is the change counter, raised with every
+  // change (AGENTS.md). package.json needs semver, so it has a trailing .0.
+  assert.match(runtimeVersion, /^4\.[1-9]\d{3,}$/);
+  assert.equal(packageVersion, runtimeVersion + '.0');
   const changelog = JSON.parse(
     fs.readFileSync(path.join(root, 'changelog.json'), 'utf8')
   ).changelog;
-  assert.equal(Object.keys(changelog)[0], packageVersion);
+  assert.equal(Object.keys(changelog)[0], runtimeVersion);
   assert.ok(descriptionVersion);
-  assert.equal(descriptionVersion[1], packageVersion);
+  assert.equal(descriptionVersion[1], runtimeVersion);
   assert.ok(loaderVersion);
-  assert.equal(loaderVersion[1], packageVersion);
+  assert.equal(loaderVersion[1], runtimeVersion);
 });
 
 test('JavaScript and stylesheet bundles use the same cache version', () => {

@@ -1,6 +1,58 @@
 Release Notes
 =============
 
+v4.2043 (22-11-2026)
+----------------------
+
+* **Bug fixes**
+
+- Security: the remaining CodeQL alerts are fixed. The description of a news item is converted to plain text without parsing it as HTML, and the values in the Device Editor add row and in the colour field of the Widget Config are escaped.
+
+v4.2042 (22-11-2026)
+----------------------
+
+* **Code**
+
+- Cleanup: removed the unused ``js/sortable.js``, the unused functions ``resumepauseNZBget``, ``hexToHsb``, ``hexToRgb``, ``rgbToHsb`` and ``formatThousand``, the unused ``tpl/debugstatus.tpl`` and the leftover Weather Underground texts from the language files.
+
+v4.2041 (22-11-2026)
+----------------------
+
+* **Bug fixes**
+
+- Configurations: the trash can icon of the delete button is shown at the right size, and the texts of the buttons in the list are centred vertically.
+
+v4.2040 (22-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Device Editor: the Width and Title labels are shown once in a heading above the list, not under every row.
+- Configurations: the delete button is a white trash can in a red circle.
+
+v4.2039 (22-11-2026)
+----------------------
+
+* **Bug fixes**
+
+- Security: the CodeQL code scanning alerts are fixed. Debug messages, the sortable widget title and the startup error message are escaped before they are shown, attribute selectors escape backslashes, and the HTML filters of the garbage and block templates are stricter.
+
+* **Code**
+
+- CI: the CodeQL scan no longer analyses the test files.
+
+v4.2038 (22-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Version numbers now have the form ``4.xxxx`` (for example ``4.2038``); the number goes up by one with every change.
+- Language files: unused and misplaced keys removed, missing ``en_US`` keys added.
+
+* **Code**
+
+- CI: CodeQL analysis for JavaScript, and a check that validates the language files (invalid JSON, duplicate keys) and reports missing translations as a warning.
+
 v4.20.37 (21-11-2026)
 ----------------------
 

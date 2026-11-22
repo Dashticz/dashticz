@@ -2562,12 +2562,12 @@ function bindConfigsPanel() {
   var active = getActiveConfigFile();
 
   // Two-step delete without a browser dialog: the first click turns the
-  // cross into a check mark to confirm, the second click (within 4 seconds)
+  // trash can into a check mark to confirm, the second click (within 4 seconds)
   // deletes the file.
   function buildConfigDeleteButton(file) {
     var label = configsLabel('delete', 'Delete');
     var timer = null;
-    var $icon = $('<i class="fas fa-xmark" aria-hidden="true"></i>');
+    var $icon = $('<i class="fas fa-trash" aria-hidden="true"></i>');
     var $btn = $(
       '<button type="button" class="settings-config-delete ms-2"></button>'
     )
@@ -2576,7 +2576,7 @@ function bindConfigsPanel() {
     function reset() {
       timer = null;
       $btn.removeClass('confirm').attr({ title: label, 'aria-label': label });
-      $icon.attr('class', 'fas fa-xmark');
+      $icon.attr('class', 'fas fa-trash');
     }
     return $btn.on('click', function () {
       if (!timer) {

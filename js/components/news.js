@@ -50,9 +50,39 @@ var DT_news = {
       }
     }
 
+    // The description of a feed item as plain text: HTML entities decoded and
+    // tags removed, without parsing the text as HTML.
     function plainText(value) {
-      var parsed = new DOMParser().parseFromString(value || '', 'text/html');
-      return parsed.body.textContent || '';
+      var entities = {
+        amp: '&',
+        lt: '<',
+        gt: '>',
+        quot: '"',
+        apos: "'",
+        nbsp: ' ',
+      };
+      var text = String(value || '').replace(
+        /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi,
+        function (match, code) {
+          if (code.charAt(0) === '#') {
+            var num =
+              code.charAt(1).toLowerCase() === 'x'
+                ? parseInt(code.slice(2), 16)
+                : parseInt(code.slice(1), 10);
+            return num > 0 && num <= 0x10ffff
+              ? String.fromCodePoint(num)
+              : match;
+          }
+          var named = entities[code.toLowerCase()];
+          return named === undefined ? match : named;
+        }
+      );
+      var previous;
+      do {
+        previous = text;
+        text = text.replace(/<[^>]*>/g, '');
+      } while (text !== previous);
+      return text.replace(/[<>]/g, '').trim();
     }
 
     $.ajax(_CORS_PATH + me.block.feed, {
