@@ -5,6 +5,8 @@
 .postnl-block .postnl-rows {
   align-self: center;
   max-width: 100%;
+  /* 3px less than the theme's 10px between the lines */
+  gap: 7px;
 }
 
 .postnl-block .postnl-row {

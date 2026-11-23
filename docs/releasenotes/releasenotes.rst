@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2061 (23-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: 3px less space between the lines (7px instead of 10px), set in ``js/components/postnl.css``.
+
 v4.2060 (23-11-2026)
 ----------------------
 

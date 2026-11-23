@@ -1,4 +1,4 @@
 {
-    "version": "4.2060",
-    "last_changes": "PostNL widget: the icons stand in one straight vertical line, also when the lines have a different length, and are centred vertically next to their text."
+    "version": "4.2061",
+    "last_changes": "PostNL widget: 3px less space between the lines (7px instead of 10px)."
 }
