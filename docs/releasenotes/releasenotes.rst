@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2062 (23-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL widget: the DHL list keeps a fixed order for parcels with the same expected time, also on PHP 7.4.
+
 v4.2061 (23-11-2026)
 ----------------------
 

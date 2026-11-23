@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2062": "Fix: the DHL list in the PostNL widget keeps a fixed order for parcels with the same expected time, also on PHP 7.4.",
     "4.2061": "PostNL widget: 3px less space between the lines (7px instead of 10px).",
     "4.2060": "PostNL widget: the icons stand in one straight vertical line, also when the lines have a different length, and are centred vertically next to their text.",
     "4.2059": "PostNL widget: DHL packages too. Fill in your My DHL account (my.dhlecommerce.nl) in Settings -> Widgets -> PostNL and its incoming, returned and sent parcels show in the same list, with the carrier after the name when both accounts are set. New statuses 'Ready for pickup' and 'Delayed'. One failing carrier no longer hides the packages of the other.",

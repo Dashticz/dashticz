@@ -281,16 +281,34 @@ function dashticz_dhl_build_entry($item, $role)
     );
 }
 
+// usort() is not stable before PHP 8.0, so equal entries could change order
+// between PHP versions. Ties keep their original order here.
+function dashticz_dhl_stable_sort($list, $compare)
+{
+    $indexed = array();
+    foreach ($list as $i => $entry) {
+        $indexed[] = array($i, $entry);
+    }
+    usort($indexed, function ($a, $b) use ($compare) {
+        $result = call_user_func($compare, $a[1], $b[1]);
+        return $result !== 0 ? $result : $a[0] - $b[0];
+    });
+    $sorted = array();
+    foreach ($indexed as $pair) {
+        $sorted[] = $pair[1];
+    }
+    return $sorted;
+}
+
 // Not yet delivered (and not returned), soonest expected first.
 function dashticz_dhl_pending_entries($entries)
 {
     $pending = array_values(array_filter($entries, function ($entry) {
         return $entry['status'] !== 'Delivered' && $entry['status'] !== 'ReturnToSender';
     }));
-    usort($pending, function ($a, $b) {
+    return array_slice(dashticz_dhl_stable_sort($pending, function ($a, $b) {
         return strcmp($a['from'], $b['from']);
-    });
-    return array_slice($pending, 0, 10);
+    }), 0, 10);
 }
 
 // Delivered within the last $days days, newest first.
@@ -301,10 +319,9 @@ function dashticz_dhl_recent_delivered($entries, $days)
         $ts = strtotime($entry['deliveryDate']);
         return $entry['status'] === 'Delivered' && $ts !== false && $ts >= $cutoff;
     }));
-    usort($delivered, function ($a, $b) {
+    return array_slice(dashticz_dhl_stable_sort($delivered, function ($a, $b) {
         return strcmp($b['deliveryDate'], $a['deliveryDate']);
-    });
-    return array_slice($delivered, 0, 10);
+    }), 0, 10);
 }
 
 // Splits the raw DHL lists into the widget's incoming/sent lists. A return
