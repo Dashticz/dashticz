@@ -17,10 +17,20 @@
  * raw {status, who, from, to, deliveryDate} fields it returns, so the
  * display always follows Dashticz's own active language automatically,
  * with no separate language setting of its own.
+ *
+ * DHL: when a My DHL account is set as well (dhl_username/dhl_password,
+ * same Settings -> Widgets -> PostNL popup), its parcels come from a second
+ * bridge, vendor/dashticz/dhl/index.php, in the same {incoming, sent} shape
+ * and are merged into the same list. With both carriers configured, each
+ * line names its carrier after the sender ("Coolblue (DHL)"). Either account
+ * alone works too.
  */
 var DT_postnl = (function () {
   return {
     name: 'postnl',
+    init: function () {
+      return DT_function.loadCSS('./js/components/postnl.css');
+    },
     canHandle: function (block) {
       return !!(block && block.type === 'postnl');
     },
@@ -71,9 +81,12 @@ var DT_postnl = (function () {
     return misc['postnl_status_' + String(status).toLowerCase()] || status;
   }
 
-  function formatLine(entry) {
+  function formatLine(entry, showCarrier) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
-    var who = entry.who || misc.postnl_unknown_sender || 'Unknown';
+    var who = DT_function.escapeHtml(
+      entry.who || misc.postnl_unknown_sender || 'Unknown'
+    );
+    if (showCarrier && entry.carrier) who += ' (' + entry.carrier + ')';
     var label = statusLabel(entry.status);
     var date = '';
     var time = '';
@@ -125,16 +138,24 @@ var DT_postnl = (function () {
 
   // One combined list, soonest first: each line gets an icon
   // (truck = incoming, paper plane = sent, open box = delivered).
-  function listHtml(res) {
-    var entries = []
-      .concat(
+  // results: one {carrier, res} per carrier that answered.
+  function listHtml(results, showCarrier) {
+    var entries = [];
+    results.forEach(function (result) {
+      var res = result.res;
+      var tag = function (entry) {
+        return $.extend({}, entry, { carrier: result.carrier });
+      };
+      entries = entries.concat(
         ((res && res.incoming) || []).map(function (entry) {
-          return { role: 'in', entry: entry };
+          return { role: 'in', entry: tag(entry) };
         }),
         ((res && res.sent) || []).map(function (entry) {
-          return { role: 'out', entry: entry };
+          return { role: 'out', entry: tag(entry) };
         })
-      )
+      );
+    });
+    entries = entries
       .filter(function (item) {
         return showDelivered() || item.entry.status !== 'Delivered';
       })
@@ -154,7 +175,7 @@ var DT_postnl = (function () {
           icon(item) +
           '</span>' +
           '<span class="postnl-row-text">' +
-          formatLine(item.entry) +
+          formatLine(item.entry, showCarrier) +
           '</span>' +
           '</div>'
         );
@@ -162,49 +183,93 @@ var DT_postnl = (function () {
       .join('');
   }
 
+  // The carriers with an account in the settings, each with its own bridge.
+  function carriers() {
+    var list = [];
+    [
+      { name: 'PostNL', prefix: 'postnl', bridge: 'postnl/index.php' },
+      { name: 'DHL', prefix: 'dhl', bridge: 'dhl/index.php' },
+    ].forEach(function (carrier) {
+      var username = settings[carrier.prefix + '_username'] || '';
+      var password = settings[carrier.prefix + '_password'] || '';
+      if (username && password) {
+        list.push(
+          $.extend({ username: username, password: password }, carrier)
+        );
+      }
+    });
+    return list;
+  }
+
+  // Always resolves, to {carrier, res} or {carrier, error}, so one failing
+  // carrier never hides the packages of the other.
+  function fetchCarrier(carrier) {
+    var misc = (typeof language !== 'undefined' && language.misc) || {};
+    var done = $.Deferred();
+    DT_function.bridge(carrier.bridge, {
+      username: carrier.username,
+      password: carrier.password,
+      days: parseInt(settings['postnl_days'], 10) || 2,
+      pollMinutes: parseInt(settings['postnl_pollminutes'], 10) || 60,
+    }).then(
+      function (res) {
+        done.resolve({ carrier: carrier.name, res: res });
+      },
+      function (jqXHR) {
+        var fallback =
+          carrier.name === 'DHL'
+            ? misc.postnl_dhl_error || 'Unable to fetch DHL shipments.'
+            : misc.postnl_error || 'Unable to fetch PostNL shipments.';
+        done.resolve({
+          carrier: carrier.name,
+          error: DT_function.bridgeError(jqXHR, fallback),
+        });
+      }
+    );
+    return done.promise();
+  }
+
   function refresh(me) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
     me.$mountPoint.find('.dt_state').css('font-size', fontSize() + 'px');
-    var username = settings['postnl_username'] || '';
-    var password = settings['postnl_password'] || '';
-    if (!username || !password) {
+    var active = carriers();
+    if (!active.length) {
       me.$mountPoint
         .find('.dt_state')
         .html(
           '<div class="postnl-rows postnl-error">' +
             (misc.postnl_not_configured ||
-              'Configure your PostNL account in Settings -> Widgets -> PostNL.') +
+              'Configure your PostNL and/or DHL account in Settings -> Widgets -> PostNL.') +
             '</div>'
         );
       return;
     }
 
-    DT_function.bridge('postnl/index.php', {
-      username: username,
-      password: password,
-      days: parseInt(settings['postnl_days'], 10) || 2,
-      pollMinutes: parseInt(settings['postnl_pollminutes'], 10) || 60,
-    }).then(
-      function (res) {
-        var html = listHtml(res);
-        me.$mountPoint
-          .find('.dt_state')
-          .html('<div class="postnl-rows">' + html + '</div>');
-      },
-      function (jqXHR) {
-        var errorMessage = DT_function.escapeHtml(
-          DT_function.bridgeError(
-            jqXHR,
-            misc.postnl_error || 'Unable to fetch PostNL shipments.'
-          )
-        );
-        me.$mountPoint
-          .find('.dt_state')
-          .html(
-            '<div class="postnl-rows postnl-error">' + errorMessage + '</div>'
+    $.when.apply($, active.map(fetchCarrier)).then(function () {
+      var results = Array.prototype.slice.call(arguments);
+      var ok = results.filter(function (result) {
+        return !result.error;
+      });
+      var showCarrier = active.length > 1;
+      var errors = results
+        .filter(function (result) {
+          return result.error;
+        })
+        .map(function (result) {
+          return (
+            '<div class="postnl-rows postnl-error">' +
+            DT_function.escapeHtml(
+              (showCarrier ? result.carrier + ': ' : '') + result.error
+            ) +
+            '</div>'
           );
-      }
-    );
+        })
+        .join('');
+      var html = ok.length
+        ? '<div class="postnl-rows">' + listHtml(ok, showCarrier) + '</div>'
+        : '';
+      me.$mountPoint.find('.dt_state').html(html + errors);
+    });
   }
 })();
 

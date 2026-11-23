@@ -1,0 +1,27 @@
+/* PostNL widget (js/components/postnl.js): own layout fixes on top of the
+   theme's .postnl-* rules in css/creative.css. The list is one centered
+   column that is as wide as its widest line, so the icons stand in one
+   vertical line instead of moving with the length of each text. */
+.postnl-block .postnl-rows {
+  align-self: center;
+  max-width: 100%;
+}
+
+.postnl-block .postnl-row {
+  justify-content: flex-start;
+}
+
+.postnl-block .postnl-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.postnl-block .postnl-row-text {
+  text-align: left;
+}
+
+.postnl-block .postnl-error {
+  text-align: center;
+}

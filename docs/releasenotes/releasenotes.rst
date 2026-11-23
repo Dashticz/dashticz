@@ -1,6 +1,26 @@
 Release Notes
 =============
 
+v4.2060 (23-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL widget: the icons stand in one straight vertical line, also when the lines have a different length, and are centred vertically next to their text. The list stays centred in the tile. The styling is in the widget's own ``js/components/postnl.css``, so ``css/creative.css`` is unchanged.
+
+v4.2059 (23-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: DHL packages are shown too. Fill in your My DHL account (my.dhlecommerce.nl, DHL eCommerce NL / DHL Parcel) in Settings -> Widgets -> PostNL. Incoming parcels, returns you send back and parcels you sent appear in the same list. With both a PostNL and a DHL account, each line names its carrier after the sender, for example ``Coolblue (DHL)``. DHL Express is not part of that account and is not shown.
+- PostNL widget: two new statuses for DHL parcels, "Ready for pickup" (waiting at a DHL ServicePoint or locker) and "Delayed" (DHL reports a problem).
+- PostNL widget: when one carrier cannot be reached, the packages of the other one are still shown, with the error below them.
+
+* **Code**
+
+- New bridge ``vendor/dashticz/dhl/index.php`` (helpers in ``dhl.php``), with a test for its mapping of DHL parcels. The sender name in the widget is now HTML-escaped.
+
 v4.2058 (22-11-2026)
 ----------------------
 

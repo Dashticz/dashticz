@@ -1250,11 +1250,12 @@ test('PHP proxy caches live in custom/cache, closed to browsers', () => {
   }
 });
 
-test('F1, HP iLO, PostNL and XMLTV proxies use the shared cache folder', () => {
+test('F1, HP iLO, PostNL, DHL and XMLTV proxies use the shared cache folder', () => {
   for (const [file, name] of [
     ['vendor/dashticz/f1/f1.php', 'f1'],
     ['vendor/dashticz/hpilo/index.php', 'hpilo'],
     ['vendor/dashticz/postnl/index.php', 'postnl'],
+    ['vendor/dashticz/dhl/dhl.php', 'dhl'],
     ['vendor/dashticz/xmltv.php', 'xmltv'],
   ]) {
     const source = read(file);
@@ -1273,6 +1274,124 @@ test('F1, HP iLO, PostNL and XMLTV proxies use the shared cache folder', () => {
   const nginx = read('docker/default.conf');
   assert.match(nginx, /location \^~ \/custom\/cache\/ \{\s*return 404;/);
   assert.match(nginx, /location \^~ \/vendor\/custom\/ \{\s*return 404;/);
+});
+
+/* Runs the DHL bridge's mapping (vendor/dashticz/dhl/dhl.php) through PHP on
+   a My DHL parcels list and sent-shipments list: statuses, who, the split
+   into incoming/sent (a return is sent) and the delivered-days window. */
+test('DHL bridge maps My DHL parcels to the PostNL widget entries', () => {
+  const now = Date.now();
+  const iso = (offsetHours) =>
+    new Date(now + offsetHours * 3600 * 1000).toISOString().slice(0, 19) + 'Z';
+  const input = {
+    parcels: [
+      {
+        barcode: 'A1',
+        category: 'IN_DELIVERY',
+        status: 'OUT_FOR_DELIVERY',
+        isReturn: false,
+        sender: { name: 'Coolblue' },
+        receivingTimeIndication: {
+          indicationType: 'IntervalIndication',
+          start: iso(2),
+          end: iso(4),
+        },
+      },
+      {
+        barcode: 'A2',
+        category: 'DELIVERED',
+        status: 'DELIVERED',
+        isReturn: false,
+        sender: { name: 'Zalando' },
+        receivingTimeIndication: {
+          indicationType: 'MomentIndication',
+          moment: iso(-3),
+        },
+      },
+      {
+        barcode: 'A3',
+        category: 'DELIVERED',
+        status: 'DELIVERED',
+        isReturn: false,
+        sender: { name: 'Old' },
+        receivingTimeIndication: {
+          indicationType: 'MomentIndication',
+          moment: iso(-24 * 10),
+        },
+      },
+      {
+        barcode: 'A4',
+        category: 'IN_DELIVERY',
+        status: 'NOTIFICATION_FOR_PARCELSHOP_COLLECTION_HAS_BEEN_SENT',
+        isReturn: false,
+        sender: null,
+      },
+      {
+        barcode: 'A5',
+        category: 'EXCEPTION',
+        status: 'PARCEL_DAMAGED',
+        isReturn: false,
+        sender: { name: 'Bol' },
+      },
+      {
+        barcode: 'A6',
+        category: 'INTERVENTION',
+        status: 'INTERVENTION_RECEIVER_REQUESTS_DELIVERY_AT_NEIGHBOURS',
+        isReturn: false,
+        sender: { name: 'Neighbour' },
+      },
+      {
+        barcode: 'R1',
+        category: 'UNDERWAY',
+        status: 'PARCEL_READY_FOR_RETURN_TO_HUB',
+        isReturn: true,
+        receiver: { name: 'AE-RTN-NL' },
+      },
+    ],
+    sent: [
+      {
+        barcode: 'S1',
+        category: 'UNDERWAY',
+        type: 'outgoing',
+        receiver: { name: 'Jan' },
+      },
+      {
+        barcode: 'S2',
+        category: 'UNDERWAY',
+        type: 'incoming',
+        receiver: { name: 'Skip' },
+      },
+    ],
+  };
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const script =
+    `require '${dir}/security.php'; require '${dir}/dhl/dhl.php';` +
+    ` $in = json_decode(stream_get_contents(STDIN), true);` +
+    ` echo json_encode(dashticz_dhl_split($in['parcels'], $in['sent'], 2));`;
+  const result = spawnSync('php', ['-r', script], {
+    encoding: 'utf8',
+    input: JSON.stringify(input),
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const { incoming, sent } = JSON.parse(result.stdout);
+  const summary = (list) => list.map((e) => [e.who, e.status]);
+  assert.deepEqual(summary(incoming), [
+    ['', 'AtPickupPoint'],
+    ['Bol', 'Problem'],
+    ['Neighbour', 'InTransit'],
+    ['Coolblue', 'Open'],
+    ['Zalando', 'Delivered'],
+  ]);
+  const coolblue = incoming.find((e) => e.who === 'Coolblue');
+  assert.equal(Date.parse(coolblue.from), Date.parse(iso(2)));
+  assert.equal(Date.parse(coolblue.to), Date.parse(iso(4)));
+  const zalando = incoming.find((e) => e.who === 'Zalando');
+  assert.equal(Date.parse(zalando.deliveryDate), Date.parse(iso(-3)));
+  assert.equal(zalando.from, '');
+  assert.deepEqual(summary(sent), [
+    ['AE-RTN-NL', 'InTransit'],
+    ['Jan', 'InTransit'],
+  ]);
 });
 
 /* Runs the TVgids bridge's parser (vendor/dashticz/tvgids/tvgids.php)

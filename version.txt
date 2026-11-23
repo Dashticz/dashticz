@@ -1,4 +1,4 @@
 {
-    "version": "4.2058",
-    "last_changes": "Fix: the color picker button of RGB lamps shows the lamp color again instead of a checkerboard."
+    "version": "4.2060",
+    "last_changes": "PostNL widget: the icons stand in one straight vertical line, also when the lines have a different length, and are centred vertically next to their text."
 }
