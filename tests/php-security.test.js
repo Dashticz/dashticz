@@ -1250,12 +1250,13 @@ test('PHP proxy caches live in custom/cache, closed to browsers', () => {
   }
 });
 
-test('F1, HP iLO, PostNL, DHL and XMLTV proxies use the shared cache folder', () => {
+test('F1, HP iLO, PostNL, DHL, DPD and XMLTV proxies use the shared cache folder', () => {
   for (const [file, name] of [
     ['vendor/dashticz/f1/f1.php', 'f1'],
     ['vendor/dashticz/hpilo/index.php', 'hpilo'],
     ['vendor/dashticz/postnl/index.php', 'postnl'],
     ['vendor/dashticz/dhl/dhl.php', 'dhl'],
+    ['vendor/dashticz/dpd/dpd.php', 'dpd'],
     ['vendor/dashticz/xmltv.php', 'xmltv'],
   ]) {
     const source = read(file);
@@ -1392,6 +1393,100 @@ test('DHL bridge maps My DHL parcels to the PostNL widget entries', () => {
     ['AE-RTN-NL', 'InTransit'],
     ['Jan', 'InTransit'],
   ]);
+});
+
+/* Runs the DPD bridge's mapping (vendor/dashticz/dpd/dpd.php) through PHP on
+   a myDPD parcels answer: statuses, who, the time window and the
+   delivered-days window. */
+test('DPD bridge maps myDPD parcels to the PostNL widget entries', () => {
+  const pad = (n) => String(n).padStart(2, '0');
+  const local = (offsetHours) => {
+    const d = new Date(Date.now() + offsetHours * 3600 * 1000);
+    return (
+      d.getFullYear() +
+      '-' +
+      pad(d.getMonth() + 1) +
+      '-' +
+      pad(d.getDate()) +
+      'T' +
+      pad(d.getHours()) +
+      ':' +
+      pad(d.getMinutes()) +
+      ':00'
+    );
+  };
+  const today = local(0).slice(0, 10);
+  const payload = {
+    incomingShipments: [
+      {
+        parcelNumber: 'D1',
+        senderName: 'Coolblue',
+        status: { description: 'PARCEL_OUT_FOR_DELIVERY' },
+        deliveryDate: today,
+        deliveryTimeFrom: '10:00:00',
+        deliveryTimeTo: '12:00:00',
+      },
+      {
+        parcelNumber: 'D2',
+        senderName: 'Zalando',
+        status: { description: 'DELIVERED', eventDateAndTime: local(-3) },
+      },
+      {
+        parcelNumber: 'D3',
+        senderName: 'Old',
+        status: { description: 'DELIVERED', eventDateAndTime: local(-240) },
+      },
+      {
+        parcelNumber: 'D4',
+        senderName: 'Bol',
+        status: {
+          description: 'AVAILABLE_FOR_COLLECTION',
+          deliveryType: 'PARCELSHOP',
+        },
+      },
+      {
+        parcelNumber: 'D5',
+        senderName: 'Missed',
+        status: { description: 'UNSUCCESSFUL_DELIVERY_ATTEMPT' },
+      },
+      {
+        parcelNumber: 'D6',
+        senderName: 'Back',
+        status: { description: 'RETURN_TO_SENDER' },
+      },
+    ],
+    sendingShipments: [
+      {
+        parcelNumber: 'S1',
+        receiverName: 'Jan',
+        status: { description: 'IN_TRANSIT' },
+      },
+    ],
+  };
+  const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
+  const script =
+    `require '${dir}/security.php'; require '${dir}/dpd/dpd.php';` +
+    ` echo json_encode(dashticz_dpd_split(json_decode(stream_get_contents(STDIN), true), 2));`;
+  const result = spawnSync('php', ['-r', script], {
+    encoding: 'utf8',
+    input: JSON.stringify(payload),
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const { incoming, sent } = JSON.parse(result.stdout);
+  const summary = (list) => list.map((e) => [e.who, e.status]);
+  assert.deepEqual(summary(incoming), [
+    ['Bol', 'AtPickupPoint'],
+    ['Missed', 'Problem'],
+    ['Coolblue', 'Open'],
+    ['Zalando', 'Delivered'],
+  ]);
+  const coolblue = incoming.find((e) => e.who === 'Coolblue');
+  assert.equal(coolblue.from, today + 'T10:00:00');
+  assert.equal(coolblue.to, today + 'T12:00:00');
+  const zalando = incoming.find((e) => e.who === 'Zalando');
+  assert.equal(zalando.deliveryDate, local(-3));
+  assert.equal(zalando.from, '');
+  assert.deepEqual(summary(sent), [['Jan', 'InTransit']]);
 });
 
 /* Runs the TVgids bridge's parser (vendor/dashticz/tvgids/tvgids.php)

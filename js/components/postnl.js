@@ -24,6 +24,10 @@
  * and are merged into the same list. With both carriers configured, each
  * line names its carrier after the sender ("Coolblue (DHL)"). Either account
  * alone works too.
+ *
+ * DPD: the same for a myDPD account (dpd_username/dpd_password), through
+ * vendor/dashticz/dpd/index.php ("Coolblue (DPD)"). UPS is not supported:
+ * it has no consumer account feed that can be read without a browser login.
  */
 var DT_postnl = (function () {
   return {
@@ -189,6 +193,7 @@ var DT_postnl = (function () {
     [
       { name: 'PostNL', prefix: 'postnl', bridge: 'postnl/index.php' },
       { name: 'DHL', prefix: 'dhl', bridge: 'dhl/index.php' },
+      { name: 'DPD', prefix: 'dpd', bridge: 'dpd/index.php' },
     ].forEach(function (carrier) {
       var username = settings[carrier.prefix + '_username'] || '';
       var password = settings[carrier.prefix + '_password'] || '';
@@ -216,10 +221,14 @@ var DT_postnl = (function () {
         done.resolve({ carrier: carrier.name, res: res });
       },
       function (jqXHR) {
+        var fallbacks = {
+          DHL: misc.postnl_dhl_error || 'Unable to fetch DHL shipments.',
+          DPD: misc.postnl_dpd_error || 'Unable to fetch DPD shipments.',
+        };
         var fallback =
-          carrier.name === 'DHL'
-            ? misc.postnl_dhl_error || 'Unable to fetch DHL shipments.'
-            : misc.postnl_error || 'Unable to fetch PostNL shipments.';
+          fallbacks[carrier.name] ||
+          misc.postnl_error ||
+          'Unable to fetch PostNL shipments.';
         done.resolve({
           carrier: carrier.name,
           error: DT_function.bridgeError(jqXHR, fallback),
@@ -239,7 +248,7 @@ var DT_postnl = (function () {
         .html(
           '<div class="postnl-rows postnl-error">' +
             (misc.postnl_not_configured ||
-              'Configure your PostNL and/or DHL account in Settings -> Widgets -> PostNL.') +
+              'Configure your PostNL, DHL and/or DPD account in Settings -> Widgets -> PostNL.') +
             '</div>'
         );
       return;

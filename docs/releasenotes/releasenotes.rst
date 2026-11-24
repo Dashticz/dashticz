@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.2063 (24-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: DPD packages are shown too. Fill in your myDPD account (the same account as the myDPD app, DPD Netherlands) in Settings -> Widgets -> PostNL. Incoming parcels and parcels you sent appear in the same list, with the carrier after the sender when more than one account is set, for example ``Coolblue (DPD)``. UPS is not supported, because UPS has no consumer account feed that can be read without a browser login.
+
+* **Code**
+
+- New bridge ``vendor/dashticz/dpd/index.php`` (helpers in ``dpd.php``), with a test for its mapping of DPD parcels.
+
 v4.2062 (23-11-2026)
 ----------------------
 
