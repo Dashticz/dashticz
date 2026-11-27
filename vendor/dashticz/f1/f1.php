@@ -25,7 +25,7 @@ function dashticz_f1_events($url, $ttl)
 {
     return dashticz_cached_json(dashticz_f1_cache_file($url), $ttl, function () use ($url) {
         return dashticz_f1_parse(dashticz_f1_download($url));
-    });
+    }, '', 300);
 }
 
 function dashticz_f1_download($url)

@@ -156,6 +156,9 @@ var DT_camera = {
     DT_camera.devices.forEach(function (camera, index) {
       camera.index = index;
     });
+    // The timers and the carousel are shared by all camera blocks: they only
+    // stop when the last camera block is gone.
+    if (DT_camera.devices.length) return;
     clearInterval(DT_camera.streamtimer);
     clearInterval(DT_camera.trayimgtimer);
     clearTimeout(DT_camera.trayopentimer);

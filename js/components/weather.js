@@ -140,7 +140,11 @@ var DT_weather = (function () {
             infoMessage('Weather', errorTxt);
             me.$mountPoint
               .find('.dt_state')
-              .html('<div style="font-size:30%">' + errorTxt + '</div>');
+              .html(
+                '<div style="font-size:30%">' +
+                  DT_function.escapeHtml(errorTxt) +
+                  '</div>'
+              );
           });
         }
       });
@@ -188,7 +192,11 @@ var DT_weather = (function () {
         .catch(function (err) {
           me.$mountPoint
             .find('.dt_state')
-            .html('<div style="font-size:50%">' + err + '</div>');
+            .html(
+              '<div style="font-size:50%">' +
+                DT_function.escapeHtml(String((err && err.message) || err)) +
+                '</div>'
+            );
         });
     },
   };

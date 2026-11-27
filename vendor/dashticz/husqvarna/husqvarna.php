@@ -19,6 +19,11 @@ function dashticz_husqvarna_actions()
     return array('Start', 'ResumeSchedule', 'Pause', 'ParkUntilNextSchedule', 'ParkUntilFurtherNotice');
 }
 
+// The answer was 401/403: the token (or the client ID/secret) is not accepted.
+class DashticzHusqvarnaAuthError extends RuntimeException
+{
+}
+
 // One request; returns the decoded JSON ({} for an empty answer).
 function dashticz_husqvarna_request($method, $url, $headers, $body = null)
 {
@@ -33,7 +38,7 @@ function dashticz_husqvarna_request($method, $url, $headers, $body = null)
         throw new RuntimeException('Unable to reach the Husqvarna service.');
     }
     if ($status === 401 || $status === 403) {
-        throw new RuntimeException('Husqvarna rejected the client ID or secret.');
+        throw new DashticzHusqvarnaAuthError('Husqvarna rejected the client ID or secret.');
     }
     if ($status === 429) {
         throw new RuntimeException('The Husqvarna API limit is reached, try again later.');
@@ -45,11 +50,17 @@ function dashticz_husqvarna_request($method, $url, $headers, $body = null)
     return is_array($data) ? $data : array();
 }
 
+function dashticz_husqvarna_token_file($clientId, $clientSecret, $cacheDir)
+{
+    return $cacheDir === null ? null : $cacheDir . '/token-' . sha1($clientId . "\n" . $clientSecret) . '.json';
+}
+
 // Access token of the application (kept, with a safety margin, until it
-// expires), so a status request is one call instead of two.
+// expires), so a status request is one call instead of two. The file holds a
+// bearer token: owner only.
 function dashticz_husqvarna_token($clientId, $clientSecret, $cacheDir)
 {
-    $file = $cacheDir === null ? null : $cacheDir . '/token-' . sha1($clientId . "\n" . $clientSecret) . '.json';
+    $file = dashticz_husqvarna_token_file($clientId, $clientSecret, $cacheDir);
     return dashticz_cached_json($file, 3600 * 6, function () use ($clientId, $clientSecret) {
         $answer = dashticz_husqvarna_request(
             'POST',
@@ -65,7 +76,31 @@ function dashticz_husqvarna_token($clientId, $clientSecret, $cacheDir)
             throw new RuntimeException('Husqvarna did not give an access token.');
         }
         return $answer['access_token'];
-    }, '', 60);
+    }, '', 60, 0, 0600);
+}
+
+/* A request to the Automower Connect API with the token of the application.
+   A body is sent as JSON. When the API does not accept the cached token (revoked or expired early) the cached
+   token is removed and the request is repeated once with a new one. */
+function dashticz_husqvarna_api($clientId, $clientSecret, $cacheDir, $method, $url, $body = null)
+{
+    for ($attempt = 0; ; $attempt++) {
+        $token = dashticz_husqvarna_token($clientId, $clientSecret, $cacheDir);
+        try {
+            return dashticz_husqvarna_request(
+                $method,
+                $url,
+                dashticz_husqvarna_headers($clientId, $token, $body !== null),
+                $body
+            );
+        } catch (DashticzHusqvarnaAuthError $error) {
+            $file = dashticz_husqvarna_token_file($clientId, $clientSecret, $cacheDir);
+            if ($attempt > 0 || $file === null || !is_file($file)) {
+                throw $error;
+            }
+            @unlink($file);
+        }
+    }
 }
 
 function dashticz_husqvarna_headers($clientId, $token, $json = false)

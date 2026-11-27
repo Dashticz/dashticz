@@ -1,5 +1,10 @@
 {
   "changelog": {
+    "4.2068": "Local network bridges only connect to LAN hosts, HP iLO time budget, HomeConnect remote timeout",
+    "4.2067": "New: the owner of the server can switch the editors, the Settings page and the update button off with DASHTICZ_READ_ONLY (or the file custom/.readonly), and only the updater with DASHTICZ_DISABLE_UPDATE (custom/.noupdate).",
+    "4.2066": "Widgets: the OpenWeatherMap widget no longer adds a copy of itself at every refresh and shows an error when the city is not found, the Mower and Toon widgets do not poll twice, weather errors are escaped, and a second camera block keeps working when another one is removed.",
+    "4.2065": "Bridges: PostNL, DHL, DPD, HP iLO and Husqvarna no longer log in again at every refresh after an error and show old data for a limited time only. Husqvarna and iLO cache files are private, an iLO cache needs the password, xmltv and LMS limit the size of what they download.",
+    "4.2064": "Security: the URL parameters folder, cfg, cfg2 and css only accept plain file and folder names. The editors only write CONFIG<name>.js files, and the theme colours of a second configuration are saved in its own stylesheet (custom2.css for CONFIG2.js).",
     "4.2063": "PostNL widget: DPD packages too. Fill in your myDPD account in Settings -> Widgets -> PostNL and its incoming and sent parcels show in the same list, with the carrier after the name when more than one account is set.",
     "4.2062": "Fix: the DHL list in the PostNL widget keeps a fixed order for parcels with the same expected time, also on PHP 7.4.",
     "4.2061": "PostNL widget: 3px less space between the lines (7px instead of 10px).",

@@ -1,6 +1,69 @@
 Release Notes
 =============
 
+v4.2068 (27-11-2026)
+----------------------
+
+* The Lyrion Music Server, Toon, Fully Kiosk and HP iLO bridges only connect to hosts on the local network. See Tips and tricks for the opt-out.
+* HP iLO: the storage section stops in time on a slow iLO and reports what it read.
+* HomeConnect: reading another Domoticz has a timeout, no overlapping requests and a clear message for an https dashboard with an http address.
+
+v4.2067 (26-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Read-only mode for a server that is reachable by others: with the environment variable ``DASHTICZ_READ_ONLY`` (or an empty file ``custom/.readonly``) every request that writes configuration, layout, settings, stylesheets, rules or configurations, and the updater, is refused with a 403. ``DASHTICZ_DISABLE_UPDATE`` (or ``custom/.noupdate``) switches off only the update button. The switch is set on the server, so it cannot be changed from the dashboard. Nothing changes when neither is set. See Tips and Tricks.
+
+* **Code**
+
+- ``dashticz_require_csrf()`` calls the new ``dashticz_require_writable()``; ``js/update.php`` calls ``dashticz_require_update_allowed()``. Tests in ``tests/savecustomcss-php.test.js``.
+
+v4.2066 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- OpenWeatherMap widget: every refresh replaces the entry of the widget instead of adding one, so the widgets are not drawn again and again. City, country, key and language are URL encoded, and a city that cannot be found gives a message in the tile.
+- Mower and Toon widgets (Dashticz as source): with a refresh setting on the block they no longer start a second timer and a second request at the start.
+- Weather widget: error texts of the weather service are escaped before they are shown.
+- Camera widget: removing one camera block no longer stops the refresh and the carousel of the other camera blocks.
+- News widget reads the publication date as text. Car status widget: no extra load handlers on the logo when the tile is drawn again before the image has loaded.
+
+* **Code**
+
+- Test for these widget changes in ``tests/source.test.js``.
+
+v4.2065 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL, DHL, DPD and HP iLO bridges: after a failed refresh (for example a rejected password) the same login is not tried again for 5 minutes, so several dashboards cannot get an account blocked. The last good list is shown meanwhile.
+- Husqvarna: a mower status older than an hour is no longer shown as if it were current, a token that the API rejects is removed and requested again once, and the token file is private (mode 0600). F1 feed: a failed download is not repeated for 5 minutes.
+- HP iLO: the cache is keyed with the password too, and a path in an answer of the iLO that does not start with a slash is refused.
+- PostNL: parcels with the same expected time keep a fixed order on PHP 7.4.
+- xmltv: a GZip or ZIP file may be 100 MB when unpacked, no more; the answer gets the same protective headers as cors.php.
+- Lyrion Music Server: cover art larger than 8 MB is refused. Garbage bridge: providers get 15 and 60 seconds instead of no time limit, and a missing parameter no longer gives a PHP warning.
+- A very large widget settings section can no longer make a save drop the settings that are already in it.
+
+* **Code**
+
+- ``dashticz_cached_json()`` remembers a failure also when there is old data, with an optional maximum age and file mode; new helpers ``dashticz_stable_sort()``, ``dashticz_cache_failure_recent()`` and ``dashticz_cache_note_failure()``; ``dashticz_http_request()`` has a ``maxBytes`` option. New tests in ``tests/php-security.test.js``.
+
+v4.2064 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- The URL parameters ``folder``, ``cfg``, ``cfg2`` and ``css`` decide which script or stylesheet is loaded and evaluated. They only accept a plain folder or file name now, so a link such as ``?folder=//other-site`` can no longer run code from another host.
+- The editors (``js/configwriter.php``) only write ``CONFIG<name>.js`` files, the same pattern as ``js/configs.php``. ``custom.js`` and the ``CONFIG_DEFAULT.js`` template can no longer be overwritten by a save request.
+- Theme colours and fonts of the Settings page are saved in the stylesheet of the active configuration (``custom2.css`` for ``CONFIG2.js``) instead of always in ``custom.css``. A new stylesheet starts as a copy of ``custom.css``. Values with ``url(...)`` are refused.
+
+* **Code**
+
+- New test ``tests/savecustomcss-php.test.js``; the URL parameter test in ``tests/source.test.js`` covers the new rules.
+
 v4.2063 (24-11-2026)
 ----------------------
 

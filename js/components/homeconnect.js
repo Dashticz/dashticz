@@ -575,13 +575,33 @@ var DT_homeconnect = (function () {
     return 'http://' + host + ':' + (port > 0 && port < 65536 ? port : 8080);
   }
 
-  // Read the devices of the other Domoticz and draw the tile.
+  // Read the devices of the other Domoticz and draw the tile. The browser
+  // reads that Domoticz directly, so it needs CORS there, and an https
+  // dashboard cannot read an http address (mixed content).
   function refreshRemote(me) {
     var base = remoteBase(me.block);
-    $.getJSON(
-      base + '/json.htm?type=command&param=getdevices&filter=all&used=true'
-    ).then(
+    if (window.location.protocol === 'https:' && /^http:/i.test(base)) {
+      me.remoteError =
+        base +
+        ' (' +
+        tr(
+          'homeconnect_mixed_content',
+          'an https dashboard cannot read an http address'
+        ) +
+        ')';
+      render(me);
+      return;
+    }
+    if (me.remoteBusy) return;
+    me.remoteBusy = true;
+    $.ajax({
+      url:
+        base + '/json.htm?type=command&param=getdevices&filter=all&used=true',
+      dataType: 'json',
+      timeout: 10000,
+    }).then(
       function (res) {
+        me.remoteBusy = false;
         var devices = {};
         ((res && res.result) || []).forEach(function (dev) {
           devices[dev.idx] = dev;
@@ -591,6 +611,7 @@ var DT_homeconnect = (function () {
         render(me);
       },
       function () {
+        me.remoteBusy = false;
         me.remoteError = base;
         render(me);
       }

@@ -101,8 +101,8 @@ var DT_news = {
             .toArray()
             .sort(function (l, r) {
               return (
-                moment($(r).find('pubDate').html()) -
-                moment($(l).find('pubDate').html())
+                moment($(r).find('pubDate').text()) -
+                moment($(l).find('pubDate').text())
               );
             })
         ).each(function () {
@@ -110,7 +110,7 @@ var DT_news = {
             return;
           }
           if (me.startDate) {
-            var pubDate = $(this).find('pubDate').html();
+            var pubDate = $(this).find('pubDate').text();
             if (moment(pubDate) < me.startDate) {
               return;
             }

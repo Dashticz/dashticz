@@ -1,4 +1,4 @@
 {
-    "version": "4.2063",
-    "last_changes": "PostNL widget: DPD packages too. Fill in your myDPD account in Settings -> Widgets -> PostNL and its incoming and sent parcels show in the same list, with the carrier after the name when more than one account is set."
+    "version": "4.2068",
+    "last_changes": "Local network bridges only connect to LAN hosts, HP iLO time budget, HomeConnect remote timeout"
 }

@@ -628,10 +628,9 @@ function dashticz_postnl_pending_entries($entries)
     $pending = array_values(array_filter($entries, function ($entry) {
         return $entry['status'] !== 'Delivered' && $entry['status'] !== 'ReturnToSender';
     }));
-    usort($pending, function ($a, $b) {
+    return array_slice(dashticz_stable_sort($pending, function ($a, $b) {
         return strcmp($a['from'], $b['from']);
-    });
-    return array_slice($pending, 0, 10);
+    }), 0, 10);
 }
 
 // Delivered within the last $days days, newest first.
@@ -641,10 +640,9 @@ function dashticz_postnl_recent_delivered($entries, $days)
     $delivered = array_values(array_filter($entries, function ($entry) use ($cutoff) {
         return $entry['status'] === 'Delivered' && substr($entry['deliveryDate'], 0, 10) >= $cutoff;
     }));
-    usort($delivered, function ($a, $b) {
+    return array_slice(dashticz_stable_sort($delivered, function ($a, $b) {
         return strcmp($b['deliveryDate'], $a['deliveryDate']);
-    });
-    return array_slice($delivered, 0, 10);
+    }), 0, 10);
 }
 
 // -------------------------------------------------------------- orchestration
@@ -659,6 +657,16 @@ function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
     if ($cache && isset($cache['fetchedAt']) && isset($cache['days']) && (int) $cache['days'] === $days
         && (time() - (int) $cache['fetchedAt']) < $ttlSeconds) {
         return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
+    }
+
+    // A refresh that failed a moment ago is not repeated for a few minutes:
+    // every attempt is a full login, and a rejected password repeated by every
+    // dashboard can get the account blocked.
+    if (dashticz_cache_failure_recent($cache, 300)) {
+        if (isset($cache['incoming'], $cache['sent'])) {
+            return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
+        }
+        throw new RuntimeException($cache['error']);
     }
 
     $cookieFile = tempnam(sys_get_temp_dir(), 'dtpostnlck_');
@@ -715,7 +723,8 @@ function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
         // A transient PostNL/network hiccup falls back to the last known
         // good result rather than blanking the tile, same reasoning as
         // vendor/dashticz/xmltv.php's own stale-cache fallback.
-        if ($cache) {
+        dashticz_cache_note_failure($cacheFile, $cache, $error->getMessage());
+        if ($cache && isset($cache['incoming'], $cache['sent'])) {
             return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
         }
         throw $error;

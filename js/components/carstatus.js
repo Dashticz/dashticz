@@ -421,8 +421,10 @@ var DT_carstatus = (function () {
         );
       alignBelow(me);
     };
+    // onload (not addEventListener): drawing the tile again before the image
+    // has loaded replaces the handler instead of adding another one.
     if (img.complete) apply();
-    else img.addEventListener('load', apply);
+    else img.onload = apply;
   }
 
   // The height of the header row is the height of the battery line: the logo

@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
+require_once(__DIR__ . '/configwriter.php');
 
 // This endpoint manages isolated editor-owned sections in custom.css. Any CSS
 // outside these markers remains untouched, including hand-written rules.
@@ -38,7 +39,7 @@ foreach ($vars as $name => $value) {
         dashticz_json_error(400, 'Unknown CSS variable: ' . $name);
     }
     $value = trim((string)$value);
-    if ($value !== '' && !preg_match('/^[a-zA-Z0-9#(). ,%\/_\-]+$/', $value)) {
+    if ($value !== '' && (!preg_match('/^[a-zA-Z0-9#(). ,%\/_\-]+$/', $value) || preg_match('/url\s*\(/i', $value))) {
         dashticz_json_error(400, 'Invalid CSS value for ' . $name);
     }
     if ($value !== '') {
@@ -47,20 +48,28 @@ foreach ($vars as $name => $value) {
 }
 
 $customDir = __DIR__ . '/../custom';
-$cssPath = $customDir . '/custom.css';
+// The stylesheet of the active configuration, like js/main.js loads it:
+// CONFIG.js -> custom.css, CONFIG2.js -> custom2.css.
+list($configPath, $cfgFile) = configwriter_resolve_config_path($customDir);
+$cssPath = $customDir . '/' . configwriter_css_name($cfgFile);
 if (!is_dir($customDir) && !mkdir($customDir, 0775, true)) {
     dashticz_json_error(500, 'Could not create custom directory.');
 }
 $cssLock = dashticz_acquire_file_update_lock($cssPath);
 if ($cssLock === false) {
-    dashticz_json_error(500, 'Could not lock custom.css for an editor update.');
+    dashticz_json_error(500, 'Could not lock ' . basename($cssPath) . ' for an editor update.');
 }
 $existing = '';
 if (file_exists($cssPath)) {
     $existing = file_get_contents($cssPath);
     if ($existing === false) {
-        dashticz_json_error(500, 'Could not read custom.css.');
+        dashticz_json_error(500, 'Could not read ' . basename($cssPath) . '.');
     }
+} elseif (basename($cssPath) !== 'custom.css' && is_file($customDir . '/custom.css')) {
+    // main.js uses custom.css as long as the stylesheet of this configuration
+    // does not exist: the new file starts as a copy, so the hand-written rules
+    // keep applying once it takes over.
+    $existing = (string) @file_get_contents($customDir . '/custom.css');
 }
 
 // Replace only the editor-owned theme-variable section when `vars` is posted.
@@ -84,7 +93,7 @@ if ($updateVars && !empty($sanitized)) {
 $output = $themeBlock . ltrim($existing, "\r\n");
 if (!dashticz_atomic_write_file($cssPath, $output)) {
     dashticz_release_file_update_lock($cssLock);
-    dashticz_json_error(500, 'Could not write custom.css.');
+    dashticz_json_error(500, 'Could not write ' . basename($cssPath) . '.');
 }
 dashticz_release_file_update_lock($cssLock);
 

@@ -298,6 +298,15 @@ function dashticz_dpd_get_shipments($username, $password, $days, $ttlSeconds)
         return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
     }
 
+    // A refresh that failed a moment ago is not repeated for a few minutes: a
+    // rejected password repeated by every dashboard can get the account blocked.
+    if (dashticz_cache_failure_recent($cache, 300)) {
+        if (isset($cache['incoming'], $cache['sent'])) {
+            return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
+        }
+        throw new RuntimeException($cache['error']);
+    }
+
     try {
         $token = dashticz_dpd_login($username, $password);
         $result = dashticz_dpd_split(dashticz_dpd_get_parcels($token), $days);
@@ -306,7 +315,8 @@ function dashticz_dpd_get_shipments($username, $password, $days, $ttlSeconds)
     } catch (RuntimeException $error) {
         // A transient DPD/network hiccup falls back to the last known good
         // result rather than blanking the tile, like the other bridges.
-        if ($cache) {
+        dashticz_cache_note_failure($cacheFile, $cache, $error->getMessage());
+        if ($cache && isset($cache['incoming'], $cache['sent'])) {
             return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
         }
         throw $error;

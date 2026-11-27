@@ -73,6 +73,10 @@ var DT_toon = (function () {
       if (usesBridge(me.block)) {
         bind(me);
         render(me);
+        // With a refresh setting on the block the framework calls refresh()
+        // itself, at start and at that interval: no second timer and no
+        // second request then.
+        if (me.block.refresh) return;
         fetchStatus(me);
         me.timer = setInterval(
           function () {

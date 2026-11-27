@@ -411,6 +411,9 @@ function lmsFetchCover(payload) {
   ]);
   const dashticzServer = spawn('php', ['-S', `127.0.0.1:${dashticzPort}`], {
     cwd: root,
+    env: Object.assign({}, process.env, {
+      DASHTICZ_ALLOW_PUBLIC_BRIDGE_HOSTS: '1',
+    }),
   });
   try {
     const deadline = Date.now() + 3000;
@@ -615,7 +618,8 @@ test('every configuration editor writes to the active safe cfg file', () => {
   const writer = read('js/configwriter.php');
   assert.match(writer, /function configwriter_resolve_config_path/);
   assert.match(writer, /basename\(\$cfgFile\) !== \$cfgFile/);
-  assert.match(writer, /\^\[A-Za-z0-9_-\]\+\\\.js\$/);
+  assert.match(writer, /\^CONFIG\[A-Za-z0-9_-\]\*\\\.js\$/);
+  assert.match(writer, /CONFIG_DEFAULT\.js/);
 
   [
     'saveblocks.php',
@@ -625,6 +629,7 @@ test('every configuration editor writes to the active safe cfg file', () => {
     'saveconfigmode.php',
     'savescreens.php',
     'savesettings.php',
+    'savecustomcss.php',
   ].forEach((file) => {
     assert.match(
       read('js/' + file),
@@ -1672,6 +1677,139 @@ test('dashticz_cached_json caches, falls back to stale data and remembers failur
   }
 });
 
+test('dashticz_cached_json remembers a failure with stale data and limits the age of stale data', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dt-cache-'));
+  try {
+    const file = dir.replace(/\\/g, '/') + '/c.json';
+    const result = runPhp(`
+      $file = '${file}';
+      $calls = 0;
+      $ok = function () use (&$calls) { $calls++; return array('n' => $calls); };
+      $fail = function () use (&$calls) { $calls++; throw new RuntimeException('down'); };
+      $out = array();
+      $out[] = dashticz_cached_json($file, 0, $ok, '', 300);
+      // Expired and failing: stale data, and the failure is remembered, so the
+      // producer is not asked again for 300 seconds.
+      $out[] = dashticz_cached_json($file, 0, $fail, '', 300);
+      $out[] = dashticz_cached_json($file, 0, $fail, '', 300);
+      $out[] = $calls;
+      // Stale data older than the limit is an error, not old data.
+      $f2 = '${file}2';
+      dashticz_cached_json($f2, 0, $ok);
+      $data = json_decode(file_get_contents($f2), true);
+      $data['fetchedAt'] = time() - 7200;
+      file_put_contents($f2, json_encode($data));
+      try { dashticz_cached_json($f2, 0, $fail, '', 0, 3600); $out[] = 'stale'; }
+      catch (RuntimeException $e) { $out[] = $e->getMessage(); }
+      echo json_encode($out);
+    `);
+    assert.deepEqual(result[0], { n: 1 });
+    assert.deepEqual(result[1], { n: 1 });
+    assert.deepEqual(result[2], { n: 1 });
+    assert.equal(result[3], 2);
+    assert.equal(result[4], 'down');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('account bridge failures are remembered and sorting is stable', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dt-cache-'));
+  try {
+    const file = dir.replace(/\\/g, '/') + '/a.json';
+    const result = runPhp(`
+      $file = '${file}';
+      $cache = array('refreshToken' => 'r', 'fetchedAt' => 1, 'incoming' => array());
+      dashticz_cache_note_failure($file, $cache, 'rejected');
+      $stored = json_decode(file_get_contents($file), true);
+      $list = array();
+      for ($i = 0; $i < 40; $i++) { $list[] = array('k' => $i % 2, 'i' => $i); }
+      $sorted = dashticz_stable_sort($list, function ($a, $b) { return $a['k'] - $b['k']; });
+      echo json_encode(array(
+          $stored['refreshToken'], $stored['error'],
+          dashticz_cache_failure_recent($stored, 300),
+          dashticz_cache_failure_recent($stored, 0),
+          dashticz_cache_failure_recent(array('fetchedAt' => 1), 300),
+          array_slice(array_column($sorted, 'i'), 0, 5),
+          substr(sprintf('%o', fileperms($file)), -4)
+      ));
+    `);
+    assert.equal(result[0], 'r');
+    assert.equal(result[1], 'rejected');
+    assert.equal(result[2], true);
+    assert.equal(result[3], false);
+    assert.equal(result[4], false);
+    assert.deepEqual(result[5], [0, 2, 4, 6, 8]);
+    assert.equal(result[6], '0600');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the account bridges do not log in again right after a failure', () => {
+  for (const [file, name] of [
+    ['vendor/dashticz/postnl/index.php', 'postnl'],
+    ['vendor/dashticz/dhl/dhl.php', 'dhl'],
+    ['vendor/dashticz/dpd/dpd.php', 'dpd'],
+  ]) {
+    const source = read(file);
+    assert.match(source, /dashticz_cache_failure_recent\(\$cache, 300\)/, name);
+    assert.match(source, /dashticz_cache_note_failure\(\$cacheFile/, name);
+  }
+  const hpilo = read('vendor/dashticz/hpilo/index.php');
+  assert.match(hpilo, /dashticz_cache_failure_recent\(\$cache, 300\)/);
+  assert.match(hpilo, /hash_hmac\('sha256', \$key, \$input\['password'\]\)/);
+  assert.match(hpilo, /\$path\[0\] !== '\/'/);
+  assert.match(
+    read('vendor/dashticz/husqvarna/husqvarna.php'),
+    /unlink\(\$file\)/
+  );
+});
+
+test('dashticz_http_request stops a transfer that is larger than maxBytes', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-maxbytes-'));
+  fs.writeFileSync(
+    path.join(dir, 'big.php'),
+    `<?php echo str_repeat('x', 100000);\n`
+  );
+  const port = 41000 + (process.pid % 9000);
+  const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+    const script = `require '${securityPhp}';
+$url = 'http://127.0.0.1:${port}/big.php';
+$small = dashticz_http_request($url, array('maxBytes' => 1000));
+$large = dashticz_http_request($url, array('maxBytes' => 200000));
+$none = dashticz_http_request($url);
+echo json_encode(array($small['failed'], strlen($small['body']), $large['failed'], strlen($large['body']), $none['failed'], strlen($none['body'])));`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), [
+      true,
+      0,
+      false,
+      100000,
+      false,
+      100000,
+    ]);
+  } finally {
+    server.kill();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('xmltv limits the unpacked size and sends the remote response headers', () => {
+  const source = read('vendor/dashticz/xmltv.php');
+  assert.match(source, /gzdecode\(\$body, 104857601\)/);
+  assert.match(source, /getFromIndex\(\$candidateIndex, 104857601\)/);
+  assert.match(source, /dashticz_remote_response_headers\(/);
+  assert.doesNotMatch(source, /header\('Content-Type: application\/xml/);
+  assert.match(read('vendor/dashticz/lms/index.php'), /'maxBytes' => 8388608/);
+});
+
 test('js/widgets.json is read the same way by PHP and by DT_function', () => {
   const manifest = JSON.parse(read('js/widgets.json'));
   const dir = path.join(root, 'vendor/dashticz').replace(/\\/g, '/');
@@ -2083,4 +2221,56 @@ echo json_encode(array($posted, $seenCookies, $failed, $messages));`;
     server.kill();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('LAN bridges only connect to hosts on the local network', () => {
+  const result = runPhp(`
+    $out = array();
+    foreach (array('192.168.1.5', '10.0.0.2', 'fd12::1', '8.8.8.8', '127.0.0.1', '169.254.169.254', '0.0.0.0', '::1', 'fe80::1', 'nonsense') as $ip) {
+      $out[$ip] = dashticz_bridge_ip_allowed($ip, false);
+    }
+    $out['public-allowed'] = dashticz_bridge_ip_allowed('8.8.8.8', true);
+    $out['loopback-allowed'] = dashticz_bridge_ip_allowed('127.0.0.1', true);
+    foreach (array('192.168.1.5', '8.8.8.8', '127.0.0.1') as $host) {
+      try {
+        dashticz_require_bridge_host($host);
+        $out['host-' . $host] = true;
+      } catch (RuntimeException $error) {
+        $out['host-' . $host] = false;
+      }
+    }
+    echo json_encode($out);
+  `);
+  assert.deepEqual(result, {
+    '192.168.1.5': true,
+    '10.0.0.2': true,
+    'fd12::1': true,
+    '8.8.8.8': false,
+    '127.0.0.1': false,
+    '169.254.169.254': false,
+    '0.0.0.0': false,
+    '::1': false,
+    'fe80::1': false,
+    nonsense: false,
+    'public-allowed': true,
+    'loopback-allowed': true,
+    'host-192.168.1.5': true,
+    'host-8.8.8.8': false,
+    'host-127.0.0.1': false,
+  });
+  for (const file of [
+    'vendor/dashticz/toon/index.php',
+    'vendor/dashticz/fullykiosk/index.php',
+    'vendor/dashticz/hpilo/index.php',
+    'vendor/dashticz/lms/index.php',
+  ]) {
+    assert.match(read(file), /dashticz_require_bridge_host\(\$(host|server)\)/);
+  }
+});
+
+test('HP iLO bridge keeps within its time budget', () => {
+  const hpilo = read('vendor/dashticz/hpilo/index.php');
+  assert.match(hpilo, /'deadline' => microtime\(true\) \+ 50/);
+  assert.match(hpilo, /dashticz_hpilo_out_of_time\(\$input\)/);
+  assert.match(hpilo, /'timeout' => \(int\) min\(15, ceil\(\$remaining\)\)/);
 });
