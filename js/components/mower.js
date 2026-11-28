@@ -40,6 +40,12 @@ var DT_mower = (function () {
   // Start and Park: the levels of the actions device of the widget.
   var BRIDGE_ACTIONS = { 20: 'Start', 60: 'ParkUntilNextSchedule' };
 
+  var PRESSED_MS = 10000;
+  // The pressed button of every mower tile, by tile key. It lives outside the
+  // widget object, because the framework can draw the tile again with a new
+  // widget object (a refresh, or a Domoticz update), which would lose it.
+  var pressedTiles = {};
+
   return {
     name: 'mower',
     canHandle: function (block) {
@@ -85,6 +91,7 @@ var DT_mower = (function () {
     },
     // Exposed for the tests.
     render: render,
+    markPressed: markPressed,
     findDevices: findDevices,
     fromBridge: fromBridge,
     nextStartText: nextStartText,
@@ -184,18 +191,29 @@ var DT_mower = (function () {
     );
   }
 
-  var PRESSED_MS = 10000;
+  function tileId(me) {
+    return me.key || me.mountPoint || 'mower';
+  }
+
+  function isPressed(me, key) {
+    var state = pressedTiles[tileId(me)];
+    return !!state && state.key === key && Date.now() < state.until;
+  }
 
   // Light up the button that was pressed for 10 seconds, so that there is
-  // visible feedback. The tile is drawn again after a status refresh, so the
-  // pressed button is remembered on the widget and not only on the element.
+  // visible feedback.
   function markPressed(me, key) {
-    clearTimeout(me.pressedTimer);
-    me.pressed = key;
+    var id = tileId(me);
+    if (pressedTiles[id]) clearTimeout(pressedTiles[id].timer);
+    var state = (pressedTiles[id] = {
+      key: key,
+      until: Date.now() + PRESSED_MS,
+      me: me,
+    });
     render(me);
-    me.pressedTimer = setTimeout(function () {
-      me.pressed = null;
-      render(me);
+    state.timer = setTimeout(function () {
+      if (pressedTiles[id] === state) delete pressedTiles[id];
+      render(state.me);
     }, PRESSED_MS);
   }
 
@@ -323,6 +341,8 @@ var DT_mower = (function () {
   }
 
   function render(me) {
+    var tile = pressedTiles[tileId(me)];
+    if (tile) tile.me = me;
     var bridge = usesBridge(me.block);
     var dev = findDevices(me.block, me.data);
     var $state = me.$mountPoint.find('.dt_state');
@@ -348,7 +368,7 @@ var DT_mower = (function () {
       buttons +=
         '<button type="button" class="mower-btn mower-toggle' +
         (on ? ' active' : '') +
-        (me.pressed === 'run' ? ' pressed' : '') +
+        (isPressed(me, 'run') ? ' pressed' : '') +
         '" data-act="run" aria-pressed="' +
         on +
         '">' +
@@ -362,7 +382,7 @@ var DT_mower = (function () {
         .map(function (item) {
           return (
             '<button type="button" class="mower-btn' +
-            (me.pressed === 'action' + item.level ? ' pressed' : '') +
+            (isPressed(me, 'action' + item.level) ? ' pressed' : '') +
             '" data-act="action" data-level="' +
             item.level +
             '">' +

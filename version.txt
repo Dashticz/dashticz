@@ -1,4 +1,4 @@
 {
-    "version": "4.2081",
-    "last_changes": "Husqvarna widget: a button that was pressed lights up in the theme's active button color for 10 seconds, so that you can see the press was received."
+    "version": "4.2082",
+    "last_changes": "Husqvarna widget: the pressed button now really stays lit for 10 seconds (it went out again after a moment)."
 }

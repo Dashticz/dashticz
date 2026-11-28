@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2082": "Husqvarna widget: the pressed button now really stays lit for 10 seconds (it went out again after a moment).",
     "4.2081": "Husqvarna widget: a button that was pressed lights up in the theme's active button color for 10 seconds, so that you can see the press was received.",
     "4.2080": "Car status widget: Not home only shows when the home device is set and has reported, not before the devices have loaded.",
     "4.2079": "Car status widget: fix the error Cannot read properties of undefined (reading 'mileage') in the log at every update of a device.",

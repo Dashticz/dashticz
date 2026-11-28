@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2082 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Husqvarna widget: the pressed button now really stays lit for 10 seconds (it went out again after a moment).
+
 v4.2081 (28-11-2026)
 ----------------------
 
