@@ -54,6 +54,15 @@ var DT_carstatus = (function () {
     'home',
   ];
 
+  // Declared before the return below: a var after it is never assigned.
+  var STATE_LABELS = {
+    door: 'Doors',
+    windows: 'Windows',
+    charging: 'Charging',
+    driving: 'Driving',
+    home: 'Home',
+  };
+
   return {
     name: 'carstatus',
     canHandle: function (block) {
@@ -85,14 +94,6 @@ var DT_carstatus = (function () {
     batteryClass: batteryClass,
     limitsOf: limitsOf,
     timePlus: timePlus,
-  };
-
-  var STATE_LABELS = {
-    door: 'Doors',
-    windows: 'Windows',
-    charging: 'Charging',
-    driving: 'Driving',
-    home: 'Home',
   };
 
   // A status that changes goes to the Dashticz log, for example

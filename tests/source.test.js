@@ -8632,6 +8632,66 @@ test('Car status test view shows every row', () => {
   assert.doesNotMatch(noTest, /carstatus-charging/);
 });
 
+test('Car status: a device update does not throw and logs a status change', () => {
+  const devices = {
+    1: { Status: 'Closed', Data: 'Closed' },
+    3: { Data: '12345 km' },
+    5: { Data: '90' },
+    6: { Data: '80 %' },
+  };
+  const callbacks = [];
+  const logs = [];
+  const chain = {
+    find: () => chain,
+    remove: () => chain,
+    append: () => chain,
+    css: () => chain,
+    html: () => chain,
+  };
+  const context = {
+    language: { misc: {} },
+    settings: {},
+    Debug: { widget: (...args) => logs.push(args) },
+    Dashticz: {
+      register: () => {},
+      subscribeDevice: (me, idx, current, callback) => callbacks.push(callback),
+    },
+    Domoticz: { getAllDevices: () => devices },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/carstatus.js'), 'utf8'),
+    context
+  );
+  const me = {
+    block: {
+      csmode: 'status',
+      csdoor: 1,
+      csmileage: 3,
+      cschargetime: 5,
+      csbattery: 6,
+      title: 'BMW',
+    },
+    $mountPoint: chain,
+  };
+  context.DT_carstatus.run(me);
+  assert.equal(callbacks.length, 4);
+  // Every device (also the ones that are not a status) updates without error.
+  callbacks.forEach((callback) => callback());
+  assert.equal(logs.length, 0);
+  // A door that opens is logged once as a warning.
+  devices[1] = { Status: 'Open', Data: 'Open' };
+  callbacks[0]();
+  const changes = logs.filter((entry) => /closed -> open/.test(entry[1]));
+  assert.equal(changes.length, 1);
+  assert.match(changes[0][1], /Doors: closed -> open/);
+  assert.equal(changes[0][2], 'warning');
+});
+
 test('Car status battery bar: colour thresholds', () => {
   const context = {
     language: { misc: {} },

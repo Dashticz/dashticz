@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2079 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: every update of a device logged four errors ``Cannot read properties of undefined (reading 'mileage')`` (and ``charging``, ``chargetime``, ``battery``) and the tile was not drawn again. The list of status names for the log was declared after the ``return`` of the widget and so never set.
+
 v4.2078 (28-11-2026)
 ----------------------
 

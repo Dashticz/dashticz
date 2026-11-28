@@ -1,4 +1,4 @@
 {
-    "version": "4.2078",
-    "last_changes": "The debug window that opened by clicking on the logo is removed. The Dashticz log (Settings -> Log) stays."
+    "version": "4.2079",
+    "last_changes": "Car status widget: fix the error Cannot read properties of undefined (reading 'mileage') in the log at every update of a device."
 }
