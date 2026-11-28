@@ -21,6 +21,7 @@ var Debug = (function () {
   var serverTimer = null;
   var serverFailedAt = 0;
   var widgetSeen = {};
+  var forceNext = false; // the next server log line skips the duplicate check
 
   var $el;
   var $elbody;
@@ -285,14 +286,16 @@ var Debug = (function () {
 
   // A message of a widget (a notification of an appliance, a failed data
   // request) with the widget name in front. level 'error' for a widget that
-  // does not work, otherwise (default) a warning.
-  function widget(name, text, level) {
+  // does not work, otherwise (default) a warning. always: log it also when
+  // the same message was logged less than 5 minutes ago (a status change).
+  function widget(name, text, level, always) {
     // Widgets draw their message again at every refresh: once per 5 minutes.
     var key = name + ':' + text;
     var now = Date.now();
-    if (widgetSeen[key] && now - widgetSeen[key] < 300000) return;
+    if (!always && widgetSeen[key] && now - widgetSeen[key] < 300000) return;
     widgetSeen[key] = now;
     if (Object.keys(widgetSeen).length > 200) widgetSeen = {};
+    forceNext = !!always;
     return write(3, [
       level === 'error' ? Debug.ERROR : Debug.WARNING,
       '[' + name + '] ' + text,
@@ -345,6 +348,8 @@ var Debug = (function () {
   }
 
   function toServerLog(item) {
+    var force = forceNext;
+    forceNext = false;
     var level;
     var text = item.text;
     if (item.type === Debug.ERROR) level = 'error';
@@ -358,7 +363,7 @@ var Debug = (function () {
       text = 'Domoticz command: ' + commandSummary(item.text);
     } else return;
     if (LOG_LEVELS[level] > serverLogLevel()) return;
-    serverLog(level, text);
+    serverLog(level, text, force);
   }
 
   // type=command&param=switchlight&idx=5&switchcmd=On -> only these fields.
@@ -375,13 +380,13 @@ var Debug = (function () {
     return parts.join(' ');
   }
 
-  function serverLog(level, text) {
+  function serverLog(level, text, force) {
     text = maskSensitive(text).slice(0, 1000);
     // The same message within 5 minutes is logged once (a failing request
     // that repeats on every refresh would otherwise fill the log).
     var key = level + ':' + text;
     var now = Date.now();
-    if (serverSeen[key] && now - serverSeen[key] < 300000) return;
+    if (!force && serverSeen[key] && now - serverSeen[key] < 300000) return;
     serverSeen[key] = now;
     if (Object.keys(serverSeen).length > 200) serverSeen = {};
     if (serverQueue.length >= 50) return;

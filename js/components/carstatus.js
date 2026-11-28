@@ -72,6 +72,7 @@ var DT_carstatus = (function () {
         var idx = deviceIdx(me.block, field);
         if (idx) {
           Dashticz.subscribeDevice(me, idx, false, function () {
+            logChange(me, field);
             render(me);
           });
         }
@@ -85,6 +86,31 @@ var DT_carstatus = (function () {
     limitsOf: limitsOf,
     timePlus: timePlus,
   };
+
+  var STATE_LABELS = {
+    door: 'Doors',
+    windows: 'Windows',
+    charging: 'Charging',
+    driving: 'Driving',
+    home: 'Home',
+  };
+
+  // A status that changes goes to the Dashticz log, for example
+  // 'Car status: Doors: closed -> open'. The first value is only remembered.
+  function logChange(me, field) {
+    if (!STATE_LABELS[field]) return;
+    var state = stateOf(me.block, field);
+    var last = me.logged || (me.logged = {});
+    var old = last[field];
+    last[field] = state;
+    if (old === undefined || old === state) return;
+    DT_function.widgetLog(
+      me.block.title || 'Car status',
+      STATE_LABELS[field] + ': ' + (old || '?') + ' -> ' + (state || '?'),
+      'warning',
+      true
+    );
+  }
 
   function esc(value) {
     return DT_function.escapeHtml(value);

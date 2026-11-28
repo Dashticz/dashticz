@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2075 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status: a change of the status of the doors, windows, charging, driving or home is written to the Dashticz log as a warning, for example ``[Car status] Doors: closed -> open``. Set the log level to ``warning`` or higher in Settings -> Log.
+
 v4.2074 (28-11-2026)
 ----------------------
 

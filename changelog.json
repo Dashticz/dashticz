@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2075": "Car status: a change of the doors, windows, charging, driving or home status is written to the log as a warning (for example Doors: closed -> open).",
     "4.2074": "Car status widget: a lightning bolt in the battery icon while the car is charging.",
     "4.2073": "Slide button: title size and horizontal alignment can be set in Device Config -> Text.",
     "4.2072": "Log level Warning (orange): notifications of widgets, such as a HomeConnect message, now are warnings instead of errors. Errors stay red. Log levels: off, error, warning, action, debug.",

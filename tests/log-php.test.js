@@ -217,3 +217,9 @@ test('widget notifications are warnings, widgets that fail are errors', () => {
     /Debug\.widget\('HomeConnect', app\.name/
   );
 });
+
+test('Car status logs a status change', () => {
+  const src = read('js/components/carstatus.js');
+  assert.match(src, /function logChange\(me, field\)/);
+  assert.match(src, /logChange\(me, field\);/);
+});
