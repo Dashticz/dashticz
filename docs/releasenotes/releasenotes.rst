@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2071 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: the white to green gradient of the battery bar changes more gradually.
+
 v4.2070 (28-11-2026)
 ----------------------
 

@@ -1,4 +1,4 @@
 {
-    "version": "4.2070",
-    "last_changes": "Car status widget: Charging until also shows when the charging device is a text device (Charging, Laden, Yes), when the charge time is a duration (1:30, 1h 30m, 90 min) and when only a charge time device is set."
+    "version": "4.2071",
+    "last_changes": "Car status widget: the white to green gradient of the battery bar changes more gradually."
 }

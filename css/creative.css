@@ -9491,7 +9491,7 @@ canvas {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+  background: linear-gradient(90deg, #c0fce1 0%, #7fdcb0 55%, #059956 100%);
   transition: width 0.6s ease;
 }
 
