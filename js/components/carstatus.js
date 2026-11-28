@@ -237,10 +237,10 @@ var DT_carstatus = (function () {
       '<rect x="4.5" y="8.5" width="' +
       width +
       '" height="7" fill="currentColor" stroke="none"></rect>' +
-      // While charging: a lightning bolt inside the battery, with a dark edge
-      // so it shows on the filled and on the empty part.
+      // While charging: a yellow lightning bolt with a dark edge, over the
+      // whole height of the icon.
       (charging
-        ? '<path class="carstatus-bolt" d="M13 6.5 8 12.3h3.2L10 17.5l5.5-6.3h-3.4z" fill="#fff" stroke="rgba(0,0,0,0.7)" stroke-width="1.2"></path>'
+        ? '<path class="carstatus-bolt" d="M15 1 6 13.2h5.2L9 23l9.5-12.8h-5.4z" fill="#ffd21f" stroke="#111" stroke-width="1.3" stroke-linejoin="round"></path>'
         : '') +
       '</svg>'
     );

@@ -1,4 +1,4 @@
 {
-    "version": "4.2075",
-    "last_changes": "Car status: a change of the doors, windows, charging, driving or home status is written to the log as a warning (for example Doors: closed -> open)."
+    "version": "4.2076",
+    "last_changes": "Car status widget: the charging lightning bolt is bigger, yellow, and runs through the whole battery icon."
 }

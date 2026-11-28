@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2076 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: the charging lightning bolt is bigger and yellow, and runs through the whole battery icon.
+
 v4.2075 (28-11-2026)
 ----------------------
 
