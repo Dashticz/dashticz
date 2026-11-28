@@ -104,6 +104,7 @@ function dashticz_hpilo_read_input()
         throw new RuntimeException('Invalid iLO host.');
     }
 
+    dashticz_require_bridge_host($host);
     $port = isset($input['port']) ? (int) $input['port'] : 443;
     if ($port < 1 || $port > 65535) {
         $port = 443;
@@ -131,6 +132,8 @@ function dashticz_hpilo_read_input()
         'password' => $password,
         'pollSeconds' => $pollSeconds,
         'sections' => $sections,
+        // The request may take 60 seconds (set_time_limit); stay below it.
+        'deadline' => microtime(true) + 50,
     );
 }
 
@@ -143,7 +146,10 @@ function dashticz_hpilo_cache_file($input)
         return null;
     }
     $key = strtolower($input['host'] . ':' . $input['port'] . '|' . $input['username'] . '|' . implode(',', $input['sections']));
-    return $baseDir . '/' . sha1($key) . '.json';
+    // Keyed with the password too, like the PostNL cache: without it anyone who
+    // knows the host and user name could read the cached iLO data (serial
+    // number, IP and MAC address) without the password.
+    return $baseDir . '/' . hash_hmac('sha256', $key, $input['password']) . '.json';
 }
 
 function dashticz_hpilo_read_cache($file)
@@ -152,7 +158,7 @@ function dashticz_hpilo_read_cache($file)
         return null;
     }
     $data = json_decode((string) @file_get_contents($file), true);
-    return is_array($data) && isset($data['fetchedAt'], $data['data']) ? $data : null;
+    return is_array($data) ? $data : null;
 }
 
 function dashticz_hpilo_write_cache($file, $data)
@@ -160,14 +166,24 @@ function dashticz_hpilo_write_cache($file, $data)
     if (!$file) {
         return;
     }
-    dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'data' => $data)));
+    dashticz_atomic_write_file($file, json_encode(array('fetchedAt' => time(), 'data' => $data)), 0600);
 }
 
 // ------------------------------------------------------------ Redfish/curl
 
 function dashticz_hpilo_get($input, $path)
 {
+    // Paths come from the answers of the iLO itself (@odata.id): a value that
+    // does not start with a slash would change the host of the request.
+    if (!is_string($path) || $path === '' || $path[0] !== '/' || strpos($path, '//') === 0) {
+        throw new DashticzHpiloHttpError('Unexpected path', 400);
+    }
+    $remaining = isset($input['deadline']) ? $input['deadline'] - microtime(true) : 15;
+    if ($remaining < 1) {
+        throw new RuntimeException('The iLO answers too slowly.');
+    }
     $response = dashticz_http_request('https://' . $input['host'] . ':' . $input['port'] . $path, array(
+        'timeout' => (int) min(15, ceil($remaining)),
         'verifyTls' => false,
         'userpwd' => $input['username'] . ':' . $input['password'],
         'headers' => array('Accept: application/json', 'OData-Version: 4.0'),
@@ -406,6 +422,12 @@ function dashticz_hpilo_section_manager($input, $managersUri)
 
 // Worst health over all drives (or, when the iLO doesn't expose drives, all
 // storage controllers), like the reference plugin's Storage device.
+// True when the time budget of this request is (almost) used up.
+function dashticz_hpilo_out_of_time($input)
+{
+    return isset($input['deadline']) && $input['deadline'] - microtime(true) < 3;
+}
+
 function dashticz_hpilo_section_storage($input, $systemUri)
 {
     $storage = dashticz_hpilo_get($input, rtrim($systemUri, '/') . '/Storage');
@@ -428,6 +450,10 @@ function dashticz_hpilo_section_storage($input, $systemUri)
         if (empty($member['@odata.id'])) {
             continue;
         }
+        // Many drives on a slow iLO: report what has been read so far.
+        if (dashticz_hpilo_out_of_time($input)) {
+            break;
+        }
         try {
             $controller = dashticz_hpilo_get($input, $member['@odata.id']);
         } catch (DashticzHpiloHttpError $error) {
@@ -437,6 +463,9 @@ function dashticz_hpilo_section_storage($input, $systemUri)
         foreach (isset($controller['Drives']) && is_array($controller['Drives']) ? $controller['Drives'] : array() as $driveRef) {
             if (empty($driveRef['@odata.id'])) {
                 continue;
+            }
+            if (dashticz_hpilo_out_of_time($input)) {
+                break 2;
             }
             try {
                 $drive = dashticz_hpilo_get($input, $driveRef['@odata.id']);
@@ -545,15 +574,28 @@ function dashticz_hpilo_get_data($input)
 {
     $cacheFile = dashticz_hpilo_cache_file($input);
     $cache = dashticz_hpilo_read_cache($cacheFile);
-    if ($cache && (time() - (int) $cache['fetchedAt']) < $input['pollSeconds']) {
+    $hasData = $cache && isset($cache['fetchedAt'], $cache['data']);
+    if ($hasData && (time() - (int) $cache['fetchedAt']) < $input['pollSeconds']) {
         return $cache['data'];
+    }
+
+    // A failed poll is not repeated for a few minutes: the iLO blocks a user
+    // after a few rejected logins, and every dashboard polls on its own.
+    if (dashticz_cache_failure_recent($cache, 300)) {
+        if ($hasData) {
+            return $cache['data'];
+        }
+        throw new RuntimeException($cache['error']);
     }
 
     try {
         $data = dashticz_hpilo_fetch($input);
     } catch (RuntimeException $error) {
+        if ($cacheFile) {
+            dashticz_cache_note_failure($cacheFile, $cache, $error->getMessage());
+        }
         // A transient hiccup falls back to the last known good result.
-        if ($cache) {
+        if ($hasData) {
             return $cache['data'];
         }
         throw $error;

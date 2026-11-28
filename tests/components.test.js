@@ -462,10 +462,16 @@ test('Mower finds its devices by name and shows only Start and Park', () => {
       Name: 'Other - State',
     },
   };
+  const timers = [];
   const mower = loadComponent('js/components/mower.js', {
     DT_function: { escapeHtml: (value) => String(value) },
     Domoticz: { getAllDevices: (idx) => (idx ? devices[idx] : devices) },
     atob: (value) => Buffer.from(value, 'base64').toString(),
+    setTimeout: (fn, ms) => {
+      timers.push(ms);
+      return timers.length;
+    },
+    clearTimeout: () => {},
   });
   assert.equal(mower.canHandle({ mowermode: 'info' }), true);
   assert.equal(mower.canHandle({ toonmode: 'info' }), false);
@@ -518,6 +524,17 @@ test('Mower finds its devices by name and shows only Start and Park', () => {
   assert.match(html, /data-level="20">Start/);
   assert.match(html, /data-level="60">Park/);
   assert.doesNotMatch(html, /Pause|Resume/);
+  // A pressed button stays lit for 10 seconds, also when the tile is drawn
+  // again with a new widget object.
+  const tile = () => ({ key: 'k1', $mountPoint: { find: () => state } });
+  mower.markPressed(tile(), 'action20');
+  assert.deepEqual(timers, [10000]);
+  assert.match(html, /mower-btn pressed" data-act="action" data-level="20"/);
+  assert.doesNotMatch(html, /pressed" data-act="action" data-level="60"/);
+  mower.render(tile());
+  assert.match(html, /mower-btn pressed" data-act="action" data-level="20"/);
+  mower.render({ key: 'k2', $mountPoint: { find: () => state } });
+  assert.doesNotMatch(html, /mower-btn pressed/);
 });
 
 test('Home Connect widget groups the plugin devices per appliance', () => {

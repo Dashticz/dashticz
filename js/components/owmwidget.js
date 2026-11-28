@@ -104,14 +104,30 @@ var DT_owmwidget = (function () {
   }
 
   function refreshOWM(me) {
-    me.cityIdPromise.then(function (res) {
-      me.cityId = res;
-      getOWMWidget(me);
-    });
+    me.cityIdPromise.then(
+      function (res) {
+        me.cityId = res;
+        getOWMWidget(me);
+      },
+      function (res) {
+        var message =
+          'Unable to get the OpenWeatherMap city: status ' +
+          ((res && res.status) || '?') +
+          '. Check the city, country and API key.';
+        Debug.log(Debug.ERROR, message);
+        me.$mountPoint.find('.dt_state').text(message);
+      }
+    );
   }
 
   function getOWMWidget(me) {
-    window.myWidgetParam ? window.myWidgetParam : (window.myWidgetParam = []);
+    // One entry per widget: every refresh replaces the entry of this widget,
+    // so the list does not grow and the other widgets are not drawn again.
+    window.myWidgetParam = (window.myWidgetParam || []).filter(
+      function (param) {
+        return param.containerid !== me.containerid;
+      }
+    );
     window.myWidgetParam.push({
       id: me.block.layout,
       cityid: me.cityId,
@@ -136,9 +152,12 @@ var DT_owmwidget = (function () {
       'https://api.openweathermap.org/data/2.5/' +
       (makeForecast ? 'forecast' : 'weather') +
       '?';
-    if (isNumeric(city)) site += 'id=' + city;
-    else site += 'q=' + city + ',' + country;
-    site += '&appid=' + api + '&lang=' + lang;
+    if (isNumeric(city)) site += 'id=' + encodeURIComponent(city);
+    else
+      site +=
+        'q=' + encodeURIComponent(city) + ',' + encodeURIComponent(country);
+    site +=
+      '&appid=' + encodeURIComponent(api) + '&lang=' + encodeURIComponent(lang);
     if (settings['use_fahrenheit'] === 1) {
       site += '&units=imperial';
     } else {

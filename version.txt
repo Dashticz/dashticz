@@ -1,4 +1,4 @@
 {
-    "version": "4.2058",
-    "last_changes": "Fix: the color picker button of RGB lamps shows the lamp color again instead of a checkerboard."
+    "version": "4.2082",
+    "last_changes": "Husqvarna widget: the pressed button now really stays lit for 10 seconds (it went out again after a moment)."
 }

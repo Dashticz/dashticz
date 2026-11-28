@@ -110,6 +110,8 @@ function dashticz_lms_read_input()
         throw new RuntimeException('Enter the Lyrion Music Server address.');
     }
 
+    dashticz_require_bridge_host($server);
+
     $port = isset($input['port']) ? (int) $input['port'] : 9000;
     if ($port < 1 || $port > 65535) {
         throw new RuntimeException('Enter a valid Lyrion Music Server port.');
@@ -277,7 +279,8 @@ function dashticz_lms_curl($url, $request, $extraOptions)
         throw new RuntimeException('The PHP curl extension is required for the Lyrion Music Server block.');
     }
 
-    $options = $extraOptions + array('connectTimeout' => 4, 'timeout' => 8);
+    // Cover art is turned into a data URI in memory: 8 MB at most.
+    $options = $extraOptions + array('connectTimeout' => 4, 'timeout' => 8, 'maxBytes' => 8388608);
     // Basic auth only when a username is actually configured - matches the
     // reference domoticz_lyrion plugin (auth = (user, pwd) if user else None):
     // LMS authentication is optional and off by default.

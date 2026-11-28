@@ -127,8 +127,9 @@ var Dashticz = (function () {
       me.currentClass = addClass; //store current class, so that we can remove it on next update.
     }
     if (me.block.template === 1) $div.addClass('dt_column');
-    // Separator: title size and horizontal alignment (Device Config -> Text).
-    if (me.name === 'blocktitle') applyBlockTextStyle($div, me.block);
+    // Separator and button: title size and horizontal alignment (Device Config -> Text).
+    if (me.name === 'blocktitle' || me.name === 'button')
+      applyBlockTextStyle($div, me.block);
     block
       .find('.dt_state')
       .append(getProperty(components[me.name].defaultContent, me));

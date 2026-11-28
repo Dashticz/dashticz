@@ -67,6 +67,12 @@ var DT_trafficinfo = (function () {
           );
         })
         .fail(function () {
+          DT_function.widgetLog(
+            'Traffic info',
+            language.misc.traffic_error ||
+              'Unable to fetch the traffic information.',
+            'error'
+          );
           $(me.mountPoint + ' .dt_state').html(
             '<div class="empty">' +
               _escapeTraffic(
