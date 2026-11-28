@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2074 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a lightning bolt in the battery icon while the car is charging.
+
 v4.2073 (28-11-2026)
 ----------------------
 

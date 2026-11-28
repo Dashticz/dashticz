@@ -1,4 +1,4 @@
 {
-    "version": "4.2073",
-    "last_changes": "Slide button: title size and horizontal alignment can be set in Device Config -> Text."
+    "version": "4.2074",
+    "last_changes": "Car status widget: a lightning bolt in the battery icon while the car is charging."
 }

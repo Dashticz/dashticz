@@ -8555,6 +8555,22 @@ test('Car status shows Charging until for text devices and durations', () => {
   assert.doesNotMatch(show('On', '0'), /Charging until/);
 });
 
+test('Car status shows a lightning bolt in the battery icon while charging', () => {
+  const block = { csmode: 'status', csbattery: 6, cscharging: 4, cshome: 8 };
+  const show = (charging) =>
+    renderCarstatus(
+      {
+        4: { Status: charging, Data: charging },
+        6: { Data: '80 %' },
+        8: { Status: 'On', Data: 'On' },
+      },
+      block
+    );
+  assert.match(show('On'), /class="carstatus-bolt"/);
+  assert.match(show('Charging'), /class="carstatus-bolt"/);
+  assert.doesNotMatch(show('Off'), /carstatus-bolt/);
+});
+
 test('Car status test view shows every row', () => {
   const devices = { 1: { Status: 'Open' }, 8: { Status: 'On' } };
   let html = '';

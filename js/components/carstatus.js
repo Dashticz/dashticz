@@ -203,14 +203,20 @@ var DT_carstatus = (function () {
 
   // The icons are drawn here as SVG: no icon font, and they follow the
   // colour of the text. The battery is filled up to the battery level.
-  function batterySvg(pct) {
+  function batterySvg(pct, charging) {
     var width = Math.round((pct / 100) * 13 * 10) / 10;
     return (
       '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<rect x="2" y="6" width="18" height="12" rx="2"></rect><path d="M22 10.5v3"></path>' +
       '<rect x="4.5" y="8.5" width="' +
       width +
-      '" height="7" fill="currentColor" stroke="none"></rect></svg>'
+      '" height="7" fill="currentColor" stroke="none"></rect>' +
+      // While charging: a lightning bolt inside the battery, with a dark edge
+      // so it shows on the filled and on the empty part.
+      (charging
+        ? '<path class="carstatus-bolt" d="M13 6.5 8 12.3h3.2L10 17.5l5.5-6.3h-3.4z" fill="#fff" stroke="rgba(0,0,0,0.7)" stroke-width="1.2"></path>'
+        : '') +
+      '</svg>'
     );
   }
 
@@ -231,7 +237,7 @@ var DT_carstatus = (function () {
       batteryClass(level, limits) +
       (charging ? ' carstatus-charging' : '') +
       '"><span class="carstatus-pct">' +
-      batterySvg(level) +
+      batterySvg(level, charging) +
       level +
       '%</span><span class="carstatus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
       level +
