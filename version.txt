@@ -1,4 +1,4 @@
 {
-    "version": "4.2077",
-    "last_changes": "Car status widget: a stronger glow in the battery bar while charging."
+    "version": "4.2078",
+    "last_changes": "The debug window that opened by clicking on the logo is removed. The Dashticz log (Settings -> Log) stays."
 }

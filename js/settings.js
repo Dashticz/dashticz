@@ -1091,7 +1091,6 @@ var defaultSettings = {
   domoticz_timeout: 1000,
   use_cors: 0,
   cached_scripts: true,
-  heartbeat: 0,
   logLevel: 'error',
   fake_domoticz: false,
 };

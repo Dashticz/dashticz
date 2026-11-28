@@ -223,3 +223,11 @@ test('Car status logs a status change', () => {
   assert.match(src, /function logChange\(me, field\)/);
   assert.match(src, /logChange\(me, field\);/);
 });
+
+test('the debug window that opened on the logo is gone', () => {
+  assert.equal(fs.existsSync(path.join(root, 'tpl/debug.tpl')), false);
+  const debug = read('js/debug.js');
+  assert.doesNotMatch(debug, /modal-debug|saveDebug|heartbeat/);
+  assert.doesNotMatch(read('css/creative.css'), /#debug-items/);
+  assert.doesNotMatch(read('js/settings.js'), /heartbeat/);
+});

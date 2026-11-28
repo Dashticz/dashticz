@@ -9,7 +9,7 @@ What is logged
 - ``error``: JavaScript errors, unhandled promise rejections, failed requests, errors of the PHP bridges (also when a bridge answers with an error message) ``console.error`` messages, every notification that a widget or Dashticz shows on screen (the yellow message bar) and widgets that do not work (``[Toon] Unable to reach the Toon``).
 - ``warning``: notifications of widgets that are not an error, for example a message of a HomeConnect appliance (``[HomeConnect] Washer: Drip tray full``), doors or windows open, and the messages in the yellow message bar. Shown in orange. The level ``warning`` includes ``error``.
 - ``action``: switching devices (Domoticz commands) and saving settings, layouts, devices or configurations.
-- ``debug``: ``console.warn`` messages and everything that the debug window (click on the logo) shows too.
+- ``debug``: ``console.warn`` messages, internal Dashticz messages and the loaded settings that have no default.
 
 Level
 -----

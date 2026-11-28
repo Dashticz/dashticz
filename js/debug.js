@@ -1,18 +1,9 @@
 //# sourceURL=js/debug.js
-/* global TemplateEngine defaultSettings config time settings Chart blocks moment*/
+/* global defaultSettings config settings */
+/* The Dashticz log: Debug.log, Debug.action and Debug.widget write to
+   custom/logs/dashticz.log through js/log.php. Settings -> Log shows it. */
 
 var Debug = (function () {
-  var templateEngine = TemplateEngine();
-  var messages = [];
-  var memorySamples = [];
-  var memoryUsedSamples = [];
-  var memoryGraph;
-  var visible = false;
-  var requestCount = 0;
-  var lastRequest = '';
-  var startTime = time();
-  var filteredConfig = {};
-
   // Server log (custom/logs/dashticz.log, written by js/log.php).
   // settings.logLevel: off, error (default), warning, action or debug.
   var LOG_LEVELS = { off: -1, error: 0, warning: 1, action: 2, debug: 3 };
@@ -23,16 +14,9 @@ var Debug = (function () {
   var widgetSeen = {};
   var forceNext = false; // the next server log line skips the duplicate check
 
-  var $el;
-  var $elbody;
-
-  //  window.console = dtConsole;
-
   return {
     init: init,
     log: log,
-    tst: tst,
-    saveDebug: saveDebug,
     action: action,
     widget: widget,
     maskSensitive: maskSensitive,
@@ -50,226 +34,16 @@ var Debug = (function () {
       return !defaultSettings.hasOwnProperty(key);
     });
     if (keysWithoutDefault.length) {
-      //      Debug.log('Config settings without default:\n'+JSON.stringify(keysWithoutDefault,null, 2));
       Debug.log(
         'Config settings without default:\n' + keysWithoutDefault.join(', ')
       );
     }
-    //Find config keys unequal to default setting
-    filteredConfig = configKeys.reduce(function (cfg, key) {
-      var val = config[key];
-      if (val != defaultSettings[key]) cfg[key] = val;
-      return cfg;
-    }, {});
-
     initServerLog();
-
-    $('body').on('click', '.logo', function () {
-      $el.modal({
-        show: true,
-      });
-    });
-    return templateEngine.load('debug').then(function (template) {
-      var data = {};
-      $('body').append(template(data));
-      $el = $('#modal-debug');
-      $el.modal({
-        show: false,
-      });
-      $elbody = $el.find('#debug-items');
-      log('init');
-      $el.on('show.bs.modal', function () {
-        if (!settings.heartbeat) {
-          logUsage();
-        }
-
-        visible = true;
-        createDebug();
-        var obj = $elbody[0];
-        setTimeout(function () {
-          obj.scrollTop = obj.scrollHeight;
-        }, 100);
-      });
-      $el.on('hide.bs.modal', function () {
-        visible = false;
-      });
-      $el.find('#debug-save').on('click', saveDebug);
-      if (settings.heartbeat) startHeartbeat();
-    });
-  }
-
-  function logUsage() {
-    Debug.log(
-      (settings.heartbeat
-        ? 'heartbeat ' +
-          Number((time() - startTime) / settings.heartbeat) +
-          ', '
-        : '') +
-        'usedJSHeapSize: ' +
-        (performance.memory.usedJSHeapSize / 1000).toFixed() +
-        'kB, ' +
-        'DOM element count: ' +
-        $('*').length
-    );
-  }
-
-  function startHeartbeat() {
-    setInterval(function heartbeat() {
-      logUsage();
-      var memory = performance.memory;
-      var newDate = new Date();
-      addSample(memorySamples, {
-        t: newDate,
-        y: memory.totalJSHeapSize / 1000,
-      });
-      addSample(memoryUsedSamples, {
-        t: newDate,
-        y: memory.usedJSHeapSize / 1000,
-      });
-      //$('*').length
-      if (visible) memoryGraph.update();
-    }, settings['heartbeat'] * 1000);
-  }
-
-  function addSample(data, sample) {
-    data.push(sample);
-    limitSize(data, 40);
-  }
-
-  function limitSize(data, len) {
-    if (data.length >= len) {
-      var sampleRate =
-        ((data[data.length - 1].t.getTime() - data[0].t.getTime()) / len) * 2;
-      var startTime = data[0].t.getTime();
-      var i = 0;
-      while (i < data.length) {
-        var keep = i - 1 == data.length;
-        if (data[i].t.getTime() >= startTime) keep = true;
-        if (!keep) {
-          var m1 = i >= 1 ? data[i - 1].y : data[i].y;
-          var m2 = i >= 2 ? data[i - 2].y : m1;
-          var p1 = i <= data.length - 2 ? data[i + 1].y : data[i].y;
-          var p2 = i <= data.length - 3 ? data[i + 2].y : p1;
-          var myMax = Math.max(m2, m1, p1, p2);
-          var myMin = Math.min(m2, m1, p1, p2);
-          if (data[i].y > myMax) keep = true;
-          if (data[i].y < myMin) keep = true;
-        }
-        if (keep) {
-          startTime = data[i].t.getTime() + sampleRate;
-          i++;
-        } else {
-          data.splice(i, 1);
-        }
-      }
-    }
-  }
-
-  function createDebug() {
-    var html = messages.reduce(function (acc, msg) {
-      return acc + (msg.type === Debug.REQUEST ? '' : renderDebugRow(msg));
-    }, '');
-    $elbody.html(html);
-    updateStatus();
-    renderConfigTab();
-    renderBlockTab();
-    if (settings.heartbeat) renderMemoryGraph();
-  }
-
-  function renderConfigTab() {
-    var div = $el.find('#debug-config');
-
-    div.html('<pre>' + JSON.stringify(filteredConfig, null, 2) + '</pre>');
-  }
-
-  function renderMemoryGraph() {
-    var div = $el.find('#debug-memory');
-    var chartctx = div[0].getContext('2d');
-    var graphProperties = {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            label: 'TotalHeapSize',
-            lineTension: 0,
-            data: memorySamples,
-            backgroundColor: 'rgba(255,0,0,0.3)',
-          },
-          {
-            label: 'UsedHeapSize',
-            lineTension: 0,
-            data: memoryUsedSamples,
-            backgroundColor: 'rgba(0,255,0,0.3)',
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          xAxes: [
-            {
-              type: 'time',
-              ticks: {
-                maxTicksLimit: 11,
-              },
-            },
-          ],
-        },
-      },
-    };
-    memoryGraph = new Chart(chartctx, graphProperties);
-  }
-
-  function renderBlockTab() {
-    var div = $el.find('#debug-blocks');
-    div.html('<pre>' + JSON.stringify(blocks, null, 2) + '</pre>');
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function renderDebugRow(msg) {
-    return (
-      '<div>' +
-      msg.timestamp.toISOString().slice(11, 23) +
-      ': ' +
-      escapeHtml(msg.msg) +
-      '</div>'
-    );
+    log('init');
   }
 
   function add(item) {
-    messages.push(item);
     toServerLog(item);
-    if (item.type === Debug.REQUEST) {
-      lastRequest = item;
-      requestCount += 1;
-      updateStatus();
-      return;
-    }
-
-    if (visible) {
-      $elbody.append(renderDebugRow(item));
-      updateStatus();
-      //      $elbody[0].scrollIntoView({behavior: "smooth"});
-    }
-    if (messages.length > 1000) {
-      messages.splice(0, 1);
-      if (visible) $elbody.find(':first-child').remove();
-    }
-  }
-
-  function updateStatus() {
-    $el.find('.debug-status').text(requestCount + ': ' + lastRequest.msg);
-  }
-
-  function tst() {
-    console.log('test');
   }
 
   function log() {
@@ -514,31 +288,5 @@ var Debug = (function () {
         return;
       action('Saved: ' + plainUrl(options.url));
     });
-  }
-
-  function saveDebug() {
-    var debugData = {
-      messages: messages.map(function (res) {
-        return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n';
-      }),
-      config: filteredConfig,
-      blocks: blocks,
-    };
-    var debugTxt = JSON.stringify(debugData, null, 2)
-      .split('\n')
-      .map(function (res) {
-        return res + '\n';
-      });
-    var blobUrl = URL.createObjectURL(
-      new Blob(debugTxt, { type: 'text/plain' })
-    );
-    var download = document.createElement('a');
-    download.href = blobUrl;
-    download.download =
-      'debug.' + moment().format('YYYY-MM-DD-HH-mm-ss') + '.txt';
-    document.body.appendChild(download);
-    download.click();
-    download.remove();
-    URL.revokeObjectURL(blobUrl);
   }
 })();
