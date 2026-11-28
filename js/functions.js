@@ -658,6 +658,23 @@ function getLocationParameters() {
     params[key] = value;
   });
 
+  // These parameters become part of the URL of a script or stylesheet that is
+  // loaded and evaluated: only a plain folder or file name of the dashboard
+  // itself is accepted, never another host or a path outside of it.
+  var allowed = {
+    folder: /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/,
+    cfg: /^[A-Za-z0-9_][A-Za-z0-9_.-]*\.js$/,
+    cfg2: /^[A-Za-z0-9_][A-Za-z0-9_.-]*\.js$/,
+    css: /^[A-Za-z0-9_][A-Za-z0-9_.-]*\.css$/,
+  };
+  Object.keys(allowed).forEach(function (name) {
+    if (params[name] !== undefined && !allowed[name].test(params[name])) {
+      if (typeof console !== 'undefined')
+        console.error('Ignoring the invalid URL parameter ' + name + '.');
+      delete params[name];
+    }
+  });
+
   return params;
 }
 

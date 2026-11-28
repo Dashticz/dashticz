@@ -81,6 +81,10 @@ $allowedSettings = [
     // postnl
     'postnl_username'        => 'string',
     'postnl_password'        => 'string',
+    'dhl_username'           => 'string',
+    'dhl_password'           => 'string',
+    'dpd_username'           => 'string',
+    'dpd_password'           => 'string',
     'postnl_days'            => 'number',
     'postnl_pollminutes'     => 'number',
     'postnl_fontsize'        => 'number',

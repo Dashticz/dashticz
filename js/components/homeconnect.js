@@ -432,6 +432,16 @@ var DT_homeconnect = (function () {
       : status + ', ' + messages.join(', ');
   }
 
+  // The warning of an appliance, also written to the Dashticz log (a repeated
+  // message is logged once per 5 minutes).
+  function reportedWarning(app) {
+    var text = warningText(app);
+    if (text && typeof Debug !== 'undefined' && Debug.widget) {
+      Debug.widget('HomeConnect', app.name + ': ' + text);
+    }
+    return text;
+  }
+
   // Whether the status of the appliance says that the program has finished
   // ('Klaar, Katoen', 'Finished').
   function isFinished(app) {
@@ -462,7 +472,7 @@ var DT_homeconnect = (function () {
     if (app.power ? false : !app.progress && !app.state && !app.alerts.length)
       return '';
     if (app.power && isOff(app.power)) {
-      var open = warningText(app);
+      var open = reportedWarning(app);
       return open ? row(app, esc(open), 'homeconnect-warning') : '';
     }
     var html = '';
@@ -505,7 +515,7 @@ var DT_homeconnect = (function () {
               : '')
         );
     }
-    var warning = warningText(app);
+    var warning = reportedWarning(app);
     if (warning) html += row(app, esc(warning), 'homeconnect-warning');
     return html;
   }
@@ -575,13 +585,36 @@ var DT_homeconnect = (function () {
     return 'http://' + host + ':' + (port > 0 && port < 65536 ? port : 8080);
   }
 
-  // Read the devices of the other Domoticz and draw the tile.
+  // Read the devices of the other Domoticz and draw the tile. The browser
+  // reads that Domoticz directly, so it needs CORS there, and an https
+  // dashboard cannot read an http address (mixed content).
   function refreshRemote(me) {
     var base = remoteBase(me.block);
-    $.getJSON(
-      base + '/json.htm?type=command&param=getdevices&filter=all&used=true'
-    ).then(
+    if (window.location.protocol === 'https:' && /^http:/i.test(base)) {
+      me.remoteError =
+        base +
+        ' (' +
+        tr(
+          'homeconnect_mixed_content',
+          'an https dashboard cannot read an http address'
+        ) +
+        ')';
+      if (typeof Debug !== 'undefined' && Debug.widget) {
+        Debug.widget('HomeConnect', me.remoteError, 'error');
+      }
+      render(me);
+      return;
+    }
+    if (me.remoteBusy) return;
+    me.remoteBusy = true;
+    $.ajax({
+      url:
+        base + '/json.htm?type=command&param=getdevices&filter=all&used=true',
+      dataType: 'json',
+      timeout: 10000,
+    }).then(
       function (res) {
+        me.remoteBusy = false;
         var devices = {};
         ((res && res.result) || []).forEach(function (dev) {
           devices[dev.idx] = dev;
@@ -591,7 +624,15 @@ var DT_homeconnect = (function () {
         render(me);
       },
       function () {
+        me.remoteBusy = false;
         me.remoteError = base;
+        if (typeof Debug !== 'undefined' && Debug.widget) {
+          Debug.widget(
+            'HomeConnect',
+            'Unable to reach Domoticz at ' + base,
+            'error'
+          );
+        }
         render(me);
       }
     );

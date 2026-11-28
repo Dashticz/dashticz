@@ -11098,6 +11098,7 @@ var DashticzDeviceEditor = (function () {
     var ck = orderKey.indexOf('device:') === 0 ? orderKey.slice(7) : '';
     var special = isSpecial ? managedSpecials[orderKey] : null;
     var isTitle = special && special.specialType === 'title';
+    var isSlideButtonConfig = special && special.specialType === 'slidebutton';
     var isCustom = special && special.specialType === 'custom';
     var isGroupBlock = special && special.specialType === 'group';
     var isClusterBlock = special && special.specialType === 'cluster';
@@ -11821,8 +11822,8 @@ var DashticzDeviceEditor = (function () {
 
     if (supportsTextStyle) {
       html += _textStyleHtml(options, t);
-    } else if (isTitle) {
-      // Separator: title size and horizontal alignment only.
+    } else if (isTitle || isSlideButtonConfig) {
+      // Separator and Slide button: title size and horizontal alignment only.
       html += _textStyleHtml(options, t, true);
     }
     if (supportsHeight) {
@@ -12711,7 +12712,7 @@ var DashticzDeviceEditor = (function () {
           updated.compactIcons = pendingCompactIcons;
         }
       }
-      if (isTitle) {
+      if (isTitle || isSlideButtonConfig) {
         updated.fontsizeTitle = _parseTextFontSize(
           $('#de-config-fontsize-title').val(),
           String(options.fontsizeTitle) ===
@@ -14375,6 +14376,12 @@ var DashticzDeviceEditor = (function () {
               special.reference
           ).slice(0, 100);
           specialEntry.icon = slideOptions.iconValue || '';
+          _applyTextStyleFields(specialCustomFields, {
+            fontsizeTitle: slideOptions.fontsizeTitle,
+            textalign: slideOptions.textalign,
+          });
+          if (Object.keys(specialCustomFields).length)
+            specialEntry.custom_fields = specialCustomFields;
           // slide and button_key are sent above, validated; saveblocks.php
           // refuses them as custom fields.
           if (specialEntry.custom_fields) {
