@@ -94,6 +94,9 @@ tap it:
 
 A **Password** can be set to protect the button.
 
+With the cog on the tile you can set the **Title size** (in pixels) and the
+horizontal **Alignment** of the title (left, center or right).
+
 Separator
 ---------
 

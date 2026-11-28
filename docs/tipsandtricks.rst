@@ -224,3 +224,21 @@ The Docker image already contains these settings (see ``docker/default.conf`` an
     </FilesMatch>
 
 Dashticz checks on startup whether a newer version is available. This check runs in the background after the dashboard has started and has a time-out of a few seconds. If you do not want it at all, enable the setting ``disable_update_check``.
+
+Switching the editors and the updater off
+-----------------------------------------
+
+Dashticz has no user accounts: the editors, the Settings page and the update button in Settings can be used by everyone who can open the dashboard. The login setting only hides the dashboard in the browser, it does not protect the server. On a network where that is not acceptable, the owner of the server can switch these functions off. This is a setting of the server, so nobody can change it from the dashboard:
+
+- ``DASHTICZ_READ_ONLY``: the editors, the Settings page, the configuration list and the updater cannot change anything any more. The dashboard itself keeps working.
+- ``DASHTICZ_DISABLE_UPDATE``: only the update button is switched off.
+
+Set the variable in the environment of the web server or PHP-FPM, for example ``SetEnv DASHTICZ_READ_ONLY 1`` in Apache, ``fastcgi_param DASHTICZ_READ_ONLY 1;`` in nginx, or ``environment:`` in ``docker-compose.yaml``. The value ``0``, ``false``, ``off`` or ``no`` switches it off again. Without access to the environment, an empty file in the ``custom`` folder does the same: ``custom/.readonly`` or ``custom/.noupdate``. The file cannot be created or removed from the dashboard.
+
+Changes by the editors are refused with the message "Editing is disabled on this server". To change the dashboard again, remove the variable or the file.
+
+Hosts of the local network bridges
+----------------------------------
+
+The Lyrion Music Server, Toon, Fully Kiosk and HP iLO blocks let the Dashticz server connect to the address you enter. To prevent that this is abused to reach other services, only addresses on the local network are accepted (for example ``192.168.x.x``, ``10.x.x.x`` or ``fd..`` addresses). A host name must resolve to such an address. If a device really has a public address, or runs on the Dashticz machine itself (``127.0.0.1``), set ``DASHTICZ_ALLOW_PUBLIC_BRIDGE_HOSTS 1`` in the environment of the web server, or create an empty file ``custom/.allowpublichosts``. ``DASHTICZ_ALLOWED_REMOTE_HOSTS`` also works for a single host name.
+

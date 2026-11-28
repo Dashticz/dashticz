@@ -8513,68 +8513,6 @@ canvas {
 
 /*end xmltvguide*/
 
-/*debug*/
-.debug ::selection {
-  color: var(--text-light);
-  text-shadow: none;
-  background: blue;
-}
-.debug .modal-body {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.debug .tab-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.debug #debug-log {
-  height: calc(100% - 2em);
-}
-
-.selectable,
-.selectable > * {
-  -moz-user-select: text;
-  -webkit-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-}
-
-.debug #debug-items {
-  height: 100%;
-  overflow-y: auto;
-}
-
-.debug .debug-status {
-  height: 2em;
-}
-
-.debug #debug-status {
-  height: calc(100% - 2em);
-}
-
-.debug .debug-memory-container {
-  height: calc(100% - 8em);
-}
-
-.debug #debug-save {
-  right: 4em;
-  position: absolute;
-  background: var(--success-green);
-}
-
-.modal-dialog-custom .tab-content {
-}
-
-.modal-dialog-custom .debugitems {
-  overflow-y: auto;
-}
-
 /*owm widget*/
 .dt_block.owmwidget {
   background-color: unset;
@@ -9257,31 +9195,38 @@ canvas {
    Config -> Text, set by js/dashticz.js renderBlock() through
    applyBlockTextStyle(). The extra class keeps these above the theme rules
    for .titlegroups .dt_content/.dt_title. */
-.dt_block.blocktitle.dt-fs-title .dt_title {
+.dt_block.blocktitle.dt-fs-title .dt_title,
+.dt_block.button.dt-fs-title .dt_title {
   font-size: var(--dt-fs-title) !important;
 }
 
-.dt_block.blocktitle.dt-align-left .dt_content {
+.dt_block.blocktitle.dt-align-left .dt_content,
+.dt_block.button.dt-align-left .dt_content {
   justify-content: flex-start !important;
 }
 
-.dt_block.blocktitle.dt-align-center .dt_content {
+.dt_block.blocktitle.dt-align-center .dt_content,
+.dt_block.button.dt-align-center .dt_content {
   justify-content: center !important;
 }
 
-.dt_block.blocktitle.dt-align-right .dt_content {
+.dt_block.blocktitle.dt-align-right .dt_content,
+.dt_block.button.dt-align-right .dt_content {
   justify-content: flex-end !important;
 }
 
-.dt_block.blocktitle.dt-align-left .dt_title {
+.dt_block.blocktitle.dt-align-left .dt_title,
+.dt_block.button.dt-align-left .dt_title {
   text-align: left !important;
 }
 
-.dt_block.blocktitle.dt-align-center .dt_title {
+.dt_block.blocktitle.dt-align-center .dt_title,
+.dt_block.button.dt-align-center .dt_title {
   text-align: center !important;
 }
 
-.dt_block.blocktitle.dt-align-right .dt_title {
+.dt_block.blocktitle.dt-align-right .dt_title,
+.dt_block.button.dt-align-right .dt_title {
   text-align: right !important;
 }
 
@@ -9491,7 +9436,7 @@ canvas {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #c0fce1 0%, #059956 100%);
+  background: linear-gradient(90deg, #c0fce1 0%, #7fdcb0 55%, #059956 100%);
   transition: width 0.6s ease;
 }
 
@@ -9954,6 +9899,21 @@ canvas {
 .mower-btn.active {
   background: #059956;
   border-color: #2ecc71;
+}
+
+.mower-btn {
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s,
+    border-color 0.3s;
+}
+
+/* Feedback after a press: the button lights up for 10 seconds. */
+.mower-btn.pressed {
+  background: var(--button-active);
+  border-color: var(--border-color-active);
+  color: var(--text-light);
+  box-shadow: 0 0 10px 2px var(--button-active);
 }
 
 .mower-bar {
@@ -10599,15 +10559,30 @@ canvas {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 60%;
+  width: 70%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.65),
+    rgba(255, 255, 255, 0.95),
     rgba(255, 255, 255, 0)
   );
   transform: translateX(-100%);
   animation: carstatus-charge 1.8s ease-in-out infinite;
+}
+
+/* A soft light around the filled part of the bar, pulsing with the sweep. */
+.carstatus-charging .carstatus-bar-fill {
+  animation: carstatus-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes carstatus-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 var(--carstatus-bar-color, currentColor);
+  }
+  50% {
+    box-shadow: 0 0 9px 2px var(--carstatus-bar-color, currentColor);
+  }
 }
 
 .carstatus-chargetime {

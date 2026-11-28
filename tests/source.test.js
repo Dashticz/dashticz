@@ -459,6 +459,50 @@ test('location parameters ignore malformed and prototype keys', () => {
   );
 });
 
+test('location parameters only accept plain folder and file names for loaded files', () => {
+  assert.deepEqual(
+    parseLocation('?folder=custom2&cfg=CONFIG2.js&cfg2=CONFIG3.js&css=my.css'),
+    { folder: 'custom2', cfg: 'CONFIG2.js', cfg2: 'CONFIG3.js', css: 'my.css' }
+  );
+  assert.deepEqual(parseLocation('?folder=data/custom&x=1'), {
+    folder: 'data/custom',
+    x: '1',
+  });
+  assert.deepEqual(
+    parseLocation(
+      '?folder=%2F%2Fevil.example&cfg=..%2Fx.js&cfg2=http%3A%2F%2Fevil.example%2Fx.js&css=%2F%2Fevil.example%2Fx.css&other=ok'
+    ),
+    { other: 'ok' }
+  );
+  assert.deepEqual(parseLocation('?folder=..%2Fcustom&cfg=CONFIG.php'), {});
+});
+
+test('widgets do not poll twice, keep one OWM entry and escape error texts', () => {
+  const owm = fs.readFileSync(
+    path.join(root, 'js/components/owmwidget.js'),
+    'utf8'
+  );
+  assert.match(owm, /param\.containerid !== me\.containerid/);
+  assert.match(owm, /encodeURIComponent\(city\)/);
+  for (const file of ['mower', 'toon']) {
+    const widget = fs.readFileSync(
+      path.join(root, 'js/components/' + file + '.js'),
+      'utf8'
+    );
+    assert.match(widget, /if \(me\.block\.refresh\) return;/, file);
+  }
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  assert.match(weather, /DT_function\.escapeHtml\(errorTxt\)/);
+  const camera = fs.readFileSync(
+    path.join(root, 'js/components/camera.js'),
+    'utf8'
+  );
+  assert.match(camera, /if \(DT_camera\.devices\.length\) return;/);
+});
+
 test('update check only treats a newer remote version as an update', () => {
   assert.equal(compareVersions('3.19', '3.20.0'), -1);
   assert.equal(compareVersions('3.20', '3.20.0'), 0);
@@ -8479,6 +8523,74 @@ test('Car block follows the logic of the Tablet_Autos script', () => {
   assert.doesNotMatch(html, /Windows:/);
 });
 
+test('Car status shows Charging until for text devices and durations', () => {
+  const block = {
+    csmode: 'status',
+    cscharging: 4,
+    cschargetime: 5,
+    cshome: 8,
+  };
+  const now = new Date(2026, 10, 2, 18, 0, 0).getTime();
+  const show = (charging, chargetime, withCharging = true) =>
+    renderCarstatus(
+      {
+        4: { Data: charging, Status: charging },
+        5: { Data: chargetime },
+        8: { Status: 'On', Data: 'On' },
+      },
+      withCharging ? block : { ...block, cscharging: 0 },
+      now
+    );
+  const until =
+    /Charging until:<\/span> <b class="carstatus-chargetime">(\d\d:\d\d)/;
+  assert.equal(until.exec(show('CHARGING', '90'))[1], '19:30');
+  assert.equal(until.exec(show('Laden', '90 min'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1:30'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1h 30m'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1,5 h'))[1], '19:30');
+  assert.equal(until.exec(show('On', '45 Minutes'))[1], '18:45');
+  assert.equal(until.exec(show('', '90', false))[1], '19:30');
+  assert.doesNotMatch(show('NOT_CHARGING', '90'), /Charging until/);
+  assert.doesNotMatch(show('Off', '90'), /Charging until/);
+  assert.doesNotMatch(show('On', '0'), /Charging until/);
+});
+
+test('Car status shows a lightning bolt in the battery icon while charging', () => {
+  const block = { csmode: 'status', csbattery: 6, cscharging: 4, cshome: 8 };
+  const show = (charging) =>
+    renderCarstatus(
+      {
+        4: { Status: charging, Data: charging },
+        6: { Data: '80 %' },
+        8: { Status: 'On', Data: 'On' },
+      },
+      block
+    );
+  assert.match(show('On'), /class="carstatus-bolt"/);
+  assert.match(show('Charging'), /class="carstatus-bolt"/);
+  assert.doesNotMatch(show('Off'), /carstatus-bolt/);
+});
+
+test('Car status shows Not home only with a home device that has reported', () => {
+  const block = { csmode: 'status', cshome: 8, csbattery: 6 };
+  const devices = (home) => ({ 6: { Data: '80 %' }, ...home });
+  // No data yet: nothing about the location.
+  assert.doesNotMatch(renderCarstatus({}, block), /Not home/);
+  // No home device configured: nothing either.
+  assert.doesNotMatch(
+    renderCarstatus(devices({}), { csmode: 'status', csbattery: 6 }),
+    /Not home/
+  );
+  assert.match(
+    renderCarstatus(devices({ 8: { Status: 'Off', Data: 'Off' } }), block),
+    /Not home/
+  );
+  assert.doesNotMatch(
+    renderCarstatus(devices({ 8: { Status: 'On', Data: 'On' } }), block),
+    /Not home/
+  );
+});
+
 test('Car status test view shows every row', () => {
   const devices = { 1: { Status: 'Open' }, 8: { Status: 'On' } };
   let html = '';
@@ -8538,6 +8650,66 @@ test('Car status test view shows every row', () => {
     csbattery: 5,
   });
   assert.doesNotMatch(noTest, /carstatus-charging/);
+});
+
+test('Car status: a device update does not throw and logs a status change', () => {
+  const devices = {
+    1: { Status: 'Closed', Data: 'Closed' },
+    3: { Data: '12345 km' },
+    5: { Data: '90' },
+    6: { Data: '80 %' },
+  };
+  const callbacks = [];
+  const logs = [];
+  const chain = {
+    find: () => chain,
+    remove: () => chain,
+    append: () => chain,
+    css: () => chain,
+    html: () => chain,
+  };
+  const context = {
+    language: { misc: {} },
+    settings: {},
+    Debug: { widget: (...args) => logs.push(args) },
+    Dashticz: {
+      register: () => {},
+      subscribeDevice: (me, idx, current, callback) => callbacks.push(callback),
+    },
+    Domoticz: { getAllDevices: () => devices },
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/dt_function.js'), 'utf8'),
+    context
+  );
+  vm.runInContext(
+    fs.readFileSync(path.join(root, 'js/components/carstatus.js'), 'utf8'),
+    context
+  );
+  const me = {
+    block: {
+      csmode: 'status',
+      csdoor: 1,
+      csmileage: 3,
+      cschargetime: 5,
+      csbattery: 6,
+      title: 'BMW',
+    },
+    $mountPoint: chain,
+  };
+  context.DT_carstatus.run(me);
+  assert.equal(callbacks.length, 4);
+  // Every device (also the ones that are not a status) updates without error.
+  callbacks.forEach((callback) => callback());
+  assert.equal(logs.length, 0);
+  // A door that opens is logged once as a warning.
+  devices[1] = { Status: 'Open', Data: 'Open' };
+  callbacks[0]();
+  const changes = logs.filter((entry) => /closed -> open/.test(entry[1]));
+  assert.equal(changes.length, 1);
+  assert.match(changes[0][1], /Doors: closed -> open/);
+  assert.equal(changes[0][2], 'warning');
 });
 
 test('Car status battery bar: colour thresholds', () => {
@@ -9010,4 +9182,28 @@ test('Color picker preview of RGB lamps uses a valid CSS color', () => {
     source,
     /thergb = 'rgb\(' \+ color\.r \+ ',' \+ color\.g \+ ',' \+ color\.b \+ '\)';/
   );
+});
+
+test('slide button has title size and alignment in Device Config (Text)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    dashticz,
+    /me\.name === 'blocktitle' \|\| me\.name === 'button'\)\s*applyBlockTextStyle/
+  );
+  assert.match(deviceEditor, /if \(isTitle \|\| isSlideButtonConfig\) \{/);
+  assert.match(
+    deviceEditor,
+    /\} else if \(isTitle \|\| isSlideButtonConfig\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /_applyTextStyleFields\(specialCustomFields, \{\s*fontsizeTitle: slideOptions\.fontsizeTitle,\s*textalign: slideOptions\.textalign,/
+  );
+  assert.match(css, /\.dt_block\.button\.dt-fs-title \.dt_title/);
+  assert.match(css, /\.dt_block\.button\.dt-align-center \.dt_content/);
 });
