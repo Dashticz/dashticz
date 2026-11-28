@@ -54,6 +54,15 @@ var DT_carstatus = (function () {
     'home',
   ];
 
+  // Declared before the return below: a var after it is never assigned.
+  var STATE_LABELS = {
+    door: 'Doors',
+    windows: 'Windows',
+    charging: 'Charging',
+    driving: 'Driving',
+    home: 'Home',
+  };
+
   return {
     name: 'carstatus',
     canHandle: function (block) {
@@ -72,6 +81,7 @@ var DT_carstatus = (function () {
         var idx = deviceIdx(me.block, field);
         if (idx) {
           Dashticz.subscribeDevice(me, idx, false, function () {
+            logChange(me, field);
             render(me);
           });
         }
@@ -85,6 +95,23 @@ var DT_carstatus = (function () {
     limitsOf: limitsOf,
     timePlus: timePlus,
   };
+
+  // A status that changes goes to the Dashticz log, for example
+  // 'Car status: Doors: closed -> open'. The first value is only remembered.
+  function logChange(me, field) {
+    if (!STATE_LABELS[field]) return;
+    var state = stateOf(me.block, field);
+    var last = me.logged || (me.logged = {});
+    var old = last[field];
+    last[field] = state;
+    if (old === undefined || old === state) return;
+    DT_function.widgetLog(
+      me.block.title || 'Car status',
+      STATE_LABELS[field] + ': ' + (old || '?') + ' -> ' + (state || '?'),
+      'warning',
+      true
+    );
+  }
 
   function esc(value) {
     return DT_function.escapeHtml(value);
@@ -125,6 +152,38 @@ var DT_carstatus = (function () {
 
   function isOn(state) {
     return state === 'on' || state === 'true' || state === '1';
+  }
+
+  // The charging device: a switch (On) or a text device with a state word.
+  function isChargingState(state) {
+    return (
+      isOn(state) ||
+      /^(yes|ja|aan|active|charging|laden|bezig met laden)$/.test(state)
+    );
+  }
+
+  // The minutes until the car is charged. The device may hold a number of
+  // minutes ('90', '90 min'), or a duration ('1:30', '1h 30m', '1 u 30 min').
+  function chargeMinutes(block) {
+    var dev = device(block, 'chargetime');
+    if (!dev) return 0;
+    var text = String(dev.Data === undefined ? '' : dev.Data)
+      .trim()
+      .toLowerCase()
+      .replace(',', '.');
+    var clock = /^(\d+):(\d{1,2})(?::\d{1,2})?(?!\d)/.exec(text);
+    if (clock) return parseInt(clock[1], 10) * 60 + parseInt(clock[2], 10);
+    var hours = /(\d+(?:\.\d+)?)\s*(?:h|u|uur|hours?)\b/.exec(text);
+    if (hours) {
+      var rest = /(\d+)\s*(?:m|min|minutes?|minuten)\b/.exec(
+        text.slice(hours.index + hours[0].length)
+      );
+      return Math.round(
+        parseFloat(hours[1]) * 60 + (rest ? parseInt(rest[1], 10) : 0)
+      );
+    }
+    var number = parseFloat(text);
+    return isNaN(number) ? 0 : number;
   }
 
   function isOpen(state) {
@@ -171,14 +230,20 @@ var DT_carstatus = (function () {
 
   // The icons are drawn here as SVG: no icon font, and they follow the
   // colour of the text. The battery is filled up to the battery level.
-  function batterySvg(pct) {
+  function batterySvg(pct, charging) {
     var width = Math.round((pct / 100) * 13 * 10) / 10;
     return (
       '<svg class="carstatus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<rect x="2" y="6" width="18" height="12" rx="2"></rect><path d="M22 10.5v3"></path>' +
       '<rect x="4.5" y="8.5" width="' +
       width +
-      '" height="7" fill="currentColor" stroke="none"></rect></svg>'
+      '" height="7" fill="currentColor" stroke="none"></rect>' +
+      // While charging: a yellow lightning bolt with a dark edge, over the
+      // whole height of the icon.
+      (charging
+        ? '<path class="carstatus-bolt" d="M15 1 6 13.2h5.2L9 23l9.5-12.8h-5.4z" fill="#ffd21f" stroke="#111" stroke-width="1.3" stroke-linejoin="round"></path>'
+        : '') +
+      '</svg>'
     );
   }
 
@@ -199,7 +264,7 @@ var DT_carstatus = (function () {
       batteryClass(level, limits) +
       (charging ? ' carstatus-charging' : '') +
       '"><span class="carstatus-pct">' +
-      batterySvg(level) +
+      batterySvg(level, charging) +
       level +
       '%</span><span class="carstatus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
       level +
@@ -255,8 +320,11 @@ var DT_carstatus = (function () {
   // show only when they apply, or always in the test view.
   function belowHtml(block, now) {
     var all = isOn(String(block.csdebug).toLowerCase());
-    var minutes = numberOf(block, 'chargetime');
-    var charging = isOn(stateOf(block, 'charging'));
+    var minutes = chargeMinutes(block);
+    // Without a charging device the charge time alone decides.
+    var charging = deviceIdx(block, 'charging')
+      ? isChargingState(stateOf(block, 'charging'))
+      : minutes > 0;
     var doorOpen = isOpen(stateOf(block, 'door'));
     var windowOpen = isOpen(stateOf(block, 'windows'));
     var html = '';
@@ -265,7 +333,9 @@ var DT_carstatus = (function () {
         '<div class="carstatus-status carstatus-driving">' +
         tr('carstatus_driving', 'On the road') +
         '</div>';
-    } else if (!isOn(stateOf(block, 'home'))) {
+    } else if (device(block, 'home') && !isOn(stateOf(block, 'home'))) {
+      // Only with a home device that has reported: without one (or before the
+      // devices have loaded) nothing is known about where the car is.
       html +=
         '<div class="carstatus-status carstatus-away">' +
         tr('carstatus_away', 'Not home') +
@@ -281,6 +351,13 @@ var DT_carstatus = (function () {
     } else if (all) {
       html += rowHtml(untilLabel, '-');
     }
+    if (doorOpen)
+      DT_function.widgetLog('Car status', 'Doors: ' + stateWord(block, 'door'));
+    if (windowOpen)
+      DT_function.widgetLog(
+        'Car status',
+        'Windows: ' + stateWord(block, 'windows')
+      );
     if (doorOpen || all) {
       html += rowHtml(
         tr('carstatus_doors', 'Doors'),
@@ -301,7 +378,8 @@ var DT_carstatus = (function () {
   // Charging while driving does not exist; the test view always shows the glow.
   function isCharging(block) {
     return (
-      (isOn(stateOf(block, 'charging')) && !isOn(stateOf(block, 'driving'))) ||
+      (isChargingState(stateOf(block, 'charging')) &&
+        !isOn(stateOf(block, 'driving'))) ||
       isOn(String(block.csdebug).toLowerCase())
     );
   }
@@ -421,8 +499,10 @@ var DT_carstatus = (function () {
         );
       alignBelow(me);
     };
+    // onload (not addEventListener): drawing the tile again before the image
+    // has loaded replaces the handler instead of adding another one.
     if (img.complete) apply();
-    else img.addEventListener('load', apply);
+    else img.onload = apply;
   }
 
   // The height of the header row is the height of the battery line: the logo

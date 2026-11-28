@@ -14,7 +14,7 @@ try {
     $ttl = 86400;
     $cached = dashticz_xmltv_read_cache($cacheFile, $ttl);
     if ($cached !== null) {
-        header('Content-Type: application/xml; charset=UTF-8');
+        dashticz_xmltv_send_headers();
         echo $cached;
         exit;
     }
@@ -36,10 +36,20 @@ try {
         $xml = $stale;
     }
 
-    header('Content-Type: application/xml; charset=UTF-8');
+    dashticz_xmltv_send_headers();
     echo $xml;
 } catch (RuntimeException $error) {
     dashticz_json_error(400, $error->getMessage());
+}
+
+// The body comes from a remote server: nosniff and the sandbox policy keep a
+// document with scripts (XHTML) from running in the dashboard origin when the
+// address is opened as a page. The widget only reads it as text.
+function dashticz_xmltv_send_headers()
+{
+    foreach (dashticz_remote_response_headers('application/xml; charset=UTF-8') as $header) {
+        header($header);
+    }
 }
 
 function dashticz_xmltv_cache_file($url)
@@ -117,8 +127,9 @@ function dashticz_xmltv_decode_gzip($body)
     if (!function_exists('gzdecode')) {
         throw new RuntimeException('GZip-compressed XMLTV files are not supported on this PHP installation.');
     }
-    $decoded = @gzdecode($body);
-    if (!is_string($decoded) || $decoded === '') {
+    // The limit applies to the unpacked data: a small file can hold gigabytes.
+    $decoded = @gzdecode($body, 104857601);
+    if (!is_string($decoded) || $decoded === '' || strlen($decoded) > 104857600) {
         throw new RuntimeException('Unable to decompress the XMLTV GZip file.');
     }
     return $decoded;
@@ -170,11 +181,13 @@ function dashticz_xmltv_extract_zip($body)
         throw new RuntimeException('The XMLTV ZIP file does not contain a supported XML file.');
     }
 
-    $xml = $zip->getFromIndex($candidateIndex);
+    // The size in the header of the ZIP file is not trusted: read at most one
+    // byte more than the limit.
+    $xml = $zip->getFromIndex($candidateIndex, 104857601);
     $zip->close();
     @unlink($tmpFile);
 
-    if (!is_string($xml) || $xml === '') {
+    if (!is_string($xml) || $xml === '' || strlen($xml) > 104857600) {
         throw new RuntimeException('Unable to read XMLTV data from the ZIP file.');
     }
 

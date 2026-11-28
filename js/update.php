@@ -9,6 +9,7 @@
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 
 dashticz_require_same_origin();
+dashticz_require_update_allowed();
 dashticz_require_csrf();
 
 if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {

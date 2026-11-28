@@ -57,16 +57,17 @@ try {
             isset($input['command']) ? (string) $input['command'] : '',
             isset($input['minutes']) ? $input['minutes'] : 120
         );
-        $token = dashticz_husqvarna_token($clientId, $clientSecret, $cacheDir);
-        $list = dashticz_husqvarna_request('GET', dashticz_husqvarna_api_url() . 'mowers', dashticz_husqvarna_headers($clientId, $token));
+        $list = dashticz_husqvarna_api($clientId, $clientSecret, $cacheDir, 'GET', dashticz_husqvarna_api_url() . 'mowers');
         $mower = dashticz_husqvarna_pick($list, $name);
         if (empty($mower['id']) || !preg_match('/^[A-Za-z0-9-]{1,100}$/', (string) $mower['id'])) {
             throw new RuntimeException('Unable to find the mower.');
         }
-        dashticz_husqvarna_request(
+        dashticz_husqvarna_api(
+            $clientId,
+            $clientSecret,
+            $cacheDir,
             'POST',
             dashticz_husqvarna_api_url() . 'mowers/' . $mower['id'] . '/actions',
-            dashticz_husqvarna_headers($clientId, $token, true),
             $body
         );
         // The next status request asks Husqvarna again.
@@ -75,11 +76,12 @@ try {
         }
         echo json_encode(array('ok' => true));
     } else {
+        // A status older than an hour is no longer shown: the widget then
+        // reports the error instead of an old "Mowing".
         echo json_encode(dashticz_cached_json($statusFile, $pollMinutes * 60, function () use ($clientId, $clientSecret, $name, $cacheDir) {
-            $token = dashticz_husqvarna_token($clientId, $clientSecret, $cacheDir);
-            $list = dashticz_husqvarna_request('GET', dashticz_husqvarna_api_url() . 'mowers', dashticz_husqvarna_headers($clientId, $token));
+            $list = dashticz_husqvarna_api($clientId, $clientSecret, $cacheDir, 'GET', dashticz_husqvarna_api_url() . 'mowers');
             return dashticz_husqvarna_summary(dashticz_husqvarna_pick($list, $name));
-        }, '', 60));
+        }, '', 60, max(3600, $pollMinutes * 180)));
     }
 } catch (RuntimeException $error) {
     dashticz_json_error(400, $error->getMessage());

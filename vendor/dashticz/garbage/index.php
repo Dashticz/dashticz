@@ -111,11 +111,12 @@ function curlWeb($url, $options=0) {
 	if ($options) {
 		$curlOptions = array_replace($curlOptions, $options);
 	}
-	// No time limits (as before): the providers are slow, and the options of
-	// the providers themselves are passed on as they are.
+	// The providers are slow, but not without limit: a provider that does not
+	// answer must not keep a PHP worker busy for ever. The options of the
+	// providers themselves are passed on as they are.
 	$response = dashticz_http_request($url, array(
-		'connectTimeout' => 0,
-		'timeout' => 0,
+		'connectTimeout' => 15,
+		'timeout' => 60,
 		'headerCallback' => 'curlResponseHeaderCallback',
 		'curlOptions' => $curlOptions,
 	));
@@ -139,8 +140,8 @@ function getCalendar() {
 	$zipCode = dz_param('zipcode');
 	$houseNr = dz_param('nr');
 	$houseNrSuf = dz_param('t');
-	$sub = $_GET['sub'];
-	$service = $_GET['service'];
+	$sub = isset($_GET['sub']) ? $_GET['sub'] : '';
+	$service = isset($_GET['service']) ? $_GET['service'] : '';
 /*	$zipCode = '7091xh';
 	$houseNr = 57;
 	$houseNrSuf = '';
@@ -338,7 +339,8 @@ function getCalendar() {
 			if($pos!==false) {
 				$pos2=strpos($output, $key2, $pos);
 				if($pos2===false) {
-					die('endkey not found');
+					report('endkey not found', 'info');
+					break;
 				}
 				$jsondata=substr($output, $pos+strlen($key), $pos2-$pos-strlen($key));
 				$data=json_decode($jsondata);

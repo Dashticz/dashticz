@@ -8,3 +8,4 @@ Troubleshooting
    docker
    issues-domoticzblocks
    other
+   log

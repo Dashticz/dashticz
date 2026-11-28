@@ -41,6 +41,7 @@ try {
     if ($host === '' || !preg_match('/^[A-Za-z0-9.\-_:\[\]]+$/', $host)) {
         throw new RuntimeException('Enter the host of the tablet in the widget settings.');
     }
+    dashticz_require_bridge_host($host);
     $port = isset($input['port']) ? (int) $input['port'] : 2323;
     if ($port < 1 || $port > 65535) {
         $port = 2323;

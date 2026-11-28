@@ -35,7 +35,7 @@ var DashticzWidgetEditor = (function () {
       id: 'postnl',
       blockKey: 'widget_postnl',
       title: 'PostNL',
-      description: 'Incoming and sent PostNL shipments.',
+      description: 'Incoming and sent PostNL, DHL and DPD shipments.',
       icon: 'fas fa-box',
       width: 6,
       height: 160,
@@ -1117,6 +1117,10 @@ var DashticzWidgetEditor = (function () {
       postnl: {
         postnl_username: _s('postnl_username'),
         postnl_password: _s('postnl_password'),
+        dhl_username: _s('dhl_username'),
+        dhl_password: _s('dhl_password'),
+        dpd_username: _s('dpd_username'),
+        dpd_password: _s('dpd_password'),
         postnl_days: _s('postnl_days', '2'),
         postnl_pollminutes: _s('postnl_pollminutes', '60'),
         postnl_fontsize: _s('postnl_fontsize', '14'),
@@ -4265,6 +4269,30 @@ var DashticzWidgetEditor = (function () {
         pncfg.postnl_password
       );
       fields += _cfgField(
+        'dhl_username',
+        lp.dhl_username || 'My DHL e-mail address',
+        'text',
+        pncfg.dhl_username
+      );
+      fields += _cfgField(
+        'dhl_password',
+        lp.dhl_password || 'My DHL password',
+        'password',
+        pncfg.dhl_password
+      );
+      fields += _cfgField(
+        'dpd_username',
+        lp.dpd_username || 'myDPD e-mail address',
+        'text',
+        pncfg.dpd_username
+      );
+      fields += _cfgField(
+        'dpd_password',
+        lp.dpd_password || 'myDPD password',
+        'password',
+        pncfg.dpd_password
+      );
+      fields += _cfgField(
         'postnl_showdelivered',
         lp.postnl_showdelivered || 'Show delivered packages',
         'checkbox',
@@ -6230,6 +6258,10 @@ var DashticzWidgetEditor = (function () {
       postnl: [
         'postnl_username',
         'postnl_password',
+        'dhl_username',
+        'dhl_password',
+        'dpd_username',
+        'dpd_password',
         'postnl_days',
         'postnl_pollminutes',
         'postnl_fontsize',

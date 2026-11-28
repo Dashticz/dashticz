@@ -1,6 +1,216 @@
 Release Notes
 =============
 
+v4.2082 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Husqvarna widget: the pressed button now really stays lit for 10 seconds (it went out again after a moment).
+
+v4.2081 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Husqvarna widget: a button that was pressed lights up in the theme's active (blue) button color for 10 seconds, so that you can see the press was received.
+
+v4.2080 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: *Not home* only shows when a home device is set and has reported. Without one, or before the devices have loaded, the tile no longer says the car is away.
+
+v4.2079 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: every update of a device logged four errors ``Cannot read properties of undefined (reading 'mileage')`` (and ``charging``, ``chargetime``, ``battery``) and the tile was not drawn again. The list of status names for the log was declared after the ``return`` of the widget and so never set.
+
+v4.2078 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- The debug window that opened when you clicked on the Dashticz logo is removed, with its memory graph, config and block tabs, the ``heartbeat`` setting and ``tpl/debug.tpl``. Use Settings -> Log instead: that log is stored on the server and has a level (``logLevel``), a filter, download and clear.
+
+v4.2077 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a stronger glow in the battery bar while charging (a brighter sweep and a pulsing light around the bar).
+
+v4.2076 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: the charging lightning bolt is bigger and yellow, and runs through the whole battery icon.
+
+v4.2075 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status: a change of the status of the doors, windows, charging, driving or home is written to the Dashticz log as a warning, for example ``[Car status] Doors: closed -> open``. Set the log level to ``warning`` or higher in Settings -> Log.
+
+v4.2074 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a lightning bolt in the battery icon while the car is charging.
+
+v4.2073 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Slide button: Device Config now has a *Text* section to set the title size (px) and the horizontal alignment of the button title (``fontsize_title`` and ``textalign``).
+
+v4.2072 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Log level ``warning``. Notifications of widgets that are not an error (a message of a HomeConnect appliance, doors or windows open of Car status, the yellow message bar) are now logged as warnings, in orange, instead of errors. Widgets that do not work stay errors. The log levels are ``off``, ``error`` (default), ``warning``, ``action`` and ``debug``; the viewer in Settings -> Log has a filter for warnings.
+
+v4.2071 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: the white to green gradient of the battery bar changes more gradually.
+
+v4.2070 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: *Charging until* also shows when the charging device is a text device (``Charging``, ``Laden``, ``Yes``), when the charge time device holds a duration (``1:30``, ``1h 30m``, ``90 min``) instead of plain minutes, and when only a charge time device is set.
+
+v4.2069 (27-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Log system. Dashticz now writes errors (JavaScript errors, failed requests, PHP bridge errors) and, optionally, actions (switching devices, saving settings) to ``custom/logs/dashticz.log``. The log rotates at 1 MB. Passwords, tokens and keys are masked before they are stored. Open Settings -> Log to choose the level (``logLevel``: ``off``, ``error`` (default), ``action`` or ``debug``), and to view, download or clear the log.
+
+* **Code**
+
+- New endpoint ``js/log.php`` (same-origin and CSRF protected, size and rate limited) and helpers in ``vendor/dashticz/log.php``. ``docker/default.conf`` blocks ``/custom/logs/``.
+
+v4.2068 (27-11-2026)
+----------------------
+
+* The Lyrion Music Server, Toon, Fully Kiosk and HP iLO bridges only connect to hosts on the local network. See Tips and tricks for the opt-out.
+* HP iLO: the storage section stops in time on a slow iLO and reports what it read.
+* HomeConnect: reading another Domoticz has a timeout, no overlapping requests and a clear message for an https dashboard with an http address.
+
+v4.2067 (26-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Read-only mode for a server that is reachable by others: with the environment variable ``DASHTICZ_READ_ONLY`` (or an empty file ``custom/.readonly``) every request that writes configuration, layout, settings, stylesheets, rules or configurations, and the updater, is refused with a 403. ``DASHTICZ_DISABLE_UPDATE`` (or ``custom/.noupdate``) switches off only the update button. The switch is set on the server, so it cannot be changed from the dashboard. Nothing changes when neither is set. See Tips and Tricks.
+
+* **Code**
+
+- ``dashticz_require_csrf()`` calls the new ``dashticz_require_writable()``; ``js/update.php`` calls ``dashticz_require_update_allowed()``. Tests in ``tests/savecustomcss-php.test.js``.
+
+v4.2066 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- OpenWeatherMap widget: every refresh replaces the entry of the widget instead of adding one, so the widgets are not drawn again and again. City, country, key and language are URL encoded, and a city that cannot be found gives a message in the tile.
+- Mower and Toon widgets (Dashticz as source): with a refresh setting on the block they no longer start a second timer and a second request at the start.
+- Weather widget: error texts of the weather service are escaped before they are shown.
+- Camera widget: removing one camera block no longer stops the refresh and the carousel of the other camera blocks.
+- News widget reads the publication date as text. Car status widget: no extra load handlers on the logo when the tile is drawn again before the image has loaded.
+
+* **Code**
+
+- Test for these widget changes in ``tests/source.test.js``.
+
+v4.2065 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL, DHL, DPD and HP iLO bridges: after a failed refresh (for example a rejected password) the same login is not tried again for 5 minutes, so several dashboards cannot get an account blocked. The last good list is shown meanwhile.
+- Husqvarna: a mower status older than an hour is no longer shown as if it were current, a token that the API rejects is removed and requested again once, and the token file is private (mode 0600). F1 feed: a failed download is not repeated for 5 minutes.
+- HP iLO: the cache is keyed with the password too, and a path in an answer of the iLO that does not start with a slash is refused.
+- PostNL: parcels with the same expected time keep a fixed order on PHP 7.4.
+- xmltv: a GZip or ZIP file may be 100 MB when unpacked, no more; the answer gets the same protective headers as cors.php.
+- Lyrion Music Server: cover art larger than 8 MB is refused. Garbage bridge: providers get 15 and 60 seconds instead of no time limit, and a missing parameter no longer gives a PHP warning.
+- A very large widget settings section can no longer make a save drop the settings that are already in it.
+
+* **Code**
+
+- ``dashticz_cached_json()`` remembers a failure also when there is old data, with an optional maximum age and file mode; new helpers ``dashticz_stable_sort()``, ``dashticz_cache_failure_recent()`` and ``dashticz_cache_note_failure()``; ``dashticz_http_request()`` has a ``maxBytes`` option. New tests in ``tests/php-security.test.js``.
+
+v4.2064 (26-11-2026)
+----------------------
+
+* **Fixes**
+
+- The URL parameters ``folder``, ``cfg``, ``cfg2`` and ``css`` decide which script or stylesheet is loaded and evaluated. They only accept a plain folder or file name now, so a link such as ``?folder=//other-site`` can no longer run code from another host.
+- The editors (``js/configwriter.php``) only write ``CONFIG<name>.js`` files, the same pattern as ``js/configs.php``. ``custom.js`` and the ``CONFIG_DEFAULT.js`` template can no longer be overwritten by a save request.
+- Theme colours and fonts of the Settings page are saved in the stylesheet of the active configuration (``custom2.css`` for ``CONFIG2.js``) instead of always in ``custom.css``. A new stylesheet starts as a copy of ``custom.css``. Values with ``url(...)`` are refused.
+
+* **Code**
+
+- New test ``tests/savecustomcss-php.test.js``; the URL parameter test in ``tests/source.test.js`` covers the new rules.
+
+v4.2063 (24-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: DPD packages are shown too. Fill in your myDPD account (the same account as the myDPD app, DPD Netherlands) in Settings -> Widgets -> PostNL. Incoming parcels and parcels you sent appear in the same list, with the carrier after the sender when more than one account is set, for example ``Coolblue (DPD)``. UPS is not supported, because UPS has no consumer account feed that can be read without a browser login.
+
+* **Code**
+
+- New bridge ``vendor/dashticz/dpd/index.php`` (helpers in ``dpd.php``), with a test for its mapping of DPD parcels.
+
+v4.2062 (23-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL widget: the DHL list keeps a fixed order for parcels with the same expected time, also on PHP 7.4.
+
+v4.2061 (23-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: 3px less space between the lines (7px instead of 10px), set in ``js/components/postnl.css``.
+
+v4.2060 (23-11-2026)
+----------------------
+
+* **Fixes**
+
+- PostNL widget: the icons stand in one straight vertical line, also when the lines have a different length, and are centred vertically next to their text. The list stays centred in the tile. The styling is in the widget's own ``js/components/postnl.css``, so ``css/creative.css`` is unchanged.
+
+v4.2059 (23-11-2026)
+----------------------
+
+* **Enhancements**
+
+- PostNL widget: DHL packages are shown too. Fill in your My DHL account (my.dhlecommerce.nl, DHL eCommerce NL / DHL Parcel) in Settings -> Widgets -> PostNL. Incoming parcels, returns you send back and parcels you sent appear in the same list. With both a PostNL and a DHL account, each line names its carrier after the sender, for example ``Coolblue (DHL)``. DHL Express is not part of that account and is not shown.
+- PostNL widget: two new statuses for DHL parcels, "Ready for pickup" (waiting at a DHL ServicePoint or locker) and "Delayed" (DHL reports a problem).
+- PostNL widget: when one carrier cannot be reached, the packages of the other one are still shown, with the error below them.
+
+* **Code**
+
+- New bridge ``vendor/dashticz/dhl/index.php`` (helpers in ``dhl.php``), with a test for its mapping of DHL parcels. The sender name in the widget is now HTML-escaped.
+
 v4.2058 (22-11-2026)
 ----------------------
 
