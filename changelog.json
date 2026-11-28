@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2081": "Husqvarna widget: a button that was pressed lights up in the theme's active button color for 10 seconds, so that you can see the press was received.",
     "4.2080": "Car status widget: Not home only shows when the home device is set and has reported, not before the devices have loaded.",
     "4.2079": "Car status widget: fix the error Cannot read properties of undefined (reading 'mileage') in the log at every update of a device.",
     "4.2078": "The debug window that opened by clicking on the logo is removed. The Dashticz log (Settings -> Log) stays.",

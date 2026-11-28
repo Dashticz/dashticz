@@ -1,4 +1,4 @@
 {
-    "version": "4.2080",
-    "last_changes": "Car status widget: Not home only shows when the home device is set and has reported, not before the devices have loaded."
+    "version": "4.2081",
+    "last_changes": "Husqvarna widget: a button that was pressed lights up in the theme's active button color for 10 seconds, so that you can see the press was received."
 }

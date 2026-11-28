@@ -9901,6 +9901,21 @@ canvas {
   border-color: #2ecc71;
 }
 
+.mower-btn {
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s,
+    border-color 0.3s;
+}
+
+/* Feedback after a press: the button lights up for 10 seconds. */
+.mower-btn.pressed {
+  background: var(--button-active);
+  border-color: var(--border-color-active);
+  color: var(--text-light);
+  box-shadow: 0 0 10px 2px var(--button-active);
+}
+
 .mower-bar {
   height: 6px;
   border-radius: 3px;

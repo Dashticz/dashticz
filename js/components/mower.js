@@ -184,6 +184,21 @@ var DT_mower = (function () {
     );
   }
 
+  var PRESSED_MS = 10000;
+
+  // Light up the button that was pressed for 10 seconds, so that there is
+  // visible feedback. The tile is drawn again after a status refresh, so the
+  // pressed button is remembered on the widget and not only on the element.
+  function markPressed(me, key) {
+    clearTimeout(me.pressedTimer);
+    me.pressed = key;
+    render(me);
+    me.pressedTimer = setTimeout(function () {
+      me.pressed = null;
+      render(me);
+    }, PRESSED_MS);
+  }
+
   function send(me, command) {
     DT_function.bridge(
       'husqvarna/index.php',
@@ -333,6 +348,7 @@ var DT_mower = (function () {
       buttons +=
         '<button type="button" class="mower-btn mower-toggle' +
         (on ? ' active' : '') +
+        (me.pressed === 'run' ? ' pressed' : '') +
         '" data-act="run" aria-pressed="' +
         on +
         '">' +
@@ -345,7 +361,9 @@ var DT_mower = (function () {
       buttons += actionButtons(dev.actions)
         .map(function (item) {
           return (
-            '<button type="button" class="mower-btn" data-act="action" data-level="' +
+            '<button type="button" class="mower-btn' +
+            (me.pressed === 'action' + item.level ? ' pressed' : '') +
+            '" data-act="action" data-level="' +
             item.level +
             '">' +
             esc(item.label) +
@@ -374,6 +392,11 @@ var DT_mower = (function () {
     me.$mountPoint.on('click', '.mower-btn', function () {
       var dev = findDevices(me.block, me.data);
       var act = $(this).attr('data-act');
+      var pressedKey =
+        act === 'run'
+          ? 'run'
+          : 'action' + parseInt($(this).attr('data-level'), 10);
+      markPressed(me, pressedKey);
       if (usesBridge(me.block)) {
         var level = parseInt($(this).attr('data-level'), 10);
         if (act === 'run' && dev.run)
