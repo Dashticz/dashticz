@@ -386,6 +386,7 @@ var DT_f1 = (function () {
   }
 
   function showError(me, text) {
+    DT_function.widgetLog('F1', text);
     me.$mountPoint
       .find('.dt_state')
       .html('<div class="f1-rows f1-error">' + esc(text) + '</div>');

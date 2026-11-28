@@ -23,6 +23,11 @@ function dashticz_widget_default_width($kind)
 
 function dashticz_json_error($status, $message)
 {
+    // Server errors go to custom/logs/dashticz.log (see log.php).
+    if ($status >= 500 && is_file(__DIR__ . '/log.php')) {
+        require_once __DIR__ . '/log.php';
+        dashticz_log_write('error', 'php', basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) . ': ' . $message);
+    }
     http_response_code($status);
     header('Content-Type: application/json');
     die(json_encode(array('error' => $message)));

@@ -487,6 +487,13 @@ var DT_function = (function () {
   }
 
   // The error text of a failed bridge call, or the fallback.
+  // A message of a widget, also written to the Dashticz log (see js/debug.js).
+  function widgetLog(widget, text) {
+    if (text && typeof Debug !== 'undefined' && Debug.widget) {
+      Debug.widget(widget, text);
+    }
+  }
+
   function bridgeError(jqXHR, fallback) {
     return (
       (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) || fallback
@@ -540,6 +547,7 @@ var DT_function = (function () {
     clampNumber: clampNumber,
     bridge: bridge,
     bridgeError: bridgeError,
+    widgetLog: widgetLog,
     clickHandler: clickHandler,
     promptPassword: promptPassword,
     loadFont: loadFont,

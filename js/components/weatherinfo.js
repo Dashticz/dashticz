@@ -454,6 +454,7 @@ var DT_weatherinfo = (function () {
         '</span></div>';
     }
     if (res.errors && res.errors.length) {
+      DT_function.widgetLog('Weather info', res.errors.join(' '));
       html +=
         '<div class="weatherinfo-row weatherinfo-error">' +
         esc(res.errors.join(' ')) +
@@ -473,6 +474,7 @@ var DT_weatherinfo = (function () {
   }
 
   function showError(me, text) {
+    DT_function.widgetLog('Weather info', text);
     me.$mountPoint
       .find('.dt_state')
       .html(

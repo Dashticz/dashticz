@@ -128,6 +128,7 @@ var DT_tvgids = (function () {
         esc(channel.name) +
         '</span></div>';
       if (channel.error) {
+        DT_function.widgetLog('TVgids', channel.name + ': ' + channel.error);
         html += '<div class="tvgids-error">' + esc(channel.error) + '</div>';
       } else {
         var programmes = visibleProgrammes(block, channel.programmes, now);
@@ -164,6 +165,7 @@ var DT_tvgids = (function () {
   }
 
   function showMessage(me, text) {
+    DT_function.widgetLog('TVgids', text);
     me.$mountPoint
       .find('.dt_state')
       .html('<div class="tvgids-error">' + esc(text) + '</div>');

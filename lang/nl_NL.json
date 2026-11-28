@@ -2005,6 +2005,24 @@
       "minutes": "minuten",
       "seconds": "seconden"
     },
+    "log": {
+      "title": "Log",
+      "level": "Logniveau",
+      "level_off": "Uit",
+      "level_error": "Alleen fouten",
+      "level_action": "Fouten en acties",
+      "level_debug": "Alles (debug)",
+      "level_help": "Wat Dashticz schrijft naar custom/logs/dashticz.log. Wachtwoorden en tokens worden nooit gelogd.",
+      "filter_all": "Alles",
+      "filter_action": "Acties",
+      "refresh": "Vernieuwen",
+      "download": "Downloaden",
+      "clear": "Log wissen",
+      "empty": "De log is leeg.",
+      "not_writable": "custom/logs is niet beschrijfbaar, dus er kan niets gelogd worden.",
+      "load_failed": "De log kon niet geladen worden.",
+      "clear_failed": "De log kon niet gewist worden."
+    },
     "configs": {
       "title": "Configuraties",
       "intro": "Elke configuratie heeft eigen apparaten, indeling en instellingen. Open er een om die te bewerken.",

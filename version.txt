@@ -1,4 +1,4 @@
 {
-    "version": "4.2068",
-    "last_changes": "Local network bridges only connect to LAN hosts, HP iLO time budget, HomeConnect remote timeout"
+    "version": "4.2069",
+    "last_changes": "Log system: errors and actions are written to custom/logs/dashticz.log. New Log tile in Settings with a level (off, errors only, errors and actions, everything), a viewer, download and clear."
 }

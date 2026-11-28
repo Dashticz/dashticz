@@ -265,6 +265,12 @@ var DT_postnl = (function () {
           return result.error;
         })
         .map(function (result) {
+          if (typeof Debug !== 'undefined' && Debug.widget) {
+            Debug.widget(
+              'PostNL',
+              (showCarrier ? result.carrier + ': ' : '') + result.error
+            );
+          }
           return (
             '<div class="postnl-rows postnl-error">' +
             DT_function.escapeHtml(

@@ -281,6 +281,13 @@ var DT_carstatus = (function () {
     } else if (all) {
       html += rowHtml(untilLabel, '-');
     }
+    if (doorOpen)
+      DT_function.widgetLog('Car status', 'Doors: ' + stateWord(block, 'door'));
+    if (windowOpen)
+      DT_function.widgetLog(
+        'Car status',
+        'Windows: ' + stateWord(block, 'windows')
+      );
     if (doorOpen || all) {
       html += rowHtml(
         tr('carstatus_doors', 'Doors'),

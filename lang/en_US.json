@@ -2005,6 +2005,24 @@
       "minutes": "minutes",
       "seconds": "seconds"
     },
+    "log": {
+      "title": "Log",
+      "level": "Log level",
+      "level_off": "Off",
+      "level_error": "Errors only",
+      "level_action": "Errors and actions",
+      "level_debug": "Everything (debug)",
+      "level_help": "What Dashticz writes to custom/logs/dashticz.log. Passwords and tokens are never logged.",
+      "filter_all": "All",
+      "filter_action": "Actions",
+      "refresh": "Refresh",
+      "download": "Download",
+      "clear": "Clear log",
+      "empty": "The log is empty.",
+      "not_writable": "custom/logs is not writable, so nothing can be logged.",
+      "load_failed": "Could not load the log.",
+      "clear_failed": "Could not clear the log."
+    },
     "configs": {
       "title": "Configurations",
       "intro": "Each configuration has its own devices, layout and settings. Open one to edit it.",

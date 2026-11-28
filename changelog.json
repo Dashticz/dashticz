@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2069": "Log system: errors and actions are written to custom/logs/dashticz.log. New Log tile in Settings with a level (off, errors only, errors and actions, everything), a viewer, download and clear.",
     "4.2068": "Local network bridges only connect to LAN hosts, HP iLO time budget, HomeConnect remote timeout",
     "4.2067": "New: the owner of the server can switch the editors, the Settings page and the update button off with DASHTICZ_READ_ONLY (or the file custom/.readonly), and only the updater with DASHTICZ_DISABLE_UPDATE (custom/.noupdate).",
     "4.2066": "Widgets: the OpenWeatherMap widget no longer adds a copy of itself at every refresh and shows an error when the city is not found, the Mower and Toon widgets do not poll twice, weather errors are escaped, and a second camera block keeps working when another one is removed.",

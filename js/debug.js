@@ -13,6 +13,15 @@ var Debug = (function () {
   var startTime = time();
   var filteredConfig = {};
 
+  // Server log (custom/logs/dashticz.log, written by js/log.php).
+  // settings.logLevel: off, error (default), action or debug.
+  var LOG_LEVELS = { off: -1, error: 0, action: 1, debug: 2 };
+  var serverQueue = [];
+  var serverSeen = {};
+  var serverTimer = null;
+  var serverFailedAt = 0;
+  var widgetSeen = {};
+
   var $el;
   var $elbody;
 
@@ -23,10 +32,14 @@ var Debug = (function () {
     log: log,
     tst: tst,
     saveDebug: saveDebug,
+    action: action,
+    widget: widget,
+    maskSensitive: maskSensitive,
     INFO: 0,
     REQUEST: 1,
     ERROR: 2,
     CONFIG: 3,
+    ACTION: 4,
   };
 
   function init() {
@@ -46,6 +59,8 @@ var Debug = (function () {
       if (val != defaultSettings[key]) cfg[key] = val;
       return cfg;
     }, {});
+
+    initServerLog();
 
     $('body').on('click', '.logo', function () {
       $el.modal({
@@ -228,6 +243,7 @@ var Debug = (function () {
 
   function add(item) {
     messages.push(item);
+    toServerLog(item);
     if (item.type === Debug.REQUEST) {
       lastRequest = item;
       requestCount += 1;
@@ -255,30 +271,238 @@ var Debug = (function () {
   }
 
   function log() {
+    return write(3, arguments);
+  }
+
+  // A user or system action (switching a device, saving settings): logged
+  // when settings.logLevel is action or debug.
+  function action() {
+    var args = [Debug.ACTION];
+    for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
+    return write(3, args);
+  }
+
+  // A message of a widget (a notification of an appliance, a failed data
+  // request). Always an error line in the log, with the widget name in front.
+  function widget(name, text) {
+    // Widgets draw their message again at every refresh: once per 5 minutes.
+    var key = name + ':' + text;
+    var now = Date.now();
+    if (widgetSeen[key] && now - widgetSeen[key] < 300000) return;
+    widgetSeen[key] = now;
+    if (Object.keys(widgetSeen).length > 200) widgetSeen = {};
+    return write(3, [Debug.ERROR, '[' + name + '] ' + text]);
+  }
+
+  function write(stackDepth, args) {
     var msg;
     var start = 0;
     var type = 0;
     var err = new Error('test');
     try {
-      msg = err.stack ? err.stack.split('\n')[2].slice(7) + ':' : '';
+      msg = err.stack ? err.stack.split('\n')[stackDepth].slice(7) + ':' : '';
     } catch (e) {
       msg = '';
     }
-    if (arguments.length > 1 && typeof arguments[0] === 'number') {
-      type = arguments[0];
+    if (args.length > 1 && typeof args[0] === 'number') {
+      type = args[0];
       start = 1;
     }
-    for (var i = start; i < arguments.length; i++) {
-      var arg = arguments[i];
-      var str = typeof arg === 'object' ? JSON.stringify(arg) : arg;
-      msg = msg + str;
+    var text = '';
+    for (var i = start; i < args.length; i++) {
+      var arg = args[i];
+      text += typeof arg === 'object' ? JSON.stringify(arg) : arg;
     }
     var item = {
       timestamp: new Date(),
-      msg: msg,
+      msg: msg + text,
+      text: text,
       type: type,
     };
     add(item);
+  }
+
+  /* ---- server log ---- */
+
+  function maskSensitive(text) {
+    return String(text)
+      .replace(/\/\/[^/@\s:]+:[^/@\s]+@/g, '//***@')
+      .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer ***')
+      .replace(
+        /((?:pass(?:word|wd)?|pwd|pw|token|secret|api[_-]?key|apikey|authorization|auth|key|pin(?:code)?)["']?\s*[:=]\s*["']?)[^&\s"',}]+/gi,
+        '$1***'
+      );
+  }
+
+  function serverLogLevel() {
+    var level = String(settings.logLevel || 'error').toLowerCase();
+    return LOG_LEVELS.hasOwnProperty(level) ? LOG_LEVELS[level] : 0;
+  }
+
+  function toServerLog(item) {
+    var level;
+    var text = item.text;
+    if (item.type === Debug.ERROR) level = 'error';
+    else if (item.type === Debug.ACTION) level = 'action';
+    else if (item.type === Debug.INFO) level = 'debug';
+    else if (item.type === Debug.REQUEST) {
+      // Only the commands that change something are an action.
+      if (!/(^|[?&])type=command(&|$)/.test(item.text)) return;
+      level = 'action';
+      text = 'Domoticz command: ' + commandSummary(item.text);
+    } else return;
+    if (LOG_LEVELS[level] > serverLogLevel()) return;
+    serverLog(level, text);
+  }
+
+  // type=command&param=switchlight&idx=5&switchcmd=On -> only these fields.
+  function commandSummary(query) {
+    var allowed = ['param', 'idx', 'switchcmd', 'level', 'setpoint', 'status'];
+    var parts = [];
+    String(query)
+      .replace(/^[^?]*\?/, '')
+      .split('&')
+      .forEach(function (pair) {
+        var kv = pair.split('=');
+        if (allowed.indexOf(kv[0]) !== -1) parts.push(kv[0] + '=' + kv[1]);
+      });
+    return parts.join(' ');
+  }
+
+  function serverLog(level, text) {
+    text = maskSensitive(text).slice(0, 1000);
+    // The same message within 5 minutes is logged once (a failing request
+    // that repeats on every refresh would otherwise fill the log).
+    var key = level + ':' + text;
+    var now = Date.now();
+    if (serverSeen[key] && now - serverSeen[key] < 300000) return;
+    serverSeen[key] = now;
+    if (Object.keys(serverSeen).length > 200) serverSeen = {};
+    if (serverQueue.length >= 50) return;
+    serverQueue.push({ l: level, m: text, t: new Date().toISOString() });
+    if (!serverTimer) serverTimer = setTimeout(flushServerLog, 2000);
+  }
+
+  function flushServerLog() {
+    serverTimer = null;
+    if (!serverQueue.length) return;
+    // After a failure the server log stays off for 10 minutes.
+    if (Date.now() - serverFailedAt < 600000) {
+      serverQueue = [];
+      return;
+    }
+    var entries = serverQueue;
+    serverQueue = [];
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (csrf) {
+        return $.ajax({
+          url: 'js/log.php',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ entries: entries }),
+          headers: { 'X-Dashticz-CSRF': csrf.token },
+        });
+      })
+      .fail(function () {
+        serverFailedAt = Date.now();
+      });
+  }
+
+  function isLogRequest(url) {
+    return /(^|\/)log\.php(\?|$)/.test(String(url || ''));
+  }
+
+  // URL without query values, except the Domoticz type.
+  function plainUrl(url) {
+    var parts = String(url || '').split('?');
+    var type = /(^|&)type=([a-z_]+)/.exec(parts[1] || '');
+    return parts[0] + (type ? '?type=' + type[2] : '');
+  }
+
+  // console.error goes to the log as an error, console.warn as a debug line.
+  function hookConsole() {
+    ['error', 'warn'].forEach(function (method) {
+      var original = window.console && window.console[method];
+      if (typeof original !== 'function') return;
+      window.console[method] = function () {
+        try {
+          var text = Array.prototype.map
+            .call(arguments, function (arg) {
+              if (arg instanceof Error) return arg.message;
+              return typeof arg === 'object' ? JSON.stringify(arg) : arg;
+            })
+            .join(' ');
+          if (method === 'error') log(Debug.ERROR, 'console.error: ' + text);
+          else log(Debug.INFO, 'console.warn: ' + text);
+        } catch (e) {
+          // Logging must never break the caller.
+        }
+        return original.apply(window.console, arguments);
+      };
+    });
+  }
+
+  function initServerLog() {
+    hookConsole();
+    window.addEventListener('error', function (e) {
+      if (!e.message) return; // resource load errors have no message
+      log(
+        Debug.ERROR,
+        'JS error: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')'
+      );
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var reason = e.reason;
+      log(
+        Debug.ERROR,
+        'Unhandled promise rejection: ' +
+          (reason && reason.message ? reason.message : String(reason))
+      );
+    });
+    $(document).ajaxError(function (event, xhr, options) {
+      if (isLogRequest(options.url) || xhr.statusText === 'abort') return;
+      log(
+        Debug.ERROR,
+        'Request failed: ' +
+          (options.type || 'GET') +
+          ' ' +
+          plainUrl(options.url) +
+          ' (' +
+          (xhr.status || 'no response') +
+          ' ' +
+          (xhr.statusText || '') +
+          ')' +
+          (xhr.responseJSON && typeof xhr.responseJSON.error === 'string'
+            ? ': ' + xhr.responseJSON.error
+            : '')
+      );
+    });
+    // A bridge (vendor/dashticz/*) that answers 200 with {"error": "..."}.
+    $(document).ajaxSuccess(function (event, xhr, options, data) {
+      if (
+        data &&
+        typeof data === 'object' &&
+        typeof data.error === 'string' &&
+        data.error &&
+        /vendor\/dashticz\//.test(String(options.url)) &&
+        !isLogRequest(options.url)
+      ) {
+        log(
+          Debug.ERROR,
+          'Bridge error: ' + plainUrl(options.url) + ': ' + data.error
+        );
+      }
+    });
+    // Saving settings, layout, devices, configurations: every POST to js/*.php.
+    $(document).ajaxSuccess(function (event, xhr, options) {
+      if (
+        String(options.type).toUpperCase() !== 'POST' ||
+        isLogRequest(options.url) ||
+        !/(^|\/)js\/[a-z]+\.php/i.test(String(options.url))
+      )
+        return;
+      action('Saved: ' + plainUrl(options.url));
+    });
   }
 
   function saveDebug() {

@@ -410,6 +410,7 @@ var DT_fullykiosk = (function () {
       html += extraRowHtml(row, info);
     });
     if (me.error) {
+      DT_function.widgetLog('Fully Kiosk', me.error);
       html += '<div class="fullykiosk-error">' + esc(me.error) + '</div>';
     }
     html += '</div>';

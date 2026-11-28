@@ -733,6 +733,7 @@ var settingsCategoryIcons = {
   screen: 'fas fa-desktop',
   theme: 'fas fa-paint-brush',
   configs: 'fas fa-layer-group',
+  log: 'fas fa-clipboard-list',
   standby: 'fas fa-moon',
   localize: 'fas fa-globe',
   widgets: 'fas fa-puzzle-piece',
@@ -744,6 +745,25 @@ settingList['configs'] = {
   title:
     (language.settings.configs && language.settings.configs.title) ||
     'Configurations',
+};
+
+settingList['log'] = {
+  title: (language.settings.log && language.settings.log.title) || 'Log',
+  logLevel: {
+    title: logLabel('level', 'Log level'),
+    type: 'select',
+    noEmptyOption: true,
+    options: {
+      off: logLabel('level_off', 'Off'),
+      error: logLabel('level_error', 'Errors only'),
+      action: logLabel('level_action', 'Errors and actions'),
+      debug: logLabel('level_debug', 'Everything (debug)'),
+    },
+    help: logLabel(
+      'level_help',
+      'What Dashticz writes to custom/logs/dashticz.log. Passwords and tokens are never logged.'
+    ),
+  },
 };
 
 settingList['theme'] = {
@@ -1071,6 +1091,7 @@ var defaultSettings = {
   use_cors: 0,
   cached_scripts: true,
   heartbeat: 0,
+  logLevel: 'error',
   fake_domoticz: false,
 };
 
@@ -1357,6 +1378,7 @@ function loadSettings() {
         bindSettingsCategoryTiles();
         bindThemePicker();
         bindConfigsPanel();
+        bindLogPanel();
         bindBackgroundPickers();
         bindSettingsUpdateControls();
         bindClockTypeToggle();
@@ -1383,6 +1405,7 @@ function getSettingsCategories() {
     'localize',
     'widgets',
     'configs',
+    'log',
     'other',
     'about',
   ];
@@ -1458,6 +1481,8 @@ function renderSettingsCategoryHome() {
       html += renderThemeSettingsPanel();
     } else if (id === 'configs') {
       html += renderConfigsPanel();
+    } else if (id === 'log') {
+      html += renderLogPanel();
     } else {
       var twoColumns = id === 'general' || id === 'screen';
       if (twoColumns) html += '<div class="settings-two-col">';
@@ -2412,6 +2437,152 @@ function _cssValueToHex(value) {
     }
   }
   return '';
+}
+
+/* Log: the level setting and a viewer for custom/logs/dashticz.log
+   (js/log.php). */
+function logLabel(key, fallback) {
+  var logL = (language.settings && language.settings.log) || {};
+  return logL[key] || fallback;
+}
+
+function renderLogPanel() {
+  var html =
+    '<div id="settings-log">' +
+    '<div class="d-flex flex-wrap align-items-center gap-2 mb-2">' +
+    '<select class="form-select w-auto" id="settings-log-filter">' +
+    '<option value="">' +
+    escapeSettingsHtml(logLabel('filter_all', 'All')) +
+    '</option>' +
+    '<option value="error">' +
+    escapeSettingsHtml(logLabel('level_error', 'Errors only')) +
+    '</option>' +
+    '<option value="action">' +
+    escapeSettingsHtml(logLabel('filter_action', 'Actions')) +
+    '</option>' +
+    '<option value="debug">Debug</option>' +
+    '</select>' +
+    '<button type="button" class="btn btn-primary" id="settings-log-refresh">' +
+    escapeSettingsHtml(logLabel('refresh', 'Refresh')) +
+    '</button>' +
+    '<button type="button" class="btn btn-outline-primary" id="settings-log-download">' +
+    escapeSettingsHtml(logLabel('download', 'Download')) +
+    '</button>' +
+    '<button type="button" class="btn btn-outline-danger" id="settings-log-clear">' +
+    escapeSettingsHtml(logLabel('clear', 'Clear log')) +
+    '</button>' +
+    '</div>' +
+    '<div class="text-danger" id="settings-log-error" role="alert"></div>' +
+    '<pre id="settings-log-view" class="p-2 border rounded" style="height:calc(100vh - 410px);min-height:150px;overflow:auto;white-space:pre-wrap;font-size:12px"></pre>' +
+    '</div>' +
+    '<div class="settings-two-col mt-3">' +
+    renderSettingsRow('logLevel', settingList['log']['logLevel']) +
+    '</div>';
+  return html;
+}
+
+function bindLogPanel() {
+  var $view = $('#settingspopup #settings-log-view');
+  if (!$view.length) return;
+  var $error = $('#settingspopup #settings-log-error');
+  var entries = [];
+  var clearTimer = null;
+
+  function lineText(entry) {
+    return (
+      String(entry.t || '')
+        .replace('T', ' ')
+        .replace(/\.\d+Z$|Z$/, '') +
+      ' [' +
+      entry.l +
+      '/' +
+      entry.s +
+      '] ' +
+      entry.m
+    );
+  }
+
+  function load() {
+    $error.text('');
+    $.getJSON('js/log.php', {
+      level: $('#settingspopup #settings-log-filter').val() || '',
+      limit: 300,
+    })
+      .done(function (data) {
+        entries = (data && data.entries) || [];
+        $view.empty();
+        if (!entries.length) {
+          $view.text(logLabel('empty', 'The log is empty.'));
+        }
+        entries.forEach(function (entry) {
+          var $line = $('<div></div>').text(lineText(entry));
+          if (entry.l === 'error') $line.css('color', '#dc3545');
+          $view.append($line);
+        });
+        if (data && data.writable === false) {
+          $error.text(
+            logLabel(
+              'not_writable',
+              'custom/logs is not writable, so nothing can be logged.'
+            )
+          );
+        }
+        $view[0].scrollTop = $view[0].scrollHeight;
+      })
+      .fail(function () {
+        $error.text(logLabel('load_failed', 'Could not load the log.'));
+      });
+  }
+
+  $('#settingspopup').on(
+    'click.settingslog',
+    '.settings-tile[data-settings-category="log"]',
+    load
+  );
+  $('#settingspopup #settings-log-refresh').on('click', load);
+  $('#settingspopup #settings-log-filter').on('change', load);
+  $('#settingspopup #settings-log-download').on('click', function () {
+    var text = entries.map(lineText).join('\n') + '\n';
+    var url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download =
+      'dashticz-log.' + moment().format('YYYY-MM-DD-HH-mm') + '.txt';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+  // Two clicks within 4 seconds clear the log, without a browser dialog.
+  $('#settingspopup #settings-log-clear').on('click', function () {
+    var $btn = $(this);
+    var label = logLabel('clear', 'Clear log');
+    if (!clearTimer) {
+      $btn.text(configsLabel('delete_confirm', 'Sure?'));
+      clearTimer = setTimeout(function () {
+        clearTimer = null;
+        $btn.text(label);
+      }, 4000);
+      return;
+    }
+    clearTimeout(clearTimer);
+    clearTimer = null;
+    $btn.text(label);
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (csrf) {
+        return $.ajax({
+          url: 'js/log.php',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ action: 'clear' }),
+          headers: { 'X-Dashticz-CSRF': csrf.token },
+        });
+      })
+      .done(load)
+      .fail(function () {
+        $error.text(logLabel('clear_failed', 'Could not clear the log.'));
+      });
+  });
 }
 
 /* Configurations: switch between, and create, extra CONFIG<name>.js files.

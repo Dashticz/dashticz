@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v4.2069 (27-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Log system. Dashticz now writes errors (JavaScript errors, failed requests, PHP bridge errors) and, optionally, actions (switching devices, saving settings) to ``custom/logs/dashticz.log``. The log rotates at 1 MB. Passwords, tokens and keys are masked before they are stored. Open Settings -> Log to choose the level (``logLevel``: ``off``, ``error`` (default), ``action`` or ``debug``), and to view, download or clear the log.
+
+* **Code**
+
+- New endpoint ``js/log.php`` (same-origin and CSRF protected, size and rate limited) and helpers in ``vendor/dashticz/log.php``. ``docker/default.conf`` blocks ``/custom/logs/``.
+
 v4.2068 (27-11-2026)
 ----------------------
 

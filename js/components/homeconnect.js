@@ -432,6 +432,16 @@ var DT_homeconnect = (function () {
       : status + ', ' + messages.join(', ');
   }
 
+  // The warning of an appliance, also written to the Dashticz log (a repeated
+  // message is logged once per 5 minutes).
+  function reportedWarning(app) {
+    var text = warningText(app);
+    if (text && typeof Debug !== 'undefined' && Debug.widget) {
+      Debug.widget('HomeConnect', app.name + ': ' + text);
+    }
+    return text;
+  }
+
   // Whether the status of the appliance says that the program has finished
   // ('Klaar, Katoen', 'Finished').
   function isFinished(app) {
@@ -462,7 +472,7 @@ var DT_homeconnect = (function () {
     if (app.power ? false : !app.progress && !app.state && !app.alerts.length)
       return '';
     if (app.power && isOff(app.power)) {
-      var open = warningText(app);
+      var open = reportedWarning(app);
       return open ? row(app, esc(open), 'homeconnect-warning') : '';
     }
     var html = '';
@@ -505,7 +515,7 @@ var DT_homeconnect = (function () {
               : '')
         );
     }
-    var warning = warningText(app);
+    var warning = reportedWarning(app);
     if (warning) html += row(app, esc(warning), 'homeconnect-warning');
     return html;
   }
@@ -589,6 +599,9 @@ var DT_homeconnect = (function () {
           'an https dashboard cannot read an http address'
         ) +
         ')';
+      if (typeof Debug !== 'undefined' && Debug.widget) {
+        Debug.widget('HomeConnect', me.remoteError);
+      }
       render(me);
       return;
     }
@@ -613,6 +626,9 @@ var DT_homeconnect = (function () {
       function () {
         me.remoteBusy = false;
         me.remoteError = base;
+        if (typeof Debug !== 'undefined' && Debug.widget) {
+          Debug.widget('HomeConnect', 'Unable to reach Domoticz at ' + base);
+        }
         render(me);
       }
     );
