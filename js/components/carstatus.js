@@ -127,6 +127,38 @@ var DT_carstatus = (function () {
     return state === 'on' || state === 'true' || state === '1';
   }
 
+  // The charging device: a switch (On) or a text device with a state word.
+  function isChargingState(state) {
+    return (
+      isOn(state) ||
+      /^(yes|ja|aan|active|charging|laden|bezig met laden)$/.test(state)
+    );
+  }
+
+  // The minutes until the car is charged. The device may hold a number of
+  // minutes ('90', '90 min'), or a duration ('1:30', '1h 30m', '1 u 30 min').
+  function chargeMinutes(block) {
+    var dev = device(block, 'chargetime');
+    if (!dev) return 0;
+    var text = String(dev.Data === undefined ? '' : dev.Data)
+      .trim()
+      .toLowerCase()
+      .replace(',', '.');
+    var clock = /^(\d+):(\d{1,2})(?::\d{1,2})?(?!\d)/.exec(text);
+    if (clock) return parseInt(clock[1], 10) * 60 + parseInt(clock[2], 10);
+    var hours = /(\d+(?:\.\d+)?)\s*(?:h|u|uur|hours?)\b/.exec(text);
+    if (hours) {
+      var rest = /(\d+)\s*(?:m|min|minutes?|minuten)\b/.exec(
+        text.slice(hours.index + hours[0].length)
+      );
+      return Math.round(
+        parseFloat(hours[1]) * 60 + (rest ? parseInt(rest[1], 10) : 0)
+      );
+    }
+    var number = parseFloat(text);
+    return isNaN(number) ? 0 : number;
+  }
+
   function isOpen(state) {
     return state === 'open' || isOn(state);
   }
@@ -255,8 +287,11 @@ var DT_carstatus = (function () {
   // show only when they apply, or always in the test view.
   function belowHtml(block, now) {
     var all = isOn(String(block.csdebug).toLowerCase());
-    var minutes = numberOf(block, 'chargetime');
-    var charging = isOn(stateOf(block, 'charging'));
+    var minutes = chargeMinutes(block);
+    // Without a charging device the charge time alone decides.
+    var charging = deviceIdx(block, 'charging')
+      ? isChargingState(stateOf(block, 'charging'))
+      : minutes > 0;
     var doorOpen = isOpen(stateOf(block, 'door'));
     var windowOpen = isOpen(stateOf(block, 'windows'));
     var html = '';
@@ -308,7 +343,8 @@ var DT_carstatus = (function () {
   // Charging while driving does not exist; the test view always shows the glow.
   function isCharging(block) {
     return (
-      (isOn(stateOf(block, 'charging')) && !isOn(stateOf(block, 'driving'))) ||
+      (isChargingState(stateOf(block, 'charging')) &&
+        !isOn(stateOf(block, 'driving'))) ||
       isOn(String(block.csdebug).toLowerCase())
     );
   }

@@ -8523,6 +8523,38 @@ test('Car block follows the logic of the Tablet_Autos script', () => {
   assert.doesNotMatch(html, /Windows:/);
 });
 
+test('Car status shows Charging until for text devices and durations', () => {
+  const block = {
+    csmode: 'status',
+    cscharging: 4,
+    cschargetime: 5,
+    cshome: 8,
+  };
+  const now = new Date(2026, 10, 2, 18, 0, 0).getTime();
+  const show = (charging, chargetime, withCharging = true) =>
+    renderCarstatus(
+      {
+        4: { Data: charging, Status: charging },
+        5: { Data: chargetime },
+        8: { Status: 'On', Data: 'On' },
+      },
+      withCharging ? block : { ...block, cscharging: 0 },
+      now
+    );
+  const until =
+    /Charging until:<\/span> <b class="carstatus-chargetime">(\d\d:\d\d)/;
+  assert.equal(until.exec(show('CHARGING', '90'))[1], '19:30');
+  assert.equal(until.exec(show('Laden', '90 min'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1:30'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1h 30m'))[1], '19:30');
+  assert.equal(until.exec(show('On', '1,5 h'))[1], '19:30');
+  assert.equal(until.exec(show('On', '45 Minutes'))[1], '18:45');
+  assert.equal(until.exec(show('', '90', false))[1], '19:30');
+  assert.doesNotMatch(show('NOT_CHARGING', '90'), /Charging until/);
+  assert.doesNotMatch(show('Off', '90'), /Charging until/);
+  assert.doesNotMatch(show('On', '0'), /Charging until/);
+});
+
 test('Car status test view shows every row', () => {
   const devices = { 1: { Status: 'Open' }, 8: { Status: 'On' } };
   let html = '';

@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2070 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: *Charging until* also shows when the charging device is a text device (``Charging``, ``Laden``, ``Yes``), when the charge time device holds a duration (``1:30``, ``1h 30m``, ``90 min``) instead of plain minutes, and when only a charge time device is set.
+
 v4.2069 (27-11-2026)
 ----------------------
 
