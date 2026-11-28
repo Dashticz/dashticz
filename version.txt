@@ -1,4 +1,4 @@
 {
-    "version": "4.2076",
-    "last_changes": "Car status widget: the charging lightning bolt is bigger, yellow, and runs through the whole battery icon."
+    "version": "4.2077",
+    "last_changes": "Car status widget: a stronger glow in the battery bar while charging."
 }

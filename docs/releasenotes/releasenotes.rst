@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2077 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Car status widget: a stronger glow in the battery bar while charging (a brighter sweep and a pulsing light around the bar).
+
 v4.2076 (28-11-2026)
 ----------------------
 

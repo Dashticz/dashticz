@@ -10606,15 +10606,30 @@ canvas {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 60%;
+  width: 70%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.65),
+    rgba(255, 255, 255, 0.95),
     rgba(255, 255, 255, 0)
   );
   transform: translateX(-100%);
   animation: carstatus-charge 1.8s ease-in-out infinite;
+}
+
+/* A soft light around the filled part of the bar, pulsing with the sweep. */
+.carstatus-charging .carstatus-bar-fill {
+  animation: carstatus-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes carstatus-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 var(--carstatus-bar-color, currentColor);
+  }
+  50% {
+    box-shadow: 0 0 9px 2px var(--carstatus-bar-color, currentColor);
+  }
 }
 
 .carstatus-chargetime {
