@@ -9087,3 +9087,27 @@ test('Color picker preview of RGB lamps uses a valid CSS color', () => {
     /thergb = 'rgb\(' \+ color\.r \+ ',' \+ color\.g \+ ',' \+ color\.b \+ '\)';/
   );
 });
+
+test('slide button has title size and alignment in Device Config (Text)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    dashticz,
+    /me\.name === 'blocktitle' \|\| me\.name === 'button'\)\s*applyBlockTextStyle/
+  );
+  assert.match(deviceEditor, /if \(isTitle \|\| isSlideButtonConfig\) \{/);
+  assert.match(
+    deviceEditor,
+    /\} else if \(isTitle \|\| isSlideButtonConfig\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /_applyTextStyleFields\(specialCustomFields, \{\s*fontsizeTitle: slideOptions\.fontsizeTitle,\s*textalign: slideOptions\.textalign,/
+  );
+  assert.match(css, /\.dt_block\.button\.dt-fs-title \.dt_title/);
+  assert.match(css, /\.dt_block\.button\.dt-align-center \.dt_content/);
+});

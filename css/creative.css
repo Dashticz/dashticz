@@ -9257,31 +9257,38 @@ canvas {
    Config -> Text, set by js/dashticz.js renderBlock() through
    applyBlockTextStyle(). The extra class keeps these above the theme rules
    for .titlegroups .dt_content/.dt_title. */
-.dt_block.blocktitle.dt-fs-title .dt_title {
+.dt_block.blocktitle.dt-fs-title .dt_title,
+.dt_block.button.dt-fs-title .dt_title {
   font-size: var(--dt-fs-title) !important;
 }
 
-.dt_block.blocktitle.dt-align-left .dt_content {
+.dt_block.blocktitle.dt-align-left .dt_content,
+.dt_block.button.dt-align-left .dt_content {
   justify-content: flex-start !important;
 }
 
-.dt_block.blocktitle.dt-align-center .dt_content {
+.dt_block.blocktitle.dt-align-center .dt_content,
+.dt_block.button.dt-align-center .dt_content {
   justify-content: center !important;
 }
 
-.dt_block.blocktitle.dt-align-right .dt_content {
+.dt_block.blocktitle.dt-align-right .dt_content,
+.dt_block.button.dt-align-right .dt_content {
   justify-content: flex-end !important;
 }
 
-.dt_block.blocktitle.dt-align-left .dt_title {
+.dt_block.blocktitle.dt-align-left .dt_title,
+.dt_block.button.dt-align-left .dt_title {
   text-align: left !important;
 }
 
-.dt_block.blocktitle.dt-align-center .dt_title {
+.dt_block.blocktitle.dt-align-center .dt_title,
+.dt_block.button.dt-align-center .dt_title {
   text-align: center !important;
 }
 
-.dt_block.blocktitle.dt-align-right .dt_title {
+.dt_block.blocktitle.dt-align-right .dt_title,
+.dt_block.button.dt-align-right .dt_title {
   text-align: right !important;
 }
 

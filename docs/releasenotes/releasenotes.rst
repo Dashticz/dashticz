@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2073 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Slide button: Device Config now has a *Text* section to set the title size (px) and the horizontal alignment of the button title (``fontsize_title`` and ``textalign``).
+
 v4.2072 (28-11-2026)
 ----------------------
 

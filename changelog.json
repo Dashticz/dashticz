@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2073": "Slide button: title size and horizontal alignment can be set in Device Config -> Text.",
     "4.2072": "Log level Warning (orange): notifications of widgets, such as a HomeConnect message, now are warnings instead of errors. Errors stay red. Log levels: off, error, warning, action, debug.",
     "4.2071": "Car status widget: the white to green gradient of the battery bar changes more gradually.",
     "4.2070": "Car status widget: Charging until also shows when the charging device is a text device (Charging, Laden, Yes), when the charge time is a duration (1:30, 1h 30m, 90 min) and when only a charge time device is set.",

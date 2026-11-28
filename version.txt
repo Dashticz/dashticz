@@ -1,4 +1,4 @@
 {
-    "version": "4.2072",
-    "last_changes": "Log level Warning (orange): notifications of widgets, such as a HomeConnect message, now are warnings instead of errors. Errors stay red. Log levels: off, error, warning, action, debug."
+    "version": "4.2073",
+    "last_changes": "Slide button: title size and horizontal alignment can be set in Device Config -> Text."
 }
