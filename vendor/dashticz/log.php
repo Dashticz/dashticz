@@ -2,14 +2,14 @@
 
 /* Server-side log of Dashticz (custom/logs/dashticz.log).
    One JSON object per line: {"t": ISO time, "l": level, "s": source, "m": message}.
-   Levels: error, action, debug. Sources: js (written by js/log.php for the
+   Levels: error, warning, action, debug. Sources: js (written by js/log.php for the
    browser) and php (the PHP bridges themselves).
    The log rotates at 1 MB and keeps 3 older files. The folder is never served
    (.htaccess for Apache, docker/default.conf for nginx). Every message is
    masked (passwords, tokens, keys) and cut to a safe length before it is
    written, so a log never holds secrets. */
 
-const DASHTICZ_LOG_LEVELS = array('error', 'action', 'debug');
+const DASHTICZ_LOG_LEVELS = array('error', 'warning', 'action', 'debug');
 const DASHTICZ_LOG_MAX_BYTES = 1048576;
 const DASHTICZ_LOG_KEEP = 3;
 const DASHTICZ_LOG_MAX_MESSAGE = 1000;

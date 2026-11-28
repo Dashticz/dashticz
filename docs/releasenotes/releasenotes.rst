@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2072 (28-11-2026)
+----------------------
+
+* **Enhancements**
+
+- Log level ``warning``. Notifications of widgets that are not an error (a message of a HomeConnect appliance, doors or windows open of Car status, the yellow message bar) are now logged as warnings, in orange, instead of errors. Widgets that do not work stay errors. The log levels are ``off``, ``error`` (default), ``warning``, ``action`` and ``debug``; the viewer in Settings -> Log has a filter for warnings.
+
 v4.2071 (28-11-2026)
 ----------------------
 

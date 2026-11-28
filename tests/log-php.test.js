@@ -205,3 +205,15 @@ test('every widget with its own message area reports to the log', () => {
     );
   }
 });
+
+test('widget notifications are warnings, widgets that fail are errors', () => {
+  const debug = read('js/debug.js');
+  assert.match(debug, /WARNING: 5/);
+  assert.match(debug, /level === 'error' \? Debug\.ERROR : Debug\.WARNING/);
+  assert.match(read('vendor/dashticz/log.php'), /'error', 'warning', 'action'/);
+  assert.match(read('js/components/toon.js'), /me\.error, 'error'/);
+  assert.match(
+    read('js/components/homeconnect.js'),
+    /Debug\.widget\('HomeConnect', app\.name/
+  );
+});

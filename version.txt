@@ -1,4 +1,4 @@
 {
-    "version": "4.2071",
-    "last_changes": "Car status widget: the white to green gradient of the battery bar changes more gradually."
+    "version": "4.2072",
+    "last_changes": "Log level Warning (orange): notifications of widgets, such as a HomeConnect message, now are warnings instead of errors. Errors stay red. Log levels: off, error, warning, action, debug."
 }

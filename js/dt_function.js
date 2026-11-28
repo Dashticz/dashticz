@@ -488,9 +488,10 @@ var DT_function = (function () {
 
   // The error text of a failed bridge call, or the fallback.
   // A message of a widget, also written to the Dashticz log (see js/debug.js).
-  function widgetLog(widget, text) {
+  // level: 'warning' (default, a notification) or 'error' (it does not work).
+  function widgetLog(widget, text, level) {
     if (text && typeof Debug !== 'undefined' && Debug.widget) {
-      Debug.widget(widget, text);
+      Debug.widget(widget, text, level);
     }
   }
 

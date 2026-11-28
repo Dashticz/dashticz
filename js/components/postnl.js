@@ -268,7 +268,8 @@ var DT_postnl = (function () {
           if (typeof Debug !== 'undefined' && Debug.widget) {
             Debug.widget(
               'PostNL',
-              (showCarrier ? result.carrier + ': ' : '') + result.error
+              (showCarrier ? result.carrier + ': ' : '') + result.error,
+              'error'
             );
           }
           return (

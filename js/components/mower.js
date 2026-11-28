@@ -355,7 +355,7 @@ var DT_mower = (function () {
         .join('');
     if (buttons)
       html += '<div class="mower-actions" role="group">' + buttons + '</div>';
-    if (me.error) DT_function.widgetLog('Mower', me.error);
+    if (me.error) DT_function.widgetLog('Mower', me.error, 'error');
     if (html && me.error)
       html += '<div class="mower-error">' + esc(me.error) + '</div>';
     var empty = bridge

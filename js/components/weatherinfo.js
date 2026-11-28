@@ -474,7 +474,7 @@ var DT_weatherinfo = (function () {
   }
 
   function showError(me, text) {
-    DT_function.widgetLog('Weather info', text);
+    DT_function.widgetLog('Weather info', text, 'error');
     me.$mountPoint
       .find('.dt_state')
       .html(

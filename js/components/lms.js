@@ -776,7 +776,7 @@ var DT_lms_scheduler = {
               serverError === LMS_CURL_REQUIRED_ERROR
                 ? serverError
                 : _lmsText('lms_server_unavailable', 'LMS unavailable');
-            DT_function.widgetLog('LMS', text);
+            DT_function.widgetLog('LMS', text, 'error');
             me.$mountPoint
               .find('.dt_state')
               .html(_line('lms-state-label text-center', text));

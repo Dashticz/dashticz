@@ -204,7 +204,7 @@ var DT_hpilo = (function () {
   }
 
   function showMessage(me, text) {
-    DT_function.widgetLog('HP iLO', text);
+    DT_function.widgetLog('HP iLO', text, 'error');
     me.$mountPoint
       .find('.dt_state')
       .html('<div class="hpilo-rows hpilo-error">' + esc(text) + '</div>');

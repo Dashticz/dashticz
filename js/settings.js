@@ -756,6 +756,7 @@ settingList['log'] = {
     options: {
       off: logLabel('level_off', 'Off'),
       error: logLabel('level_error', 'Errors only'),
+      warning: logLabel('level_warning', 'Errors and warnings'),
       action: logLabel('level_action', 'Errors and actions'),
       debug: logLabel('level_debug', 'Everything (debug)'),
     },
@@ -2457,6 +2458,9 @@ function renderLogPanel() {
     '<option value="error">' +
     escapeSettingsHtml(logLabel('level_error', 'Errors only')) +
     '</option>' +
+    '<option value="warning">' +
+    escapeSettingsHtml(logLabel('filter_warning', 'Warnings')) +
+    '</option>' +
     '<option value="action">' +
     escapeSettingsHtml(logLabel('filter_action', 'Actions')) +
     '</option>' +
@@ -2517,6 +2521,7 @@ function bindLogPanel() {
         entries.forEach(function (entry) {
           var $line = $('<div></div>').text(lineText(entry));
           if (entry.l === 'error') $line.css('color', '#dc3545');
+          else if (entry.l === 'warning') $line.css('color', '#e69500');
           $view.append($line);
         });
         if (data && data.writable === false) {

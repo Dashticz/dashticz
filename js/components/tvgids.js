@@ -165,7 +165,7 @@ var DT_tvgids = (function () {
   }
 
   function showMessage(me, text) {
-    DT_function.widgetLog('TVgids', text);
+    DT_function.widgetLog('TVgids', text, 'error');
     me.$mountPoint
       .find('.dt_state')
       .html('<div class="tvgids-error">' + esc(text) + '</div>');

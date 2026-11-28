@@ -600,7 +600,7 @@ var DT_homeconnect = (function () {
         ) +
         ')';
       if (typeof Debug !== 'undefined' && Debug.widget) {
-        Debug.widget('HomeConnect', me.remoteError);
+        Debug.widget('HomeConnect', me.remoteError, 'error');
       }
       render(me);
       return;
@@ -627,7 +627,11 @@ var DT_homeconnect = (function () {
         me.remoteBusy = false;
         me.remoteError = base;
         if (typeof Debug !== 'undefined' && Debug.widget) {
-          Debug.widget('HomeConnect', 'Unable to reach Domoticz at ' + base);
+          Debug.widget(
+            'HomeConnect',
+            'Unable to reach Domoticz at ' + base,
+            'error'
+          );
         }
         render(me);
       }

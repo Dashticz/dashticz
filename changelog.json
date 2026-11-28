@@ -1,5 +1,6 @@
 {
   "changelog": {
+    "4.2072": "Log level Warning (orange): notifications of widgets, such as a HomeConnect message, now are warnings instead of errors. Errors stay red. Log levels: off, error, warning, action, debug.",
     "4.2071": "Car status widget: the white to green gradient of the battery bar changes more gradually.",
     "4.2070": "Car status widget: Charging until also shows when the charging device is a text device (Charging, Laden, Yes), when the charge time is a duration (1:30, 1h 30m, 90 min) and when only a charge time device is set.",
     "4.2069": "Log system: errors and actions are written to custom/logs/dashticz.log. New Log tile in Settings with a level (off, errors only, errors and actions, everything), a viewer, download and clear.",

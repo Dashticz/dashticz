@@ -2,7 +2,7 @@
 /**
  * Server-side log of Dashticz (custom/logs/dashticz.log).
  *
- * GET              returns the newest entries: ?limit=300&level=error|action|debug
+ * GET              returns the newest entries: ?limit=300&level=error|warning|action|debug
  * POST {entries}   appends entries of the browser: [{l: level, m: message, t: ISO time}]
  * POST {action: "clear"} removes the log
  *

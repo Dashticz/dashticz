@@ -14,8 +14,8 @@ var Debug = (function () {
   var filteredConfig = {};
 
   // Server log (custom/logs/dashticz.log, written by js/log.php).
-  // settings.logLevel: off, error (default), action or debug.
-  var LOG_LEVELS = { off: -1, error: 0, action: 1, debug: 2 };
+  // settings.logLevel: off, error (default), warning, action or debug.
+  var LOG_LEVELS = { off: -1, error: 0, warning: 1, action: 2, debug: 3 };
   var serverQueue = [];
   var serverSeen = {};
   var serverTimer = null;
@@ -40,6 +40,7 @@ var Debug = (function () {
     ERROR: 2,
     CONFIG: 3,
     ACTION: 4,
+    WARNING: 5,
   };
 
   function init() {
@@ -283,15 +284,19 @@ var Debug = (function () {
   }
 
   // A message of a widget (a notification of an appliance, a failed data
-  // request). Always an error line in the log, with the widget name in front.
-  function widget(name, text) {
+  // request) with the widget name in front. level 'error' for a widget that
+  // does not work, otherwise (default) a warning.
+  function widget(name, text, level) {
     // Widgets draw their message again at every refresh: once per 5 minutes.
     var key = name + ':' + text;
     var now = Date.now();
     if (widgetSeen[key] && now - widgetSeen[key] < 300000) return;
     widgetSeen[key] = now;
     if (Object.keys(widgetSeen).length > 200) widgetSeen = {};
-    return write(3, [Debug.ERROR, '[' + name + '] ' + text]);
+    return write(3, [
+      level === 'error' ? Debug.ERROR : Debug.WARNING,
+      '[' + name + '] ' + text,
+    ]);
   }
 
   function write(stackDepth, args) {
@@ -343,6 +348,7 @@ var Debug = (function () {
     var level;
     var text = item.text;
     if (item.type === Debug.ERROR) level = 'error';
+    else if (item.type === Debug.WARNING) level = 'warning';
     else if (item.type === Debug.ACTION) level = 'action';
     else if (item.type === Debug.INFO) level = 'debug';
     else if (item.type === Debug.REQUEST) {

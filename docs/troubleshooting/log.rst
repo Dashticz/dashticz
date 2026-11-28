@@ -6,7 +6,8 @@ Dashticz can write errors and actions to a log file on the server: ``custom/logs
 What is logged
 --------------
 
-- ``error``: JavaScript errors, unhandled promise rejections, failed requests, errors of the PHP bridges (also when a bridge answers with an error message) ``console.error`` messages, every notification that a widget or Dashticz shows on screen (the yellow message bar) and messages of widgets, for example a notification of a HomeConnect appliance (``[HomeConnect] Washer: Drip tray full``).
+- ``error``: JavaScript errors, unhandled promise rejections, failed requests, errors of the PHP bridges (also when a bridge answers with an error message) ``console.error`` messages, every notification that a widget or Dashticz shows on screen (the yellow message bar) and widgets that do not work (``[Toon] Unable to reach the Toon``).
+- ``warning``: notifications of widgets that are not an error, for example a message of a HomeConnect appliance (``[HomeConnect] Washer: Drip tray full``), doors or windows open, and the messages in the yellow message bar. Shown in orange. The level ``warning`` includes ``error``.
 - ``action``: switching devices (Domoticz commands) and saving settings, layouts, devices or configurations.
 - ``debug``: ``console.warn`` messages and everything that the debug window (click on the logo) shows too.
 
@@ -15,7 +16,7 @@ Level
 
 Open Settings -> Log, or add ``logLevel`` to ``CONFIG.js``::
 
-    config['logLevel'] = 'action'; // off, error (default), action or debug
+    config['logLevel'] = 'action'; // off, error (default), warning, action or debug
 
 Viewing the log
 ---------------

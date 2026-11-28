@@ -359,7 +359,7 @@ var DT_toon = (function () {
     var dev = findDevices(me.block, me.data);
     var $state = me.$mountPoint.find('.dt_state');
     var html = mainHtml(dev) + infoHtml(dev) + scenesHtml(dev) + footHtml(dev);
-    if (me.error) DT_function.widgetLog('Toon', me.error);
+    if (me.error) DT_function.widgetLog('Toon', me.error, 'error');
     if (html && me.error)
       html += '<div class="toon-error">' + esc(me.error) + '</div>';
     var empty = bridge
