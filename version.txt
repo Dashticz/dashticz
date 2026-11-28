@@ -1,4 +1,4 @@
 {
-    "version": "4.2079",
-    "last_changes": "Car status widget: fix the error Cannot read properties of undefined (reading 'mileage') in the log at every update of a device."
+    "version": "4.2080",
+    "last_changes": "Car status widget: Not home only shows when the home device is set and has reported, not before the devices have loaded."
 }

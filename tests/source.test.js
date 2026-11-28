@@ -8571,6 +8571,26 @@ test('Car status shows a lightning bolt in the battery icon while charging', () 
   assert.doesNotMatch(show('Off'), /carstatus-bolt/);
 });
 
+test('Car status shows Not home only with a home device that has reported', () => {
+  const block = { csmode: 'status', cshome: 8, csbattery: 6 };
+  const devices = (home) => ({ 6: { Data: '80 %' }, ...home });
+  // No data yet: nothing about the location.
+  assert.doesNotMatch(renderCarstatus({}, block), /Not home/);
+  // No home device configured: nothing either.
+  assert.doesNotMatch(
+    renderCarstatus(devices({}), { csmode: 'status', csbattery: 6 }),
+    /Not home/
+  );
+  assert.match(
+    renderCarstatus(devices({ 8: { Status: 'Off', Data: 'Off' } }), block),
+    /Not home/
+  );
+  assert.doesNotMatch(
+    renderCarstatus(devices({ 8: { Status: 'On', Data: 'On' } }), block),
+    /Not home/
+  );
+});
+
 test('Car status test view shows every row', () => {
   const devices = { 1: { Status: 'Open' }, 8: { Status: 'On' } };
   let html = '';

@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v4.2080 (28-11-2026)
+----------------------
+
+* **Fixes**
+
+- Car status widget: *Not home* only shows when a home device is set and has reported. Without one, or before the devices have loaded, the tile no longer says the car is away.
+
 v4.2079 (28-11-2026)
 ----------------------
 

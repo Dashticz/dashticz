@@ -333,7 +333,9 @@ var DT_carstatus = (function () {
         '<div class="carstatus-status carstatus-driving">' +
         tr('carstatus_driving', 'On the road') +
         '</div>';
-    } else if (!isOn(stateOf(block, 'home'))) {
+    } else if (device(block, 'home') && !isOn(stateOf(block, 'home'))) {
+      // Only with a home device that has reported: without one (or before the
+      // devices have loaded) nothing is known about where the car is.
       html +=
         '<div class="carstatus-status carstatus-away">' +
         tr('carstatus_away', 'Not home') +
